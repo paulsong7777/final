@@ -1,0 +1,36 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Java
+bin/
+out/
+*.class
+
+# STS / Eclipse
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment / Secret
+src/main/resources/application-dev.properties
+src/main/resources/application-local.properties
+src/main/resources/application-prod.properties
+.env
