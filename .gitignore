@@ -166,6 +166,6 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/java,eclipse,web,windows,maven,gradle
 
 # Environment / Secret
-src/main/resources/application-dev.properties
-src/main/resources/application-local.properties
-src/main/resources/application-prod.properties
+moeats/src/main/resources/application-dev.properties
+moeats/src/main/resources/application-local.properties
+moeats/src/main/resources/application-prod.properties
