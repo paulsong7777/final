@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mappers.RoomParticipantMapper" >
+	<select id="findAll" resultType="RoomParticipant">
+		SELECT * FROM room_participant
+	</select>
+	<select id="findByIdx" resultType="RoomParticipant">
+		SELECT * FROM room_participant WHERE room_participant_idx=#{roomParticipantIdx}
+	</select>
+	<select id="findByRoom" resultType="RoomParticipant">
+		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND left_at IS NULL
+	</select>
+	<select id="findByMember" resultType="RoomParticipant">
+		SELECT * FROM room_participant WHERE member_idx = #{memberIdx}
+	</select>
+	<select id="findRoomMember" resultType="RoomParticipant" parameterType="Map">
+		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND member_idx = #{memberIdx}
+	</select>
+	<select id="findUnpaied" resultType="RoomParticipant">
+		SELECT * FROM room_participant WHERE member_idx = #{memberIdx} AND payment_status = 'UNPAIED'
+	</select>
+	<insert id="insert" parameterType="RoomParticipant">
+		INSERT INTO room_participant(
+		    room_idx,
+		    member_idx,
+		    participant_role,
+		    selection_status,
+		    payment_status,
+		    joined_at
+		) VALUES (
+			#{roomIdx},
+		    #{memberIdx},
+		    #{participantRole},
+		    'NOT_SELECTED',
+		    'UNPAIED',
+			CURRENT_TIMESTAMP
+		)
+	</insert>
+	<update id="setSelect" parameterType="int">
+		UPDATE room_participant SET
+			selection_status	= 'SELECTED'
+		WHERE room_participant_idx		= #{roomParticipantIdx}
+	</update>
+	<update id="unselect" parameterType="int">
+		UPDATE room_participant SET
+			selection_status	= 'NOT_SELECTED'
+		WHERE room_participant_idx		= #{roomParticipantIdx}
+	</update>
+	<update id="pay" parameterType="int">
+		UPDATE room_participant SET
+			payment_status		= 'PAID'
+		WHERE room_participant_idx		= #{roomParticipantIdx}
+	</update>
+	<update id="leave" parameterType="int">
+		UPDATE room_participant SET
+			left_at		= CURRENT_TIMESTAMP
+		WHERE room_participant_idx		= #{roomParticipantIdx}
+	</update>
+	<update id="rejoin" parameterType="int">
+		UPDATE room_participant SET
+			joined_at	= CURRENT_TIMESTAMP,
+			left_at		= NULL
+		WHERE room_participant_idx		= #{roomParticipantIdx}
+	</update>
+</mapper>

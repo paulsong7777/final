@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mappers.MenuImageMapper">
+	<select id="findAll" resultType="MenuImage">
+		SELECT * FROM menu_image
+	</select>
+	<select id="findByIdx" resultType="MenuImage">
+		SELECT * FROM menu_image WHERE menu_image_idx = #{menuImageIdx}
+	</select>
+	<select id="findByMenuIdx" resultType="MenuImage">
+		SELECT * FROM menu_image WHERE menu_idx = #{menuIdx} ORDER BY display_order
+	</select>
+	<select id="findPrimaryMenu" resultType="MenuImage">
+		SELECT * FROM menu_image 
+		WHERE menu_image_idx = #{menuImageIdx} AND is_primary = TRUE
+		ORDER BY display_order
+		LIMIT 1
+	</select>
+	<insert id="insert" parameterType="MenuImage">
+		INSERT INTO menu_image(
+		    menu_idx,
+		    image_url,
+		    is_primary,
+		    display_order
+		) VALUES (
+		    #{menuIdx},
+		    #{imageUrl},
+		    #{isPrimary},
+		    #{displayOrder}
+		)
+	</insert>
+	<update id="update" parameterType="MenuImage">
+		UPDATE menu_image SET
+		    is_primary		= #{isPrimary},
+		    display_order	= #{displayOrder}
+		WHERE menu_image_idx	= #{menuImageIdx}
+	</update>
+	<delete id="delete" parameterType="int">
+		REMOVE FROM menu_image WHERE menu_image_idx	= #{menuImageIdx}
+	</delete>
+</mapper>
