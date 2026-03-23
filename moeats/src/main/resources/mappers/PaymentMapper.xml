@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mappers.PaymentMapper">
+	<select id="findAll" resultType="Payment">
+		SELECT * FROM payment
+	</select>
+	<select id="findByIdx" resultType="Payment">
+		SELECT * FROM payment WHERE payment_idx=#{paymentIdx}
+	</select>
+	<select id="findbyOrderIdx" resultType="Payment">
+		SELECT * FROM payment WHERE order_idx = #{orderIdx}
+	</select>
+	<insert id="insert" parameterType="Payment">
+		INSERT INTO payment(
+		    order_idx,
+		    payment_mode,
+		    payment_request_amount,
+		    payment_paid_amount,
+		    payment_status,
+		    payment_expires_at
+		) VALUES (
+			#{orderIdx},
+		    #{paymentMode},
+		    #{paymentRequestAmount},
+		    0,
+		    'READY',
+		    CURRENT_TIMESTAMP + INTERVAL 5 MINUTE
+		)
+	</insert>
+	<update id="progress" parameterType="int">
+		UPDATE payment SET
+			payment_status		= 'IN_PROGRESS',
+			payment_started_at	= CURRENT_TIMESTAMP
+		WHERE payment_idx		= #{paymentIdx}
+	</update>
+	<update id="payRepresentative" parameterType="Payment">
+		UPDATE payment SET
+			payment_paid_amount = #{paymentPaidAmount},
+			payment_status		= 'PAID',
+			paid_at				= CURRENT_TIMESTAMP
+		WHERE payment_idx		= #{paymentIdx}
+	</update>
+	<update id="pay" parameterType="int">
+		UPDATE payment SET
+			payment_status	= 'PAID',
+			paid_at			= CURRENT_TIMESTAMP
+		WHERE payment_idx	= #{paymentIdx}
+	</update>
+	<update id="cencel" parameterType="int">
+		UPDATE payment SET
+			payment_status	= 'CENCELLED',
+			cancelled_at	= CURRENT_TIMESTAMP
+		WHERE payment_idx	= #{paymentIdx}
+	</update>
+</mapper>

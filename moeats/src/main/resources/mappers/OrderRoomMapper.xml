@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mappers.OrderRoomMapper" >
+	<select id="findAll" resultType="OrderRoom">
+		SELECT * FROM order_room
+	</select>
+	<select id="findByIdx" resultType="OrderRoom">
+		SELECT * FROM order_room WHERE room_idx=#{roomIdx}
+	</select>
+	<select id="findByCode" resultType="OrderRoom">
+		SELECT * FROM order_room WHERE room_code = #{roomCode}
+	</select>
+	<select id="findByLeader" resultType="OrderRoom">
+		SELECT * FROM order_room WHERE leader_member_idx = #{leaderMemberIdx}
+	</select>
+	<select id="findExpired" resultType="OrderRoom">	<!-- 실제로 쓸지는 의문 -->
+		SELECT * FROM order_room WHERE expires_at &lt; CURRENT_TIMESTAMP
+	</select>
+	<select id="findOld" resultType="OrderRoom">
+		SELECT * FROM order_room WHERE created_at &lt; CURRENT_TIMESTAMP - INTERVAL 1 DAY
+	</select>	<!-- 만든지 오래된 방	- 일단은 하루 -->
+	<insert id="insert" parameterType="OrderRoom">
+		INSERT INTO order_room(
+		    leader_member_idx,
+		    store_idx,
+		    room_code,
+		    order_mode,
+		    payment_mode,
+		    room_status
+		) VALUES (
+			#{leaderMemberIdx},
+		    #{storeIdx},
+		    #{roomCode},
+		    #{orderMode},
+		    #{paymentMode},
+			'OPEN'
+		)
+	</insert>
+	<update id="menuSelect" parameterType="OrderRoom">
+		UPDATE order_room SET
+			selected_delivery_address_idx = #{selectedDeliveryAddressIdx},
+		    order_mode		= #{orderMode},
+		    payment_mode	= #{paymentMode},
+		    room_status		= 'SELECTING',
+		WHERE room_idx		= #{roomIdx}
+	</update>
+	<update id="paymentPend" parameterType="OrderRoom">
+		UPDATE order_room SET
+			is_join_locked	= TRUE,
+			room_status		= 'PAYMENT_PENDING',
+		    locked_at		= CURRENT_TIMESTAMP,
+		    expires_at		= #{expiresAt}
+		WHERE room_idx		= #{roomIdx}
+	</update>
+	<update id="confirm" parameterType="int">
+		UPDATE order_room SET
+			room_status		= 'ORDER_CONFIRMED',
+		    expires_at		= NULL
+		WHERE room_idx		= #{roomIdx}
+	</update>
+	<update id="cencel" parameterType="int">
+		UPDATE order_room SET
+			room_status		= 'CANCELLED',
+		    expires_at		= NULL
+		WHERE room_idx		= #{roomIdx}
+	</update>
+	<update id="expire" parameterType="int">
+		UPDATE order_room SET
+			room_status		= 'EXPIRED',
+		    expires_at		= NULL
+		WHERE room_idx		= #{roomIdx}
+	</update>
+	<update id="expireAll">	<!-- 실제로 쓸지는 의문 -->
+		UPDATE order_room SET
+			room_status		= 'EXPIRED',
+		    expires_at		= NULL
+		WHERE expires_at	&lt; CURRENT_TIMESTAMP
+	</update>
+	<delete id="delete">
+		DELETE FROM order_room WHERE room_idx = #{roomIdx}
+	</delete>
+	<delete id="deleteAll">
+		DELETE FROM order_room WHERE room_idx IN (
+			<foreach collection="list" item="roomIdx" separator=",">#{roomIdx}</foreach>
+		)
+	</delete>
+</mapper>
