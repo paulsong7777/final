@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mappers.PaymentShareMapper">
+	<select id="findAll" resultType="PaymentShare">
+		SELECT * FROM payment_share
+	</select>
+	<select id="findByIdx" resultType="PaymentShare">
+		SELECT * FROM payment_share WHERE payment_share_idx = #{paymentShareIdx}
+	</select>
+	<select id="findByPayment" resultType="PaymentShare">
+		SELECT * FROM payment_share WHERE payment_idx = #{paymentIdx}
+	</select>
+	<select id="findbyOrder" resultType="PaymentShare">
+		SELECT * FROM payment_share WHERE order_idx = #{orderIdx}
+	</select>
+	<insert id="insert" parameterType="PaymentShare">
+		INSERT INTO payment_share(
+			payment_idx,
+		    member_idx,
+		    share_amount,
+		    share_status
+		) VALUES (
+			#{paymentIdx},
+			#{memberIdx},
+			#{shareAmount},
+		    'PENDING'
+		)
+	</insert>
+	<update id="paidByRepresentative" parameterType="Map">
+		UPDATE payment_share SET
+			payment_share_status	= 'PAID_BY_REPRESENTATIVE',
+			paid_at					= #{paidAt}
+		WHERE payment_share_idx		= #{paymentShareIdx}
+	</update>
+	<update id="paySelf" parameterType="int">
+		UPDATE payment_share SET
+			payment_share_status	= 'PAID_SELF',
+			paid_at					= CURRENT_TIMESTAMP
+		WHERE payment_share_idx		= #{paymentShareIdx}
+	</update>
+	<update id="cancel" parameterType="int">
+		UPDATE payment_share SET
+			share_status			= 'CANCELLED'
+		WHERE payment_share_idx		= #{paymentShareIdx}
+	</update>
+</mapper>

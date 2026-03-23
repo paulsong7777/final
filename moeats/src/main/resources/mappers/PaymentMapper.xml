@@ -8,7 +8,7 @@
 	<select id="findByIdx" resultType="Payment">
 		SELECT * FROM payment WHERE payment_idx=#{paymentIdx}
 	</select>
-	<select id="findbyOrderIdx" resultType="Payment">
+	<select id="findByOrder" resultType="Payment">
 		SELECT * FROM payment WHERE order_idx = #{orderIdx}
 	</select>
 	<insert id="insert" parameterType="Payment">
@@ -47,9 +47,9 @@
 			paid_at			= CURRENT_TIMESTAMP
 		WHERE payment_idx	= #{paymentIdx}
 	</update>
-	<update id="cencel" parameterType="int">
+	<update id="cancel" parameterType="int">
 		UPDATE payment SET
-			payment_status	= 'CENCELLED',
+			payment_status	= 'CANCELLED',
 			cancelled_at	= CURRENT_TIMESTAMP
 		WHERE payment_idx	= #{paymentIdx}
 	</update>

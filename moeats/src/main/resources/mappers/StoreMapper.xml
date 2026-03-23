@@ -8,7 +8,7 @@
 	<select id="findByIdx" resultType="Store">
 		SELECT * FROM store WHERE store_idx=#{storeIdx}
 	</select>
-	<select id="findByOwnerIdx" resultType="Store">
+	<select id="findByOwner" resultType="Store">
 		SELECT * FROM store WHERE owner_member_idx=#{ownerMemberIdx}
 	</select>
 	<select id="findByName" resultType="Store">
@@ -16,31 +16,30 @@
 	</select>
 	<select id="findByPosition" resultType="Store" parameterType="Map">
 		SELECT * FROM (
-			SELECT *,
-				   POW((longitude - #{longitude})*COS(RADIANS(#{latitude})))
-		             + POW(latitude - #{latitude},2) as distance_squared
-		    FROM store
-			WHERE (longitude - #{longitude})/COS(RADIANS(#{latitude})) BETWEEN -0.05 AND 0.05
-			  AND latitude - #{latitude} BETWEEN -0.05 AND 0.05
+			SELECT *,	POW((longitude - #{longitude}) * COS(RADIANS(#{latitude})),2)
+						+ POW(latitude - #{latitude},2) as distance_squared
+			FROM store
+			WHERE longitude - #{longitude} BETWEEN -0.07 AND 0.07
+			  AND latitude  - #{latitude}  BETWEEN -0.05 AND 0.05
 			  		/* 대충 가로 세로 5km 상자 영역*/
 		)
-		WHERE distance_sqared &lt; 0.0025
+		WHERE distance_squared &lt; 0.0025
 		ORDER BY distance_squared
 	</select>
 	<insert id="insert" parameterType="Store">
 		INSERT INTO store(
-		    owner_member_idx,
-		    store_name,
-		    store_description,
-		    store_phone,
-		    minimum_order_amount,
-		    store_address1,
-		    store_address2,
-		    supports_delivery,
+			owner_member_idx,
+			store_name,
+			store_description,
+			store_phone,
+			minimum_order_amount,
+			store_address1,
+			store_address2,
+			supports_delivery,
 			supports_onsite,
 			store_status,
-		    longitude,
-		    latitude
+			longitude,
+			latitude
 		) VALUES (
 			#{ownerMemberIdx},
 			#{storeName},
@@ -58,16 +57,16 @@
 	</insert>
 	<update id="update" parameterType="Store">
 		UPDATE store SET
-		    store_name			= #{storeName},
-		    store_description	= #{storeDescription},
-		    store_phone			= #{storePhone},
-		    minimum_order_amount= #{minimumOrderAmount},
-		    store_address1		= #{storeAddress1},
-		    store_address2		= #{storeAddress2},
-		    supports_delivery	= #{supportsDelivery},
+			store_name			= #{storeName},
+			store_description	= #{storeDescription},
+			store_phone			= #{storePhone},
+			minimum_order_amount= #{minimumOrderAmount},
+			store_address1		= #{storeAddress1},
+			store_address2		= #{storeAddress2},
+			supports_delivery	= #{supportsDelivery},
 			supports_onsite		= #{supportsOnsite},
-		    longitude			= #{longitude},
-		    latitude			= #{latitude}
+			longitude			= #{longitude},
+			latitude			= #{latitude}
 		WHERE store_idx			= #{storeIdx}
 	</update>
 	<update id="activate" parameterType="int">

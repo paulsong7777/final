@@ -5,29 +5,29 @@
 	<select id="findAll" resultType="GroupOrder">
 		SELECT * FROM group_order
 	</select>
+	<select id="findByIdx" resultType="GroupOrder">
+		SELECT * FROM group_order WHERE order_idx = #{orderIdx}
+	</select>
 	<select id="findActive" resultType="GroupOrder">
 		SELECT * FROM group_order WHERE order_status = 'ACTIVE'
 	</select>
-	<select id="findByIdx" resultType="GroupOrder">
-		SELECT * FROM group_order WHERE order_idx=#{orderIdx}
-	</select>
 	<insert id="insert" parameterType="GroupOrder">
 		INSERT INTO group_order(
-		    room_idx,
-		    store_idx,
-		    leader_member_idx,
-		    order_mode,
-		    payment_mode,
-		    order_status,
-		    order_total_amount
+			room_idx,
+			store_idx,
+			leader_member_idx,
+			order_mode,
+			payment_mode,
+			order_status,
+			order_total_amount
 		) VALUES (
-		    #{roomIdx},
-		    #{storeIdx},
-		    #{leaderMemberIdx},
-		    #{orderMode},
-		    #{paymentMode},
-		    'PAYMENT_PENDING',
-		    #{orderTotalAmount}
+			#{roomIdx},
+			#{storeIdx},
+			#{leaderMemberIdx},
+			#{orderMode},
+			#{paymentMode},
+			'PAYMENT_PENDING',
+			#{orderTotalAmount}
 		)
 	</insert>
 	<update id="pay" parameterType="GroupOrder">
@@ -55,7 +55,7 @@
 	</update>
 	<update id="cancel" parameterType="int">
 		UPDATE group_order SET
-			order_status	= 'CENCELLED',
+			order_status	= 'CANCELLED',
 			cancelled_at	= CURRENT_TIMESTAMP
 		WHERE order_idx		= #{orderIdx}
 	</update>

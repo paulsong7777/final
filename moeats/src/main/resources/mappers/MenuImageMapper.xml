@@ -19,21 +19,21 @@
 	</select>
 	<insert id="insert" parameterType="MenuImage">
 		INSERT INTO menu_image(
-		    menu_idx,
-		    image_url,
-		    is_primary,
-		    display_order
+			menu_idx,
+			image_url,
+			is_primary,
+			display_order
 		) VALUES (
-		    #{menuIdx},
-		    #{imageUrl},
-		    #{isPrimary},
-		    #{displayOrder}
+			#{menuIdx},
+			#{imageUrl},
+			#{isPrimary},
+			#{displayOrder}
 		)
 	</insert>
 	<update id="update" parameterType="MenuImage">
 		UPDATE menu_image SET
-		    is_primary		= #{isPrimary},
-		    display_order	= #{displayOrder}
+			is_primary			= #{isPrimary},
+			display_order		= #{displayOrder}
 		WHERE menu_image_idx	= #{menuImageIdx}
 	</update>
 	<delete id="delete" parameterType="int">

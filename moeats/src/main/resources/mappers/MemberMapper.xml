@@ -5,11 +5,11 @@
 	<select id="findAll" resultType="Member">
 		SELECT * FROM member
 	</select>
-	<select id="findActive" resultType="Member">
-		SELECT * FROM member WHERE member_status = 'ACTIVE'
-	</select>
 	<select id="findByIdx" resultType="Member">
 		SELECT * FROM member WHERE member_idx=#{memberIdx}
+	</select>
+	<select id="findActive" resultType="Member">
+		SELECT * FROM member WHERE member_status = 'ACTIVE'
 	</select>
 	<insert id="insert" parameterType="Member">
 		INSERT INTO member(
@@ -18,14 +18,16 @@
 			member_nickname,
 			member_phone,
 			member_role_type,
-			default_delivery_address_idx,	member_status
+			default_delivery_address_idx,
+			member_status
 		) VALUES (
 			#{memberEmail},
 			#{memberPassword},
-    		#{memberNickname},
+			#{memberNickname},
 			#{memberPhone},
 			#{memberRoleType},
- 		    NULL,	'ACTIVE'
+ 			NULL,
+ 			'ACTIVE'
 		)
 	</insert>
 	<update id="update" parameterType="Member">

@@ -17,23 +17,23 @@
 	<select id="findRoomMember" resultType="RoomParticipant" parameterType="Map">
 		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND member_idx = #{memberIdx}
 	</select>
-	<select id="findUnpaied" resultType="RoomParticipant">
-		SELECT * FROM room_participant WHERE member_idx = #{memberIdx} AND payment_status = 'UNPAIED'
+	<select id="findUnpaid" resultType="RoomParticipant">
+		SELECT * FROM room_participant WHERE member_idx = #{memberIdx} AND payment_status = 'UNPAID'
 	</select>
 	<insert id="insert" parameterType="RoomParticipant">
 		INSERT INTO room_participant(
-		    room_idx,
-		    member_idx,
-		    participant_role,
-		    selection_status,
-		    payment_status,
-		    joined_at
+			room_idx,
+			member_idx,
+			participant_role,
+			selection_status,
+			payment_status,
+			joined_at
 		) VALUES (
 			#{roomIdx},
-		    #{memberIdx},
-		    #{participantRole},
-		    'NOT_SELECTED',
-		    'UNPAIED',
+			#{memberIdx},
+			#{participantRole},
+			'NOT_SELECTED',
+			'UNPAID',
 			CURRENT_TIMESTAMP
 		)
 	</insert>

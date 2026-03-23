@@ -2,31 +2,29 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moeats.mappers.StoreMenuMapper" >
-	<!--
 	<select id="findAll" resultType="StoreMenu">
 		SELECT * FROM store_menu
-	</select>	전체 메뉴를 조회할 일은 없을 것으로 보임
-	-->
+	</select>
 	<select id="findByIdx" resultType="StoreMenu">
 		SELECT * FROM store_menu WHERE menu_idx=#{menuIdx}
 	</select>
-	<select id="findByStoreIdx" resultType="StoreMenu">
+	<select id="findByStore" resultType="StoreMenu">
 		SELECT * FROM store_menu WHERE store_idx=#{storeIdx}
 	</select>
-	<select id="findByNameAll" resultType="StoreMenu">
+	<select id="findByName" resultType="StoreMenu">
 		SELECT * FROM store_menu WHERE menu_name LIKE CONCAT('%',#{menuName},'%')
 	</select>
-	<select id="findByName" resultType="StoreMenu" parameterType="Map">
+	<select id="findByNameStore" resultType="StoreMenu" parameterType="Map">
 		SELECT * FROM store_menu WHERE store_idx=#{storeIdx} AND menu_name LIKE CONCAT('%',#{menuName},'%')
 	</select>
 	<insert id="insert" parameterType="StoreMenu">
 		INSERT INTO store_menu(
-		    store_idx,
-		    menu_name,
-		    menu_description,
-		    menu_price,
-		    menu_status,
-		    display_order
+			store_idx,
+			menu_name,
+			menu_description,
+			menu_price,
+			menu_status,
+			display_order
 		) VALUES (
 			#{storeIdx},
 			#{menuName},
@@ -38,14 +36,14 @@
 	</insert>
 	<update id="update" parameterType="StoreMenu">
 		UPDATE store_menu SET
-		    menu_name		= #{menuName},
-		    menu_description= #{menuDescription},
-		    menu_price		= #{menuPrice}
+			menu_name		= #{menuName},
+			menu_description= #{menuDescription},
+			menu_price		= #{menuPrice}
 		WHERE menu_idx		= #{menuIdx}
 	</update>
 	<update id="reorder" parameterType="StoreMenu">
 		UPDATE store_menu SET
-		    display_order	= #{displayOrder}
+			display_order	= #{displayOrder}
 		WHERE menu_idx		= #{menuIdx}
 	</update>
 	<update id="available" parameterType="int">

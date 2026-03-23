@@ -6,7 +6,7 @@
 		SELECT * FROM order_room
 	</select>
 	<select id="findByIdx" resultType="OrderRoom">
-		SELECT * FROM order_room WHERE room_idx=#{roomIdx}
+		SELECT * FROM order_room WHERE room_idx = #{roomIdx}
 	</select>
 	<select id="findByCode" resultType="OrderRoom">
 		SELECT * FROM order_room WHERE room_code = #{roomCode}
@@ -22,59 +22,59 @@
 	</select>	<!-- 만든지 오래된 방	- 일단은 하루 -->
 	<insert id="insert" parameterType="OrderRoom">
 		INSERT INTO order_room(
-		    leader_member_idx,
-		    store_idx,
-		    room_code,
-		    order_mode,
-		    payment_mode,
-		    room_status
+			leader_member_idx,
+			store_idx,
+			room_code,
+			order_mode,
+			payment_mode,
+			room_status
 		) VALUES (
 			#{leaderMemberIdx},
-		    #{storeIdx},
-		    #{roomCode},
-		    #{orderMode},
-		    #{paymentMode},
+			#{storeIdx},
+			#{roomCode},
+			#{orderMode},
+			#{paymentMode},
 			'OPEN'
 		)
 	</insert>
 	<update id="menuSelect" parameterType="OrderRoom">
 		UPDATE order_room SET
 			selected_delivery_address_idx = #{selectedDeliveryAddressIdx},
-		    order_mode		= #{orderMode},
-		    payment_mode	= #{paymentMode},
-		    room_status		= 'SELECTING',
+			order_mode		= #{orderMode},
+			payment_mode	= #{paymentMode},
+			room_status		= 'SELECTING'
 		WHERE room_idx		= #{roomIdx}
 	</update>
 	<update id="paymentPend" parameterType="OrderRoom">
 		UPDATE order_room SET
 			is_join_locked	= TRUE,
 			room_status		= 'PAYMENT_PENDING',
-		    locked_at		= CURRENT_TIMESTAMP,
-		    expires_at		= #{expiresAt}
+			locked_at		= CURRENT_TIMESTAMP,
+			expires_at		= #{expiresAt}
 		WHERE room_idx		= #{roomIdx}
 	</update>
 	<update id="confirm" parameterType="int">
 		UPDATE order_room SET
 			room_status		= 'ORDER_CONFIRMED',
-		    expires_at		= NULL
+			expires_at		= NULL
 		WHERE room_idx		= #{roomIdx}
 	</update>
-	<update id="cencel" parameterType="int">
+	<update id="cancel" parameterType="int">
 		UPDATE order_room SET
 			room_status		= 'CANCELLED',
-		    expires_at		= NULL
+			expires_at		= NULL
 		WHERE room_idx		= #{roomIdx}
 	</update>
 	<update id="expire" parameterType="int">
 		UPDATE order_room SET
 			room_status		= 'EXPIRED',
-		    expires_at		= NULL
+			expires_at		= NULL
 		WHERE room_idx		= #{roomIdx}
 	</update>
 	<update id="expireAll">	<!-- 실제로 쓸지는 의문 -->
 		UPDATE order_room SET
 			room_status		= 'EXPIRED',
-		    expires_at		= NULL
+			expires_at		= NULL
 		WHERE expires_at	&lt; CURRENT_TIMESTAMP
 	</update>
 	<delete id="delete">
