@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/header :: headMeta('주문방 참여')}"></head>
+
+<body>
+
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main>
+    <h2>주문방 참여</h2>
+    <p>방장에게 받은 코드 또는 링크로 참여하세요.</p>
+
+    <!--
+        [플로우]
+        링크 공유(/rooms/{code}/invite) 또는 직접 입력 → POST /rooms/{code}/join → room-detail.html
+    -->
+
+    <!-- 방장 공유 링크로 직접 접근 시: roomCode가 URL에 포함되어 자동 입력 -->
+
+    <section>
+        <h3>방 코드로 참여</h3>
+        <form th:action="@{/rooms/{code}/join(code=${roomCode})}" method="post"
+              id="roomJoinForm">
+
+            <label for="roomCodeInput">주문방 코드 입력</label>
+            <br>
+            <input type="text"
+                   id="roomCodeInput"
+                   name="roomCode"
+                   th:value="${roomCode}"
+                   placeholder="예) A7B2X9"
+                   maxlength="10"
+                   required>
+            <br>
+            <!-- 링크로 들어왔을 때 roomCode가 있으면 미리 보여주기 -->
+            <span th:if="${roomCode != null}">
+                자동 입력된 코드:
+                <strong th:text="${roomCode}"></strong>
+            </span>
+            <br>
+            <button type="submit" id="btnJoinRoom">참여하기</button>
+
+        </form>
+    </section>
+
+    <hr>
+
+    <!-- 현재 방 정보 미리보기 (roomCode가 있을 때만 표시) -->
+    <section th:if="${room != null}">
+        <h3>참여할 주문방 정보</h3>
+        <table border="1">
+            <tr>
+                <th>가게명</th>
+                <td th:text="${room.storeName}">가게 이름</td>
+            </tr>
+            <tr>
+                <th>방장</th>
+                <td th:text="${room.leaderName}">방장 이름</td>
+            </tr>
+            <tr>
+                <th>결제 방식</th>
+                <td th:text="${room.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">각자결제</td>
+            </tr>
+            <tr>
+                <th>현재 참여 인원</th>
+                <td th:text="${room.currentParticipants} + '명'">0명</td>
+            </tr>
+            <tr>
+                <th>방 상태</th>
+                <td th:text="${room.roomStatus}">OPEN</td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- 이미 참여 중인 방이 있을 때 -->
+    <section th:if="${alreadyJoined}">
+        <p>이미 참여 중인 주문방이 있습니다.</p>
+        <a th:href="@{/rooms/{code}(code=${currentRoomCode})}">
+            현재 참여 중인 방으로 이동
+        </a>
+    </section>
+
+    <!-- 방 상태가 OPEN이 아닐 때 -->
+    <section th:if="${roomClosed}">
+        <p>이 주문방은 현재 참여가 불가능한 상태입니다.</p>
+        <p th:text="'방 상태: ' + ${room?.roomStatus}"></p>
+        <a th:href="@{/}">홈으로 돌아가기</a>
+    </section>
+
+    <hr>
+
+    <!--
+        [테스트용 네비게이션 버튼]
+    -->
+    <section id="testNav">
+        <p><strong>[테스트] 페이지 이동 확인용</strong></p>
+        <button type="button"
+                onclick="location.href='/rooms/test-room/detail'">
+            → 주문방 협업화면으로 이동 (참여자)
+        </button>
+        <button type="button"
+                onclick="location.href='/room/create'">
+            → 주문방 생성화면으로 이동
+        </button>
+    </section>
+
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<script th:src="@{/js/room-join.js}"></script>
+
+</body>
+</html>
