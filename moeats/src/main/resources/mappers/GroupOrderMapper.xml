@@ -77,7 +77,7 @@
 			checked_in_at	= CURRENT_TIMESTAMP
 		WHERE order_idx		= #{orderIdx}
 	</update>
-	<update id="exepectVisit" parameterType="int">
+	<update id="expectVisit" parameterType="int">
 		UPDATE group_order SET
 			expected_visit_at	= #{expectedVisitAt}
 		WHERE order_idx			= #{orderIdx}

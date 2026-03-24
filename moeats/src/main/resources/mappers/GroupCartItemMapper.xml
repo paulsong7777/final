@@ -22,7 +22,7 @@
 		FROM group_cart_item WHERE room_idx = #{roomIdx} AND item_status = 'ACTIVE'
 		GROUP BY member_idx
 	</select>
-	<select id="findRoomAmount" resultType="GroupCartItem">
+	<select id="findRoomAmount" resultType="int">
 		SELECT SUM(item_total_amount) as item_total_amount
 		FROM group_cart_item WHERE room_idx = #{roomIdx} AND item_status = 'ACTIVE'
 	</select>
