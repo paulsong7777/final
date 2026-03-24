@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{fragments/header :: headMeta('주문방')}"></head>
+<head></head>
 
 <body>
 
@@ -47,6 +47,10 @@
     <!--
         ① 참여자 카드 목록
         room_participant 기준, selection_status 표시
+        
+        * 참여자가 보는 화면을 분리하기 보다는 장바구니용 fragment를 따로 만들어서 각자 자기 메뉴만 선택하게 해야 한다
+        * 참여자와 방장의 상호작용을 구현하려면 내가 test용 db를 따로 작성하거나 전체 더미데이터가 생성 완료 되기를 기다려야 한다
+        * 그래서 참여자 data를 생략하거나 선택완료 더미데이터로 교체하고 후속 화면을 계속 만들어나가는 것이 답이다
     -->
     <section id="participantSection">
         <h3>참여자 현황</h3>
@@ -135,13 +139,13 @@
             <strong th:text="${#numbers.formatInteger(myTotal ?: 0, 1, 'COMMA')} + '원'">0원</strong>
         </p>
 
-        <!-- 메뉴 추가 버튼 (방 잠금 전에만) -->
+        <!-- 메뉴 추가 버튼 (방 잠금 전에만)(메뉴추가폼 작성 필요) -->
         <a th:unless="${room.roomStatus == 'PAYMENT_PENDING' or room.roomStatus == 'ORDER_CONFIRMED'}"
            th:href="@{/stores/{idx}(idx=${room.storeIdx})}">
             <button type="button">+ 메뉴 추가</button>
         </a>
 
-        <!-- 선택 완료 버튼 (NOT_SELECTED 상태일 때만) -->
+        <!-- 선택 완료 버튼 (NOT_SELECTED 상태일 때만)(선택완료버튼을 누르면 왜 오류창으로 가는지 검증 필요) -->
         <form th:unless="${mySelectionStatus == 'SELECTED' or room.roomStatus == 'PAYMENT_PENDING' or room.roomStatus == 'ORDER_CONFIRMED'}"
               th:action="@{/rooms/{rIdx}/members/{mIdx}(rIdx=${room.roomIdx},mIdx=${session.loginMember.memberIdx})}"
               method="post">

@@ -11,7 +11,7 @@
         <a th:href="@{/room/join}">주문방참여테스트페이지</a>
         &nbsp;|&nbsp;
         <span th:if="${session.loginMember != null}">
-            <span th:text="${session.loginMember.name}">로그인하면멤버이름나옴</span>
+            <span th:text="${session.loginMember['name']}">로그인하면멤버이름나옴</span>
             &nbsp;
             <a th:href="@{/members/mypage}">마이페이지</a>
             &nbsp;|&nbsp;
