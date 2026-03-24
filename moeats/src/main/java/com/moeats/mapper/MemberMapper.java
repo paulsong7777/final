@@ -1,7 +1,7 @@
 package com.moeats.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.javassist.compiler.ast.Member;
+
 
 /* @Mapper는 MyBatis 3.0부터 지원하는 애노테이션으로 이 애노테이션이 붙은
  * 인터페이스는 별도의 구현 클래스를 작성하지 않아도 MyBatis 맵퍼로 인식해
@@ -11,10 +11,29 @@ import org.apache.ibatis.javassist.compiler.ast.Member;
  * 속성으로 연결되기 때문에 XML 맵퍼 파일의 namespace를 정의할 때 맵퍼 
  * 인터페이스의 완전한 클래스 이름과 동일한 namespace를 사용해야 한다. 
  **/
+
+
+
+import com.moeats.domain.Member;
+
 @Mapper
 public interface MemberMapper {
-
-   // 회원 ID에 해당하는 회원 정보를 member 테이블에서 읽어와 반환하는 메서드
-   public Member getMember(String id);   
+	
+	
+	// 회원정보 수정
+	public void updateMember(Member member);
+	
+	// 비밀번호 확인
+	public String isPassCheck(int memberIdx);
+	
+	// 회원가입
+	public void insertMember(Member member);
+	
+	// 회원 이메일 조회
+	public Member getMemberFromEmail(String memberEmail);
+	
+	// 회원 조회
+	public Member getMember(int memberIdx);
+	
 }
 
