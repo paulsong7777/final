@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+
+<th:block layout:fragment="css">
+    <style>
+        .menu-table th, .menu-table td { padding: 12px; border: 1px solid #ddd; }
+        .btn-soldout { background-color: #ff4d4d; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+        .btn-onsale { background-color: #4CAF50; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+    </style>
+</th:block>
+
+<div layout:fragment="content">
+    <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+        <h2 th:text="${store_name}">가게 이름</h2>
+        
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; display: flex; gap: 20px; align-items: center;">
+            <strong style="color: #333;">[ 메뉴 설정 ]</strong>
+            <a th:href="@{/owner/category/setting}" style="text-decoration: none; color: #555;">⚙️ 카테고리 관리</a>
+            <a th:href="@{/owner/menu/register}" style="text-decoration: none; color: #007bff; font-weight: bold;">➕ 새 메뉴 등록</a>
+        </div>
+    </div>
+
+    <h3>현재 메뉴 목록</h3>
+    <table class="menu-table" style="width: 100%; border-collapse: collapse;">
+        <thead style="background-color: #f2f2f2;">
+            <tr>
+                <th>카테고리</th>
+                <th>메뉴명</th>
+                <th>가격</th>
+                <th>판매 상태</th>
+                <th>관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="menu : ${menu_list}" style="text-align: center;">
+                <td th:text="${menu.category_name != null ? menu.category_name : '미지정'}">카테고리</td>
+                <td th:text="${menu.menu_name}" style="font-weight: bold;">메뉴이름</td>
+                <td th:text="${#numbers.formatInteger(menu.menu_price, 0, 'COMMA') + '원'}">0원</td>
+                <td>
+                    <form th:action="@{/owner/menu/toggle_soldout}" method="post">
+                        <input type="hidden" name="menu_idx" th:value="${menu.menu_idx}">
+                        <button type="submit" th:class="${menu.is_soldout == 1} ? 'btn-soldout' : 'btn-onsale'"
+                                th:text="${menu.is_soldout == 1} ? '품절됨 (클릭시 해제)' : '판매중 (클릭시 품절)'">
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    <a th:href="@{/owner/menu/edit(menu_idx=${menu.menu_idx})}" style="color: #28a745; text-decoration: none; margin-right: 10px;">[수정]</a>
+                    
+                    <form th:action="@{/owner/menu/delete_proc}" method="post" style="display: inline;">
+                        <input type="hidden" name="menu_idx" th:value="${menu.menu_idx}">
+                        <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; text-decoration: underline;"
+                                onclick="return confirm('정말 삭제하시겠습니까?')">[삭제]</button>
+                    </form>
+                </td>
+            </tr>
+            
+            <tr th:if="${#lists.isEmpty(menu_list)}">
+                <td colspan="5" style="padding: 40px; text-align: center; color: #999;">
+                    등록된 메뉴가 없습니다. 상단의 <strong>[새 메뉴 등록]</strong>을 이용해 주세요.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="margin-top: 30px; text-align: right;">
+        <a th:href="@{/owner/dashboard}" style="color: #666;">[ 대시보드로 돌아가기 ]</a>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /* 상태 변경 후 성공 메시지 처리 등 필요 시 작성 */
+    </script>
+</th:block>
+</html>

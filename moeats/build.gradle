@@ -38,6 +38,15 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+    //  추가 
+    dependencies {
+    // 1. MySQL 드라이버 
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // 2. MyBatis 스프링 부트 스타터 (추가!)
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }

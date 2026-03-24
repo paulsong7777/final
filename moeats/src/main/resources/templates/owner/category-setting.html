@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+
+<th:block layout:fragment="css">
+    </th:block>
+
+<div layout:fragment="content">
+    <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+        <h2>카테고리 생성 및 관리</h2>
+        <a th:href="@{/owner/menu/management}">[ ← 메뉴 관리로 돌아가기 ]</a>
+    </div>
+
+    <div style="background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; margin-bottom: 30px;">
+        <h4>+ 새 카테고리 추가</h4>
+        <form th:action="@{/owner/category/add}" method="post">
+            <input type="text" name="category_name" placeholder="카테고리명 입력 (예: 메인메뉴, 음료)" required style="padding: 8px; width: 250px;">
+            <button type="submit">추가하기</button>
+        </form>
+    </div>
+
+    <h3>현재 카테고리 목록</h3>
+    <p style="font-size: 0.9rem; color: #666;">* 카테고리를 삭제하면 해당 카테고리에 속한 메뉴들의 카테고리 지정이 해제됩니다.</p>
+    
+    <table border="1" style="width: 100%; border-collapse: collapse; text-align: center;">
+        <thead style="background-color: #eee;">
+            <tr>
+                <th>순서</th>
+                <th>카테고리명</th>
+                <th>등록된 메뉴 수</th>
+                <th>관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="cat, stat : ${category_list}">
+                <td th:text="${stat.count}">1</td>
+                <td th:text="${cat.category_name}" style="font-weight: bold;">메인메뉴</td>
+                <td th:text="${cat.menu_count != null ? cat.menu_count : 0} + '개'">5개</td>
+                <td>
+                    <form th:action="@{/owner/category/delete}" method="post" style="display: inline;">
+                        <input type="hidden" name="category_idx" th:value="${cat.category_idx}">
+                        <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?')" style="color: red;">삭제</button>
+                    </form>
+                </td>
+            </tr>
+            
+            <tr th:if="${#lists.isEmpty(category_list)}">
+                <td colspan="4" style="padding: 30px; color: #999;">
+                    생성된 카테고리가 없습니다. 위 양식에서 첫 카테고리를 만들어보세요!
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        console.log("카테고리 설정 페이지 로드 완료");
+    </script>
+</th:block>
+</html>
