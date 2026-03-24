@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.moeats.mappers.OrderRoomMapper" >
+<mapper namespace="com.moeats.mappers.OrderRoomMapper">
 	<select id="findAll" resultType="OrderRoom">
 		SELECT * FROM order_room
 	</select>
@@ -14,12 +14,14 @@
 	<select id="findByLeader" resultType="OrderRoom">
 		SELECT * FROM order_room WHERE leader_member_idx = #{leaderMemberIdx}
 	</select>
-	<select id="findExpired" resultType="OrderRoom">	<!-- 실제로 쓸지는 의문 -->
+		<!-- 실제로 쓸지는 의문 -->
+	<select id="findExpired" resultType="OrderRoom">
 		SELECT * FROM order_room WHERE expires_at &lt; CURRENT_TIMESTAMP
 	</select>
+		<!-- 만든지 오래된 방	- 일단은 하루 -->
 	<select id="findOld" resultType="OrderRoom">
 		SELECT * FROM order_room WHERE created_at &lt; CURRENT_TIMESTAMP - INTERVAL 1 DAY
-	</select>	<!-- 만든지 오래된 방	- 일단은 하루 -->
+	</select>
 	<insert id="insert" parameterType="OrderRoom">
 		INSERT INTO order_room(
 			leader_member_idx,
@@ -45,7 +47,7 @@
 			room_status		= 'SELECTING'
 		WHERE room_idx		= #{roomIdx}
 	</update>
-	<update id="paymentPend" parameterType="OrderRoom">
+	<update id="paymentPend">
 		UPDATE order_room SET
 			is_join_locked	= TRUE,
 			room_status		= 'PAYMENT_PENDING',
@@ -71,15 +73,16 @@
 			expires_at		= NULL
 		WHERE room_idx		= #{roomIdx}
 	</update>
-	<update id="expireAll">	<!-- 실제로 쓸지는 의문 -->
+	<delete id="delete">
+		DELETE FROM order_room WHERE room_idx = #{roomIdx}
+	</delete>
+		<!-- 아래는 실제로 쓸지 의문 -->
+	<update id="expireAll">
 		UPDATE order_room SET
 			room_status		= 'EXPIRED',
 			expires_at		= NULL
 		WHERE expires_at	&lt; CURRENT_TIMESTAMP
 	</update>
-	<delete id="delete">
-		DELETE FROM order_room WHERE room_idx = #{roomIdx}
-	</delete>
 	<delete id="deleteAll">
 		DELETE FROM order_room WHERE room_idx IN (
 			<foreach collection="list" item="roomIdx" separator=",">#{roomIdx}</foreach>

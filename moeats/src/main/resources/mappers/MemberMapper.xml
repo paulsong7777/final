@@ -39,10 +39,10 @@
 			member_role_type	= #{memberRoleType}
 		WHERE member_idx		= #{memberIdx}
 	</update>
-	<update id="setAddress" parameterType="Map">
+	<update id="setAddress">
 		UPDATE member SET
 			default_delivery_address_idx = #{defaultDeliveryAddressIdx}
-		WHERE member_idx		= #{memberIdx}
+		WHERE member_idx	= #{memberIdx}
 	</update>
 	<update id="inactivate" parameterType="int">
 		UPDATE member SET

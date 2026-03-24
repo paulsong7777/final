@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.moeats.mappers.StoreMenuMapper" >
+<mapper namespace="com.moeats.mappers.StoreMenuMapper">
 	<select id="findAll" resultType="StoreMenu">
 		SELECT * FROM store_menu
 	</select>
@@ -14,7 +14,7 @@
 	<select id="findByName" resultType="StoreMenu">
 		SELECT * FROM store_menu WHERE menu_name LIKE CONCAT('%',#{menuName},'%')
 	</select>
-	<select id="findByNameStore" resultType="StoreMenu" parameterType="Map">
+	<select id="findByNameStore" resultType="StoreMenu">
 		SELECT * FROM store_menu WHERE store_idx = #{storeIdx} AND menu_name LIKE CONCAT('%',#{menuName},'%')
 	</select>
 	<insert id="insert" parameterType="StoreMenu">
@@ -41,7 +41,7 @@
 			menu_price		= #{menuPrice}
 		WHERE menu_idx		= #{menuIdx}
 	</update>
-	<update id="reorder" parameterType="Map">
+	<update id="reorder">
 		UPDATE store_menu SET
 			display_order	= #{displayOrder}
 		WHERE menu_idx		= #{menuIdx}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.moeats.mappers.StoreMapper" >
+<mapper namespace="com.moeats.mappers.StoreMapper">
 	<select id="findAll" resultType="Store">
 		SELECT * FROM store
 	</select>
@@ -14,7 +14,7 @@
 	<select id="findByName" resultType="Store">
 		SELECT * FROM store WHERE store_name LIKE CONCAT('%',#{storeName},'%')
 	</select>
-	<select id="findByPosition" resultType="Store" parameterType="Map">
+	<select id="findByPosition" resultType="Store">
 		SELECT * FROM (
 			SELECT *,	POW((longitude - #{longitude}) * COS(RADIANS(#{latitude})),2)
 						+ POW(latitude - #{latitude},2) as distance_squared

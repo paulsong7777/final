@@ -30,7 +30,7 @@
 			#{orderTotalAmount}
 		)
 	</insert>
-	<update id="pay" parameterType="GroupOrder">
+	<update id="pay" parameterType="int">
 		UPDATE group_order SET
 			order_status		= 'PAID',
 			payment_confirmed_at= CURRENT_TIMESTAMP
@@ -41,6 +41,16 @@
 			order_status		= 'ACCEPTED',
 			store_confirmed_at	= CURRENT_TIMESTAMP
 		WHERE order_idx			= #{orderIdx}
+	</update>
+	<update id="prepare" parameterType="int">
+		UPDATE group_order SET
+			order_status		= 'PREPARING'
+		WHERE order_idx			= #{orderIdx}
+	</update>
+	<update id="ready" parameterType="int">
+		UPDATE group_order SET
+			order_status	= 'READY'
+		WHERE order_idx		= #{orderIdx}
 	</update>
 	<update id="deliver" parameterType="int">
 		UPDATE group_order SET
@@ -61,18 +71,13 @@
 	</update>
 	
 	<!-- 이후는 현장 모드 -->
-	<update id="ready" parameterType="int">
-		UPDATE group_order SET
-			order_status	= 'READY'
-		WHERE order_idx		= #{orderIdx}
-	</update>
 	<update id="checkIn" parameterType="int">
 		UPDATE group_order SET
 			order_status	= 'CHECKED_IN',
 			checked_in_at	= CURRENT_TIMESTAMP
 		WHERE order_idx		= #{orderIdx}
 	</update>
-	<update id="exepectVisit" parameterType="GroupOrder">
+	<update id="exepectVisit" parameterType="int">
 		UPDATE group_order SET
 			expected_visit_at	= #{expectedVisitAt}
 		WHERE order_idx			= #{orderIdx}

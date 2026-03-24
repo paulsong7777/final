@@ -28,17 +28,15 @@
 		    CURRENT_TIMESTAMP + INTERVAL 5 MINUTE
 		)
 	</insert>
+	<update id="payAmount">
+		UPDATE payment SET
+			payment_paid_amount = payment_paid_amount + #{paymentPaidAmount}
+		WHERE payment_idx		= #{paymentIdx}
+	</update>
 	<update id="progress" parameterType="int">
 		UPDATE payment SET
 			payment_status		= 'IN_PROGRESS',
 			payment_started_at	= CURRENT_TIMESTAMP
-		WHERE payment_idx		= #{paymentIdx}
-	</update>
-	<update id="payRepresentative" parameterType="Payment">
-		UPDATE payment SET
-			payment_paid_amount = #{paymentPaidAmount},
-			payment_status		= 'PAID',
-			paid_at				= CURRENT_TIMESTAMP
 		WHERE payment_idx		= #{paymentIdx}
 	</update>
 	<update id="pay" parameterType="int">
