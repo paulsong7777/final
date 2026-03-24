@@ -6,10 +6,10 @@
 		SELECT * FROM store
 	</select>
 	<select id="findByIdx" resultType="Store">
-		SELECT * FROM store WHERE store_idx=#{storeIdx}
+		SELECT * FROM store WHERE store_idx = #{storeIdx}
 	</select>
 	<select id="findByOwner" resultType="Store">
-		SELECT * FROM store WHERE owner_member_idx=#{ownerMemberIdx}
+		SELECT * FROM store WHERE owner_member_idx = #{ownerMemberIdx}
 	</select>
 	<select id="findByName" resultType="Store">
 		SELECT * FROM store WHERE store_name LIKE CONCAT('%',#{storeName},'%')
@@ -22,7 +22,7 @@
 			WHERE longitude - #{longitude} BETWEEN -0.07 AND 0.07
 			  AND latitude  - #{latitude}  BETWEEN -0.05 AND 0.05
 			  		/* 대충 가로 세로 5km 상자 영역*/
-		)
+		) s
 		WHERE distance_squared &lt; 0.0025
 		ORDER BY distance_squared
 	</select>

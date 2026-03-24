@@ -9,10 +9,10 @@ public class Member {
 	int memberIdx;
 	String memberEmail;
 	String memberPassword;
-    String memberNickname;
+	String memberNickname;
 	String memberPhone;
 	String memberRoleType;
-    int defaultDeliveryAddressIdx;
+	int defaultDeliveryAddressIdx;
 	String memberStatus;
 	Timestamp createdAt;
 	Timestamp updatedAt;

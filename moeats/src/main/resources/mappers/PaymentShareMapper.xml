@@ -11,8 +11,11 @@
 	<select id="findByPayment" resultType="PaymentShare">
 		SELECT * FROM payment_share WHERE payment_idx = #{paymentIdx}
 	</select>
-	<select id="findbyOrder" resultType="PaymentShare">
-		SELECT * FROM payment_share WHERE order_idx = #{orderIdx}
+	<select id="findByMember" resultType="PaymentShare">
+		SELECT * FROM payment_share WHERE member_idx = #{memberIdx}
+	</select>
+	<select id="findByPaymentMember" resultType="PaymentShare" parameterType="Map">
+		SELECT * FROM payment_share WHERE payment_idx = #{paymentIdx} AND member_idx = #{memberIdx}
 	</select>
 	<insert id="insert" parameterType="PaymentShare">
 		INSERT INTO payment_share(
@@ -29,13 +32,13 @@
 	</insert>
 	<update id="paidByRepresentative" parameterType="Map">
 		UPDATE payment_share SET
-			payment_share_status	= 'PAID_BY_REPRESENTATIVE',
+			share_status			= 'PAID_BY_REPRESENTATIVE',
 			paid_at					= #{paidAt}
 		WHERE payment_share_idx		= #{paymentShareIdx}
 	</update>
 	<update id="paySelf" parameterType="int">
 		UPDATE payment_share SET
-			payment_share_status	= 'PAID_SELF',
+			share_status			= 'PAID_SELF',
 			paid_at					= CURRENT_TIMESTAMP
 		WHERE payment_share_idx		= #{paymentShareIdx}
 	</update>

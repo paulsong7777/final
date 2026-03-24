@@ -6,7 +6,7 @@
 		SELECT * FROM payment
 	</select>
 	<select id="findByIdx" resultType="Payment">
-		SELECT * FROM payment WHERE payment_idx=#{paymentIdx}
+		SELECT * FROM payment WHERE payment_idx = #{paymentIdx}
 	</select>
 	<select id="findByOrder" resultType="Payment">
 		SELECT * FROM payment WHERE order_idx = #{orderIdx}

@@ -6,7 +6,7 @@
 		SELECT * FROM member
 	</select>
 	<select id="findByIdx" resultType="Member">
-		SELECT * FROM member WHERE member_idx=#{memberIdx}
+		SELECT * FROM member WHERE member_idx = #{memberIdx}
 	</select>
 	<select id="findActive" resultType="Member">
 		SELECT * FROM member WHERE member_status = 'ACTIVE'
@@ -26,8 +26,8 @@
 			#{memberNickname},
 			#{memberPhone},
 			#{memberRoleType},
- 			NULL,
- 			'ACTIVE'
+			NULL,
+			'ACTIVE'
 		)
 	</insert>
 	<update id="update" parameterType="Member">
@@ -36,9 +36,12 @@
 			member_password		= #{memberPassword},
 			member_nickname		= #{memberNickname},
 			member_phone		= #{memberPhone},
-			member_role_type	= #{memberRoleType},
-			default_delivery_address_idx
-								= #{defaultDeliveryAddressIdx},
+			member_role_type	= #{memberRoleType}
+		WHERE member_idx		= #{memberIdx}
+	</update>
+	<update id="setAddress" parameterType="Map">
+		UPDATE member SET
+			default_delivery_address_idx = #{defaultDeliveryAddressIdx}
 		WHERE member_idx		= #{memberIdx}
 	</update>
 	<update id="inactivate" parameterType="int">

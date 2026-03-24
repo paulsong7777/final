@@ -6,16 +6,16 @@
 		SELECT * FROM store_menu
 	</select>
 	<select id="findByIdx" resultType="StoreMenu">
-		SELECT * FROM store_menu WHERE menu_idx=#{menuIdx}
+		SELECT * FROM store_menu WHERE menu_idx = #{menuIdx}
 	</select>
 	<select id="findByStore" resultType="StoreMenu">
-		SELECT * FROM store_menu WHERE store_idx=#{storeIdx}
+		SELECT * FROM store_menu WHERE store_idx = #{storeIdx}
 	</select>
 	<select id="findByName" resultType="StoreMenu">
 		SELECT * FROM store_menu WHERE menu_name LIKE CONCAT('%',#{menuName},'%')
 	</select>
 	<select id="findByNameStore" resultType="StoreMenu" parameterType="Map">
-		SELECT * FROM store_menu WHERE store_idx=#{storeIdx} AND menu_name LIKE CONCAT('%',#{menuName},'%')
+		SELECT * FROM store_menu WHERE store_idx = #{storeIdx} AND menu_name LIKE CONCAT('%',#{menuName},'%')
 	</select>
 	<insert id="insert" parameterType="StoreMenu">
 		INSERT INTO store_menu(
@@ -41,7 +41,7 @@
 			menu_price		= #{menuPrice}
 		WHERE menu_idx		= #{menuIdx}
 	</update>
-	<update id="reorder" parameterType="StoreMenu">
+	<update id="reorder" parameterType="Map">
 		UPDATE store_menu SET
 			display_order	= #{displayOrder}
 		WHERE menu_idx		= #{menuIdx}

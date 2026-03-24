@@ -6,7 +6,7 @@
 		SELECT * FROM room_participant
 	</select>
 	<select id="findByIdx" resultType="RoomParticipant">
-		SELECT * FROM room_participant WHERE room_participant_idx=#{roomParticipantIdx}
+		SELECT * FROM room_participant WHERE room_participant_idx = #{roomParticipantIdx}
 	</select>
 	<select id="findByRoom" resultType="RoomParticipant">
 		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND left_at IS NULL

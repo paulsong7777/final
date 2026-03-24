@@ -13,7 +13,7 @@
 	</select>
 	<select id="findPrimaryMenu" resultType="MenuImage">
 		SELECT * FROM menu_image 
-		WHERE menu_image_idx = #{menuImageIdx} AND is_primary = TRUE
+		WHERE menu_idx = #{menuIdx} AND is_primary = TRUE
 		ORDER BY display_order
 		LIMIT 1
 	</select>
