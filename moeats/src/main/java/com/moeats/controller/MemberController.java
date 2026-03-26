@@ -69,9 +69,7 @@ public class MemberController {
 	// 마이페이지 띄우기 폼
 	@GetMapping("/member/me")
 	public String myPage(@SessionAttribute(name="member", required=false) Member member) {
-		if(member == null ) {
-			return "redirect:/login";
-		}
+
 		return "views/member-profile";
 	}
 	

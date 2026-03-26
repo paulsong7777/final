@@ -42,14 +42,14 @@
 						   member_nickname,
 						   member_phone,
 						   member_role_type,
-						   default_delivery_address,
+						   default_delivery_address_idx,
 						   member_status)
 			values(#{memberEmail},
 				   #{memberPassword},
 				   #{memberNickname},
 				   #{memberPhone},
 				   #{memberRoleType},
-				   #{defaultDeliveryAddress},
+				   #{defaultDeliveryAddressIdx},
 				   #{memberStatus})
 	</insert>
 	
