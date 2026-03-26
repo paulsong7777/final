@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+			xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+			<!-- layout:decorate="~{/layouts/main_layout}" 나중에 이거 html 안에 넣기 -->
+<head>
+    <meta charset="UTF-8">
+    <title>주문방 상세</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <script src="/js/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- header placeholder -->
+        <div>
+            <h1 style="background:#333;color:white;padding:10px;text-align:center;">[Moeats] 주문방 테스트 헤더</h1>
+        </div>			
+
+		   <!-- 방 기본 정보 -->
+		   <h2>
+		       주문방
+		       <span th:text="'[' + ${room.storeName} + ']'"></span>
+		   </h2>
+		
+		   <section id="roomInfo">
+		       <table border="1">
+		           <tr>
+		               <th>방 코드</th>
+		               <td>
+		                   <strong th:text="${room.roomCode}">A7B2X9</strong>
+		                   <button type="button" id="btnCopyCode"
+		                           th:data-code="${room.roomCode}">
+		                       코드 복사
+		                   </button>
+		               </td>
+		           </tr>
+		           <tr>
+		               <th>방 상태</th>
+		               <td th:text="${room.roomStatus}">SELECTING</td>
+		           </tr>
+		           <tr>
+		               <th>결제 방식</th>
+		               <td th:text="${room.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">각자결제</td>
+		           </tr>
+		           <tr>
+		               <th>배송지</th>
+		               <td th:text="${room.deliveryAddress}">서울시 강남구 ...</td>
+		           </tr>
+		       </table>
+		   </section>
+		
+		   <hr>
+		
+		   <!--
+		       ① 참여자 카드 목록
+		       room_participant 기준, selection_status 표시
+		       
+		       * 참여자가 보는 화면을 분리하기 보다는 장바구니용 fragment를 따로 만들어서 각자 자기 메뉴만 선택하게 해야 한다
+		       * 참여자와 방장의 상호작용을 구현하려면 내가 test용 db를 따로 작성하거나 전체 더미데이터가 생성 완료 되기를 기다려야 한다
+		       * 그래서 참여자 data를 생략하거나 선택완료 더미데이터로 교체하고 후속 화면을 계속 만들어나가는 것이 답이다
+		   -->
+		   <section id="participantSection">
+		       <h3>참여자 현황</h3>
+		       <table border="1">
+		           <thead>
+		               <tr>
+		                   <th>이름</th>
+		                   <th>역할</th>
+		                   <th>선택 상태</th>
+		                   <th>담은 금액</th>
+		               </tr>
+		           </thead>
+		           <tbody>
+		               <tr th:each="p : ${participants}">
+		                   <td th:text="${p.memberName}">홍길동</td>
+		                   <td th:text="${p.role == 'LEADER'} ? '방장' : '참여자'">참여자</td>
+		                   <td>
+		                       <!-- selection_status: NOT_SELECTED / SELECTED -->
+		                       <span th:if="${p.selectionStatus == 'SELECTED'}">[완료]</span>
+		                       <span th:unless="${p.selectionStatus == 'SELECTED'}">[선택중]</span>
+		                   </td>
+		                   <td th:text="${#numbers.formatInteger(p.cartTotal ?: 0, 1, 'COMMA')} + '원'">0원</td>
+		               </tr>
+		               <!-- 참여자 없을 때 -->
+		               <tr th:if="${#lists.isEmpty(participants)}">
+		                   <td colspan="4">참여자가 없습니다.</td>
+		               </tr>
+		           </tbody>
+		       </table>
+		   </section>
+		
+		   <hr>
+		
+		   <!--
+		       ② 내 장바구니
+		       group_cart_item 기준
+		       방 상태가 PAYMENT_PENDING 이상이면 수정/삭제 비활성화
+		   -->
+		   <section id="myCartSection">
+		       <h3>내 장바구니</h3>
+		
+		       <!-- 장바구니 비어있을 때 -->
+		       <p th:if="${#lists.isEmpty(myCartItems)}">
+		           아직 담은 메뉴가 없습니다.
+		           <a th:href="@{/stores/{idx}(idx=${room.storeIdx})}">메뉴 보러 가기</a>
+		       </p>
+		
+		       <table border="1" th:unless="${#lists.isEmpty(myCartItems)}">
+		           <thead>
+		               <tr>
+		                   <th>메뉴명</th>
+		                   <th>수량</th>
+		                   <th>단가</th>
+		                   <th>소계</th>
+		                   <th th:unless="${room.roomStatus == 'PAYMENT_PENDING' or room.roomStatus == 'ORDER_CONFIRMED'}">
+		                       수정/삭제
+		                   </th>
+		               </tr>
+		           </thead>
+		           <tbody>
+		               <tr th:each="item : ${myCartItems}">
+		                   <td th:text="${item.menuName}">메뉴이름</td>
+		                   <td th:text="${item.quantity}">1</td>
+		                   <td th:text="${#numbers.formatInteger(item.unitPrice, 1, 'COMMA')} + '원'">0원</td>
+		                   <td th:text="${#numbers.formatInteger(item.subtotal, 1, 'COMMA')} + '원'">0원</td>
+		                   <!-- 방 잠금 전에만 수정/삭제 가능 -->
+		                   <td th:unless="${room.roomStatus == 'PAYMENT_PENDING' or room.roomStatus == 'ORDER_CONFIRMED'}">
+		                       <form th:action="@{/rooms/{rIdx}/cart/{cIdx}/edit(rIdx=${room.roomIdx},cIdx=${item.cartItemIdx})}"
+		                             method="get" style="display:inline">
+		                           <button type="submit">수정</button>
+		                       </form>
+		                       <form th:action="@{/rooms/{rIdx}/cart/{cIdx}(rIdx=${room.roomIdx},cIdx=${item.cartItemIdx})}"
+		                             method="post" style="display:inline">
+		                           <input type="hidden" name="_method" value="DELETE">
+		                           <button type="submit"
+		                                   onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+		                       </form>
+		                   </td>
+		               </tr>
+		           </tbody>
+		       </table>
+		
+		       <!-- 내 소계 -->
+		       <p>
+		           내 주문 합계:
+		           <strong th:text="${#numbers.formatInteger(myTotal ?: 0, 1, 'COMMA')} + '원'">0원</strong>
+		       </p>
+		
+		       <!-- 메뉴 추가 버튼 (방 잠금 전에만)(메뉴추가폼 작성 필요) -->
+		       <a th:unless="${room.roomStatus == 'PAYMENT_PENDING' or room.roomStatus == 'ORDER_CONFIRMED'}"
+		          th:href="@{/stores/{idx}(idx=${room.storeIdx})}">
+		           <button type="button">+ 메뉴 추가</button>
+		       </a>
+		
+		       <!-- 선택 완료 버튼 (NOT_SELECTED 상태일 때만)(선택완료버튼을 누르면 왜 오류창으로 가는지 검증 필요) -->
+		       <form th:unless="${mySelectionStatus == 'SELECTED' or room.roomStatus == 'PAYMENT_PENDING' or room.roomStatus == 'ORDER_CONFIRMED'}"
+		             th:action="@{/rooms/{rIdx}/members/{mIdx}(rIdx=${room.roomIdx},mIdx=${session.loginMember.memberIdx})}"
+		             method="post">
+		           <input type="hidden" name="_method" value="PATCH">
+		           <input type="hidden" name="selectionStatus" value="SELECTED">
+		           <button type="submit" id="btnSelectDone">선택 완료</button>
+		       </form>
+		       <p th:if="${mySelectionStatus == 'SELECTED'}">[내 선택 완료됨]</p>
+		
+		   </section>
+		
+		   <hr>
+		
+		   <!--
+		       ③ 전체 합계
+		   -->
+		   <section id="totalSection">
+		       <h3>전체 합계</h3>
+		       <table border="1">
+		           <tr>
+		               <th>메뉴 합계</th>
+		               <td th:text="${#numbers.formatInteger(totalMenuAmount ?: 0, 1, 'COMMA')} + '원'">0원</td>
+		           </tr>
+		           <tr>
+		               <th>배달비</th>
+		               <td th:text="${#numbers.formatInteger(deliveryFee ?: 0, 1, 'COMMA')} + '원'">0원</td>
+		           </tr>
+		           <tr>
+		               <th>최종 합계</th>
+		               <td>
+		                   <strong th:text="${#numbers.formatInteger(grandTotal ?: 0, 1, 'COMMA')} + '원'">0원</strong>
+		               </td>
+		           </tr>
+		           <tr>
+		               <th>최소 주문 금액</th>
+		               <td th:text="${#numbers.formatInteger(room.minimumOrderAmount ?: 0, 1, 'COMMA')} + '원'">0원</td>
+		           </tr>
+		       </table>
+		
+		       <!-- 최소 주문 금액 미달 경고 -->
+		       <p th:if="${grandTotal != null and grandTotal < room.minimumOrderAmount}">
+		           최소 주문 금액에 미달합니다.
+		           (<span th:text="${#numbers.formatInteger(room.minimumOrderAmount - grandTotal, 1, 'COMMA')}">0</span>원 더 필요)
+		       </p>
+		   </section>
+		
+		   <hr>
+		
+		   <!--
+		       ④ 다음 단계 정보 / 액션 버튼
+		       room_status, 역할(LEADER/PARTICIPANT)에 따라 분기
+		   -->
+		   <section id="nextStepSection">
+		       <h3>다음 단계</h3>
+		
+		       <!-- OPEN / SELECTING: 방장만 결제 진행 버튼 표시 -->
+		       <div th:if="${room.roomStatus == 'OPEN' or room.roomStatus == 'SELECTING'}">
+		
+		           <!-- 방장 전용 -->
+		           <div th:if="${myRole == 'LEADER'}">
+		               <p>
+		                   전원 선택 완료:
+		                   <span th:text="${allSelected} ? '완료' : '대기중'">대기중</span>
+		               </p>
+		               <!-- 전원 SELECTED이고 최소금액 충족 시 활성화 -->
+		               <form th:action="@{/rooms/{rIdx}/orders(rIdx=${room.roomIdx})}"
+		                     method="post" id="formProceedPayment">
+		                   <button type="submit" id="btnProceedPayment"
+		                           th:disabled="${!allSelected or grandTotal < room.minimumOrderAmount}">
+		                       결제 진행하기 (방 잠금)
+		                   </button>
+		               </form>
+		               <small>클릭 시 장바구니 수정이 차단되고 결제 화면으로 이동합니다.</small>
+		           </div>
+		
+		           <!-- 참여자 -->
+		           <div th:unless="${myRole == 'LEADER'}">
+		               <p>방장이 결제를 시작할 때까지 대기하세요.</p>
+		               <p th:text="'내 선택 상태: ' + ${mySelectionStatus == 'SELECTED' ? '완료' : '선택중'}"></p>
+		           </div>
+		
+		           <!-- 방 나가기 -->
+		           <form th:action="@{/rooms/{rIdx}/members/me(rIdx=${room.roomIdx})}"
+		                 method="post">
+		               <input type="hidden" name="_method" value="DELETE">
+		               <button type="submit"
+		                       onclick="return confirm('주문방에서 나가시겠습니까?')">
+		                   방 나가기
+		               </button>
+		           </form>
+		       </div>
+		
+		       <!-- PAYMENT_PENDING: 결제 진행 중 -->
+		       <div th:if="${room.roomStatus == 'PAYMENT_PENDING'}">
+		           <p>결제가 진행 중입니다.</p>
+		           <a th:href="@{/orders/{oIdx}/payment/select(oIdx=${room.orderIdx})}">
+		               <button type="button" id="btnGoPayment">결제 화면으로 이동</button>
+		           </a>
+		       </div>
+		
+		       <!-- ORDER_CONFIRMED: 주문 완료 -->
+		       <div th:if="${room.roomStatus == 'ORDER_CONFIRMED'}">
+		           <p>주문이 확정되었습니다.</p>
+		           <a th:href="@{/orders/{oIdx}/complete(oIdx=${room.orderIdx})}">
+		               <button type="button">주문 완료 화면으로 이동</button>
+		           </a>
+		       </div>
+		
+		   </section>
+		
+		   <hr>
+		
+		   <!--
+		       [테스트용 네비게이션 버튼]
+		   -->
+		   <section id="testNav">
+		       <p><strong>[테스트] 페이지 이동 확인용</strong></p>
+		       <button type="button"
+		               onclick="location.href='/payment/test-order'">
+		           → 결제 진행 화면으로 이동
+		       </button>
+		       <button type="button"
+		               onclick="location.href='/room/create'">
+		           → 주문방 생성화면으로 이동
+		       </button>
+		       <button type="button"
+		               onclick="location.href='/room/join'">
+		           → 주문방 참여화면으로 이동
+		       </button>
+		   </section>
+		
+		<!-- room_idx, 내 역할을 JS에 전달 -->
+		<input type="hidden" id="roomIdx" th:value="${room.roomIdx}">
+		<input type="hidden" id="myRole" th:value="${myRole}">
+		<input type="hidden" id="roomStatus" th:value="${room.roomStatus}">
+		
+		<script src="/js/room-detail.js"></script>
+		<script src="/js/test/room-detail-test-logic.js"></script>	
+		<!-- ==================== content 끝 ==================== -->
+
+        <!-- footer placeholder -->
+        <div>
+            <footer style="background:#f8f9fa;padding:20px;text-align:center;margin-top:50px;">
+                [Moeats] 주문방 테스트 푸터
+            </footer>
+        </div>
+    </div>
+
+    <script src="/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

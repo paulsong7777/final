@@ -1,9 +1,23 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-			xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-			layout:decorate="~{/layouts/main_layout}">
+			xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+			<!-- layout:decorate="~{/layouts/main_layout}" 나중에 이거 html 안에 넣기 --> 
 
-<div layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>주문방 생성</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <script src="/js/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- header placeholder -->
+        <div>
+            <!-- 실제 fragments/header.html 내용으로 교체 -->
+            <h1 style="background:#333;color:white;padding:10px;text-align:center;">[Moeats] 주문방 테스트 헤더</h1>
+        </div>
+
     <h2>주문방 생성</h2>
     <p>가게를 선택하고 주문방 설정을 완료하세요.</p>
 
@@ -99,13 +113,20 @@
             → 주문방 참여화면으로 이동
         </button>
     </section>
-	
-	<!-- 	<script th:src="@{/js/room-create.js}"></script> 	
-	<script th:src="@{/js/test/room-test-logic.js}"></script>	-->
-	<script src="/js/jquery-3.7.1.min.js"></script>
-	<script src="/js/room-create.js"></script> 
-	<script src="/js/test/room-test-logic.js"></script>
 
-</div>
+	<script src="/js/room-create.js"></script>
+	<script src="/js/test/room-create-test-logic.js"></script>
+
+	<!-- footer placeholder -->
+ 		<div>
+            <!-- 실제 fragments/footer.html 내용으로 교체 -->
+            <footer style="background:#f8f9fa;padding:20px;text-align:center;margin-top:50px;">
+                [Moeats] 주문방 테스트 푸터
+            </footer>
+        </div>
+    </div>
+
+    <script src="/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
 
 </html>

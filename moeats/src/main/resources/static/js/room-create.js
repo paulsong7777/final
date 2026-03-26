@@ -23,6 +23,10 @@ $(function () {
 
     // 폼 제출 전 유효성 검사. 공통으로 변수 잇고 값 없으면 alert문 띄우고 입력창으로 커서 옮기고 return(작업중단) 
     $form.on('submit', function(e){
+		
+		// 0. 로컬파일로 열 시 서버 전송로직이 실행되지 않는 테스트용 함수
+		if(window.location.protocol === 'file:') return;
+		
 		// 1. 배송지선택여부확인(id선택자 및 값 체크)
 		const deliveryAddressIdx = $('#deliveryAddressIdx').val();
 		if(!deliveryAddressIdx){

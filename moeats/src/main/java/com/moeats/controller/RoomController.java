@@ -8,9 +8,11 @@ import java.util.Map;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -18,8 +20,10 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/room")
 public class RoomController {
 
+	/*
+	
 	// 주문방 생성화면 테스트용
-    @GetMapping("/create")
+    @GetMapping({"/", "/create"})
     public String createForm(Model model, HttpSession session) {
     	
     	// 헤더 에러 방지를 위해 세션에 더미 로그인 정보 주입
@@ -51,18 +55,36 @@ public class RoomController {
     	
         return "room/room-create";  // templates/room/room-create.html
     }
+    
+    // 주문방 협업화면(방장 직행) 테스트용 사전로직 : 
+    @PostMapping("/detailForm") // 기존 생성 폼이 던지는 곳
+    public String detailForm(HttpSession session, RedirectAttributes attr,
+    		@RequestParam("storeIdx") Long storeIdx, 
+    		@RequestParam("deliveryAddressIdx") Long deliveryAddressIdx,     		
+            @RequestParam("paymentMode") String paymentMode,
+            @RequestParam(value = "maxParticipants", required = false) Integer maxParticipants) {
+    	
+    	// 1. [진짜 로직 예정지] 여기서 DB에 INSERT를 수행하고 방 코드를 생성함
+        String generatedCode = "A7B2X9"; 
 
-    // 참여페이지(초대받는사람) 테스트용
-    @GetMapping("/join")
-    public String joinForm(Model model) {
-        return "room/room-join";	// templates/room/room-join.html
+        // 2. [테스트용 데이터 전달] 
+        // 리다이렉트 시 세션에 잠깐 담았다가 바로 사라지는 FlashAttributes 사용
+        attr.addFlashAttribute("storeIdx", storeIdx);
+        attr.addFlashAttribute("deliveryAddressIdx", deliveryAddressIdx);
+        attr.addFlashAttribute("paymentMode", paymentMode);
+        attr.addFlashAttribute("maxParticipants", maxParticipants);
+    	
+    	return "redirect:/room/" + generatedCode + "/detailForm";
     }
     
-    // 주문방 협업화면(방장 직행) 테스트용
-    @PostMapping("/detail")
-    public String detailForm(@RequestParam("storeIdx") Long storeIdx, @RequestParam("deliveryAddressIdx") Long deliveryAddressIdx, HttpSession session,    		
-            @RequestParam("paymentMode") String paymentMode, Model model,
-            @RequestParam(value = "maxParticipants", required = false) Integer maxParticipants) {
+    // 주문방 협업화면(방장 직행) 테스트용 실제로직 : 더미데이터 삽입
+    @GetMapping("/room/{code}/detailForm")
+    public String codeDetailForm(@PathVariable("code") String code, HttpSession session, Model model) {
+    	
+    	// 1. [참고] 위에서 rttr.addFlashAttribute로 담은 값들은 
+        // 타임리프나 컨트롤러의 Model에 자동으로 들어와 있습니다. 
+        // 만약 값이 없다면(참여자가 링크로 바로 들어온 경우) 기본값을 세팅해야 합니다.	
+    	
     	
     	// 서버 콘솔에 찍어보기
         System.out.println(">>> 수신된 결제 방식: " + paymentMode); 
@@ -139,8 +161,40 @@ public class RoomController {
             
             session.setAttribute("loginMember", loginMember);
         }
+        
+        
     	
     	return "room/room-detail";	// templates/room/room-detail.html
     }
+    
+    // 참여페이지(초대받는사람, 코드입력화면) 테스트용
+    @GetMapping("/join")
+    public String joinForm(HttpSession session, Model model) {
+        // [테스트용] 제3자(참여자) 세션 주입
+        // 기존 방장(1L), 기존 참여자(2L)과 다른 3L 번호를 가진 참여자로 설정
+        if (session.getAttribute("loginMember") == null) {
+            Map<String, Object> loginMember = new HashMap<>();
+            loginMember.put("memberIdx", 3L); 
+            loginMember.put("name", "삼꼽사리"); // 헤더 표시용
+            session.setAttribute("loginMember", loginMember);
+        }
+
+        // 초기 화면에는 방 정보가 없으므로 null 처리
+        model.addAttribute("roomCode", null);
+        model.addAttribute("room", null);
+        return "room/room-join";
+    }
+
+    // 코드를 입력하고 '참여하기' 버튼을 눌렀을 때
+    @PostMapping("/{code}/join")
+    public String processJoin(@PathVariable("code") String code, HttpSession session) {
+        // 실제로는 여기서 DB에 참여 정보를 INSERT 합니다.
+        System.out.println(">>> 주문방 참여 시도 코드: " + code);
+        
+        // 상세 페이지로 이동 (코드 값을 경로로 전달)
+        return "redirect:/rooms/" + code + "/detail";
+    }
+    
+    */
     
 }
