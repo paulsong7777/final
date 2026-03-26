@@ -19,9 +19,9 @@ public class MemberService {
 	// 회원정보 수정
 	public void updateMember(Member member) {
 		
-		if(member.getMember_password() != null && !member.getMember_password().isEmpty()) {
-			String encoded = passwordEncoder.encode(member.getMember_password());
-			member.setMember_password(encoded);
+		if(member.getMemberPassword() != null && !member.getMemberPassword().isEmpty()) {
+			String encoded = passwordEncoder.encode(member.getMemberPassword());
+			member.setMemberPassword(encoded);
 		}
 		
 		memberMapper.updateMember(member);
@@ -46,7 +46,7 @@ public class MemberService {
 			return null;
 		}
 		
-		if(passwordEncoder.matches(member_password, member.getMember_password())) {
+		if(passwordEncoder.matches(member_password, member.getMemberPassword())) {
 			return member;
 		}
 		return null;
@@ -55,10 +55,29 @@ public class MemberService {
 	
 	// 회원 가입
 	public void insertMember(Member member) {
-			
+	    // ✅ 1. 이메일 검증
+	    if(member.getMemberEmail() == null || !member.getMemberEmail().contains("@")) {
+	        throw new IllegalArgumentException("잘못된 이메일 형식입니다.");
+	    }
+
+	    // ✅ 2. 비밀번호 검증
+	    if(!member.getMemberPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,20}$")) {
+	        throw new IllegalArgumentException("비밀번호 형식이 올바르지 않습니다.");
+	    }
+
+	    // ✅ 3. 전화번호 검증
+	    if(!member.getMemberPhone().matches("^\\d{3}-\\d{4}-\\d{4}$")) {
+	        throw new IllegalArgumentException("전화번호 형식이 올바르지 않습니다.");
+	    }
+
+	    // ✅ 4. 이메일 중복 체크 (필수)
+	    Member exist = memberMapper.getMemberFromEmail(member.getMemberEmail());
+	    if(exist != null) {
+	        throw new IllegalStateException("이미 존재하는 이메일입니다.");
+	    }			
 		// 비밀번호 암호화 기능
-		String encoded = passwordEncoder.encode(member.getMember_password());
-		member.setMember_password(encoded);
+		String encoded = passwordEncoder.encode(member.getMemberPassword());
+		member.setMemberPassword(encoded);
 		
 		memberMapper.insertMember(member);
 	}

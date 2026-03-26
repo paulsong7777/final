@@ -22,52 +22,47 @@
 	<!-- 회원 수정 -->
 	<update id="updateMember" parameterType="Member">
 		update member set
-			member_password = #{member_password},
-		   	member_nickname = #{member_nickname},
-		   	member_phone = #{member_phone},
-			updated_at = SYSDATE()
-			where member_idx = #{member_idx}
+			member_password = #{memberPassword},
+		   	member_nickname = #{memberNickname},
+		   	member_phone = #{memberPhone}
+			where member_idx = #{memberIdx}
 	</update>	
 	
 	<!-- 비밀번호 조회 -->
-	<select id="isPassCheck">
+	<select id="isPassCheck" resultType="String">
 		select member_password from member
-			where member_idx = #{member_idx}
+			where member_idx = #{memberIdx}
 	</select>
 	
 	<!-- 회원 가입 -->
 	<insert id="insertMember" parameterType="Member"
-			useGeneratedKeys="true" keyProperty="no">
+			useGeneratedKeys="true" keyProperty="memberIdx">
 		insert into member(member_email,
 						   member_password,
 						   member_nickname,
 						   member_phone,
 						   member_role_type,
 						   default_delivery_address,
-						   member_status,
-						   created_at,
-						   updated_at)
-			values(#{member_email},
-				   #{member_password},
-				   #{member_nickname},
-				   #{member_phone},
-				   #{member_role_type},
-				   #{default_delivery_address},
-				   #{member_status},
-				   SYSDATE(),
-				   SYSDATE())
+						   member_status)
+			values(#{memberEmail},
+				   #{memberPassword},
+				   #{memberNickname},
+				   #{memberPhone},
+				   #{memberRoleType},
+				   #{defaultDeliveryAddress},
+				   #{memberStatus})
 	</insert>
 	
 	<!-- 회원 이메일 조회 로그인처리 필요 -->
-	<select id="getMemberFromEmail">
+	<select id="getMemberFromEmail" resultType="Member">
 		select * from member
-			where member_email = #{member_email}
+			where member_email = #{memberEmail}
 	</select>
 	
 	<!-- 회원 조회 -->
-	<select id="getMember">
+	<select id="getMember" resultType="Member">
 		select * from member
-			where member_idx = #{member_idx}
+			where member_idx = #{memberIdx}
 	</select>
 	
 </mapper>
