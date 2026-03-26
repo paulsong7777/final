@@ -36,6 +36,12 @@
 		    'PENDING'
 		)
 	</insert>
+	<insert id="inserts">
+		INSERT INTO payment_share(payment_idx, member_idx, share_amount, share_status) VALUES 
+		<foreach collection="list" item="ps" separator=",">
+			(#{ps.paymentIdx},#{ps.memberIdx},#{ps.shareAmount},'PENDING')
+		</foreach>
+	</insert>
 	<update id="paidByRepresentative">
 		UPDATE payment_share SET
 			share_status			= 'PAID_BY_REPRESENTATIVE',

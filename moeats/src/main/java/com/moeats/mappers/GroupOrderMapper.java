@@ -11,6 +11,7 @@ import com.moeats.domain.GroupOrder;
 public interface GroupOrderMapper {
 	List<GroupOrder> findAll();
 	GroupOrder findByIdx(int orderIdx);
+	GroupOrder findByRoom(int roomIdx);
 	List<GroupOrder> findActive();
 	int insert(GroupOrder groupOrder);
 	int pay(int orderIdx);

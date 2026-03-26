@@ -18,7 +18,7 @@ public interface OrderRoomMapper {
 	List<OrderRoom> findOld();
 	int insert(OrderRoom orderRoom);
 	int menuSelect(OrderRoom orderRoom);
-		// expiresAt은 GroupOrder와의 정합성을 위해 GroupOrder가 생성될 때 받아와서 업데이트 한다
+		// expiresAt은 Payment와의 정합성을 위해 Payment가 생성될 때 받아와서 업데이트 한다
 	int paymentPend(
 		@Param("roomIdx") int roomIdx,
 		@Param("expiresAt") Timestamp expiresAt);

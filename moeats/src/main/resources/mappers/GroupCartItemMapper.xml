@@ -18,8 +18,13 @@
 		SELECT * FROM group_cart_item WHERE room_idx = #{roomIdx} AND member_idx = #{memberIdx} AND item_status = 'ACTIVE'
 	</select>
 	<select id="findRoomMemberAmount" resultType="GroupCartItem">
-		SELECT member_idx, SUM(item_total_amount) as item_total_amount
-		FROM group_cart_item WHERE room_idx = #{roomIdx} AND item_status = 'ACTIVE'
+		SELECT p.member_idx member_idx, COALESCE(SUM(c.item_total_amount),0) as item_total_amount
+		FROM room_participant p
+		LEFT JOIN group_cart_item c
+				ON c.member_idx = p.member_idx
+				AND c.room_idx = #{roomIdx}
+				AND item_status = 'ACTIVE'
+		WHERE p.room_idx = #{roomIdx}
 		GROUP BY member_idx
 	</select>
 	<select id="findRoomAmount" resultType="int">

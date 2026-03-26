@@ -16,7 +16,7 @@ public interface RoomParticipantMapper {
 	RoomParticipant findRoomMember(
 		@Param("roomIdx") int roomIdx,
 		@Param("memberIdx") int memberIdx);
-	List<RoomParticipant> findUnpaid(int memberIdx);
+	List<RoomParticipant> findUnpaid(int roomIdx);
 	int insert(RoomParticipant roomParticipant);
 	int setSelect(int roomParticipantIdx);
 	int unselect(int roomParticipantIdx);

@@ -22,4 +22,12 @@ public class GroupOrder {
 	Timestamp cancelledAt;
 	Timestamp createdAt;
 	Timestamp updatedAt;
+	
+	public void setFrom(OrderRoom orderRoom) {
+		setRoomIdx(orderRoom.getRoomIdx());
+		setStoreIdx(orderRoom.getStoreIdx());
+		setLeaderMemberIdx(orderRoom.getLeaderMemberIdx());
+		setOrderMode(orderRoom.getOrderMode());
+		setPaymentMode(orderRoom.getPaymentMode());
+	}
 }

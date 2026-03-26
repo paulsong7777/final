@@ -18,4 +18,10 @@ public class Payment {
 	Timestamp cancelledAt;
 	Timestamp createdAt;
 	Timestamp updatedAt;
+	
+	public void setFrom(GroupOrder groupOrder) {
+		setOrderIdx(groupOrder.getOrderIdx());
+		setPaymentMode(groupOrder.getPaymentMode());
+		setPaymentRequestAmount(groupOrder.getOrderTotalAmount());
+	}
 }

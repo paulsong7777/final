@@ -8,6 +8,9 @@
 	<select id="findByIdx" resultType="GroupOrder">
 		SELECT * FROM group_order WHERE order_idx = #{orderIdx}
 	</select>
+	<select id="findByRoom" resultType="GroupOrder">
+		SELECT * FROM group_order WHERE room_idx = #{roomIdx}
+	</select>
 	<select id="findActive" resultType="GroupOrder">
 		SELECT * FROM group_order WHERE order_status = 'ACTIVE'
 	</select>

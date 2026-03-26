@@ -17,4 +17,15 @@ public class OrderDelivery {
 	String deliveryRequest;
 	Timestamp createdAt;
 	Timestamp updatedAt;
+	
+	public void setFrom(int orderIdx,DeliveryAddress deliveryAddress) {
+		setOrderIdx(orderIdx);
+		setSourceDeliveryAddressIdx(deliveryAddress.getDeliveryAddressIdx());
+		setRecipientName(deliveryAddress.getRecipientName());
+		setRecipientPhone(deliveryAddress.getRecipientPhone());
+		setZipCode(deliveryAddress.getZipCode());
+		setDeliveryAddress1(deliveryAddress.getDeliveryAddress1());
+		setDeliveryAddress2(deliveryAddress.getDeliveryAddress2());
+		setDeliveryRequest(deliveryAddress.getDeliveryRequest());
+	}
 }
