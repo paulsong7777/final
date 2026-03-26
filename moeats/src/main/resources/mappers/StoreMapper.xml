@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--	
+	마이바티스 참고 사이트
+	  - http://blog.mybatis.org/
+	  - http://www.mybatis.org/mybatis-3/ko/index.html
+	  
+	@Mapper 애노테이션이 적용된 인터페이스와 맵퍼 XML파일은
+	namespace 속성으로 연결되기 때문에 맵퍼 XML의 namespace를
+	지정할 때 @Mapper 애노테이션이 적용된 맵퍼 인터페이스의
+	완전한 클래스 이름(패키지를 포함한 이름)을 지정하면 된다.   
+-->
+<mapper namespace="com.moeats.mapper.StoreMapper">
+	
+	
+	<select id="findByStoreIdxAndOwner" resultType="Store">
+	    select * from store
+	    where store_idx = #{storeIdx} and owner_member_idx = #{ownerMemberIdx}
+	</select>
+	
+	<!-- 가게 삭제 soft - updateStatus로 대체 예정 -->
+	<delete id="deleteStore">
+		delete from store
+			where store_idx = #{storeIdx} and owner_member_idx = #{ownerMemberIdx}
+	</delete>
+	
+	<!-- ACTIVE, INACTIVE, PAUSED -->
+	<update id="updateStatus">
+	    update store
+	    set store_status = #{storeStatus}
+	    where store_idx = #{storeIdx}
+	      and owner_member_idx = #{ownerMemberIdx}
+	</update>
+	
+	<!-- 가게 수정 -->
+	<update id="updateStore">
+		update store set
+			store_name = #{storeName},
+			store_description = #{storeDescription},
+			store_phone = #{storePhone},
+			minimum_order_amount = #{minimumOrderAmount},
+			store_address1 = #{storeAddress1},
+			store_address2 = #{storeAddress2},
+			supports_delivery = #{supportsDelivery},
+			supports_onsite = #{supportsOnsite},
+			store_status = #{storeStatus},
+			longitude = #{longitude},
+			latitude = #{latitude}
+		where store_idx = #{storeIdx} and owner_member_idx = #{ownerMemberIdx}
+	</update>
+	
+	<!-- 점주 가게 등록 -->
+	<insert id="insertStore" useGeneratedKeys="true" keyProperty="storeIdx">
+		insert into store (owner_member_idx,
+						store_name,
+						store_description,
+						store_phone,
+						minimum_order_amount,
+						store_address1,
+						store_address2,
+						supports_delivery,
+						supports_onsite,
+						store_status,
+						longitude,
+				        latitude)
+				values(
+				#{ownerMemberIdx},
+				#{storeName},
+				#{storeDescription},
+				#{storePhone},
+				#{minimumOrderAmount},
+				#{storeAddress1},
+				#{storeAddress2},
+				#{supportsDelivery},
+				#{supportsOnsite},
+				#{storeStatus},
+		        #{longitude},
+        		#{latitude})
+	</insert>
+	
+	<!-- 점주 가게 조회 -->
+	<select id="myStore" resultType="Store">
+		select * from store
+			where owner_member_idx = #{ownerMemberIdx}
+	</select>
+	
+</mapper>
+
+
+
