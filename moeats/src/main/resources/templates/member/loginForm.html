@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+백엔드 회원가입부분 유효성 검사랑 중복확인 작업 다시하고 있는데,
+저희가 주로 접하는 회원가입 화면(사진 > 전화번호, 이메일을 각각 칸(input태그)에 나눠서 작성함)처럼 할려면 프론트에 해당 내용들은 있어야한다고 GPT가 그러네요
+해당 내용 관련해서 회의하다 보면 또 바뀔 수도 있으니 참고만 해주세요!
+
+hidden 태그랑 js 이용해서 조합해서 가져 가는 방식이라 db는 상관없다고 합니다
+
+✅ 1. 폼 구조 (필수)
+✔️ 회원가입 / 수정 공통
+<form id="signupForm"> <!-- 회원가입 -->
+<form id="updateForm"> <!-- 회원수정 -->
+
+
+✅ 2. 이메일 입력 구조 (분리형)
+<input type="text" id="email_id" placeholder="이메일 아이디">
+@
+<select id="email_domain">
+    <option value="">선택</option>
+    <option value="gmail.com">gmail.com</option>
+    <option value="naver.com">naver.com</option>
+    <option value="daum.net">daum.net</option>
+</select>
+
+<!-- 서버 전송용 -->
+<input type="hidden" name="memberEmail" id="member_email">
+
+⚠️ 필수 규칙
+id="email_id" → 아이디 부분
+id="email_domain" → 도메인 선택
+id="member_email" → hidden (최종 값)
+
+👉 JS에서 id + @ + domain으로 조합됨
+
+✅ 3. 비밀번호 입력
+<input type="password" id="member_password" name="memberPassword">
+
+👉 JS + 서버 둘 다 검증
+
+✅ 4. 닉네임
+<input type="text" id="member_nickname" name="memberNickname">
+
+✅ 5. 전화번호 입력 구조 (3개 분리)
+<input type="text" id="phone1" maxlength="3"> -
+<input type="text" id="phone2" maxlength="4"> -
+<input type="text" id="phone3" maxlength="4">
+
+<!-- 서버 전송용 -->
+<input type="hidden" name="memberPhone" id="member_phone">
+
+✅ 6. 수정폼에서만 필요한 hidden 값
+<input type="hidden" id="originEmail" value="${member.memberEmail}">
+<input type="hidden" id="originPhone" value="${member.memberPhone}">
+
+
+</body>
+</html>
