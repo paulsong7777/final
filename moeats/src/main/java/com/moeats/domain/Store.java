@@ -13,16 +13,19 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Store {
 	// 가게 정보
-	int store_idx;				// 가게번호
-	int owner_member_idx;		// 점주 회원번호
-	String store_name;			// 매장명
-	String store_description;	// 가게 소개
-	String store_phone;			// 가게 전화
-	int minimum_order_amount;	// 배달 최소 주문 금액
-	String store_address1;		// 기본 주소
-	String store_address2;		// 상세 주소
-	boolean supports_delivert;	// 배달지원여부
-	boolean supports_onsite;	// 현장지원여부
-	Timestamp created_at;			// 생성 시각
-	Timestamp updated_at;			// 수정 시각
+	int storeIdx;				// 가게번호
+	int ownerMemberIdx;		// 점주 회원번호
+	String storeName;			// 매장명
+	String storeDescription;	// 가게 소개
+	String storePhone;			// 가게 전화
+	int minimumOrderAmount;	// 배달 최소 주문 금액
+	String storeAddress1;		// 기본 주소
+	String storeAddress2;		// 상세 주소
+	Boolean supportsDelivery;	// 배달지원여부
+	Boolean supportsOnsite;	// 현장지원여부
+	String storeStatus;
+	Timestamp createdAt;			// 생성 시각
+	Timestamp updatedAt;			// 수정 시각
+	Double longitude;
+	Double latitude;
 }

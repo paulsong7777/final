@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.moeats.domain.Delivery_address;
+import com.moeats.domain.DeliveryAddress;
 
 @Mapper
 public interface DeliveryAddressMapper {
@@ -15,23 +15,23 @@ public interface DeliveryAddressMapper {
 	public void resetDefaultAddress(int memberIdx);
 	
 	// 선택 주소
-	public void setDefaultAddress(@Param("member_idx") int memberIdx,
-			@Param("delivery_address_idx") int deliveryAddressIdx);
+	public void setDefaultAddress(@Param("memberIdx") int memberIdx,
+			@Param("deliveryAddressIdx") int deliveryAddressIdx);
 	
 	// 삭제
-	public void deleteAddress(@Param("member_idx") int memberIdx,
-			@Param("delivery_address_idx") int deliveryAddressIdx);
+	public void deleteAddress(@Param("memberIdx") int memberIdx,
+			@Param("deliveryAddressIdx") int deliveryAddressIdx);
 	
 	// 수정
-	public void updateAddress(Delivery_address deliveryAddress);
+	public void updateAddress(DeliveryAddress deliveryAddress);
 	
 	// 등록
-	public void insertAddress(Delivery_address deliveryAddress);
+	public void insertAddress(DeliveryAddress deliveryAddress);
 	
 	// 1건 조회
-	public Delivery_address addressByIdx(@Param("member_idx") int memberIdx,
-			@Param("delivery_address_idx") int deliveryAddressIdx);
+	public DeliveryAddress addressByIdx(@Param("memberIdx") int memberIdx,
+			@Param("deliveryAddressIdx") int deliveryAddressIdx);
 	
 	// 주소 조회
-	public List<Delivery_address> addressList(int memberIdx);
+	public List<DeliveryAddress> addressList(int memberIdx);
 }

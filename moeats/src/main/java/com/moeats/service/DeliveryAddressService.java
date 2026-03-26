@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.moeats.domain.Delivery_address;
+import com.moeats.domain.DeliveryAddress;
 import com.moeats.mapper.DeliveryAddressMapper;
 
 @Service
@@ -20,7 +20,7 @@ public class DeliveryAddressService {
     public void changeDefaultAddress(int memberIdx, int deliveryAddressIdx) {
 
         // 1️. 주소 존재 여부 확인
-        Delivery_address addr = deliveryAddressMapper.addressByIdx(memberIdx, deliveryAddressIdx);
+        DeliveryAddress addr = deliveryAddressMapper.addressByIdx(memberIdx, deliveryAddressIdx);
 
         if (addr == null) {
             throw new RuntimeException("주소가 존재하지 않거나 권한 없음");
@@ -37,7 +37,7 @@ public class DeliveryAddressService {
     @Transactional
     public void deleteAddress(int memberIdx, int deliveryAddressIdx) {
 
-        Delivery_address addr = deliveryAddressMapper.addressByIdx(memberIdx, deliveryAddressIdx);
+        DeliveryAddress addr = deliveryAddressMapper.addressByIdx(memberIdx, deliveryAddressIdx);
 
         if (addr == null) {
             throw new RuntimeException("주소 없음");
@@ -48,7 +48,7 @@ public class DeliveryAddressService {
         // 👉 삭제한 게 기본 주소였으면
         if (addr.isActive()) {
             // 다른 주소 하나를 기본으로 설정
-            List<Delivery_address> list = deliveryAddressMapper.addressList(memberIdx);
+            List<DeliveryAddress> list = deliveryAddressMapper.addressList(memberIdx);
 
             if (!list.isEmpty()) {
                 deliveryAddressMapper.setDefaultAddress(memberIdx, list.get(0).getDeliveryAddressIdx());
@@ -57,25 +57,25 @@ public class DeliveryAddressService {
     }
 	
 	// 수정
-	public void updateAddress(Delivery_address deliveryAddress) {
+	public void updateAddress(DeliveryAddress deliveryAddress) {
 		
 		deliveryAddressMapper.updateAddress(deliveryAddress);
 	}
 	
 	// 등록
-	public void insertAddress(Delivery_address deliveryAddress) {
+	public void insertAddress(DeliveryAddress deliveryAddress) {
 		
 		deliveryAddressMapper.insertAddress(deliveryAddress);
 	}
 	
 	// 1건 조회
-	public Delivery_address addressByIdx(int memberIdx, int deliveryAddressIdx) {
+	public DeliveryAddress addressByIdx(int memberIdx, int deliveryAddressIdx) {
 		
 		return deliveryAddressMapper.addressByIdx(memberIdx, deliveryAddressIdx);
 	};
 	
 	// 주소 조회
-	public List<Delivery_address> getAddress(int memberIdx) {
+	public List<DeliveryAddress> getAddress(int memberIdx) {
 		
 		return deliveryAddressMapper.addressList(memberIdx);
 	}

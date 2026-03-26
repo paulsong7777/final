@@ -13,13 +13,13 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Member {
 	// 회원정보
-	int member_idx;							// 회원번호
-	String member_email;					// 회원이메일
-	String member_password;					// 비밀번호
-	String member_nickname;					// 닉네임
-	String member_phone;					// 전화번호
-	String member_role_type;				// 회원타입(일반,가게)
-	String default_delivery_address_idx;	// 기본 배송지
-	Timestamp created_at;						// 가입날짜
-	Timestamp updated_at;						// 수정날짜
+	int memberIdx;							// 회원번호
+	String memberEmail;					// 회원이메일
+	String memberPassword;					// 비밀번호
+	String memberNickname;					// 닉네임
+	String memberPhone;					// 전화번호
+	String memberRoleType;				// 회원타입(일반,가게)
+	String defaultDeliveryAddressIdx;	// 기본 배송지
+	Timestamp createdAt;						// 가입날짜
+	Timestamp updatedAt;						// 수정날짜
 }

@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.moeats.domain.Member;
 import com.moeats.service.MemberService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -22,7 +24,12 @@ public class MemberController {
 	@Autowired
 	private MemberService memberService;
 	
-	
+	// 이메일 중복 확인 true → 사용 가능 (중복 없음)	false → 이미 존재
+	@GetMapping("/member/email-check")
+	@ResponseBody
+	public boolean checkEmail(@RequestParam("memberEmail") String memberEmail) {
+		return memberService.getMemberFromEmail(memberEmail) == null;
+	}
 	
 	
 	// 회원 수정
@@ -31,9 +38,9 @@ public class MemberController {
 			Model model,
 			RedirectAttributes ra,
 			@SessionAttribute("member") Member loginUser,
-			@RequestParam("member_password") String member_password) {
+			@RequestParam("memberPassword") String memberPassword) {
 		
-		boolean isPassCheck = memberService.isPassCheck(loginUser.getMember_idx(), member_password);
+		boolean isPassCheck = memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
 		
 		if(!isPassCheck) {
 			model.addAttribute("error", "비밀번호를 확인해주세요.");
@@ -41,7 +48,7 @@ public class MemberController {
 			return "views/member-profile-edit";
 		}
 		
-		member.setMember_idx(loginUser.getMember_idx());
+		member.setMemberIdx(loginUser.getMemberIdx());
 		memberService.updateMember(member);
 		
 		return "redirect:/member/me";
@@ -78,19 +85,29 @@ public class MemberController {
 	// 로그인 처리
 	@PostMapping("/login")
 	public String login(Model model,
-					@RequestParam("member_email") String memberEmail,
-					@RequestParam("member_password") String memberPassword,
+					@RequestParam("memberEmail") String memberEmail,
+					@RequestParam("memberPassword") String memberPassword,
+					HttpSession session,
+					HttpServletResponse response,
 					RedirectAttributes ra) throws Exception {
 		
 		Member member = memberService.login(memberEmail, memberPassword);
 		
 		if(member == null) {
-			ra.addFlashAttribute("error", "존재하지 않는 아이디 입니다.");
+			// 원인 분리
+			Member findMember = memberService.getMemberFromEmail(memberEmail);
+			
+			if(findMember == null) {
+				ra.addFlashAttribute("error", "존재하지 않는 아이디 입니다.");
+			}else {
+				ra.addFlashAttribute("error", "아이디 혹은 비밀번호를 확인해주세요.");
+			}
 			return "redirect:/login";
 			
 		}
-		
 		model.addAttribute("member", member);
+		session.setAttribute("memberIdx", member.getMemberIdx());
+		
 		return "redirect:/main";		
 	}
 	
@@ -103,11 +120,16 @@ public class MemberController {
 	
 	// 회원가입	- 일반/사업자 분기 or 회원가입 폼에서 체크박스로 분기
 	@PostMapping("/member")
-	public String insertMember(Member member) {
-		
-		memberService.insertMember(member);
-		
-		return "redirect:/login";
+	public String insertMember(Member member, RedirectAttributes ra) {
+
+	    try {
+	        memberService.insertMember(member);
+	        return "redirect:/login";
+
+	    } catch (IllegalArgumentException | IllegalStateException e) {
+	        ra.addFlashAttribute("error", e.getMessage());
+	        return "redirect:/members/new";
+	    }
 	}
 	
 	// 회원가입 폼

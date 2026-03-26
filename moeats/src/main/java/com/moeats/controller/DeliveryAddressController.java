@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
-import com.moeats.domain.Delivery_address;
+import com.moeats.domain.DeliveryAddress;
 import com.moeats.service.DeliveryAddressService;
 
 import jakarta.servlet.http.HttpSession;
@@ -26,9 +26,9 @@ public class DeliveryAddressController {
 
 	
 	// 삭제
-	@PostMapping("/members/me/addresses/{delivery_address_idx}/delete")
-	public String deleteAddress( @PathVariable("delivery_address_idx") int deliveryAddressIdx,
-	        @SessionAttribute("member_idx") int memberIdx) {
+	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/delete")
+	public String deleteAddress( @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
+	        @SessionAttribute("memberIdx") int memberIdx) {
 
 		deliveryAddressService.deleteAddress(memberIdx, deliveryAddressIdx);
 		
@@ -37,10 +37,10 @@ public class DeliveryAddressController {
 
 	
 	// 수정
-	@PostMapping("/members/me/addresses/{delivery_address_idx}/edit")
+	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/edit")
 	public String updateAddress(
-	        @ModelAttribute Delivery_address deliveryAddress,
-	        @SessionAttribute("member_idx") int memberIdx) {
+	        @ModelAttribute DeliveryAddress deliveryAddress,
+	        @SessionAttribute("memberIdx") int memberIdx) {
 
 	    deliveryAddress.setMemberIdx(memberIdx);
 
@@ -50,13 +50,13 @@ public class DeliveryAddressController {
 	}
 	
 	// 주소 수정 폼 띄우기
-	@GetMapping("/members/me/addresses/{delivery_address_idx}/edit")
+	@GetMapping("/members/me/addresses/{deliveryAddressIdx}/edit")
 	public String updateAddressForm(
-	        @PathVariable("delivery_address_idx") int deliveryAddressIdx,
-	        @SessionAttribute("member_idx") int memberIdx,
+	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
+	        @SessionAttribute("memberIdx") int memberIdx,
 	        Model model) {
 
-	    Delivery_address address =
+	    DeliveryAddress address =
 	            deliveryAddressService.addressByIdx(memberIdx, deliveryAddressIdx);
 
 	    model.addAttribute("address", address);
@@ -67,8 +67,8 @@ public class DeliveryAddressController {
 	
 	// 등록
 	@PostMapping("/members/me/addresses")
-	public String insertAddress(@ModelAttribute Delivery_address deliveryAddress,
-	        @SessionAttribute("member_idx") int memberIdx) {
+	public String insertAddress(@ModelAttribute DeliveryAddress deliveryAddress,
+	        @SessionAttribute("memberIdx") int memberIdx) {
 		
 	    deliveryAddress.setMemberIdx(memberIdx);
 
@@ -85,11 +85,11 @@ public class DeliveryAddressController {
 	}
 	
 	// 기본 배송지 변경
-	@PostMapping("/members/me/addresses/{delivery_address_idx}/default")
+	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/default")
 	@ResponseBody
 	public String changeDefaultAddress(
-	        @PathVariable("delivery_address_idx") int deliveryAddressIdx,
-	        @SessionAttribute("member_idx") int memberIdx) {
+	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
+	        @SessionAttribute("memberIdx") int memberIdx) {
 
 	    deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
 
@@ -97,11 +97,11 @@ public class DeliveryAddressController {
 	}
 	
 	// 배송지 선택 (주문 시)
-	@PostMapping("/members/me/addresses/{delivery_address_idx}/select")
+	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/select")
 	@ResponseBody
 	public String selectAddress(
 	        @PathVariable int deliveryAddressIdx,
-	        @SessionAttribute("member_idx") int memberIdx,
+	        @SessionAttribute("memberIdx") int memberIdx,
 	        HttpSession session) {
 
 	    // 선택한 주소를 세션에 저장 (예시)
@@ -113,9 +113,9 @@ public class DeliveryAddressController {
 	// 주소 리스트 폼 띄우기
 	@GetMapping("/members/me/addresses")
 	public String addressList(Model model,
-	        @SessionAttribute("member_idx") int memberIdx) {
+	        @SessionAttribute("memberIdx") int memberIdx) {
 
-	    List<Delivery_address> addressList = deliveryAddressService.getAddress(memberIdx);
+	    List<DeliveryAddress> addressList = deliveryAddressService.getAddress(memberIdx);
 
 	    model.addAttribute("addressList", addressList);
 
