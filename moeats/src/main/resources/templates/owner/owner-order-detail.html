@@ -1,181 +1,178 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layouts/main-layout}">
 
-<th:block layout:fragment="css">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <style>
-        .detail-page-wrapper { background-color: #F8F9FA; min-height: 100vh; padding-bottom: 150px; }
-        .detail-container { max-width: 750px; margin: 0 auto; }
+<div layout:fragment="content" class="container py-4" style="max-width: 700px;">
+    
+    <div th:if="${orderVo == null}" class="text-center py-5 shadow-sm rounded-4 bg-white border border-dashed">
+        <i class="bi bi-exclamation-octagon text-danger fs-1 d-block mb-3"></i>
+        <h5 class="fw-bold mb-3 text-navy">주문 정보를 불러올 수 없습니다.</h5>
+        <button class="btn btn-navy fw-bold px-4 rounded-pill" onclick="location.href='/owner/dashboard'">대시보드로 돌아가기</button>
+    </div>
+
+    <div th:unless="${orderVo == null}" th:with="currS=${orderVo['roomStatus'] ?: 'PENDING'}">
         
-        /* 타임라인 카드 */
-        .status-timeline-card {
-            background: white; border-radius: 28px; padding: 40px 20px;
-            margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-            position: relative;
-        }
-        
-        .timeline-base-line {
-            position: absolute; top: 46px; left: 12.5%; width: 75%; height: 6px;
-            background: #F1F3F5; z-index: 1; border-radius: 10px;
-        }
-
-        .timeline-active-line {
-            position: absolute; top: 46px; left: 12.5%; height: 6px;
-            z-index: 2; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 10px;
-        }
-
-        /* [명세서 규격] 상태별 프로그레스바 너비 및 색상 */
-        .line-ACCEPTED { width: 0%; background: var(--mo-orange); }
-        .line-PREPARING { width: 25%; background: var(--mo-navy); }
-        .line-READY { width: 50%; background: #28A745; }
-        .line-COMPLETED { width: 75%; background: #ADB5BD; }
-
-        .status-timeline { display: flex; justify-content: space-between; position: relative; z-index: 5; }
-        .status-step { text-align: center; width: 25%; }
-
-        .step-dot {
-            width: 48px; height: 48px; border-radius: 50%; background: white;
-            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;
-            border: 2px solid #E9ECEF; transition: 0.4s; font-size: 1.3rem; color: #ADB5BD;
-        }
-        .step-label { font-size: 0.9rem; font-weight: 500; color: #ADB5BD; }
-
-        /* 활성화 상태 디자인 (명세서 v1 컬러 토큰) */
-        .status-step.active#step-ACCEPTED .step-dot { background: var(--mo-orange); color: white; border-color: var(--mo-orange); }
-        .status-step.active#step-PREPARING .step-dot { background: var(--mo-navy); color: white; border-color: var(--mo-navy); }
-        .status-step.active#step-READY .step-dot { background: #28A745; color: white; border-color: #28A745; }
-        .status-step.active#step-COMPLETED .step-dot { background: #ADB5BD; color: white; border-color: #ADB5BD; }
-        
-        .status-step.active .step-label { color: var(--mo-navy); font-weight: 800; }
-        .status-step.completed .step-dot { background: #EAF7ED; color: #28A745; border-color: #28A745; }
-
-        /* 하단 고정 버튼 바 */
-        .fixed-action-bar {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 750px; 
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            padding: 20px 30px; border-radius: 24px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
-            z-index: 1000; display: flex; gap: 15px;
-        }
-
-        .btn-reject { flex: 1; background: #FFF0F0; color: #FF4D4D; border: 1px solid #FFDADA; border-radius: 18px; font-weight: 700; padding: 18px 0; border: none; }
-        .btn-main-action { flex: 2; color: white; border: none; border-radius: 18px; font-weight: 700; padding: 18px 0; transition: 0.3s; }
-        
-        .bg-orange { background: var(--mo-orange); }
-        .bg-navy { background: var(--mo-navy); }
-        .bg-green { background: #28A745; }
-        .bg-gray { background: #ADB5BD; }
-    </style>
-</th:block>
-
-<div layout:fragment="content" class="detail-page-wrapper">
-    <div class="container py-4 detail-container">
-        
-        <div class="mb-4 d-flex align-items-center justify-content-between">
-            <a th:href="@{/owner/dashboard}" class="text-decoration-none text-muted fw-bold">
-                <i class="bi bi-chevron-left me-1"></i> 대시보드로 돌아가기
+        <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+            <a th:href="@{/owner/dashboard}" class="text-navy text-decoration-none fw-bold me-3">
+                <i class="bi bi-chevron-left"></i> 목록
             </a>
-            <span class="badge bg-white text-dark border rounded-pill px-3 py-2" th:text="'주문번호 #' + ${order_idx}">#20260324</span>
+            <h3 class="fw-bold mb-0 text-navy" th:text="|주문번호: ${orderVo['roomIdx'] ?: 0}|">주문번호: 0</h3>
+            <span class="badge bg-light text-secondary border ms-3 fw-bold" th:text="${orderVo['roomCode'] ?: 'CODE-NULL'}">코드</span>
         </div>
 
-        <div class="status-timeline-card">
-            <div class="timeline-base-line"></div>
-            <div class="timeline-active-line" th:classappend="'line-' + ${order_status}"></div>
-            
-            <div class="status-timeline">
-                <div class="status-step" id="step-ACCEPTED" th:classappend="${order_status == 'ACCEPTED'} ? 'active' : 'completed'">
-                    <div class="step-dot"><i class="bi bi-receipt"></i></div>
-                    <div class="step-label">결제완료</div>
+        <div class="card p-4 mb-4 border-0 shadow-sm rounded-4 bg-white">
+            <h6 class="fw-bold text-secondary mb-4 small text-uppercase"><i class="bi bi-clock-history me-1"></i>실시간 처리 현황</h6>
+            <div class="position-relative mx-2 mb-4">
+                <div class="progress" style="height: 6px; background-color: #e9ecef; overflow: visible;">
+                    <div id="status-progress-bar" class="progress-bar" 
+                         th:style="'background-color: var(--moeats-orange) !important; transition: 0.5s ease-in-out; width: ' + (${currS == 'PENDING' ? '0' : (currS == 'PREPARING' ? '33.3' : (currS == 'READY' ? '66.6' : '100'))}) + '%'">
+                    </div>
                 </div>
-                <div class="status-step" id="step-PREPARING" th:classappend="${order_status == 'PREPARING'} ? 'active' : (${order_status == 'READY' || order_status == 'COMPLETED'} ? 'completed' : '')">
-                    <div class="step-dot"><i class="bi bi-fire"></i></div>
-                    <div class="step-label">조리중</div>
+                
+                <div class="step-dot completed" style="left: 0%;" title="접수완료"></div>
+                <div id="dot-preparing" class="step-dot" style="left: 33.3%;" 
+                     th:classappend="${currS == 'PREPARING' ? 'active' : (currS == 'READY' || currS == 'COMPLETED' ? 'completed' : '')}"></div>
+                <div id="dot-ready" class="step-dot" style="left: 66.6%;" 
+                     th:classappend="${currS == 'READY' ? 'active' : (currS == 'COMPLETED' ? 'completed' : '')}"></div>
+                <div id="dot-completed" class="step-dot" style="left: 100%;" 
+                     th:classappend="${currS == 'COMPLETED' ? 'active' : ''}"></div>
+            </div>
+            <div class="d-flex justify-content-between small fw-bold text-muted text-center" style="margin-top: -10px;">
+                <div style="width: 25%;">접수대기</div>
+                <div style="width: 25%;">조리중</div>
+                <div style="width: 25%;">배달중</div>
+                <div style="width: 25%;">완료</div>
+            </div>
+        </div>
+
+        <div class="card p-4 border-0 shadow-sm mb-4 rounded-4 bg-white">
+            <div class="row g-3">
+                <div class="col-12 border-bottom pb-3 mb-2">
+                    <small class="text-secondary d-block mb-1 small fw-bold text-uppercase">Ordered Menu</small>
+                    <span class="fw-bold fs-4 text-navy" th:text="${orderVo['menuName'] ?: '메뉴 정보 없음'}">메뉴명</span>
                 </div>
-                <div class="status-step" id="step-READY" th:classappend="${order_status == 'READY'} ? 'active' : (${order_status == 'COMPLETED'} ? 'completed' : '')">
-                    <div class="step-dot"><i class="bi bi-bicycle"></i></div>
-                    <div class="step-label">배달중</div>
+                <div class="col-md-6">
+                    <small class="text-secondary d-block mb-1 small fw-bold text-uppercase">Address</small>
+                    <span class="fw-bold d-block text-dark" th:text="${orderVo['deliveryAddress1'] ?: '주소 정보 없음'}">주소</span>
                 </div>
-                <div class="status-step" id="step-COMPLETED" th:classappend="${order_status == 'COMPLETED'} ? 'active' : ''">
-                    <div class="step-dot"><i class="bi bi-check-circle-fill"></i></div>
-                    <div class="step-label">배달완료</div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-secondary d-block mb-1 small fw-bold text-uppercase">Amount</small>
+                    <span class="fw-bold fs-5 text-orange" th:text="|${orderVo['totalPrice'] ?: 0}원|">0원</span>
                 </div>
             </div>
         </div>
 
-        <div class="soft-card border-0 shadow-sm mb-4">
-             <h5 class="fw-bold mb-3"> 주문 내역</h5>
-             <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
-                 <span>훈제치킨(한마리) x 1</span>
-                 <span class="fw-bold">18,500원</span>
-             </div>
-             <div class="d-flex justify-content-between">
-                 <span>배달비</span>
-                 <span class="fw-bold">3,000원</span>
-             </div>
-             <hr>
-             <div class="d-flex justify-content-between">
-                 <span class="fw-bold">총 결제금액</span>
-                 <span class="text-orange fw-bold fs-5">21,500원</span>
-             </div>
+        <div class="fixed-bottom p-3 bg-white border-top shadow-lg d-flex justify-content-center" style="z-index: 1040;">
+            <div style="width: 100%; max-width: 700px;">
+                <button id="status-update-btn" class="btn btn-warning text-white w-100 py-3 fw-bold fs-5 shadow-sm rounded-pill" 
+                        style="background-color: var(--moeats-orange); border: none;"
+                        th:onclick="handleStatusUpdate([[${orderVo['roomIdx'] ?: 0}]])">
+                    <span id="btn-text" th:text="${currS == 'PENDING' ? '주문 수락 및 조리 시작' : (currS == 'PREPARING' ? '조리 완료 및 배달 시작' : (currS == 'READY' ? '배달 완료 확인' : '대시보드로 돌아가기'))}">버튼</span>
+                </button>
+            </div>
         </div>
-    </div>
-
-    <div class="fixed-action-bar">
-        <button th:if="${order_status == 'ACCEPTED'}" class="btn-reject" onclick="handleReject()">주문 거절</button>
-        
-        <button class="btn-main-action" 
-                th:classappend="${order_status == 'ACCEPTED' ? 'bg-orange' : (order_status == 'PREPARING' ? 'bg-navy' : (order_status == 'READY' ? 'bg-green' : 'bg-gray'))}"
-                onclick="handleStatusChange()">
-            
-            <span th:if="${order_status == 'ACCEPTED'}">주문 접수 (조리 시작)</span>
-            <span th:if="${order_status == 'PREPARING'}">조리 완료 (픽업 요청)</span>
-            <span th:if="${order_status == 'READY'}">배달 완료 확인</span>
-            <span th:if="${order_status == 'COMPLETED'}">주문 종료 (대시보드로)</span>
-        </button>
     </div>
 </div>
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
-        /* [명세서 v1 규격 동기화]
-           변수명을 order_status와 order_idx로 통일하여 백엔드 파라미터와 일치시킴
-        */
-        const currentStatus = /*[[${order_status}]]*/ 'ACCEPTED';
-        const orderIdx = /*[[${order_idx}]]*/ '1';
+        /* [6대원칙: Anti-Null] 초기값 안전 할당 (JS 인라인 문법) */
+        let currentStatus = /*[[${orderVo != null ? orderVo['roomStatus'] : 'PENDING'}]]*/ 'PENDING';
+        const roomIdx = /*[[${orderVo != null ? orderVo['roomIdx'] : 0}]]*/ 0;
 
-        function handleStatusChange() {
+        /**
+         * [6대원칙: AJAX] 주문 상태 비동기 업데이트
+         */
+        async function handleStatusUpdate(idx) {
+            if(!idx || idx === 0) return;
+            
             let nextStatus = "";
             let confirmMsg = "";
 
-            if (currentStatus === 'ACCEPTED') {
+            if (currentStatus === 'PENDING') {
                 nextStatus = "PREPARING";
-                confirmMsg = "조리를 시작하시겠습니까?";
+                confirmMsg = "주문을 수락하고 조리를 시작하시겠습니까?";
             } else if (currentStatus === 'PREPARING') {
                 nextStatus = "READY";
-                confirmMsg = "조리가 완료되었습니까? 라이더를 호출합니다.";
+                confirmMsg = "조리가 완료되었습니다. 배달을 시작할까요?";
             } else if (currentStatus === 'READY') {
                 nextStatus = "COMPLETED";
-                confirmMsg = "배달이 완료되었음을 확인하셨습니까?";
-            } else {
-                location.href = "/owner/dashboard";
-                return;
+                confirmMsg = "배달이 완료되었음을 확인하시겠습니까?";
+            } else { 
+                location.href = "/owner/dashboard"; 
+                return; 
             }
 
-            if (confirm(confirmMsg)) {
-                // [명세서 규격] 쿼리 파라미터명 준수
-                location.href = `/owner/order/detail?order_idx=${orderIdx}&order_status=${nextStatus}`;
+            if (!confirm(confirmMsg)) return;
+
+            const btn = document.getElementById('status-update-btn');
+            const originalText = document.getElementById('btn-text').innerText;
+            
+            btn.disabled = true;
+
+            try {
+                // [Security] moeatsFetch 사용하여 비동기 요청 전송
+                const result = await moeatsFetch('/owner/order/status-update', {
+                    roomIdx: String(idx),
+                    roomStatus: nextStatus
+                });
+
+                if (result && result.success) {
+                    // [6대원칙: AJAX] 화면 새로고침 없이 UI 업데이트
+                    currentStatus = nextStatus;
+                    updateDetailUI(nextStatus);
+                    console.log(`[Integrity Sync] Room ${idx} updated to ${nextStatus}`);
+                } else {
+                    alert(result ? result.message : "상태 변경 실패");
+                }
+            } catch (error) {
+                console.error("[Status Update Error]", error);
+                alert("처리 중 오류가 발생했습니다.");
+            } finally {
+                btn.disabled = false;
             }
         }
 
-        function handleReject() {
-            if(confirm("정말로 주문을 거절하시겠습니까?")) {
-                location.href = "/owner/dashboard";
+        /**
+         * UI 동적 업데이트 (새로고침 없이 로직 반영)
+         */
+        function updateDetailUI(status) {
+            const progressBar = document.getElementById('status-progress-bar');
+            const btnText = document.getElementById('btn-text');
+            
+            if (status === 'PREPARING') {
+                progressBar.style.width = '33.3%';
+                btnText.innerText = '조리 완료 및 배달 시작';
+                document.getElementById('dot-preparing').classList.add('active');
+            } else if (status === 'READY') {
+                progressBar.style.width = '66.6%';
+                btnText.innerText = '배달 완료 확인';
+                document.getElementById('dot-preparing').classList.replace('active', 'completed');
+                document.getElementById('dot-ready').classList.add('active');
+            } else if (status === 'COMPLETED') {
+                progressBar.style.width = '100%';
+                btnText.innerText = '대시보드로 돌아가기';
+                document.getElementById('dot-ready').classList.replace('active', 'completed');
+                document.getElementById('dot-completed').classList.add('active');
+                alert("배달 완료 처리가 완료되었습니다.");
             }
         }
     </script>
+    
+    <style>
+        .step-dot {
+            position: absolute; top: -5px; width: 16px; height: 16px; 
+            border-radius: 50%; border: 3px solid white; background: #dee2e6; 
+            z-index: 2; transition: 0.3s ease-in-out;
+        }
+        .step-dot.active { 
+            background: var(--moeats-orange) !important; 
+            box-shadow: 0 0 0 4px rgba(255, 128, 0, 0.2);
+            transform: scale(1.2);
+        }
+        .step-dot.completed { background: var(--moeats-navy) !important; }
+    </style>
 </th:block>
 </html>

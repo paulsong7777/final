@@ -1,62 +1,161 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layouts/main-layout}">
 
-<th:block layout:fragment="css">
-    </th:block>
-
-<div layout:fragment="content">
-    <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
-        <h2>카테고리 생성 및 관리</h2>
-        <a th:href="@{/owner/menu/management}">[ ← 메뉴 관리로 돌아가기 ]</a>
-    </div>
-
-    <div style="background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; margin-bottom: 30px;">
-        <h4>+ 새 카테고리 추가</h4>
-        <form th:action="@{/owner/category/add}" method="post">
-            <input type="text" name="category_name" placeholder="카테고리명 입력 (예: 메인메뉴, 음료)" required style="padding: 8px; width: 250px;">
-            <button type="submit">추가하기</button>
-        </form>
-    </div>
-
-    <h3>현재 카테고리 목록</h3>
-    <p style="font-size: 0.9rem; color: #666;">* 카테고리를 삭제하면 해당 카테고리에 속한 메뉴들의 카테고리 지정이 해제됩니다.</p>
+<div layout:fragment="content" class="container-fluid px-4" style="max-width: 1000px;">
     
-    <table border="1" style="width: 100%; border-collapse: collapse; text-align: center;">
-        <thead style="background-color: #eee;">
-            <tr>
-                <th>순서</th>
-                <th>카테고리명</th>
-                <th>등록된 메뉴 수</th>
-                <th>관리</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="cat, stat : ${category_list}">
-                <td th:text="${stat.count}">1</td>
-                <td th:text="${cat.category_name}" style="font-weight: bold;">메인메뉴</td>
-                <td th:text="${cat.menu_count != null ? cat.menu_count : 0} + '개'">5개</td>
-                <td>
-                    <form th:action="@{/owner/category/delete}" method="post" style="display: inline;">
-                        <input type="hidden" name="category_idx" th:value="${cat.category_idx}">
-                        <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?')" style="color: red;">삭제</button>
-                    </form>
-                </td>
-            </tr>
-            
-            <tr th:if="${#lists.isEmpty(category_list)}">
-                <td colspan="4" style="padding: 30px; color: #999;">
-                    생성된 카테고리가 없습니다. 위 양식에서 첫 카테고리를 만들어보세요!
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+        <div>
+            <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-tags-fill me-2 text-orange"></i>카테고리 설정</h2>
+            <p class="text-secondary small mb-0 mt-1">매장의 메뉴 카테고리를 관리하고 우선순위를 조정합니다.</p>
+        </div>
+    </div>
+
+    <div th:with="safeList=${categoryList ?: {}}">
+        
+        <div class="card mb-4 shadow-sm border-0 bg-white rounded-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3 text-secondary small text-uppercase text-muted">Add New Category</h6>
+                <form id="categoryAddForm" class="row g-2" onsubmit="addCategory(); return false;">
+                    <div class="col-9">
+                        <input type="text" name="categoryName" id="newCategoryName" 
+                               class="form-control form-control-lg fs-6 border-0 bg-light shadow-none" 
+                               placeholder="예: 인기메뉴, 사이드, 음료" required>
+                    </div>
+                    <div class="col-3">
+                        <button type="submit" 
+                                class="btn btn-primary btn-lg fs-6 w-100 shadow-sm rounded-3 fw-bold"
+                                style="background-color: var(--moeats-orange); border: none;">추가</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center mb-0">
+                    <thead class="bg-light border-bottom">
+                        <tr class="text-navy small fw-bold">
+                            <th class="py-3" style="width: 80px;">순번</th>
+                            <th class="text-start ps-4">카테고리 명칭</th>
+                            <th style="width: 150px;">연결 메뉴</th>
+                            <th style="width: 120px;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="category-table-body">
+                        <th:block th:if="${not #lists.isEmpty(safeList)}">
+                            <tr th:each="cat, stat : ${safeList}" th:id="|cat-row-${cat.categoryIdx ?: 0}|">
+                                <td class="text-secondary fw-bold" th:text="${stat.count}">1</td>
+                                <td class="fw-bold text-start ps-4 text-navy">
+                                    <span th:text="${cat.categoryName ?: '정보없음'}">카테고리</span>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill bg-light text-navy border fw-bold px-3" 
+                                          th:text="|${cat.menuCount ?: 0} 건|">0건</span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold"
+                                            th:onclick="deleteCategory([[${cat.categoryIdx ?: 0}]])">
+                                        <i class="bi bi-trash3 me-1"></i>삭제
+                                    </button>
+                                </td>
+                            </tr>
+                        </th:block>
+                        
+                        <tr th:if="${#lists.isEmpty(safeList)}" id="empty-row">
+                            <td colspan="4" class="py-5 text-muted bg-white">
+                                <i class="bi bi-exclamation-circle fs-2 d-block mb-2 text-light"></i>
+                                <span class="fw-bold">등록된 카테고리가 없습니다.</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button type="button" class="btn btn-dark w-100 py-3 shadow-sm fw-bold rounded-pill" 
+                    onclick="location.href='/owner/menu/management'">
+                <i class="bi bi-arrow-left me-2"></i>메뉴 관리로 돌아가기
+            </button>
+        </div>
+    </div>
 </div>
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
-        console.log("카테고리 설정 페이지 로드 완료");
+        
+        /**
+         * [6대원칙: AJAX] 카테고리 추가
+         */
+        async function addCategory() {
+            const nameInput = document.getElementById('newCategoryName');
+            const categoryName = nameInput.value.trim();
+
+            if(!categoryName) {
+                alert("카테고리명을 입력해주세요.");
+                nameInput.focus();
+                return;
+            }
+
+            try {
+                // [Rule] 데이터 변경은 POST 고정
+                const result = await moeatsFetch('/owner/category/insert_proc', {
+                    categoryName: categoryName
+                });
+
+                if (result && result.success) {
+                    alert("카테고리가 추가되었습니다.");
+                    location.reload(); 
+                } else {
+                    alert(result ? result.message : "추가에 실패했습니다.");
+                }
+            } catch (error) {
+                console.error("[Category Add Error]", error);
+            }
+        }
+
+        /**
+         * [6대원칙: AJAX] 카테고리 삭제
+         */
+        async function deleteCategory(idx) {
+            if(!idx || idx === 0) return;
+            if(!confirm("해당 카테고리를 삭제하시겠습니까?")) return;
+
+            try {
+                const result = await moeatsFetch('/owner/category/delete', {
+                    categoryIdx: String(idx)
+                });
+
+                if (result && result.success) {
+                    const targetRow = document.getElementById(`cat-row-${idx}`);
+                    if (targetRow) {
+                        targetRow.style.opacity = '0';
+                        targetRow.style.transition = '0.3s';
+                        setTimeout(() => {
+                            targetRow.remove();
+                            // 모든 행이 삭제되었는지 체크
+                            if (document.querySelectorAll('#category-table-body tr').length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
+                } else {
+                    alert(result ? result.message : "삭제에 실패했습니다.");
+                }
+            } catch (error) {
+                console.error("[Category Delete Error]", error);
+            }
+        }
+
+        /* [6대원칙: Anti-Null] 데이터 무결성 초기화 */
+        window.addEventListener('load', () => {
+            const currentList = /*[[${categoryList ?: '[]'}]]*/ [];
+            console.log(`[Category Module] Initialized. Data Count: ${currentList.length}`);
+        });
+
     </script>
 </th:block>
 </html>

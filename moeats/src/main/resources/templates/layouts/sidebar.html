@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="ownerSidebar" id="moeats-sidebar-fragment" class="d-flex flex-column h-100">
+
+    <div class="flex-grow-1">
+
+        <div class="mb-2">
+            <a th:href="@{/owner/dashboard}" class="nav-capsule" th:classappend="${menu == 'dash'} ? 'active'">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span class="menu-text">실시간 주문 관제</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/order/history}" class="nav-capsule" th:classappend="${menu == 'history'} ? 'active'">
+                <i class="bi bi-clock-history"></i>
+                <span class="menu-text">주문 내역 조회</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/menu/management}" class="nav-capsule" th:classappend="${menu == 'menu'} ? 'active'">
+                <i class="bi bi-journal-text"></i>
+                <span class="menu-text">메뉴 관리</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/category/setting}" class="nav-capsule" th:classappend="${menu == 'category'} ? 'active'">
+                <i class="bi bi-collection"></i>
+                <span class="menu-text">카테고리 설정</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/review/review-management}" class="nav-capsule" th:classappend="${menu == 'review'} ? 'active'">
+                <i class="bi bi-chat-right-text"></i>
+                <span class="menu-text">리뷰 관리</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/sales/report}" class="nav-capsule" th:classappend="${menu == 'report'} ? 'active'">
+                <i class="bi bi-bar-chart-line"></i>
+                <span class="menu-text">영업 리포트</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/settlement/info}" class="nav-capsule" th:classappend="${menu == 'settle'} ? 'active'">
+                <i class="bi bi-wallet2"></i>
+                <span class="menu-text">정산 내역 확인</span>
+            </a>
+        </div>
+
+        <div class="my-4 border-top border-secondary border-opacity-25 mx-3"></div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/store/setting}" class="nav-capsule" th:classappend="${menu == 'store'} ? 'active'">
+                <i class="bi bi-sliders"></i>
+                <span class="menu-text">매장 정보 설정</span>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    #moeats-sidebar-fragment .nav-capsule {
+        display: flex;
+        align-items: center;
+        padding: 14px 20px;
+        border-radius: 12px;
+        text-decoration: none !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        margin: 0 15px 8px 15px; /* 좌우 여백으로 캡슐 느낌 강조 */
+    }
+
+    /* 레이아웃에서 설정한 색상이 적용되도록 하면서 미세한 효과만 추가 */
+    #moeats-sidebar-fragment .nav-capsule:hover {
+        transform: translateX(5px);
+        background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    #moeats-sidebar-fragment .nav-capsule.active {
+        box-shadow: 0 4px 15px rgba(255, 128, 0, 0.3);
+    }
+
+    /* 텍스트 줄바꿈 방지 및 가독성 자간 조절 */
+    #moeats-sidebar-fragment .menu-text {
+        white-space: nowrap;
+        letter-spacing: -0.5px;
+    }
+</style>
+
+</body>
+</html>

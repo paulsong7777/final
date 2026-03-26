@@ -1,57 +1,147 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content">
-    <h2>가게 영업 정보 설정</h2>
-    <hr>
+<div layout:fragment="content" class="container-fluid py-4">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 850px;">
+        <div class="card-body p-4 p-md-5">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+                <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-gear-fill me-2 text-orange"></i>매장 설정</h2>
+                <a th:href="@{/owner/dashboard}" class="text-decoration-none text-secondary small fw-bold">
+                    <i class="bi bi-speedometer2 me-1"></i>대시보드 이동
+                </a>
+            </div>
 
-    <form th:action="@{/owner/store/update_proc}" th:object="${store_vo}" method="post">
-        <table border="1" style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <th style="width: 200px; padding: 10px;">가게 식별 번호(idx)</th>
-                <td style="padding: 10px;">
-                    <input type="text" name="store_idx" th:value="*{store_idx}" readonly style="background-color: #f0f0f0;">
-                </td>
-            </tr>
-            <tr>
-                <th style="padding: 10px;">가게명</th>
-                <td style="padding: 10px;">
-                    <input type="text" name="store_name" th:value="*{store_name}" required>
-                </td>
-            </tr>
-            <tr>
-                <th style="padding: 10px;">최소 주문 금액</th>
-                <td style="padding: 10px;">
-                    <input type="number" name="min_order_price" th:value="*{min_order_price}"> 원
-                </td>
-            </tr>
-            <tr>
-                <th style="padding: 10px;">영업 시간</th>
-                <td style="padding: 10px;">
-                    <input type="time" name="open_time" th:value="*{open_time}"> ~ 
-                    <input type="time" name="close_time" th:value="*{close_time}">
-                </td>
-            </tr>
-            <tr>
-                <th style="padding: 10px;">정기 휴무일</th>
-                <td style="padding: 10px;">
-                    <input type="text" name="off_days" th:value="*{off_days}" placeholder="예: 매주 월요일">
-                </td>
-            </tr>
-            <tr>
-                <th style="padding: 10px;">가게 소개글</th>
-                <td style="padding: 10px;">
-                    <textarea name="store_desc" rows="5" style="width: 90%;" th:text="*{store_desc}"></textarea>
-                </td>
-            </tr>
-        </table>
-        
-        <div style="margin-top: 20px; text-align: center;">
-            <button type="submit" style="padding: 10px 40px; font-weight: bold; cursor: pointer;">설정 저장하기</button>
-            <a th:href="@{/owner/dashboard}" style="margin-left: 20px;">[ 취소 ]</a>
+            <form id="storeSettingForm" onsubmit="return false;">
+                
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Store ID</label>
+                    <div class="col-md-9">
+                        <input type="text" name="storeIdx" th:value="${storeVo['storeIdx'] ?: 0}" 
+                               class="form-control fw-bold bg-light border-0 py-2 shadow-none rounded-3" readonly>
+                    </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Store Name</label>
+                    <div class="col-md-9">
+                        <input type="text" name="storeName" th:value="${storeVo['storeName'] ?: ''}" 
+                               class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" required placeholder="매장 이름을 입력하세요">
+                    </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Min Order</label>
+                    <div class="col-md-9">
+                        <div class="input-group">
+                            <input type="number" name="minimumOrderAmount" th:value="${storeVo['minimumOrderAmount'] ?: 0}" 
+                                   class="form-control py-3 border-0 bg-light shadow-none text-end rounded-start-3 fw-bold" required min="0">
+                            <span class="input-group-text bg-light border-0 text-navy fw-bold rounded-end-3">원</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Business Hours</label>
+                    <div class="col-md-9">
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="time" name="openTime" th:value="${storeVo['openTime'] ?: '09:00'}" 
+                                   class="form-control border-0 bg-light py-3 shadow-none rounded-3 text-center fw-bold">
+                            <span class="fw-bold text-muted px-1">~</span>
+                            <input type="time" name="closeTime" th:value="${storeVo['closeTime'] ?: '22:00'}" 
+                                   class="form-control border-0 bg-light py-3 shadow-none rounded-3 text-center fw-bold">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Off Days</label>
+                    <div class="col-md-9">
+                        <input type="text" name="offDays" th:value="${storeVo['offDays'] ?: '연중무휴'}" 
+                               class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" placeholder="예: 매주 일요일 정기 휴무">
+                    </div>
+                </div>
+
+                <div class="mb-4 row">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase pt-2">Description</label>
+                    <div class="col-md-9">
+                        <textarea name="storeDescription" rows="4" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" 
+                                  style="resize: none;" th:text="${storeVo['storeDescription'] ?: ''}" 
+                                  placeholder="고객들에게 보여줄 매장 소개를 적어주세요"></textarea>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5 pt-3 border-top">
+                    <button type="button" id="saveBtn" class="btn btn-warning text-white fw-bold w-100 py-3 rounded-pill fs-5 shadow-sm"
+                            style="background-color: var(--moeats-orange); border: none;"
+                            onclick="handleStoreUpdate()">
+                        설정 저장하기
+                    </button>
+                    <a th:href="@{/owner/dashboard}" class="text-decoration-none text-muted small fw-bold d-block mt-3 hover-opacity">저장하지 않고 돌아가기</a>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /**
+         * [6대원칙: AJAX] 매장 정보 비동기 업데이트
+         */
+        async function handleStoreUpdate() {
+            const form = document.getElementById('storeSettingForm');
+            
+            // ⭐ 보정: querySelector를 이용한 명시적 데이터 추출 (무결성 확보)
+            const storeName = form.querySelector('[name="storeName"]').value.trim();
+            if(!storeName) { alert("매장 이름을 입력해 주세요."); return; }
+
+            if(!confirm("입력하신 정보로 매장 설정을 변경하시겠습니까?")) return;
+
+            const saveBtn = document.getElementById('saveBtn');
+            const originalText = saveBtn.innerText;
+            
+            // 폼 데이터를 JSON으로 변환
+            const formData = new FormData(form);
+            const jsonData = Object.fromEntries(formData.entries());
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>저장 중...';
+
+            try {
+                // [Security] moeatsFetch 사용하여 비동기 요청 전송
+                const result = await moeatsFetch('/owner/store/update_proc', jsonData);
+
+                if (result && result.success) {
+                    alert("매장 정보가 성공적으로 변경되었습니다.");
+                    location.href = '/owner/dashboard';
+                } else {
+                    alert(result ? result.message : "저장에 실패했습니다.");
+                    resetBtn(saveBtn, originalText);
+                }
+            } catch (error) {
+                console.error("[Store Update Error]", error);
+                alert("서버 통신 중 오류가 발생했습니다.");
+                resetBtn(saveBtn, originalText);
+            }
+        }
+
+        function resetBtn(btn, text) {
+            btn.disabled = false;
+            btn.innerText = text;
+        }
+
+        /* [6대원칙: Anti-Null] 초기화 확인 */
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentStoreIdx = /*[[${storeVo != null ? storeVo['storeIdx'] : 0}]]*/ 0;
+            console.log(`[Store Module] Settings ready for Idx: ${currentStoreIdx}`);
+        });
+    </script>
+    <style>
+        .hover-opacity:hover { opacity: 0.7; }
+    </style>
+</th:block>
 </html>

@@ -1,117 +1,173 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layouts/main-layout}">
 
-<th:block layout:fragment="css">
-    <style>
-        .register-page-wrapper { background-color: #F8F9FA; min-height: 100vh; padding: 40px 0; }
-        .register-container { 
-            max-width: 550px; margin: 0 auto; background: white; 
-            padding: 40px; border-radius: 30px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.05); 
-        }
-        
-        /* 이미지 업로드 박스 커스텀 */
-        #imagePreview { 
-            width: 100%; height: 280px; border: 2px dashed #eee; 
-            border-radius: 25px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; 
-            cursor: pointer; color: #adb5bd; overflow: hidden;
-            background-size: cover; background-position: center;
-            transition: 0.3s;
-        }
-        #imagePreview:hover { border-color: var(--mo-orange); background-color: #FFF8F0; }
-
-        .form-label { color: var(--mo-navy); margin-bottom: 8px; font-weight: 700; }
-        .form-control-mo {
-            border: none; background-color: #F1F3F5; border-radius: 15px; 
-            padding: 15px; font-size: 1rem; transition: 0.3s;
-        }
-        .form-control-mo:focus {
-            background-color: #fff; box-shadow: 0 0 0 3px rgba(255, 128, 0, 0.1);
-            outline: none; border: 1px solid var(--mo-orange);
-        }
-
-        .btn-mo-submit { 
-            background: var(--mo-orange); color: white; border: none; 
-            border-radius: 18px; padding: 18px; font-weight: 800; 
-            width: 100%; transition: 0.3s; font-size: 1.1rem;
-            margin-top: 20px;
-        }
-        .btn-mo-submit:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255, 128, 0, 0.2); }
-    </style>
-</th:block>
-
-<div layout:fragment="content" class="register-page-wrapper">
-    <div class="register-container">
-        <div class="d-flex align-items-center mb-4">
-            <i class="bi bi-chevron-left fs-4 me-3" onclick="history.back()" style="cursor:pointer"></i>
-            <h3 class="fw-bold mb-0 text-navy">새 메뉴 등록</h3>
-        </div>
-
-        <form th:action="@{/owner/menu/register}" method="post" enctype="multipart/form-data" onsubmit="return validateForm(this)">
+<div layout:fragment="content" class="container-fluid py-4">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 650px;">
+        <div class="card-body p-4 p-md-5">
             
-            <div class="mb-4">
-                <label class="form-label">메뉴 사진</label>
-                <input type="file" name="menu_file" id="menuImage" accept="image/*" style="display: none;" onchange="previewImg(this)">
-                <div id="imagePreview" onclick="document.getElementById('menuImage').click();">
-                    <i class="bi bi-camera-fill fs-1 mb-2"></i>
-                    <span class="fw-medium">사진 추가하기</span>
+            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+                <a th:href="@{/owner/menu/management}" class="text-navy text-decoration-none fw-bold me-3">
+                    <i class="bi bi-arrow-left"></i> BACK
+                </a>
+                <h3 class="fw-bold mb-0 text-navy">신규 메뉴 등록</h3>
+            </div>
+
+            <form id="menuRegisterForm" enctype="multipart/form-data" onsubmit="return false;">
+                
+                <div class="mb-4" th:with="safeCats=${categoryList ?: {}}">
+                    <div class="d-flex justify-content-between mb-2">
+                        <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
+                        <a th:href="@{/owner/category/setting}" class="text-decoration-none small fw-bold text-orange">+ 카테고리 설정</a>
+                    </div>
+                    <select name="categoryIdx" class="form-select border-0 bg-light py-3 shadow-none rounded-3 fw-bold text-navy" required>
+                        <option value="">카테고리를 선택하세요</option>
+                        <option th:each="cat : ${safeCats}" 
+                                th:value="${cat['categoryIdx'] ?: 0}" 
+                                th:text="${cat['categoryName'] ?: '미분류 카테고리'}">카테고리</option>
+                    </select>
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label">메뉴명</label>
-                <input type="text" name="menu_name" class="form-control form-control-mo" placeholder="예: 불맛 볶음면" required>
-            </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Image</label>
+                    <input type="file" name="menuFile" id="menuImage" accept="image/*" class="d-none" onchange="previewImg(this)">
+                    <div id="imagePreviewContainer" class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden" 
+                         onclick="document.getElementById('menuImage').click();"
+                         style="width: 100%; height: 250px; border: 2px dashed #ddd; cursor: pointer;">
+                        
+                        <button type="button" id="removeBtn" class="btn btn-danger btn-sm rounded-circle position-absolute shadow" 
+                                onclick="clearImg(event)"
+                                style="top: 15px; right: 15px; z-index: 10; width: 35px; height: 35px; display: none;">&times;</button>
+                        
+                        <div id="guideText" class="text-center text-secondary">
+                            <i class="bi bi-camera fs-1 d-block mb-2 text-muted"></i>
+                            <span class="fw-bold small d-block">클릭하여 사진 업로드</span>
+                        </div>
+                        <img id="previewItem" src="" class="d-none w-100 h-100" style="object-fit: cover;">
+                    </div>
+                </div>
 
-            <div class="mb-3">
-                <label class="form-label">가격 (원)</label>
-                <input type="number" name="menu_price" min="0" class="form-control form-control-mo" placeholder="숫자만 입력하세요" required>
-            </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Name</label>
+                    <input type="text" name="menuName" class="form-control border-0 bg-light py-3 shadow-none rounded-3 fw-bold" placeholder="메뉴 이름을 입력하세요" required>
+                </div>
 
-            <div class="mb-4">
-                <label class="form-label">메뉴 설명</label>
-                <textarea name="menu_desc" class="form-control form-control-mo" rows="3" placeholder="메뉴의 특징을 3줄 내외로 적어주세요"></textarea>
-            </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Price</label>
+                    <div class="input-group">
+                        <input type="number" name="menuPrice" class="form-control border-0 bg-light py-3 shadow-none text-end rounded-start-3 fw-bold" placeholder="0" required>
+                        <span class="input-group-text border-0 bg-light text-navy fw-bold rounded-end-3">원</span>
+                    </div>
+                </div>
 
-            <button type="submit" id="submitBtn" class="btn-mo-submit shadow-sm">
-                메뉴 등록 완료
-            </button>
-        </form>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Description</label>
+                    <textarea name="menuDescription" rows="3" class="form-control border-0 bg-light py-3 shadow-none rounded-3" style="resize: none;" placeholder="메뉴 설명을 입력하세요"></textarea>
+                </div>
+
+                <div class="pt-3">
+                    <button type="button" id="submitBtn" class="btn btn-warning text-white fw-bold w-100 py-3 rounded-pill fs-5 shadow-sm mb-3" 
+                            style="background-color: var(--moeats-orange); border: none;"
+                            onclick="handleRegister()">
+                        메뉴 등록 완료
+                    </button>
+                    <a th:href="@{/owner/menu/management}" class="d-block text-center text-decoration-none text-muted small fw-bold">취소</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <th:block layout:fragment="script">
-    <script>
-        // 이미지 미리보기 로직
+    <script th:inline="javascript">
+        /**
+         * [6대원칙: AJAX] 멀티파트 파일 비동기 전송 (보정 완료)
+         */
+        async function handleRegister() {
+            const form = document.getElementById('menuRegisterForm');
+            
+            // ⭐ 보정: querySelector를 이용한 명시적 데이터 추출 (무조건 안전)
+            const categoryIdx = form.querySelector('[name="categoryIdx"]').value;
+            const menuName = form.querySelector('[name="menuName"]').value.trim();
+            const menuPrice = form.querySelector('[name="menuPrice"]').value;
+            const fileInput = document.getElementById('menuImage');
+
+            // 1. 유효성 검증
+            if (!categoryIdx) { alert("카테고리를 선택해 주세요."); return; }
+            if (!menuName) { alert("메뉴 이름을 입력해 주세요."); return; }
+            if (!menuPrice) { alert("가격을 입력해 주세요."); return; }
+            if (!fileInput.files[0]) { alert("메뉴 사진을 등록해 주세요."); return; }
+
+            if(!confirm("새로운 메뉴를 등록하시겠습니까?")) return;
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
+
+            const formData = new FormData(form);
+
+            // [Security] CSRF
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            try {
+                const response = await fetch('/owner/menu/register_proc', {
+                    method: 'POST', 
+                    headers: { ...(header && { [header]: token }) }, 
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const result = await response.json();
+                if (result.success) {
+                    alert("메뉴 등록이 완료되었습니다.");
+                    location.href = '/owner/menu/management';
+                } else {
+                    alert(result.message || "등록 실패");
+                    resetBtn(submitBtn);
+                }
+            } catch (error) {
+                console.error("[API Error]:", error);
+                alert("통신 중 오류가 발생했습니다.");
+                resetBtn(submitBtn);
+            }
+        }
+
+        function resetBtn(btn) {
+            btn.disabled = false;
+            btn.innerText = "메뉴 등록 완료";
+        }
+
+        /* 이미지 미리보기 및 제거 로직 */
         function previewImg(input) {
-            const preview = document.getElementById('imagePreview');
+            const preview = document.getElementById('previewItem');
+            const guide = document.getElementById('guideText');
+            const removeBtn = document.getElementById('removeBtn');
+            const container = document.getElementById('imagePreviewContainer');
+            
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.style.backgroundImage = `url(${e.target.result})`;
-                    preview.innerHTML = ''; // 기존 아이콘 제거
-                    preview.style.border = 'none';
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                    guide.classList.add('d-none');
+                    removeBtn.style.display = 'block';
+                    container.style.border = "none";
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        // 폼 유효성 검사 및 로딩 처리
-        function validateForm(form) {
-            const btn = document.getElementById('submitBtn');
-            const fileInput = document.getElementById('menuImage');
-
-            if (!fileInput.files || fileInput.files.length === 0) {
-                alert("메뉴 사진을 등록해주세요!");
-                return false;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>등록 중...';
-            return true;
+        function clearImg(e) {
+            e.stopPropagation(); 
+            document.getElementById('menuImage').value = "";
+            document.getElementById('previewItem').classList.add('d-none');
+            document.getElementById('guideText').classList.remove('d-none');
+            document.getElementById('removeBtn').style.display = 'none';
+            document.getElementById('imagePreviewContainer').style.border = "2px dashed #ddd";
         }
     </script>
 </th:block>

@@ -1,142 +1,115 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layouts/main-layout}">
 
-<th:block layout:fragment="css">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <style>
-        .dashboard-wrapper { background-color: #F5F7FA; min-height: 100vh; }
-        .dashboard-content { display: flex; gap: 24px; padding: 20px 0; }
-        @media (max-width: 992px) { .dashboard-content { flex-direction: column; } }
+<div layout:fragment="content" class="container-fluid px-4 h-100">
 
-        .order-section { flex: 4; min-width: 400px; }
-        .order-list-container { max-height: calc(100vh - 150px); overflow-y: auto; padding-right: 10px; }
+    <div class="row g-3 h-100">
 
-        .map-section { flex: 6; position: sticky; top: 20px; height: calc(100vh - 80px); }
-        .map-card { height: 100%; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.06); background: white; border: 1px solid #eee; }
-        #map { width: 100%; height: 100%; background: #fdfdfd; }
+        <div class="col-lg-4 col-xl-3 h-100 d-flex flex-column">
 
-        /* 주문 카드 디자인 */
-        .order-card { background: white; border-radius: 22px; border: 1px solid #edf2f7; padding: 24px; margin-bottom: 16px; transition: 0.3s; position: relative; cursor: pointer; }
-        .order-card:hover { border-color: var(--mo-orange); transform: translateX(5px); }
-        .order-card.new { border-top: 5px solid var(--mo-orange); }
-        .order-card.cooking { border-left: 6px solid var(--mo-navy); }
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-2 pb-2" style="border-color: var(--moeats-navy) !important;">
+                <h5 class="fw-bold mb-0 text-navy">
+                    <i class="bi bi-megaphone-fill text-danger me-2"></i>실시간 주문
+                </h5>
+                <span class="badge bg-dark text-white rounded-pill"
+                      th:text="|총 ${#lists.size(orderList ?: {})}건|">0건</span>
+            </div>
 
-        .btn-mo-action { width: 100%; padding: 14px; border-radius: 14px; font-weight: 800; transition: 0.2s; border: none; font-size: 1rem; }
-        .btn-accept { background: var(--mo-orange); color: white; }
-        .btn-accept:hover { background: #e67300; box-shadow: 0 5px 15px rgba(255, 128, 0, 0.3); }
-        .btn-finish { background: var(--mo-navy); color: white; }
-        .btn-finish:hover { background: #1a2040; box-shadow: 0 5px 15px rgba(37, 45, 89, 0.3); }
+            <div id="order-list-area" class="flex-grow-1 overflow-auto no-scrollbar">
+                <th:block th:if="${not #lists.isEmpty(orderList ?: {})}">
+                    <a th:each="order : ${orderList}"
+                       th:href="@{/owner/order/detail(roomIdx=${order.roomIdx ?: 0})}"
+                       class="order-card d-block mb-2 p-3 text-decoration-none text-dark border-start border-4 bg-white rounded shadow-sm"
+                       th:classappend="${order.roomStatus == 'PENDING'} ? 'border-warning' :
+                                       (${order.roomStatus == 'PREPARING'} ? 'border-primary' : 'border-success')">
 
-        .status-badge { font-size: 0.8rem; padding: 5px 14px; border-radius: 50px; font-weight: 700; margin-bottom: 10px; display: inline-block; }
-        .bg-orange-light { background: #FFF0E0; color: var(--mo-orange); }
-        .bg-navy-light { background: #E9ECEF; color: var(--mo-navy); }
-    </style>
-</th:block>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small text-muted fw-bold"
+                                  th:text="|${order.orderTime ?: '00:00'} 주문|"></span>
 
-<div layout:fragment="content" class="dashboard-wrapper">
-    <div class="container-fluid px-4">
-        
-        <div th:if="${is_empty}" class="text-center py-5">
-            <div class="soft-card p-5 shadow-sm border-0">
-                <i class="bi bi-shop fs-1 text-orange mb-3"></i>
-                <h3 class="fw-bold">아직 메뉴가 등록되지 않았습니다</h3>
-                <p class="text-muted">가게 운영을 위해 메뉴를 먼저 등록해주세요!</p>
-                <a th:href="@{/owner/menu/register}" class="btn btn-primary-mo mt-3 px-5">메뉴 등록하기</a>
+                            <span class="badge"
+                                  th:classappend="${order.roomStatus == 'PENDING'} ? 'bg-warning text-dark' :
+                                                  (${order.roomStatus == 'PREPARING'} ? 'bg-primary' : 'bg-success')"
+                                  th:text="${order.roomStatus == 'PENDING'} ? '신규' :
+                                          (${order.roomStatus == 'PREPARING'} ? '조리중' : '완료')">
+                            </span>
+                        </div>
+
+                        <div class="fw-bold fs-5 mb-1 text-navy" th:text="${order.menuName ?: '메뉴 정보 없음'}"></div>
+                        <div class="fw-bold text-orange mb-2" th:text="|${order.totalPrice ?: 0}원|">0원</div>
+                        <p class="small text-muted mb-0 text-truncate" th:text="${order.deliveryAddress1 ?: '주소 정보 없음'}"></p>
+                    </a>
+                </th:block>
+
+                <div th:if="${#lists.isEmpty(orderList ?: {})}" class="text-center py-5 bg-white rounded shadow-sm border border-dashed">
+                    <i class="bi bi-inbox text-light fs-1 d-block mb-2"></i>
+                    <p class="text-muted small fw-bold">접수된 주문이 없습니다.</p>
+                </div>
             </div>
         </div>
 
-        <div th:unless="${is_empty}" class="dashboard-content">
-            <section class="order-section">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold mb-0 text-navy">실시간 주문 <span class="text-orange" th:text="${new_order_count ?: 3}">3</span></h4>
-                    <div class="badge bg-white text-success border rounded-pill px-3 py-2">
-                        <i class="bi bi-circle-fill blink me-1"></i> LIVE 관제중
-                    </div>
-                </div>
-
-                <div class="order-list-container custom-scrollbar">
-                    <div class="order-card new shadow-sm" id="order-201" onclick="goToDetail(201, 'ACCEPTED')">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <span class="status-badge bg-orange-light">신규 주문</span>
-                            <span class="small text-muted font-monospace">18:40</span>
-                        </div>
-                        <h5 class="fw-bold text-navy mb-1">훈제치킨 한마리 (순한맛)</h5>
-                        <p class="small text-muted mb-4"><i class="bi bi-geo-alt"></i> 대구 중구 국채보상로 600</p>
-                        
-                        <button class="btn-mo-action btn-accept" onclick="event.stopPropagation(); processOrder(201, 'accept')">
-                            주문 접수 (조리 시작)
-                        </button>
-                    </div>
-
-                    <div class="order-card cooking shadow-sm" id="order-202" onclick="goToDetail(202, 'PREPARING')">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <span class="status-badge bg-navy-light">조리 중 (12분 경과)</span>
-                            <span class="small text-muted font-monospace">#A-442</span>
-                        </div>
-                        <h5 class="fw-bold text-navy mb-1">불맛 볶음면 외 1건</h5>
-                        <p class="small text-muted mb-4"><i class="bi bi-geo-alt"></i> 대구 중구 중앙대로 401 (반월당)</p>
-                        
-                        <button class="btn-mo-action btn-finish" onclick="event.stopPropagation(); processOrder(202, 'complete')">
-                            조리 완료 (픽업 요청)
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="map-section">
-                <div class="map-card">
-                    <div id="map"></div>
-                </div>
-            </section>
+        <div class="col-lg-8 col-xl-9 h-100">
+            <div class="h-100 w-100 rounded-4 overflow-hidden shadow-sm border">
+                <div id="moeats-map" class="w-100 h-100 bg-light"></div>
+            </div>
         </div>
+
     </div>
 </div>
 
 <th:block layout:fragment="script">
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3355be34fede739dcf93c2a5f3ec84f1"></script>
-    
+
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3355be34fede739dcf93c2a5f3ec84f1&autoload=false"></script>
+
     <script th:inline="javascript">
-        window.onload = function() {
-            var container = document.getElementById('map');
-            if(container) {
-                var options = { center: new kakao.maps.LatLng(35.8714, 128.6014), level: 3 };
-                var map = new kakao.maps.Map(container, options);
-                new kakao.maps.Marker({ position: new kakao.maps.LatLng(35.8714, 128.6014), map: map });
-            }
-        };
+        let map;
 
-        // 상세페이지 이동 함수 (명세서 규칙 적용)
-        function goToDetail(orderIdx, orderStatus) {
-            location.href = `/owner/order/detail?order_idx=${orderIdx}&order_status=${orderStatus}`;
-        }
+        function createMap() {
+            const container = document.getElementById('moeats-map');
+            if (!container) return;
 
-        // 주문 상태 변경 프로세스 (명세서 v1 준수)
-        function processOrder(orderIdx, type) {
-            let confirmMsg = "";
-            let targetStatus = "";
+            // 6대원칙: Anti-Null JS 인라인 (기본값 할당)
+            const lat = /*[[${storeVo?.latitude ?: 35.8714}]]*/ 35.8714;
+            const lng = /*[[${storeVo?.longitude ?: 128.6014}]]*/ 128.6014;
 
-            if(type === 'accept') {
-                confirmMsg = "주문을 접수하시겠습니까?\n고객님께 조리 시작 알림이 전송됩니다.";
-                targetStatus = "PREPARING"; // 명세서 표준 코드값
-            } else if(type === 'complete') {
-                confirmMsg = "조리가 완료되었습니까?\n픽업 대기 상태로 변경하고 라이더를 호출합니다.";
-                targetStatus = "READY";     // 명세서 표준 코드값
-            }
+            const center = new kakao.maps.LatLng(lat, lng);
 
-            if(confirm(confirmMsg)) {
-                const card = document.getElementById('order-' + orderIdx);
-                const btn = card.querySelector('.btn-mo-action');
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
-                
-                // 명세서 규격에 맞춘 쿼리 파라미터 전송
-                setTimeout(() => {
-                    location.href = `/owner/order/detail?order_idx=${orderIdx}&order_status=${targetStatus}`;
-                }, 600);
+            map = new kakao.maps.Map(container, {
+                center: center,
+                level: 3
+            });
+
+            new kakao.maps.Marker({
+                position: center,
+                map: map
+            });
+
+            // main-layout에 정의된 사이드바 연동 리레이아웃 바인딩
+            if(typeof bindMapRelayout === 'function') {
+                bindMapRelayout(map);
             }
         }
+
+        function fixMapRender() {
+            if (!map) return;
+            setTimeout(() => {
+                map.relayout();
+                map.setCenter(map.getCenter());
+            }, 300);
+        }
+
+        // 초기화 로직
+        window.addEventListener('load', function () {
+            if (window.kakao && kakao.maps) {
+                kakao.maps.load(function () {
+                    createMap();
+                    fixMapRender();
+                });
+            }
+        });
     </script>
 </th:block>
 </html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+
+<div layout:fragment="content" class="container-fluid py-4" style="max-width: 850px;">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+        <div>
+            <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-chat-left-dots me-2 text-orange"></i>리뷰 관리</h2>
+            <p class="text-secondary small mb-0 mt-1">고객님의 소중한 리뷰에 답글을 남겨 소통하세요.</p>
+        </div>
+        <span class="badge bg-white text-navy border fw-bold rounded-pill px-3 py-2 shadow-sm" 
+              th:text="|총 리뷰 ${#lists.size(reviewList ?: {})}건|">총 0건</span>
+    </div>
+
+    <div th:if="${#lists.isEmpty(reviewList ?: {})}" class="text-center py-5 shadow-sm rounded-4 bg-white border border-dashed">
+        <i class="bi bi-chat-square-quote fs-1 text-light d-block mb-3 opacity-50"></i>
+        <p class="text-muted fw-bold mb-0">아직 등록된 리뷰가 없습니다.</p>
+    </div>
+
+    <div th:each="review : ${reviewList ?: {}}" 
+         th:id="|review-card-${review['reviewIdx'] ?: 0}|" 
+         class="card mb-4 p-4 shadow-sm border-0 bg-white rounded-4">
+        
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <span class="fw-bold fs-5 text-navy" th:text="${review['memberNickname'] ?: '익명님'}">닉네임</span>
+                <div class="mt-2 d-flex align-items-center">
+                    <span class="badge rounded-pill px-3 py-1 fw-bold bg-orange text-white" 
+                          th:text="|★ ${review['reviewRating'] ?: 0}|">★ 0</span>
+                    <span class="ms-2 small text-secondary fw-bold border-start ps-2" th:text="${review['menuName'] ?: '주문 메뉴'}">메뉴명</span>
+                </div>
+            </div>
+            <small class="text-secondary fw-bold" th:text="${review['regDate'] ?: '0000-00-00'}">날짜</small>
+        </div>
+
+        <div class="bg-light p-3 rounded-3 mb-4 border-0">
+            <p class="text-dark mb-0 lh-base fw-medium" th:text="${review['reviewContent'] ?: '내용이 없는 리뷰입니다.'}">리뷰 내용</p>
+        </div>
+
+        <div th:id="|reply-area-${review['reviewIdx'] ?: 0}|">
+            
+            <div th:if="${review['replyContent'] != null}" class="p-3 shadow-sm border-0 rounded-3 bg-light" 
+                 style="border-left: 5px solid var(--moeats-navy) !important;">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-dark px-2 py-1 small me-2" style="background-color: var(--moeats-navy) !important;">사장님 답글</span>
+                    <small class="text-muted fw-bold" th:text="${review['replyRegDate'] ?: ''}">날짜</small>
+                </div>
+                <p class="mb-0 small text-navy fw-bold" th:text="${review['replyContent']}">답글 내용</p>
+            </div>
+
+            <div th:if="${review['replyContent'] == null}" class="mt-2">
+                <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                    <input type="text" th:id="|reply-input-${review['reviewIdx'] ?: 0}|" 
+                           class="form-control border-0 bg-white py-3 px-4 shadow-none fs-6 fw-bold" 
+                           placeholder="고객님께 따뜻한 답글을 남겨주세요" required>
+                    <button class="btn btn-primary fw-bold px-4" 
+                            style="background-color: var(--moeats-orange); border: none;"
+                            th:onclick="submitReviewReply([[${review['reviewIdx'] ?: 0}]])">등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /**
+         * [6대원칙: AJAX] 리뷰 답글 비동기 등록
+         */
+        async function submitReviewReply(idx) {
+            if(!idx || idx === 0) return;
+
+            const inputField = document.getElementById(`reply-input-${idx}`);
+            const content = inputField.value.trim();
+
+            if(!content) {
+                alert("답글 내용을 입력해 주세요.");
+                inputField.focus();
+                return;
+            }
+
+            if(!confirm("작성하신 답글을 등록하시겠습니까?")) return;
+
+            try {
+                // [Security] moeatsFetch 공통 함수 사용 (CSRF 포함)
+                // [Rule] 데이터 변경은 POST 고정
+                const result = await moeatsFetch('/owner/review/reply_proc', {
+                    reviewIdx: String(idx),
+                    replyContent: content
+                });
+
+                if (result && result.success) {
+                    // [6대원칙: AJAX] 화면 새로고침 없이 DOM 즉시 교체
+                    const replyArea = document.getElementById(`reply-area-${idx}`);
+                    const today = new Date().toISOString().split('T')[0];
+
+                    replyArea.innerHTML = `
+                        <div class="p-3 shadow-sm border-0 rounded-3 bg-light animate__animated animate__fadeIn" 
+                             style="border-left: 5px solid var(--moeats-navy) !important;">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-dark px-2 py-1 small me-2" style="background-color: #1A1E3B;">사장님 답글</span>
+                                <small class="text-muted fw-bold">${today}</small>
+                            </div>
+                            <p class="mb-0 small text-navy fw-bold">${content}</p>
+                        </div>
+                    `;
+                    console.log(`[Review Sync] Reply added for ReviewIdx: ${idx}`);
+                } else {
+                    alert(result ? result.message : "등록에 실패했습니다.");
+                }
+            } catch (error) {
+                console.error("[Review Error]", error);
+                alert("통신 중 오류가 발생했습니다.");
+            }
+        }
+
+        /* [6대원칙: Anti-Null] 초기화 확인 */
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("[Review Management] Module synchronized.");
+        });
+    </script>
+</th:block>
+</html>

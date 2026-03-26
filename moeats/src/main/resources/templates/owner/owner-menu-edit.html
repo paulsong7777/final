@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main-layout}">
+
+<div layout:fragment="content" class="container-fluid py-4">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 650px;">
+        <div class="card-body p-4 p-md-5">
+            
+            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+                <a th:href="@{/owner/menu/management}" class="text-navy text-decoration-none fw-bold me-3">
+                    <i class="bi bi-arrow-left"></i> BACK
+                </a>
+                <h3 class="fw-bold mb-0 text-navy">메뉴 정보 수정</h3>
+            </div>
+
+            <form id="menuEditForm" enctype="multipart/form-data" onsubmit="return false;">
+                
+                <input type="hidden" name="menuIdx" th:value="${menuVo['menuIdx'] ?: 0}">
+
+                <div class="mb-4 text-center">
+                    <label class="form-label d-block small fw-bold text-secondary text-uppercase text-start">Menu Image</label>
+                    <input type="file" id="menuFile" name="menuFile" accept="image/*" class="d-none" onchange="previewImage(this)">
+                    <div class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden shadow-none" 
+                         onclick="document.getElementById('menuFile').click()"
+                         style="width: 100%; height: 250px; border: 2px dashed #ddd; cursor: pointer;">
+                        
+                        <img id="imagePreview" 
+                             th:src="${menuVo['menuImg'] ?: 'https://via.placeholder.com/500/FF8000/FFFFFF?text=No+Image'}" 
+                             class="w-100 h-100" style="object-fit: cover; display: block;">
+                        
+                        <div id="uploadOverlay" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 opacity-0 transition-all" 
+                             style="top:0; left:0; pointer-events: none;">
+                            <span class="fw-bold small text-white text-center">
+                                <i class="bi bi-camera-fill d-block fs-3 mb-1"></i>
+                                이미지를 변경하려면 클릭하세요
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-text mt-2 small text-muted">이미지를 클릭하면 사진을 변경할 수 있습니다.</div>
+                </div>
+
+                <div class="mb-4" th:with="safeCats=${categoryList ?: {}}">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
+                    <select name="categoryIdx" class="form-select border-0 bg-light py-3 shadow-none rounded-3 fw-bold text-navy" required>
+                        <option value="">카테고리를 선택하세요</option>
+                        <option th:each="cat : ${safeCats}" 
+                                th:value="${cat['categoryIdx'] ?: 0}" 
+                                th:text="${cat['categoryName'] ?: '미분류'}"
+                                th:selected="${cat['categoryIdx'] == menuVo['categoryIdx']}">카테고리</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Name</label>
+                    <input type="text" name="menuName" class="form-control border-0 bg-light py-3 shadow-none rounded-3 fw-bold" 
+                           th:value="${menuVo['menuName'] ?: ''}" required placeholder="메뉴 이름을 입력하세요">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Price (KRW)</label>
+                    <div class="input-group">
+                        <input type="number" name="menuPrice" class="form-control border-0 bg-light py-3 shadow-none text-end rounded-start-3 fw-bold" 
+                               th:value="${menuVo['menuPrice'] ?: 0}" required min="0">
+                        <span class="input-group-text border-0 bg-light text-navy fw-bold rounded-end-3">원</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Description</label>
+                    <textarea name="menuDescription" class="form-control border-0 bg-light py-3 shadow-none rounded-3" 
+                              rows="4" th:text="${menuVo['menuDescription'] ?: ''}" 
+                              style="resize: none;" placeholder="메뉴 설명을 입력하세요"></textarea>
+                </div>
+
+                <div class="row g-2 pt-3">
+                    <div class="col-4">
+                        <button type="button" class="btn btn-outline-secondary w-100 py-3 rounded-pill fw-bold" 
+                                onclick="location.href='/owner/menu/management'">취소</button>
+                    </div>
+                    <div class="col-8">
+                        <button type="button" id="submitBtn" class="btn btn-warning text-white fw-bold w-100 py-3 rounded-pill fs-5 shadow-sm"
+                                style="background-color: var(--moeats-orange); border: none;"
+                                onclick="handleEditSubmit()">
+                            수정 완료
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /**
+         * [6대원칙: AJAX] Fetch API 비동기 멀티파트 수정 처리
+         */
+        async function handleEditSubmit() {
+            const form = document.getElementById('menuEditForm');
+            
+            // ⭐ [사용자 기준 보정] querySelector를 활용한 명시적 데이터 추출
+            const categoryIdx = form.querySelector('[name="categoryIdx"]').value;
+            const menuName = form.querySelector('[name="menuName"]').value.trim();
+            const menuPrice = form.querySelector('[name="menuPrice"]').value;
+
+            // 1. 유효성 검증
+            if(!categoryIdx) { alert("카테고리를 선택해 주세요."); return; }
+            if(!menuName) { alert("메뉴 이름을 입력해 주세요."); return; }
+            if(!menuPrice) { alert("가격을 입력해 주세요."); return; }
+
+            if(!confirm("변경 사항을 저장하시겠습니까?")) return;
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>수정 중...';
+
+            // 2. [Security] CSRF 토큰 매핑
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+            
+            const formData = new FormData(form);
+
+            try {
+                // [Rule] 데이터 수정 요청은 POST 고정
+                const response = await fetch('/owner/menu/edit_proc', {
+                    method: 'POST',
+                    headers: { 
+                        ...(header && { [header]: token })
+                        // multipart/form-data 시 경계값 자동 생성을 위해 Content-Type 생략
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert("성공적으로 수정되었습니다.");
+                    location.href = '/owner/menu/management';
+                } else {
+                    alert(result.message || "수정에 실패했습니다.");
+                    resetSubmitBtn(submitBtn, originalText);
+                }
+
+            } catch (error) {
+                console.error("[Critical Edit Error]:", error);
+                alert("서버 통신 중 오류가 발생했습니다.");
+                resetSubmitBtn(submitBtn, originalText);
+            }
+        }
+
+        function resetSubmitBtn(btn, text) {
+            btn.disabled = false;
+            btn.innerText = text;
+        }
+
+        /**
+         * 이미지 미리보기 로직
+         */
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { preview.src = e.target.result; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        /**
+         * 이미지 업로드 영역 마우스 인터랙션 (시인성 강화)
+         */
+        document.addEventListener("DOMContentLoaded", () => {
+            const uploadArea = document.querySelector('.card-body div[onclick]');
+            const overlay = document.getElementById('uploadOverlay');
+            
+            if(uploadArea && overlay) {
+                uploadArea.onmouseenter = () => { overlay.style.opacity = '1'; };
+                uploadArea.onmouseleave = () => { overlay.style.opacity = '0'; };
+            }
+            
+            console.log("[Menu Edit Module] Ready.");
+        });
+    </script>
+</th:block>
+</html>

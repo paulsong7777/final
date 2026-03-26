@@ -1,267 +1,183 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layouts/main-layout}">
 
-<th:block layout:fragment="css">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <style>
-        .register-page-container { min-height: 95vh; background-color: #F8F9FA; padding-bottom: 80px; }
-        
-        /* [일관성 핵심] 모든 입력 필드 디자인 통일 */
-        .form-group { margin-bottom: 1.5rem; width: 100%; }
-        
-        .form-label { 
-            display: block; font-size: 0.85rem; font-weight: 700; 
-            color: var(--mo-navy); margin-bottom: 10px; margin-left: 4px; 
-        }
-
-        .form-control { 
-            width: 100% !important;
-            height: 54px !important; 
-            border: 1px solid #E9ECEF !important; 
-            border-radius: 16px !important; 
-            padding: 0 18px !important; 
-            background-color: #FFFFFF !important; 
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-
-        textarea.form-control {
-            height: auto !important;
-            padding: 18px !important;
-            min-height: 120px;
-        }
-
-        .form-control:focus { 
-            border-color: var(--mo-orange) !important; 
-            box-shadow: 0 0 0 4px rgba(255, 128, 0, 0.1) !important; 
-            outline: none; 
-        }
-
-        /* 사진 업로드 영역 */
-        .image-upload-zone {
-            width: 100%; height: 220px; border: 2px dashed #D1D5DB; border-radius: 20px;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            cursor: pointer; overflow: hidden; background-color: #FFFFFF; transition: 0.3s;
-            margin-bottom: 2rem;
-        }
-        .image-upload-zone:hover { border-color: var(--mo-orange); background-color: #FFFAF5; }
-        #imagePreview { width: 100%; height: 100%; object-fit: cover; display: none; }
-
-        .pending-item { 
-            display: flex; align-items: center; gap: 15px; background: white; 
-            border-radius: 20px; padding: 15px; margin-bottom: 12px;
-            border: 1px solid #EEE; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            animation: slideIn 0.3s ease-out;
-        }
-        .pending-img { width: 60px; height: 60px; border-radius: 14px; object-fit: cover; }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .sticky-side { position: sticky; top: 20px; }
-    </style>
-</th:block>
-
-<div layout:fragment="content" class="register-page-container">
-    <div class="container py-4">
-        
-        <div class="mb-5 d-flex justify-content-between align-items-center">
-            <div>
-                <a th:href="@{/owner/dashboard}" class="text-decoration-none text-muted small mb-1 d-inline-block">
-                    <i class="bi bi-chevron-left"></i> 대시보드로 돌아가기
-                </a>
-                <h3 class="fw-bold mb-0" style="color: var(--mo-navy);">메뉴 구성하기</h3>
+<div layout:fragment="content" class="container py-5">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 600px;">
+        <div class="card-body p-4 p-md-5">
+            
+            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+                <h3 class="fw-bold mb-0 text-navy">신규 메뉴 등록</h3>
             </div>
-            <div class="text-end">
-                <span class="badge bg-white text-dark border rounded-pill px-3 py-2 shadow-sm">
-                    대기 중 <b class="text-orange" id="totalCount">0</b>건
-                </span>
-            </div>
-        </div>
 
-        <div class="row g-5 justify-content-center">
-            <div class="col-lg-5 order-2 order-lg-1">
-                <div class="soft-card shadow-sm h-100 d-flex flex-column">
-                    <h5 class="fw-bold mb-4"> 등록 예정 리스트</h5>
-                    <div id="tempMenuList" class="flex-grow-1" style="max-height: 600px; overflow-y: auto;">
-                        <div class="text-center py-5" id="emptyMsg">
-                            <p class="text-muted">우측 폼을 작성하여<br>리스트에 메뉴를 추가해주세요.</p>
-                        </div>
+            <form id="menuRegisterForm" enctype="multipart/form-data" onsubmit="return false;">
+                
+                <div class="mb-4" th:with="safeCats=${categoryList ?: {}}">
+                    <div class="d-flex justify-content-between mb-2">
+                        <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
+                        <a th:href="@{/owner/category/setting}" class="text-decoration-none small fw-bold text-orange">+ 설정</a>
                     </div>
-                    <div class="mt-4 pt-4 border-top">
-                        <button type="button" class="btn-primary-mo w-100 py-3 shadow-lg" onclick="submitFinal()">
-                            서버에 일괄 등록하기
-                        </button>
+                    <select name="categoryIdx" class="form-select py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" required>
+                        <option value="">카테고리를 선택하세요</option>
+                        <option th:each="cat : ${safeCats}" 
+                                th:value="${cat['categoryIdx'] ?: 0}" 
+                                th:text="${cat['categoryName'] ?: '미분류 카테고리'}">카테고리</option>
+                    </select>
+                    <div th:if="${#lists.isEmpty(safeCats)}" class="form-text text-danger small mt-1">
+                        <i class="bi bi-exclamation-triangle"></i> 먼저 카테고리를 등록해주세요.
                     </div>
                 </div>
-            </div>
 
-            <div class="col-lg-6 order-1 order-lg-2">
-                <div class="sticky-side">
-                    <div class="soft-card shadow-sm border-0">
-                        <h5 class="fw-bold mb-4"> 메뉴 정보 입력</h5>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Image</label>
+                    <input type="file" id="imageFile" name="menuFile" class="form-control d-none" accept="image/*" onchange="previewImage(this)">
+                    <div id="imageContainer" class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden transition-all shadow-none" 
+                         onclick="document.getElementById('imageFile').click()" 
+                         style="width: 100%; height: 220px; border: 2px dashed #ddd; cursor: pointer;">
                         
-                        <div class="image-upload-zone" onclick="document.getElementById('menu_file').click()">
-                            <div id="uploadPlaceholder" class="text-center">
-                                <i class="bi bi-camera fs-1 text-muted"></i>
-                                <p class="small text-muted mb-0 mt-2">메뉴 사진 업로드 (필수)</p>
-                            </div>
-                            <img id="imagePreview" src="">
-                            <input type="file" id="menu_file" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                        <button type="button" id="removeBtn" class="btn btn-danger btn-sm rounded-circle position-absolute shadow" 
+                                style="display:none; top: 12px; right: 12px; z-index: 10; width: 35px; height: 35px;" 
+                                onclick="clearImage(event)">&times;</button>
+                        
+                        <div id="guideMsg" class="text-center text-secondary">
+                            <i class="bi bi-camera fs-1 d-block mb-2 text-muted"></i>
+                            <span class="fw-bold small d-block">클릭하여 이미지 업로드</span>
+                            <span style="font-size: 0.7rem;" class="opacity-75">권장: 정사각형 (JPG, PNG)</span>
                         </div>
-
-                        <div class="form-group">
-                            <label class="form-label">메뉴 이름</label>
-                            <input type="text" id="menu_name" class="form-control" placeholder="예: 매운 찜갈비">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">판매 가격</label>
-                            <input type="number" id="menu_price" class="form-control" placeholder="숫자만 입력 (원)">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">메뉴 상세 설명</label>
-                            <textarea id="menu_desc" class="form-control" placeholder="손님들에게 메뉴를 소개해주세요."></textarea>
-                        </div>
-
-                        <button type="button" class="btn-outline-mo w-100 py-3 mt-2" onclick="addMenuToList()">
-                            <i class="bi bi-plus-lg me-2"></i>리스트에 추가하기
-                        </button>
+                        <img id="preview" src="" class="d-none w-100 h-100" style="object-fit: cover;">
                     </div>
                 </div>
-            </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Name</label>
+                    <input type="text" name="menuName" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" placeholder="메뉴 이름을 입력하세요" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Price (KRW)</label>
+                    <div class="input-group">
+                        <input type="number" name="menuPrice" class="form-control py-3 text-end border-0 bg-light shadow-none rounded-start-3 fw-bold" placeholder="0" required min="0">
+                        <span class="input-group-text bg-light border-0 text-navy fw-bold rounded-end-3">원</span>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-5">
+                    <button type="button" id="submitBtn" class="btn btn-warning text-white fw-bold py-3 fs-5 shadow-sm rounded-pill" 
+                            style="background-color: var(--moeats-orange); border: none;"
+                            onclick="handleMenuRegister()">등록 완료</button>
+                    <button type="button" class="btn btn-link text-decoration-none text-muted small fw-bold" 
+                            onclick="location.href='/owner/menu/management'">취소하고 돌아가기</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
-        let menuArray = [];
+        /**
+         * [6대원칙: AJAX] FormData를 활용한 비동기 멀티파트 전송
+         */
+        async function handleMenuRegister() {
+            const form = document.getElementById('menuRegisterForm');
+            
+            // ⭐ 보정: querySelector를 이용한 명시적 데이터 추출 (무결성 필터링)
+            const categoryIdx = form.querySelector('[name="categoryIdx"]').value;
+            const menuName = form.querySelector('[name="menuName"]').value.trim();
+            const menuPrice = form.querySelector('[name="menuPrice"]').value;
+            const fileInput = document.getElementById('imageFile');
 
+            // 1. 유효성 검증
+            if (!categoryIdx) { alert("카테고리를 선택해주세요."); return; }
+            if (!fileInput.files[0]) { alert("메뉴 이미지를 등록해주세요."); return; }
+            if (!menuName) { alert("메뉴 명칭을 입력해주세요."); return; }
+            if (!menuPrice) { alert("가격을 입력해주세요."); return; }
+
+            if(!confirm("이 내용으로 메뉴를 등록하시겠습니까?")) return;
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
+
+            // [6대원칙: Security] CSRF 토큰 매핑
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            const formData = new FormData(form);
+
+            try {
+                // [Rule] 데이터 등록은 POST 고정
+                const response = await fetch('/owner/menu/register_proc', {
+                    method: 'POST', 
+                    headers: { 
+                        ...(header && { [header]: token })
+                        // multipart/form-data 시 Content-Type 수동 설정 금지 (브라우저 위임)
+                    }, 
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert("성공적으로 등록되었습니다.");
+                    location.href = '/owner/menu/management';
+                } else {
+                    alert(result.message || "등록 실패");
+                    resetBtn(submitBtn, originalText);
+                }
+            } catch (error) {
+                console.error("[Network Failure]:", error);
+                alert("서버 통신 중 오류가 발생했습니다.");
+                resetBtn(submitBtn, originalText);
+            }
+        }
+
+        function resetBtn(btn, text) {
+            btn.disabled = false;
+            btn.innerText = text;
+        }
+
+        /* 이미지 미리보기 로직 */
         function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
-            const placeholder = document.getElementById('uploadPlaceholder');
+            const preview = document.getElementById('preview');
+            const guideMsg = document.getElementById('guideMsg');
+            const removeBtn = document.getElementById('removeBtn');
+
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    placeholder.style.display = 'none';
+                    preview.classList.remove('d-none');
+                    guideMsg.classList.add('d-none');
+                    removeBtn.style.display = 'block';
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function addMenuToList() {
-            // [수정] 명세서 snake_case ID로 접근
-            const name = document.getElementById('menu_name').value;
-            const price = document.getElementById('menu_price').value;
-            const desc = document.getElementById('menu_desc').value;
-            const fileInput = document.getElementById('menu_file');
-            const previewSrc = document.getElementById('imagePreview').src;
+        function clearImage(e) {
+            e.stopPropagation(); 
+            const input = document.getElementById('imageFile');
+            const preview = document.getElementById('preview');
+            const guideMsg = document.getElementById('guideMsg');
+            const removeBtn = document.getElementById('removeBtn');
 
-            if(!name || !price || !fileInput.files[0]) {
-                alert("사진, 이름, 가격은 필수 항목입니다! ");
-                return;
-            }
-
-            // [핵심] 자바스크립트 객체의 키 값도 명세서와 일치시킴
-            const menuData = {
-                menu_name: name,
-                menu_price: price,
-                menu_desc: desc,
-                img_src: previewSrc, // 미리보기용
-                file_data: fileInput.files[0] // 실제 전송용
-            };
-
-            menuArray.push(menuData);
-            renderList();
-            resetForm();
+            input.value = "";
+            preview.src = "";
+            preview.classList.add('d-none');
+            guideMsg.classList.remove('d-none');
+            removeBtn.style.display = 'none';
         }
 
-        function renderList() {
-            const listDiv = document.getElementById('tempMenuList');
-            const totalCount = document.getElementById('totalCount');
-
-            listDiv.innerHTML = '';
-            totalCount.innerText = menuArray.length;
-
-            if (menuArray.length === 0) {
-                listDiv.innerHTML = '<div class="text-center py-5" id="emptyMsg"><p class="text-muted">우측 폼을 작성하여<br>리스트에 메뉴를 추가해주세요.</p></div>';
-                return;
-            }
-
-            menuArray.forEach((item, index) => {
-                const itemHtml = `
-                    <div class="pending-item">
-                        <img src="${item.img_src}" class="pending-img">
-                        <div class="flex-grow-1">
-                            <div class="fw-bold text-dark">${item.menu_name}</div>
-                            <div class="small text-orange">${Number(item.menu_price).toLocaleString()}원</div>
-                        </div>
-                        <button type="button" class="btn btn-sm text-danger" onclick="removeItem(${index})">
-                            <i class="bi bi-trash fs-5"></i>
-                        </button>
-                    </div>
-                `;
-                listDiv.insertAdjacentHTML('beforeend', itemHtml);
-            });
-        }
-
-        function removeItem(index) {
-            menuArray.splice(index, 1);
-            renderList();
-        }
-
-        function resetForm() {
-            document.getElementById('menu_name').value = '';
-            document.getElementById('menu_price').value = '';
-            document.getElementById('menu_desc').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('uploadPlaceholder').style.display = 'block';
-            document.getElementById('menu_file').value = '';
-        }
-
-        // [최종 제출] FormData를 생성하여 서버로 일괄 전송
-        function submitFinal() {
-            if (menuArray.length === 0) {
-                alert("등록 대기 중인 메뉴가 없습니다!");
-                return;
-            }
-
-            if(!confirm(`총 ${menuArray.length}개의 메뉴를 일괄 등록하시겠습니까?`)) return;
-
-            const formData = new FormData();
-            
-            // 리스트 데이터를 FormData에 담기 (명세서 v1 규격 준수)
-            menuArray.forEach((menu, index) => {
-                formData.append('names', menu.menu_name);
-                formData.append('prices', menu.menu_price);
-                formData.append('contents', menu.menu_desc);
-                formData.append('files', menu.file_data);
-            });
-
-            // [재우/동건 도움 포인트] 서버 API 연동
-            fetch('/owner/menus/bulk', {
-                method: 'POST',
-                body: formData
-            }).then(response => {
-                if(response.ok) {
-                    alert("성공적으로 등록되었습니다!");
-                    location.href = "/owner/dashboard";
-                } else {
-                    alert("등록 중 오류가 발생했습니다.");
-                }
-            }).catch(error => {
-                console.error("Error:", error);
-            });
-        }
+        /* [6대원칙: Anti-Null] 초기화 로깅 */
+        window.addEventListener('load', () => {
+            console.log("[Menu Module] Initialization Complete.");
+        });
     </script>
-</th:block>  
+</th:block>
 </html>
