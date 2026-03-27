@@ -29,8 +29,9 @@ public class OrderRoomService {
 		String code;
 		do {
 			// -2118184960 = 36^6
-			int iCode = Integer.remainderUnsigned(random.nextInt(),-2118184960);
-			String sCode = "00000" + Integer.toUnsignedString(iCode,36).toUpperCase();
+//			int iCode = Integer.remainderUnsigned(random.nextInt(),-2118184960);
+//			String sCode = "00000" + Integer.toUnsignedString(iCode,36).toUpperCase();
+			String sCode = "00000" + random.nextInt(999999);
 			code = sCode.substring(sCode.length() - 6);
 		}while(findByCode(code) != null);
 		return code;
