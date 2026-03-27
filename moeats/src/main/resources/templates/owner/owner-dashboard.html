@@ -4,7 +4,9 @@
     <div class="row">
         <div class="col-lg-4 col-xl-3">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3"><h5 class="fw-bold mb-0">실시간 주문 관제</h5></div>
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0">실시간 주문 관제</h5>
+                </div>
                 <div class="card-body overflow-auto" style="max-height: 800px; background-color: #f8f9fa;">
                     
                     <th:block th:if="${not #lists.isEmpty(orderList)}">
@@ -68,6 +70,9 @@
 
 <th:block layout:fragment="script">
 <script th:inline="javascript">
+    /**
+     * [6대원칙: AJAX] 비동기 상태 업데이트 (fetch 주소 유지)
+     */
     async function handleStatusUpdate(event, roomIdx, nextStatus) {
         if(!roomIdx) return;
         const btn = event.currentTarget;
@@ -76,7 +81,6 @@
         try {
             const result = await moeatsFetch('/owner/status_update', { roomIdx: roomIdx, roomStatus: nextStatus });
             if(result && result.success) {
-                // 수락 시에만 상세페이지 이동, 나머지는 대시보드 갱신
                 if(nextStatus === 'ACCEPTED') {
                     window.location.href = '/owner/order/detail?roomIdx=' + roomIdx;
                 } else {
@@ -91,12 +95,17 @@
         }
     }
 
-    /* 지도 초기화 (생략 없이 유지) */
+    /**
+     * [DB 동기화] StoreMapper.xml의 latitude, longitude 필드 매핑
+     */
     function initMap() {
         const container = document.getElementById('moeats-map');
         if(!container) return;
+
+        // [동기화] storeVo['latitude'], storeVo['longitude']
         const lat = /*[[${storeVo['latitude'] ?: 35.8714}]]*/ 35.8714;
         const lng = /*[[${storeVo['longitude'] ?: 128.6014}]]*/ 128.6014;
+
         const map = new kakao.maps.Map(container, { center: new kakao.maps.LatLng(lat, lng), level: 3 });
         new kakao.maps.Marker({ position: new kakao.maps.LatLng(lat, lng), map: map });
     }

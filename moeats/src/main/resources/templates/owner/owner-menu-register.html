@@ -2,7 +2,9 @@
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main-layout}"> <div layout:fragment="content" class="container py-5">
+      layout:decorate="~{layouts/main-layout}"> 
+
+<div layout:fragment="content" class="container py-5">
     <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 600px;">
         <div class="card-body p-4 p-md-5">
             
@@ -59,6 +61,12 @@
                     </div>
                 </div>
 
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Description</label>
+                    <textarea id="menuDescription" name="menuDescription" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" 
+                              rows="3" placeholder="메뉴에 대한 설명을 입력하세요" style="resize: none;"></textarea>
+                </div>
+
                 <div class="d-grid gap-2 mt-5">
                     <button type="button" id="submitBtn" class="btn btn-warning text-white fw-bold py-3 fs-5 shadow-sm rounded-pill" 
                             style="background-color: var(--moeats-orange); border: none;"
@@ -83,27 +91,23 @@
             const categoryIdx = document.getElementById('categoryIdx').value;
             const menuName = document.getElementById('menuName').value.trim();
             const menuPrice = document.getElementById('menuPrice').value;
-            const fileInput = document.getElementById('imageFile');
 
             if (!categoryIdx) { alert("카테고리를 선택해 주세요."); return; }
-            if (!fileInput.files[0]) { alert("이미지를 등록해 주세요."); return; }
             if (!menuName) { alert("메뉴명을 입력해 주세요."); return; }
             if (!menuPrice) { alert("가격을 입력해 주세요."); return; }
 
             if(!confirm("이 내용으로 메뉴를 등록하시겠습니까?")) return;
 
-            // 로딩 상태 전환
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
 
-            // [6대원칙: Security] CSRF 메타 데이터 (main-layout에서 상속)
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             const formData = new FormData(document.getElementById('menuRegisterForm'));
 
             try {
-                // [6대원칙: Rule] 데이터 변경은 POST 고정
+                // [Rule] 데이터 변경은 POST 고정
                 const response = await fetch('/owner/menu/register_proc', {
                     method: 'POST',
                     headers: {
@@ -135,7 +139,6 @@
             btn.innerText = text;
         }
 
-        /* 이미지 미리보기 로직 (기존 기능 보존) */
         function previewImage(input) {
             const preview = document.getElementById('preview');
             const guideMsg = document.getElementById('guideMsg');

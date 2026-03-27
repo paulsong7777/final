@@ -57,7 +57,7 @@
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="text-muted small mb-1">총 결제금액</p>
-                    <h5 class="text-danger fw-bold mb-0" th:text="|${#numbers.formatInteger(order['totalPrice'], 0, 'COMMA')}원|"></h5>
+                    <h5 class="text-danger fw-bold mb-0" th:text="|${#numbers.formatInteger(order['totalPrice'] ?: 0, 0, 'COMMA')}원|"></h5>
                 </div>
             </div>
 
@@ -91,7 +91,7 @@
 <th:block layout:fragment="script">
 <script th:inline="javascript">
     /**
-     * ✅ 상태 업데이트 로직
+     * ✅ 상태 업데이트 로직 (AJAX)
      */
     async function handleStatusUpdate(event, roomIdx, nextStatus) {
         if(!roomIdx) return;
@@ -100,12 +100,12 @@
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> 처리 중...';
 
         try {
+            // [동기화] /owner/status_update 매핑 주소 및 파라미터 키 유지
             const result = await moeatsFetch('/owner/status_update', { 
                 roomIdx: roomIdx, 
                 roomStatus: nextStatus 
             });
             if(result.success) {
-                // 배달 완료 시에는 대시보드로, 그 외에는 상태 갱신을 위해 reload
                 if(nextStatus === 'COMPLETED') {
                     window.location.href = '/owner/dashboard';
                 } else {
@@ -114,6 +114,7 @@
             } else {
                 alert("상태 변경에 실패했습니다.");
                 btn.disabled = false;
+                btn.innerHTML = btn.dataset.originalText || '다시 시도';
             }
         } catch(e) {
             console.error(e);
