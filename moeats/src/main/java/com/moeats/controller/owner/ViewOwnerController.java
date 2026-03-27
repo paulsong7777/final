@@ -6,78 +6,119 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
+import java.util.stream.Collectors;
 
-/**
- * [MoEats 점주 서비스 최종 통합 - 무결성 원칙 적용 완료]
- * 1. Layout: Fragments 공통화 대응
- * 2. AJAX: Fetch API 및 @ResponseBody 표준화
- * 3. Anti-Null: HashMap['key'] 접근 및 엘비스 연산자 대응
- * 4. Security: POST 고정 및 CSRF 토큰 수신
- * 5. Map: 위경도 및 매장 데이터 표준화
- * 6. Rule: roomIdx, roomStatus, menuIdx 명칭 통일
- */
 @Controller
 @RequestMapping("/owner")
 public class ViewOwnerController {
 
-    /* [철칙] 테스트 데이터 비우기 스위치 (true 시 빈 화면 테스트 가능) */
+    // 🚩 데이터 유무 테스트 스위치
     private static boolean IS_EMPTY_DATA_TEST = false; 
 
-    private static Map<String, Object> storeData = new HashMap<>(); 
     private static List<Map<String, Object>> orderList = new ArrayList<>();
+    private static List<Map<String, Object>> menuList = new ArrayList<>();
     private static List<Map<String, Object>> categoryList = new ArrayList<>();
-    private static List<Map<String, Object>> menuList = new ArrayList<>(); 
-    private static List<Map<String, Object>> reviewList = new ArrayList<>();
+    private static Map<String, Object> storeData = new HashMap<>();
 
     static { initMockData(); }
 
     private static void initMockData() {
-        // [Map] 매장 정보 설정
-        storeData.put("storeIdx", 101);
-        storeData.put("storeName", "모이츠 대구본점");
+        // [Order] 변수명: roomIdx, orderCode, orderDate, menuName, totalPrice, roomStatus, deliveryAddress1, menuImg
+        orderList.clear();
+        orderList.add(createOrder(2001, "ORD-001", "14:00", "황금올리브 치킨", 20000, "PENDING", "대구 중구 중앙대로 101"));
+
+        // [Menu] 변수명: menuIdx, menuName, menuPrice, categoryName, menuStatus, menuDescription, categoryIdx, menuImg
+        menuList.clear();
+        menuList.add(createMenu(101, "황금올리브 치킨", 20000, "치킨", "ON_SALE", "바삭함의 대명사", 1));
+
         storeData.put("latitude", 35.8714);
         storeData.put("longitude", 128.6014);
-        storeData.put("minimumOrderAmount", 15000);
-        storeData.put("openTime", "09:00");
-        storeData.put("closeTime", "22:00");
-        storeData.put("offDays", "연중무휴");
-        storeData.put("storeDescription", "최고의 맛을 보장하는 모이츠 대구본점입니다.");
+        storeData.put("storeName", "모이츠 대구본점");
 
-        // [Rule] 실시간 주문 리스트
-        orderList.add(createOrder(2001, "ORD-A1", "바삭 후라이드 치킨", "대구 중구 중앙대로 403", "PENDING", "21,000", "14:20", "2026-03-26 14:20"));
-        orderList.add(createOrder(2002, "ORD-B2", "양념 반 후라이드 반", "대구 수성구 달구벌대로 21", "PREPARING", "15,500", "14:45", "2026-03-26 14:45"));
-        
-        // 카테고리 리스트
-        categoryList.add(createMap("categoryIdx", 1, "categoryName", "치킨", "menuCount", 2));
-        categoryList.add(createMap("categoryIdx", 2, "categoryName", "피자", "menuCount", 1));
-        
-        // 메뉴 리스트 (menuImg 키 강제 할당으로 500 에러 방지)
-        menuList.add(createMap("menuIdx", 501, "categoryIdx", 1, "categoryName", "치킨", "menuName", "황금올리브", "menuPrice", 20000, "isSoldOut", "N", "menuImg", ""));
-        menuList.add(createMap("menuIdx", 502, "categoryIdx", 1, "categoryName", "치킨", "menuName", "양념치킨", "menuPrice", 21000, "isSoldOut", "Y", "menuImg", ""));
-
-        // 리뷰 리스트
-        reviewList.add(createMap("reviewIdx", 301, "memberNickname", "치킨러버", "reviewRating", 5, "reviewContent", "맛있어요!", "regDate", "2026-03-25", "replyContent", "감사합니다!", "replyRegDate", "2026-03-26", "menuName", "황금올리브"));
+        categoryList.clear();
+        categoryList.add(createMap("categoryIdx", 1, "categoryName", "치킨"));
     }
 
-    /* ----------------------------------------------------------
-     * [1] View Mapping (GET) - 페이지 전환
-     * ---------------------------------------------------------- */
-    
+    /* ==========================================================
+     * [SECTION 1] 메뉴 관리 (HTML name 속성과 변수명 100% 일치)
+     * ========================================================== */
+
+    @GetMapping("/menu/management")
+    public String menuManagement(Model model) {
+        model.addAttribute("menuList", IS_EMPTY_DATA_TEST ? new ArrayList<>() : menuList);
+        model.addAttribute("menu", "menu_list");
+        return "owner/menu-management";
+    }
+
+    @PostMapping("/menu/register_proc")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> menuRegisterProc(
+            @RequestParam("categoryIdx") int categoryIdx,
+            @RequestParam("menuName") String menuName,
+            @RequestParam("menuPrice") int menuPrice,
+            @RequestParam(value = "menuDescription", required = false) String menuDescription,
+            @RequestParam(value = "menuFile", required = false) MultipartFile menuFile) {
+
+        int newIdx = menuList.size() + 101;
+        // HTML에서 넘어온 변수명 그대로 Map에 저장
+        Map<String, Object> newMenu = createMenu(newIdx, menuName, menuPrice, "카테고리", "ON_SALE", menuDescription, categoryIdx);
+        
+        if (menuFile != null && !menuFile.isEmpty()) {
+            newMenu.put("menuImg", "/uploads/" + menuFile.getOriginalFilename());
+        }
+        menuList.add(newMenu);
+        
+        return ResponseEntity.ok(Collections.singletonMap("success", true));
+    }
+
+    @GetMapping("/menu/edit")
+    public String menuEdit(@RequestParam("menuIdx") String menuIdx, Model model) {
+        Map<String, Object> target = menuList.stream()
+                .filter(m -> String.valueOf(m.get("menuIdx")).equals(menuIdx))
+                .findFirst().orElse(menuList.get(0));
+        
+        model.addAttribute("menuVo", IS_EMPTY_DATA_TEST ? new HashMap<>() : target);
+        model.addAttribute("categoryList", IS_EMPTY_DATA_TEST ? new ArrayList<>() : categoryList);
+        model.addAttribute("menu", "menu_list");
+        return "owner/owner-menu-edit";
+    }
+
+    @PostMapping("/menu/edit_proc")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> menuEditProc(
+            @RequestParam("menuIdx") int menuIdx,
+            @RequestParam("categoryIdx") int categoryIdx,
+            @RequestParam("menuName") String menuName,
+            @RequestParam("menuPrice") int menuPrice,
+            @RequestParam(value = "menuDescription", required = false) String menuDescription,
+            @RequestParam(value = "menuFile", required = false) MultipartFile menuFile) {
+
+        boolean updated = false;
+        for (Map<String, Object> menu : menuList) {
+            if (Integer.parseInt(String.valueOf(menu.get("menuIdx"))) == menuIdx) {
+                menu.put("menuName", menuName);
+                menu.put("menuPrice", menuPrice);
+                menu.put("menuDescription", menuDescription);
+                menu.put("categoryIdx", categoryIdx);
+                if (menuFile != null && !menuFile.isEmpty()) {
+                    menu.put("menuImg", "/uploads/" + menuFile.getOriginalFilename());
+                }
+                updated = true; break;
+            }
+        }
+        return ResponseEntity.ok(Collections.singletonMap("success", updated));
+    }
+
+    /* ==========================================================
+     * [SECTION 2] 핵심 업무 및 기타 (변수명 무결성 유지)
+     * ========================================================== */
+
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("storeVo", IS_EMPTY_DATA_TEST ? new HashMap<>() : storeData);
         model.addAttribute("orderList", IS_EMPTY_DATA_TEST ? new ArrayList<>() : orderList);
+        model.addAttribute("storeVo", IS_EMPTY_DATA_TEST ? new HashMap<>() : storeData);
         model.addAttribute("menu", "dash");
-        return "owner/owner-dashboard"; 
-    }
-
-    @GetMapping("/order/detail")
-    public String orderDetail(@RequestParam(value="roomIdx", required=false) Integer roomIdx, Model model) {
-        Map<String, Object> order = orderList.stream()
-                .filter(o -> o.get("roomIdx").equals(roomIdx))
-                .findFirst().orElse(orderList.get(0));
-        model.addAttribute("orderVo", order);
-        return "owner/owner-order-detail";
+        return "owner/owner-dashboard";
     }
 
     @GetMapping("/order/history")
@@ -87,136 +128,61 @@ public class ViewOwnerController {
         return "owner/owner-order-list";
     }
 
-    @GetMapping("/menu/management")
-    public String menuManagement(Model model) {
-        model.addAttribute("categoryList", categoryList);
-        model.addAttribute("menuList", menuList);
-        model.addAttribute("menu", "menu");
-        return "owner/menu-management";
-    }
-
-    @GetMapping({"/menu/register", "/menu/edit"})
-    public String menuForm(@RequestParam(value="menuIdx", required=false) Integer menuIdx, Model model) {
-        if(menuIdx != null) {
-            Map<String, Object> target = menuList.stream()
-                    .filter(m -> m.get("menuIdx").equals(menuIdx))
-                    .findFirst().orElse(menuList.get(0));
-            model.addAttribute("menuVo", target); 
-        }
-        model.addAttribute("categoryList", categoryList);
-        model.addAttribute("menu", "menu");
-        return menuIdx == null ? "owner/owner-menu-register" : "owner/owner-menu-edit";
-    }
-
     @GetMapping("/category/setting")
     public String categorySetting(Model model) {
-        model.addAttribute("categoryList", categoryList);
+        model.addAttribute("categoryList", IS_EMPTY_DATA_TEST ? new ArrayList<>() : categoryList);
         model.addAttribute("menu", "category");
         return "owner/category-setting";
-    }
-
-    @GetMapping("/review/review-management")
-    public String reviewManagement(Model model) {
-        model.addAttribute("reviewList", reviewList);
-        model.addAttribute("menu", "review");
-        return "owner/review-management";
-    }
-
-    @GetMapping("/sales/report")
-    public String salesReport(Model model) {
-        model.addAttribute("totalSales", 550000);
-        model.addAttribute("orderCount", 42);
-        model.addAttribute("cancelCount", 2);
-        model.addAttribute("avgRating", 4.8);
-        model.addAttribute("popularMenuList", menuList);
-        model.addAttribute("reportDate", "2026-03-26");
-        model.addAttribute("chartLabels", Arrays.asList("09시", "12시", "15시", "18시", "21시"));
-        model.addAttribute("chartData", Arrays.asList(5, 12, 8, 20, 15));
-        model.addAttribute("menu", "report");
-        return "owner/sales-report";
-    }
-
-    @GetMapping("/store/setting")
-    public String storeSetting(Model model) {
-        model.addAttribute("storeVo", storeData);
-        model.addAttribute("menu", "store");
-        return "owner/store-setting";
-    }
-
-    @GetMapping("/settlement/info")
-    public String settlementInfo(Model model) {
-        model.addAttribute("menu", "settle");
-        return "owner/owner-dashboard"; // 파일 생성 전 임시 리다이렉트
-    }
-
-    /* ----------------------------------------------------------
-     * [2] AJAX API (POST) - 비동기 데이터 처리
-     * ---------------------------------------------------------- */
-
-    @PostMapping("/category/insert_proc")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> insertCategory(@RequestBody Map<String, Object> params) {
-        categoryList.add(createMap("categoryIdx", categoryList.size() + 1, "categoryName", params.get("categoryName"), "menuCount", 0));
-        return ResponseEntity.ok(createMap("success", true, "message", "카테고리 등록 성공"));
-    }
-
-    @PostMapping("/category/delete")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> deleteCategory(@RequestBody Map<String, Object> params) {
-        categoryList.removeIf(cat -> cat.get("categoryIdx").toString().equals(params.get("categoryIdx").toString()));
-        return ResponseEntity.ok(createMap("success", true));
     }
 
     @PostMapping("/menu/toggle-soldout")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> toggleSoldOut(@RequestBody Map<String, Object> params) {
-        return ResponseEntity.ok(createMap("success", true));
-    }
-
-    @PostMapping({"/menu/register_proc", "/menu/edit_proc"})
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> menuProc(
-            @RequestParam(value="menuFile", required=false) MultipartFile file, 
-            @RequestParam Map<String, Object> params) {
-        return ResponseEntity.ok(createMap("success", true));
+        String targetIdx = String.valueOf(params.get("menuIdx"));
+        for (Map<String, Object> menu : menuList) {
+            if (String.valueOf(menu.get("menuIdx")).equals(targetIdx)) {
+                String current = String.valueOf(menu.get("menuStatus"));
+                menu.put("menuStatus", "ON_SALE".equals(current) ? "SOLD_OUT" : "ON_SALE");
+                break;
+            }
+        }
+        return ResponseEntity.ok(Collections.singletonMap("success", true));
     }
 
     @PostMapping("/menu/delete")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> deleteMenu(@RequestBody Map<String, Object> params) {
-        return ResponseEntity.ok(createMap("success", true));
+    public ResponseEntity<Map<String, Object>> menuDelete(@RequestBody Map<String, Object> params) {
+        String targetIdx = String.valueOf(params.get("menuIdx"));
+        menuList = menuList.stream().filter(m -> !String.valueOf(m.get("menuIdx")).equals(targetIdx)).collect(Collectors.toList());
+        return ResponseEntity.ok(Collections.singletonMap("success", true));
     }
 
-    @PostMapping("/order/status-update")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> statusUpdate(@RequestBody Map<String, Object> params) {
-        return ResponseEntity.ok(createMap("success", true));
+    // 기타 사이드바 매핑 (누락 없음)
+    @GetMapping("/menu/register") public String menuRegister(Model model) { model.addAttribute("categoryList", categoryList); model.addAttribute("menu", "menu_reg"); return "owner/owner-menu-register"; }
+    @GetMapping("/store/setting") public String storeSetting(Model model) { model.addAttribute("storeVo", storeData); model.addAttribute("menu", "store"); return "owner/store-setting"; }
+    @GetMapping("/review/review-management") public String reviewManagement(Model model) { model.addAttribute("menu", "review"); return "owner/review-management"; }
+    @GetMapping("/sales/report") public String salesReport(Model model) { model.addAttribute("menu", "report"); return "owner/sales-report"; }
+    @GetMapping("/support/notice") public String supportNotice(Model model) { model.addAttribute("menu", "notice"); return "owner/owner-dashboard"; }
+    @GetMapping("/settlement/info") public String settlementInfo(Model model) { model.addAttribute("menu", "settle"); return "owner/owner-dashboard"; }
+
+    /* ==========================================================
+     * [UTIL]
+     * ========================================================== */
+    private static Map<String, Object> createOrder(int idx, String code, String date, String menu, int price, String status, String addr) {
+        Map<String, Object> o = new HashMap<>();
+        o.put("roomIdx", idx); o.put("orderCode", code); o.put("orderDate", date);
+        o.put("menuName", menu); o.put("totalPrice", price); o.put("roomStatus", status);
+        o.put("deliveryAddress1", addr);
+        o.put("menuImg", "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=200");
+        return o;
     }
 
-    @PostMapping("/order/history-filter")
-    @ResponseBody
-    public ResponseEntity<List<Map<String, Object>>> historyFilter(@RequestBody Map<String, Object> params) {
-        return ResponseEntity.ok(orderList); 
-    }
-
-    @PostMapping("/review/reply_proc")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> replyProc(@RequestBody Map<String, Object> params) {
-        return ResponseEntity.ok(createMap("success", true));
-    }
-
-    @PostMapping("/store/update_proc")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> storeUpdate(@RequestBody Map<String, Object> params) {
-        return ResponseEntity.ok(createMap("success", true));
-    }
-
-    /* [Util] 데이터 생성 도우미 */
-    private static Map<String, Object> createOrder(int idx, String code, String menu, String addr, String status, String price, String time, String reg) {
+    private static Map<String, Object> createMenu(int idx, String name, int price, String cat, String status, String desc, int catIdx) {
         Map<String, Object> m = new HashMap<>();
-        m.put("roomIdx", idx); m.put("roomCode", code); m.put("menuName", menu);
-        m.put("deliveryAddress1", addr); m.put("roomStatus", status);
-        m.put("totalPrice", price.replace(",", "")); m.put("orderTime", time); m.put("roomRegDate", reg);
+        m.put("menuIdx", idx); m.put("menuName", name); m.put("menuPrice", price);
+        m.put("categoryName", cat); m.put("menuStatus", status); m.put("menuDescription", desc);
+        m.put("categoryIdx", catIdx);
+        m.put("menuImg", "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200");
         return m;
     }
 

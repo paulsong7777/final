@@ -4,152 +4,49 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content" class="container-fluid py-4" style="max-width: 1100px;">
+<div layout:fragment="content" class="container-fluid">
     
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
-        <div>
-            <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-receipt me-2 text-orange"></i>주문 내역 조회</h2>
-            <p class="text-secondary small mb-0 mt-1">완료 및 취소된 과거 주문 내역을 통합 관리합니다.</p>
-        </div>
-        <a th:href="@{/owner/dashboard}" class="btn btn-outline-dark rounded-pill px-4 btn-sm fw-bold">
-            <i class="bi bi-speedometer2 me-1"></i>대시보드로 돌아가기
-        </a>
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h3 class="fw-bold mb-0 text-navy">주문 내역 조회</h3>
     </div>
 
-    <div class="d-flex gap-2 mb-4 overflow-auto pb-2 no-scrollbar">
-        <button class="btn btn-dark rounded-pill px-4 btn-sm fw-bold filter-btn active" onclick="filterHistory('all', this)">전체</button>
-        <button class="btn btn-outline-secondary rounded-pill px-4 btn-sm fw-bold filter-btn bg-white text-dark" onclick="filterHistory('today', this)">오늘</button>
-        <button class="btn btn-outline-secondary rounded-pill px-4 btn-sm fw-bold filter-btn bg-white text-dark" onclick="filterHistory('week', this)">1주일</button>
-        <button class="btn btn-outline-secondary rounded-pill px-4 btn-sm fw-bold filter-btn bg-white text-dark" onclick="filterHistory('month', this)">1개월</button>
-    </div>
-
-    <div class="table-responsive shadow-sm rounded-4 bg-white border-0">
-        <table class="table table-hover align-middle mb-0 text-center">
-            <thead class="small text-navy table-light border-bottom">
-                <tr class="fw-bold">
-                    <th class="py-3" style="width: 100px;">NO.</th>
-                    <th class="py-3">주문일시</th>
-                    <th class="py-3 text-start ps-4">주문번호(코드)</th>
-                    <th class="py-3 text-end pe-4">결제 금액</th>
-                    <th class="py-3">상태</th>
-                    <th class="py-3" style="width: 150px;">관리</th>
-                </tr>
-            </thead>
-            <tbody id="history-table-body" th:with="safeList=${orderList ?: {}}">
-                <th:block th:if="${not #lists.isEmpty(safeList)}">
-                    <tr th:each="order : ${safeList}" class="animate__animated animate__fadeIn">
-                        <td class="fw-bold text-secondary" th:text="${order['roomIdx'] ?: 0}">0</td>
-                        <td class="small text-muted" th:text="${order['roomRegDate'] ?: '0000-00-00 00:00'}">00:00</td>
-                        <td class="text-start ps-4 fw-bold text-navy" th:text="${order['roomCode'] ?: 'CODE-NULL'}">코드</td>
-                        <td class="text-end pe-4 fw-bold text-orange" 
-                            th:text="|${#numbers.formatInteger(order['totalPrice'] ?: 0, 0, 'COMMA')}원|">0원</td>
-                        <td>
-                            <th:block th:with="status=${order['roomStatus'] ?: 'UNKNOWN'}">
-                                <span th:if="${status == 'PENDING'}" class="badge bg-warning-subtle text-warning border border-warning rounded-pill px-3 py-2 fw-bold">신규</span>
-                                <span th:if="${status == 'COMPLETED'}" class="badge bg-light text-secondary border rounded-pill px-3 py-2 fw-bold">완료</span>
-                                <span th:if="${status == 'CANCELLED'}" class="badge bg-danger-subtle text-danger border border-danger rounded-pill px-3 py-2 fw-bold">취소</span>
-                                <span th:unless="${status == 'PENDING' || status == 'COMPLETED' || status == 'CANCELLED'}" 
-                                      class="badge bg-info-subtle text-info border border-info rounded-pill px-3 py-2 fw-bold" th:text="${status}">기타</span>
-                            </th:block>
-                        </td>
-                        <td>
-                            <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold" 
-                                    th:onclick="|location.href='/owner/order/detail?roomIdx=' + ${order['roomIdx'] ?: 0}|">상세보기</button>
-                        </td>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr class="table-light">
+                        <th class="px-4">NO.</th>
+                        <th>주문일시</th>
+                        <th>주문번호(코드)</th>
+                        <th>메뉴명</th>
+                        <th>결제 금액</th>
+                        <th class="text-center">상태</th>
                     </tr>
-                </th:block>
-                
-                <tr th:if="${#lists.isEmpty(safeList)}">
-                    <td colspan="6" class="py-5 text-muted fw-bold">
-                        <i class="bi bi-search fs-2 d-block mb-2 text-light opacity-50"></i>
-                        조회된 주문 내역이 존재하지 않습니다.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <th:block th:if="${not #lists.isEmpty(orderList)}">
+                        <tr th:each="order, stat : ${orderList}">
+                            <td class="px-4" th:text="${stat.count}">1</td>
+                            <td th:text="${order['orderDate'] ?: '0000-00-00 00:00'}">2026-03-27 16:18</td>
+                            <td>
+                                <code th:text="${order['orderCode'] ?: 'CODE-NULL'}">ORD-001</code>
+                            </td>
+                            <td class="fw-bold" th:text="${order['menuName']}">황금올리브</td>
+                            <td th:text="|${#numbers.formatInteger(order['totalPrice'] ?: 0, 0, 'COMMA')}원|">0원</td>
+                            <td class="text-center">
+                                <span class="badge" 
+                                      th:classappend="${order['roomStatus'] == 'DELIVERING' ? 'bg-success' : 'bg-secondary'}"
+                                      th:text="${order['roomStatus'] == 'DELIVERING' ? '완료' : '진행중'}">상태</span>
+                            </td>
+                        </tr>
+                    </th:block>
+
+                    <tr th:if="${#lists.isEmpty(orderList)}">
+                        <td colspan="6" class="text-center py-5">데이터가 존재하지 않습니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-
-<th:block layout:fragment="script">
-    <script th:inline="javascript">
-        /**
-         * [6대원칙: AJAX] 주문 내역 비동기 필터링
-         */
-        async function filterHistory(range, btn) {
-            // 버튼 UI 상태 변경
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.remove('active', 'btn-dark');
-                b.classList.add('btn-outline-secondary', 'bg-white', 'text-dark');
-            });
-            btn.classList.add('active', 'btn-dark');
-            btn.classList.remove('btn-outline-secondary', 'bg-white', 'text-dark');
-
-            try {
-                // [Security] moeatsFetch 사용
-                const result = await moeatsFetch('/owner/order/history-filter', {
-                    filterRange: range
-                });
-
-                // [6대원칙: AJAX] 테이블 동적 렌더링
-                renderTable(result);
-                
-            } catch (error) {
-                console.error("[Filter Error]", error);
-                alert("내역을 불러오는 중 오류가 발생했습니다.");
-            }
-        }
-
-        /**
-         * 테이블 동적 생성 (JS 무결성 유지)
-         */
-        function renderTable(list) {
-            const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = '';
-
-            if (!list || list.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="py-5 text-muted fw-bold text-center">조회된 주문 내역이 존재하지 않습니다.</td></tr>';
-                return;
-            }
-
-            list.forEach(order => {
-                const status = order.roomStatus || 'UNKNOWN';
-                const statusBadge = getStatusBadge(status);
-                // 금액 포맷팅 (콤마 적용)
-                const price = new Intl.NumberFormat().format(order.totalPrice || 0);
-                
-                const tr = `
-                    <tr class="animate__animated animate__fadeIn">
-                        <td class="fw-bold text-secondary">${order.roomIdx || 0}</td>
-                        <td class="small text-muted">${order.roomRegDate || '0000-00-00 00:00'}</td>
-                        <td class="text-start ps-4 fw-bold text-navy">${order.roomCode || '정보 없음'}</td>
-                        <td class="text-end pe-4 fw-bold text-orange">${price}원</td>
-                        <td>${statusBadge}</td>
-                        <td>
-                            <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold" 
-                                    onclick="location.href='/owner/order/detail?roomIdx=${order.roomIdx || 0}'">상세보기</button>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', tr);
-            });
-        }
-
-        function getStatusBadge(status) {
-            if (status === 'PENDING') return '<span class="badge bg-warning-subtle text-warning border border-warning rounded-pill px-3 py-2 fw-bold">신규</span>';
-            if (status === 'COMPLETED') return '<span class="badge bg-light text-secondary border rounded-pill px-3 py-2 fw-bold">완료</span>';
-            if (status === 'CANCELLED') return '<span class="badge bg-danger-subtle text-danger border border-danger rounded-pill px-3 py-2 fw-bold">취소</span>';
-            return `<span class="badge bg-info-subtle text-info border border-info rounded-pill px-3 py-2 fw-bold">${status}</span>`;
-        }
-
-        /* [6대원칙: Anti-Null] 초기화 확인 */
-        document.addEventListener("DOMContentLoaded", () => {
-            console.log("[Order History] Module Ready.");
-        });
-    </script>
-    
-    <style>
-        .filter-btn.active { border-color: var(--moeats-navy) !important; }
-        .table-hover tbody tr:hover { background-color: #fcfcfc; }
-    </style>
-</th:block>
 </html>

@@ -4,123 +4,113 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content" class="container-fluid py-4" style="max-width: 850px;">
+<div layout:fragment="content" class="container-fluid px-4 py-4" style="max-width: 900px;">
     
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2" style="border-color: var(--moeats-navy) !important;">
         <div>
-            <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-chat-left-dots me-2 text-orange"></i>리뷰 관리</h2>
-            <p class="text-secondary small mb-0 mt-1">고객님의 소중한 리뷰에 답글을 남겨 소통하세요.</p>
+            <h3 class="fw-bold mb-0 text-navy"><i class="bi bi-chat-right-text me-2 text-orange"></i>리뷰 및 답변 관리</h3>
+            <p class="text-secondary small mb-0 mt-1">고객님의 소중한 리뷰에 정성스러운 답변을 남겨주세요.</p>
         </div>
-        <span class="badge bg-white text-navy border fw-bold rounded-pill px-3 py-2 shadow-sm" 
-              th:text="|총 리뷰 ${#lists.size(reviewList ?: {})}건|">총 0건</span>
     </div>
 
-    <div th:if="${#lists.isEmpty(reviewList ?: {})}" class="text-center py-5 shadow-sm rounded-4 bg-white border border-dashed">
-        <i class="bi bi-chat-square-quote fs-1 text-light d-block mb-3 opacity-50"></i>
-        <p class="text-muted fw-bold mb-0">아직 등록된 리뷰가 없습니다.</p>
-    </div>
-
-    <div th:each="review : ${reviewList ?: {}}" 
-         th:id="|review-card-${review['reviewIdx'] ?: 0}|" 
-         class="card mb-4 p-4 shadow-sm border-0 bg-white rounded-4">
+    <div class="review-container" th:with="safeReviews=${reviewList ?: {}}">
         
-        <div class="d-flex justify-content-between align-items-start mb-3">
-            <div>
-                <span class="fw-bold fs-5 text-navy" th:text="${review['memberNickname'] ?: '익명님'}">닉네임</span>
-                <div class="mt-2 d-flex align-items-center">
-                    <span class="badge rounded-pill px-3 py-1 fw-bold bg-orange text-white" 
-                          th:text="|★ ${review['reviewRating'] ?: 0}|">★ 0</span>
-                    <span class="ms-2 small text-secondary fw-bold border-start ps-2" th:text="${review['menuName'] ?: '주문 메뉴'}">메뉴명</span>
+        <th:block th:if="${not #lists.isEmpty(safeReviews)}">
+            <div th:each="rev : ${safeReviews}" class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden animate-fade-in">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="fw-bold text-navy fs-5" th:text="${rev['memberNickname'] ?: '익명 고객님'}">닉네임</span>
+                            <span class="ms-2 text-muted small" th:text="${rev['regDate'] ?: '0000-00-00'}">날짜</span>
+                            <div class="text-warning mt-1">
+                                <i th:each="num : ${#numbers.sequence(1, 5)}" 
+                                   class="bi" 
+                                   th:classappend="${num <= (rev['reviewRating'] ?: 0)} ? 'bi-star-fill' : 'bi-star'"></i>
+                            </div>
+                        </div>
+                        <div class="badge bg-light text-navy border px-3 py-2" th:text="${rev['menuName'] ?: '주문 메뉴'}">메뉴명</div>
+                    </div>
+
+                    <p class="text-dark mb-4 leading-relaxed" th:text="${rev['reviewContent'] ?: '내용이 없습니다.'}">리뷰 본문</p>
+
+                    <hr class="opacity-10">
+
+                    <div th:id="|reply-section-${rev['reviewIdx'] ?: 0}|" class="bg-light rounded-4 p-3">
+                        
+                        <div th:if="${rev['replyContent'] != null and rev['replyContent'] != ''}">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-navy text-white me-2">사장님 답변</span>
+                                <span class="text-muted small" th:text="${rev['replyRegDate'] ?: '방금 전'}">2026-03-27</span>
+                            </div>
+                            <p class="text-secondary mb-0 small" th:text="${rev['replyContent']}">사장님 답변 내용</p>
+                        </div>
+
+                        <div th:unless="${rev['replyContent'] != null and rev['replyContent'] != ''}">
+                            <div class="input-group">
+                                <textarea th:id="|reply-input-${rev['reviewIdx'] ?: 0}|" 
+                                          class="form-control border-0 bg-white shadow-none rounded-start-3" 
+                                          rows="2" placeholder="고객님께 따뜻한 답변을 남겨주세요."></textarea>
+                                <button class="btn btn-warning text-white fw-bold px-4 rounded-end-3" 
+                                        th:onclick="handleReplySubmit([[${rev['reviewIdx'] ?: 0}]])">등록</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <small class="text-secondary fw-bold" th:text="${review['regDate'] ?: '0000-00-00'}">날짜</small>
-        </div>
+        </th:block>
 
-        <div class="bg-light p-3 rounded-3 mb-4 border-0">
-            <p class="text-dark mb-0 lh-base fw-medium" th:text="${review['reviewContent'] ?: '내용이 없는 리뷰입니다.'}">리뷰 내용</p>
-        </div>
-
-        <div th:id="|reply-area-${review['reviewIdx'] ?: 0}|">
-            
-            <div th:if="${review['replyContent'] != null}" class="p-3 shadow-sm border-0 rounded-3 bg-light" 
-                 style="border-left: 5px solid var(--moeats-navy) !important;">
-                <div class="d-flex align-items-center mb-2">
-                    <span class="badge bg-dark px-2 py-1 small me-2" style="background-color: var(--moeats-navy) !important;">사장님 답글</span>
-                    <small class="text-muted fw-bold" th:text="${review['replyRegDate'] ?: ''}">날짜</small>
-                </div>
-                <p class="mb-0 small text-navy fw-bold" th:text="${review['replyContent']}">답글 내용</p>
-            </div>
-
-            <div th:if="${review['replyContent'] == null}" class="mt-2">
-                <div class="input-group shadow-sm rounded-pill overflow-hidden border">
-                    <input type="text" th:id="|reply-input-${review['reviewIdx'] ?: 0}|" 
-                           class="form-control border-0 bg-white py-3 px-4 shadow-none fs-6 fw-bold" 
-                           placeholder="고객님께 따뜻한 답글을 남겨주세요" required>
-                    <button class="btn btn-primary fw-bold px-4" 
-                            style="background-color: var(--moeats-orange); border: none;"
-                            th:onclick="submitReviewReply([[${review['reviewIdx'] ?: 0}]])">등록</button>
-                </div>
-            </div>
+        <div th:if="${#lists.isEmpty(safeReviews)}" class="text-center py-5 bg-white rounded-4 shadow-sm border border-dashed">
+            <i class="bi bi-chat-dots fs-1 text-light d-block mb-3 opacity-50"></i>
+            <h5 class="fw-bold text-secondary">작성된 리뷰가 없습니다.</h5>
+            <p class="text-muted small">첫 리뷰가 달리면 이곳에서 확인하고 답변하실 수 있습니다.</p>
         </div>
     </div>
 </div>
 
 <th:block layout:fragment="script">
+    <style>
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .leading-relaxed { line-height: 1.6; }
+    </style>
+    
     <script th:inline="javascript">
         /**
-         * [6대원칙: AJAX] 리뷰 답글 비동기 등록
+         * [6대원칙: AJAX] 리뷰 답글 등록 및 실시간 UI 갱신
          */
-        async function submitReviewReply(idx) {
-            if(!idx || idx === 0) return;
+        async function handleReplySubmit(idx) {
+            if(!idx) return;
 
-            const inputField = document.getElementById(`reply-input-${idx}`);
-            const content = inputField.value.trim();
+            const inputElement = document.getElementById(`reply-input-${idx}`);
+            const replyContent = inputElement.value.trim();
 
-            if(!content) {
-                alert("답글 내용을 입력해 주세요.");
-                inputField.focus();
+            if (!replyContent) {
+                alert("답변 내용을 입력해 주세요.");
+                inputElement.focus();
                 return;
             }
 
-            if(!confirm("작성하신 답글을 등록하시겠습니까?")) return;
-
+            // [6대원칙: Rule] 데이터 변경은 POST 고정
             try {
-                // [Security] moeatsFetch 공통 함수 사용 (CSRF 포함)
-                // [Rule] 데이터 변경은 POST 고정
+                // 레이아웃의 moeatsFetch 활용 (CSRF 포함)
                 const result = await moeatsFetch('/owner/review/reply_proc', {
-                    reviewIdx: String(idx),
-                    replyContent: content
+                    reviewIdx: idx,
+                    replyContent: replyContent
                 });
 
                 if (result && result.success) {
-                    // [6대원칙: AJAX] 화면 새로고침 없이 DOM 즉시 교체
-                    const replyArea = document.getElementById(`reply-area-${idx}`);
-                    const today = new Date().toISOString().split('T')[0];
-
-                    replyArea.innerHTML = `
-                        <div class="p-3 shadow-sm border-0 rounded-3 bg-light animate__animated animate__fadeIn" 
-                             style="border-left: 5px solid var(--moeats-navy) !important;">
-                            <div class="d-flex align-items-center mb-2">
-                                <span class="badge bg-dark px-2 py-1 small me-2" style="background-color: #1A1E3B;">사장님 답글</span>
-                                <small class="text-muted fw-bold">${today}</small>
-                            </div>
-                            <p class="mb-0 small text-navy fw-bold">${content}</p>
-                        </div>
-                    `;
-                    console.log(`[Review Sync] Reply added for ReviewIdx: ${idx}`);
+                    alert("답글이 성공적으로 등록되었습니다.");
+                    
+                    // [UX 무결성] 페이지 새로고침 대신 성공 시 해당 구역만 갱신 가능 (여기선 안전하게 reload)
+                    location.reload();
                 } else {
-                    alert(result ? result.message : "등록에 실패했습니다.");
+                    alert(result.message || "답글 등록에 실패했습니다.");
                 }
             } catch (error) {
-                console.error("[Review Error]", error);
-                alert("통신 중 오류가 발생했습니다.");
+                console.error("[Reply Error]:", error);
+                alert("서버 통신 중 오류가 발생했습니다.");
             }
         }
-
-        /* [6대원칙: Anti-Null] 초기화 확인 */
-        document.addEventListener("DOMContentLoaded", () => {
-            console.log("[Review Management] Module synchronized.");
-        });
     </script>
 </th:block>
 </html>

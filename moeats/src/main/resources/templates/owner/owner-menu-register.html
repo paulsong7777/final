@@ -2,14 +2,12 @@
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main-layout}">
-
-<div layout:fragment="content" class="container py-5">
+      layout:decorate="~{layouts/main-layout}"> <div layout:fragment="content" class="container py-5">
     <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 600px;">
         <div class="card-body p-4 p-md-5">
             
             <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
-                <h3 class="fw-bold mb-0 text-navy">신규 메뉴 등록</h3>
+                <h3 class="fw-bold mb-0" style="color: var(--moeats-navy);">신규 메뉴 등록</h3>
             </div>
 
             <form id="menuRegisterForm" enctype="multipart/form-data" onsubmit="return false;">
@@ -19,21 +17,20 @@
                         <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
                         <a th:href="@{/owner/category/setting}" class="text-decoration-none small fw-bold text-orange">+ 설정</a>
                     </div>
-                    <select name="categoryIdx" class="form-select py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" required>
+                    <select id="categoryIdx" name="categoryIdx" class="form-select py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" required>
                         <option value="">카테고리를 선택하세요</option>
-                        <option th:each="cat : ${safeCats}" 
-                                th:value="${cat['categoryIdx'] ?: 0}" 
-                                th:text="${cat['categoryName'] ?: '미분류 카테고리'}">카테고리</option>
+                        <th:block th:if="${not #lists.isEmpty(safeCats)}">
+                            <option th:each="cat : ${safeCats}" 
+                                    th:value="${cat.categoryIdx ?: 0}" 
+                                    th:text="${cat.categoryName ?: '미분류 카테고리'}"></option>
+                        </th:block>
                     </select>
-                    <div th:if="${#lists.isEmpty(safeCats)}" class="form-text text-danger small mt-1">
-                        <i class="bi bi-exclamation-triangle"></i> 먼저 카테고리를 등록해주세요.
-                    </div>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">Menu Image</label>
                     <input type="file" id="imageFile" name="menuFile" class="form-control d-none" accept="image/*" onchange="previewImage(this)">
-                    <div id="imageContainer" class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden transition-all shadow-none" 
+                    <div id="imageContainer" class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden" 
                          onclick="document.getElementById('imageFile').click()" 
                          style="width: 100%; height: 220px; border: 2px dashed #ddd; cursor: pointer;">
                         
@@ -44,7 +41,6 @@
                         <div id="guideMsg" class="text-center text-secondary">
                             <i class="bi bi-camera fs-1 d-block mb-2 text-muted"></i>
                             <span class="fw-bold small d-block">클릭하여 이미지 업로드</span>
-                            <span style="font-size: 0.7rem;" class="opacity-75">권장: 정사각형 (JPG, PNG)</span>
                         </div>
                         <img id="preview" src="" class="d-none w-100 h-100" style="object-fit: cover;">
                     </div>
@@ -52,13 +48,13 @@
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">Menu Name</label>
-                    <input type="text" name="menuName" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" placeholder="메뉴 이름을 입력하세요" required>
+                    <input type="text" id="menuName" name="menuName" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" placeholder="메뉴 이름을 입력하세요" required>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">Price (KRW)</label>
                     <div class="input-group">
-                        <input type="number" name="menuPrice" class="form-control py-3 text-end border-0 bg-light shadow-none rounded-start-3 fw-bold" placeholder="0" required min="0">
+                        <input type="number" id="menuPrice" name="menuPrice" class="form-control py-3 text-end border-0 bg-light shadow-none rounded-start-3 fw-bold" placeholder="0" required min="0">
                         <span class="input-group-text bg-light border-0 text-navy fw-bold rounded-end-3">원</span>
                     </div>
                 </div>
@@ -78,48 +74,45 @@
 <th:block layout:fragment="script">
     <script th:inline="javascript">
         /**
-         * [6대원칙: AJAX] FormData를 활용한 비동기 멀티파트 전송
+         * [6대원칙: AJAX] Fetch API 비동기 처리
          */
         async function handleMenuRegister() {
-            const form = document.getElementById('menuRegisterForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerText;
             
-            // ⭐ 보정: querySelector를 이용한 명시적 데이터 추출 (무결성 필터링)
-            const categoryIdx = form.querySelector('[name="categoryIdx"]').value;
-            const menuName = form.querySelector('[name="menuName"]').value.trim();
-            const menuPrice = form.querySelector('[name="menuPrice"]').value;
+            const categoryIdx = document.getElementById('categoryIdx').value;
+            const menuName = document.getElementById('menuName').value.trim();
+            const menuPrice = document.getElementById('menuPrice').value;
             const fileInput = document.getElementById('imageFile');
 
-            // 1. 유효성 검증
-            if (!categoryIdx) { alert("카테고리를 선택해주세요."); return; }
-            if (!fileInput.files[0]) { alert("메뉴 이미지를 등록해주세요."); return; }
-            if (!menuName) { alert("메뉴 명칭을 입력해주세요."); return; }
-            if (!menuPrice) { alert("가격을 입력해주세요."); return; }
+            if (!categoryIdx) { alert("카테고리를 선택해 주세요."); return; }
+            if (!fileInput.files[0]) { alert("이미지를 등록해 주세요."); return; }
+            if (!menuName) { alert("메뉴명을 입력해 주세요."); return; }
+            if (!menuPrice) { alert("가격을 입력해 주세요."); return; }
 
             if(!confirm("이 내용으로 메뉴를 등록하시겠습니까?")) return;
 
-            const submitBtn = document.getElementById('submitBtn');
-            const originalText = submitBtn.innerText;
+            // 로딩 상태 전환
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
 
-            // [6대원칙: Security] CSRF 토큰 매핑
+            // [6대원칙: Security] CSRF 메타 데이터 (main-layout에서 상속)
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-            const formData = new FormData(form);
+            const formData = new FormData(document.getElementById('menuRegisterForm'));
 
             try {
-                // [Rule] 데이터 등록은 POST 고정
+                // [6대원칙: Rule] 데이터 변경은 POST 고정
                 const response = await fetch('/owner/menu/register_proc', {
-                    method: 'POST', 
-                    headers: { 
-                        ...(header && { [header]: token })
-                        // multipart/form-data 시 Content-Type 수동 설정 금지 (브라우저 위임)
-                    }, 
+                    method: 'POST',
+                    headers: {
+                        ...(header && token ? { [header]: token } : {})
+                    },
                     body: formData
                 });
 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
                 const result = await response.json();
 
@@ -127,12 +120,12 @@
                     alert("성공적으로 등록되었습니다.");
                     location.href = '/owner/menu/management';
                 } else {
-                    alert(result.message || "등록 실패");
+                    alert(result.message || "등록 실패: 무결성 검증 오류");
                     resetBtn(submitBtn, originalText);
                 }
             } catch (error) {
-                console.error("[Network Failure]:", error);
-                alert("서버 통신 중 오류가 발생했습니다.");
+                console.error("[AJAX Error]:", error);
+                alert("서버와 통신할 수 없습니다. 잠시 후 다시 시도해 주세요.");
                 resetBtn(submitBtn, originalText);
             }
         }
@@ -142,7 +135,7 @@
             btn.innerText = text;
         }
 
-        /* 이미지 미리보기 로직 */
+        /* 이미지 미리보기 로직 (기존 기능 보존) */
         function previewImage(input) {
             const preview = document.getElementById('preview');
             const guideMsg = document.getElementById('guideMsg');
@@ -161,23 +154,13 @@
         }
 
         function clearImage(e) {
-            e.stopPropagation(); 
-            const input = document.getElementById('imageFile');
-            const preview = document.getElementById('preview');
-            const guideMsg = document.getElementById('guideMsg');
-            const removeBtn = document.getElementById('removeBtn');
-
-            input.value = "";
-            preview.src = "";
-            preview.classList.add('d-none');
-            guideMsg.classList.remove('d-none');
-            removeBtn.style.display = 'none';
+            if(e) e.stopPropagation(); 
+            document.getElementById('imageFile').value = "";
+            document.getElementById('preview').src = "";
+            document.getElementById('preview').classList.add('d-none');
+            document.getElementById('guideMsg').classList.remove('d-none');
+            document.getElementById('removeBtn').style.display = 'none';
         }
-
-        /* [6대원칙: Anti-Null] 초기화 로깅 */
-        window.addEventListener('load', () => {
-            console.log("[Menu Module] Initialization Complete.");
-        });
     </script>
 </th:block>
 </html>

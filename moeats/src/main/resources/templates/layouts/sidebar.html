@@ -5,7 +5,6 @@
 <div th:fragment="ownerSidebar" id="moeats-sidebar-fragment" class="d-flex flex-column h-100">
 
     <div class="flex-grow-1">
-
         <div class="mb-2">
             <a th:href="@{/owner/dashboard}" class="nav-capsule" th:classappend="${menu == 'dash'} ? 'active'">
                 <i class="bi bi-grid-1x2-fill"></i>
@@ -20,31 +19,49 @@
             </a>
         </div>
 
+        <div class="my-3 border-top border-secondary border-opacity-25 mx-3"></div>
+
         <div class="mb-2">
-            <a th:href="@{/owner/menu/management}" class="nav-capsule" th:classappend="${menu == 'menu'} ? 'active'">
+            <a th:href="@{/owner/menu/management}" class="nav-capsule" th:classappend="${menu == 'menu_list'} ? 'active'">
                 <i class="bi bi-journal-text"></i>
-                <span class="menu-text">메뉴 관리</span>
+                <span class="menu-text">메뉴 목록 관리</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/menu/register}" class="nav-capsule" th:classappend="${menu == 'menu_reg'} ? 'active'">
+                <i class="bi bi-plus-circle-dotted"></i>
+                <span class="menu-text">신규 메뉴 등록</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/menu/edit-status}" class="nav-capsule" th:classappend="${menu == 'menu_edit'} ? 'active'">
+                <i class="bi bi-pencil-square"></i>
+                <span class="menu-text">메뉴 수정/품절관리</span>
             </a>
         </div>
 
         <div class="mb-2">
             <a th:href="@{/owner/category/setting}" class="nav-capsule" th:classappend="${menu == 'category'} ? 'active'">
                 <i class="bi bi-collection"></i>
-                <span class="menu-text">카테고리 설정</span>
+                <span class="menu-text">카테고리 구성 설정</span>
             </a>
         </div>
+
+        <div class="my-3 border-top border-secondary border-opacity-25 mx-3"></div>
 
         <div class="mb-2">
             <a th:href="@{/owner/review/review-management}" class="nav-capsule" th:classappend="${menu == 'review'} ? 'active'">
                 <i class="bi bi-chat-right-text"></i>
-                <span class="menu-text">리뷰 관리</span>
+                <span class="menu-text">리뷰 및 답변 관리</span>
             </a>
         </div>
 
         <div class="mb-2">
             <a th:href="@{/owner/sales/report}" class="nav-capsule" th:classappend="${menu == 'report'} ? 'active'">
                 <i class="bi bi-bar-chart-line"></i>
-                <span class="menu-text">영업 리포트</span>
+                <span class="menu-text">영업 리포트 분석</span>
             </a>
         </div>
 
@@ -55,12 +72,19 @@
             </a>
         </div>
 
-        <div class="my-4 border-top border-secondary border-opacity-25 mx-3"></div>
+        <div class="my-3 border-top border-secondary border-opacity-25 mx-3"></div>
 
         <div class="mb-2">
             <a th:href="@{/owner/store/setting}" class="nav-capsule" th:classappend="${menu == 'store'} ? 'active'">
                 <i class="bi bi-sliders"></i>
-                <span class="menu-text">매장 정보 설정</span>
+                <span class="menu-text">매장 운영 정보</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/support/notice}" class="nav-capsule" th:classappend="${menu == 'notice'} ? 'active'">
+                <i class="bi bi-megaphone"></i>
+                <span class="menu-text">공지 및 고객지원</span>
             </a>
         </div>
 
@@ -68,27 +92,48 @@
 </div>
 
 <style>
+    /* 6대원칙 [Layout]: 사이드바 디자인 표준화 */
     #moeats-sidebar-fragment .nav-capsule {
         display: flex;
         align-items: center;
-        padding: 14px 20px;
+        padding: 12px 18px;
         border-radius: 12px;
         text-decoration: none !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        margin: 0 15px 8px 15px; /* 좌우 여백으로 캡슐 느낌 강조 */
+        transition: all 0.2s ease-in-out;
+        margin: 0 15px 4px 15px;
+        border: 1px solid transparent;
     }
 
-    /* 레이아웃에서 설정한 색상이 적용되도록 하면서 미세한 효과만 추가 */
+    /* 텍스트 및 아이콘 기본 색상 (레이아웃 상속) */
+    #moeats-sidebar-fragment .nav-capsule span {
+        color: #ffffff !important;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    #moeats-sidebar-fragment .nav-capsule i {
+        color: #FF8000 !important;
+        font-size: 1.1rem;
+        margin-right: 12px;
+    }
+
+    /* Hover 효과 */
     #moeats-sidebar-fragment .nav-capsule:hover {
-        transform: translateX(5px);
-        background-color: rgba(255, 255, 255, 0.1) !important;
+        background-color: rgba(255, 128, 0, 0.1) !important;
+        transform: translateX(4px);
     }
 
+    /* Active 상태 (6대원칙 준수) */
     #moeats-sidebar-fragment .nav-capsule.active {
-        box-shadow: 0 4px 15px rgba(255, 128, 0, 0.3);
+        background: linear-gradient(135deg, #FF8000, #FF6A00) !important;
+        box-shadow: 0 4px 12px rgba(255, 128, 0, 0.2);
     }
 
-    /* 텍스트 줄바꿈 방지 및 가독성 자간 조절 */
+    #moeats-sidebar-fragment .nav-capsule.active span,
+    #moeats-sidebar-fragment .nav-capsule.active i {
+        color: #ffffff !important;
+    }
+
     #moeats-sidebar-fragment .menu-text {
         white-space: nowrap;
         letter-spacing: -0.5px;
