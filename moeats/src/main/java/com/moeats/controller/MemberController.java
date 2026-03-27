@@ -81,33 +81,47 @@ public class MemberController {
 	}
 	
 	// 로그인 처리
-	@PostMapping("/login")
-	public String login(Model model,
-					@RequestParam("memberEmail") String memberEmail,
-					@RequestParam("memberPassword") String memberPassword,
-					HttpSession session,
-					HttpServletResponse response,
-					RedirectAttributes ra) throws Exception {
-		
-		Member member = memberService.login(memberEmail, memberPassword);
-		
-		if(member == null) {
-			// 원인 분리
-			Member findMember = memberService.getMemberFromEmail(memberEmail);
+		@PostMapping("/login")
+		public String login(Model model,
+						@RequestParam("memberEmail") String memberEmail,
+						@RequestParam("memberPassword") String memberPassword,
+						HttpSession session,
+						HttpServletResponse response,
+						RedirectAttributes ra) throws Exception {
 			
-			if(findMember == null) {
-				ra.addFlashAttribute("error", "존재하지 않는 아이디 입니다.");
-			}else {
-				ra.addFlashAttribute("error", "아이디 혹은 비밀번호를 확인해주세요.");
+			Member member = memberService.login(memberEmail, memberPassword);
+			
+			if(member == null) {
+				// 원인 분리
+				Member findMember = memberService.getMemberFromEmail(memberEmail);
+				
+				if(findMember == null) {
+					ra.addFlashAttribute("error", "존재하지 않는 아이디 입니다.");
+				}else {
+					ra.addFlashAttribute("error", "아이디 혹은 비밀번호를 확인해주세요.");
+				}
+				return "redirect:/login";
+				
 			}
-			return "redirect:/login";
 			
+			// --- ✅ 로그인 성공 처리 ---
+			model.addAttribute("member", member);
+			session.setAttribute("memberIdx", member.getMemberIdx());
+			
+			// 💡 핵심 추가 로직: 인터셉터가 세션에 남겨둔 '원래 가려던 주소'를 꺼내옵니다.
+			String redirectURI = (String) session.getAttribute("redirectURI");
+			
+			if (redirectURI != null && !redirectURI.isEmpty()) {
+				// 다 쓴 주소 메모는 세션에서 깔끔하게 지워줍니다.
+				session.removeAttribute("redirectURI"); 
+				
+				// 원래 가려던 페이지로 스무스하게 보냅니다!
+				return "redirect:" + redirectURI;
+			}
+			
+			// 만약 가려던 주소가 없었다면(그냥 로그인 버튼 누르고 들어온 경우) 메인으로 보냅니다.
+			return "redirect:/main";		
 		}
-		model.addAttribute("member", member);
-		session.setAttribute("memberIdx", member.getMemberIdx());
-		
-		return "redirect:/main";		
-	}
 	
 	// 로그인 폼
 	@GetMapping("/login")

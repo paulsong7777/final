@@ -1,4 +1,4 @@
-package com.moeats.interceptor; // 패키지명은 프로젝트 구조에 맞게 수정하세요
+package com.moeats.interceptor;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -13,20 +13,24 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         
-        // 1. 현재 요청의 세션을 가져옵니다.
         HttpSession session = request.getSession(false);
         
-        // 2. 세션이 아예 없거나, 세션 안에 "member" 객체가 없다면? (비로그인 상태)
         if (session == null || session.getAttribute("member") == null) {
             
-            // 3. 로그인 페이지로 튕겨냅니다.
-            response.sendRedirect("/login");
+            // 💡 추가된 부분: 쫓아내기 전에 사용자가 원래 가려고 했던 주소를 파악합니다.
+            String requestURI = request.getRequestURI(); 
+            String queryString = request.getQueryString(); // ?page=2 같은 파라미터도 챙겨줍니다.
+            String redirectURI = requestURI + (queryString != null ? "?" + queryString : "");
+
+            // 세션이 아예 죽어있을 수 있으니 새로 하나 만들어서(true) 메모를 남깁니다.
+            HttpSession newSession = request.getSession(true);
+            newSession.setAttribute("redirectURI", redirectURI); // "redirectURI"라는 이름표로 저장!
             
-            // 4. false를 반환하면 "컨트롤러로 더 이상 진행하지 마!" 라는 뜻입니다.
+            // 로그인 페이지로 튕겨냅니다.
+            response.sendRedirect("/login");
             return false; 
         }
         
-        // 5. 로그인된 사용자라면 true를 반환하여 정상적으로 컨트롤러로 통과시킵니다.
         return true; 
     }
 }
