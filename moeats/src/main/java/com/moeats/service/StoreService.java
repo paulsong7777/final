@@ -1,0 +1,61 @@
+package com.moeats.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.moeats.domain.Store;
+import com.moeats.mapper.StoreMapper;
+
+@Service
+public class StoreService {
+
+	@Autowired
+	private StoreMapper storeMapper;
+	
+	
+	// 가게 상태 수정
+	@Transactional
+	public void updateStatus(int storeIdx, int ownerMemberIdx, String storeStatus) {
+		// 1. 상태값 유효성 검사 (Java 단에서 방어)
+	    if (!storeStatus.equals("ACTIVE") && !storeStatus.equals("INACTIVE") && !storeStatus.equals("PAUSED")) {
+	        throw new IllegalArgumentException("유효하지 않은 가게 상태값입니다: " + storeStatus);
+	    }
+		// 가게 존재 여부 확인
+		Store existing = storeMapper.findByStoreIdxAndOwner(storeIdx, ownerMemberIdx);
+		
+		if(existing == null) {
+			throw new RuntimeException("등록된 가게 없음");
+		}
+
+		storeMapper.updateStatus(storeIdx, ownerMemberIdx, storeStatus);
+	}
+	
+	// 가게 정보 수정
+	@Transactional
+	public void updateStore(Store store) {
+		
+		// 가게 존재 여부 확인
+		Store existing = storeMapper.findByStoreIdxAndOwner(store.getStoreIdx(), store.getOwnerMemberIdx());
+		
+		if(existing == null) {
+			throw new RuntimeException("등록된 가게 없음");
+		}
+		
+		storeMapper.updateStore(store);
+	}
+	
+	// 가게 등록
+	public void insertStore(Store store) {
+		
+		storeMapper.insertStore(store);
+	}
+	
+	
+	// 내 가게 조회
+	public Store myStore(int ownerMemberIdx) {
+		
+		return storeMapper.myStore(ownerMemberIdx);
+	}
+	
+}
