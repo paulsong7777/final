@@ -38,7 +38,7 @@
 	</update>
 	
 	<!-- 메뉴 추가 -->
-	<insert id="insertMenu" parameterType="Store_Menu"
+	<insert id="insertMenu" parameterType="StoreMenu"
 		useGeneratedKeys="true" keyProperty="menuIdx">
 		insert into Store_Menu(
 					store_idx,
