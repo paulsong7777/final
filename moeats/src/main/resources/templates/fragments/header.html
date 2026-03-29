@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="siteHeader">
+    <header class="mo-header js-mo-header">
+        <div class="container mo-header__inner">
+            <a th:href="@{/}" class="mo-brand" aria-label="Mo-Eats 홈으로 이동">
+                <span class="mo-brand__symbol">M</span>
+                <span class="mo-brand__text">Mo-Eats</span>
+            </a>
+
+            <nav class="mo-header__nav d-none d-lg-flex" aria-label="주요 메뉴">
+                <a th:href="@{/}" class="mo-header__link"
+                   th:classappend="${activeNav == 'home'} ? ' is-active'">가게찾기</a>
+                <a th:href="@{/rooms/join}" class="mo-header__link"
+                   th:classappend="${activeNav == 'join'} ? ' is-active'">주문방 참여</a>
+                <a th:href="@{/orders}" class="mo-header__link"
+                   th:classappend="${activeNav == 'orders'} ? ' is-active'">내 주문</a>
+                <a th:href="@{/owner/orders}" class="mo-header__link"
+                   th:if="${userRole == 'OWNER'}"
+                   th:classappend="${activeNav == 'owner'} ? ' is-active'">점주센터</a>
+            </nav>
+
+            <div class="mo-header__actions d-none d-lg-flex">
+                <a th:href="@{/rooms/join}" class="mo-btn mo-btn-outline">코드 참여</a>
+
+                <div th:if="${loginUser == null}" class="d-flex align-items-center gap-2">
+                    <a th:href="@{/login}" class="mo-btn mo-btn-primary">로그인</a>
+                </div>
+
+                <div th:if="${loginUser != null}" class="dropdown">
+                    <button class="mo-account" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="mo-account__label" th:text="${loginUser.memberName} + ' 님'">송영훈 님</span>
+                        <span class="mo-account__caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end mo-dropdown-menu">
+                        <li><a class="dropdown-item" th:href="@{/orders}">내 주문</a></li>
+                        <li><a class="dropdown-item" th:href="@{/account/addresses}">주소록</a></li>
+                        <li th:if="${userRole == 'OWNER'}"><a class="dropdown-item" th:href="@{/owner/orders}">점주센터</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/logout}">로그아웃</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <button class="mo-mobile-trigger d-lg-none"
+                    type="button"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#moMobileMenu"
+                    aria-controls="moMobileMenu"
+                    aria-label="모바일 메뉴 열기">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <div class="offcanvas offcanvas-end mo-mobile-menu" tabindex="-1" id="moMobileMenu" aria-labelledby="moMobileMenuLabel">
+        <div class="offcanvas-header mo-mobile-menu__header">
+            <div class="mo-brand">
+                <span class="mo-brand__symbol">M</span>
+                <span class="mo-brand__text">Mo-Eats</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="닫기"></button>
+        </div>
+        <div class="offcanvas-body mo-mobile-menu__body">
+            <a th:href="@{/}" class="mo-mobile-link"
+               th:classappend="${activeNav == 'home'} ? ' is-active'">가게찾기</a>
+            <a th:href="@{/rooms/join}" class="mo-mobile-link"
+               th:classappend="${activeNav == 'join'} ? ' is-active'">주문방 참여</a>
+            <a th:href="@{/orders}" class="mo-mobile-link"
+               th:classappend="${activeNav == 'orders'} ? ' is-active'">내 주문</a>
+            <a th:if="${userRole == 'OWNER'}" th:href="@{/owner/orders}" class="mo-mobile-link"
+               th:classappend="${activeNav == 'owner'} ? ' is-active'">점주센터</a>
+
+            <div class="mo-mobile-account-block" th:if="${loginUser == null}">
+                <div class="mo-mobile-account-block__title">계정</div>
+                <a th:href="@{/login}" class="mo-btn mo-btn-primary w-100">로그인</a>
+            </div>
+
+            <div class="mo-mobile-account-block" th:if="${loginUser != null}">
+                <div class="mo-mobile-account-block__title" th:text="${loginUser.memberName} + ' 님'">송영훈 님</div>
+                <div class="mo-mobile-account-block__meta">현재 로그인 상태입니다.</div>
+                <div class="d-grid gap-2 mt-3">
+                    <a th:href="@{/orders}" class="mo-btn mo-btn-outline w-100">내 주문</a>
+                    <a th:href="@{/logout}" class="mo-btn mo-btn-plain w-100">로그아웃</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+</html>
