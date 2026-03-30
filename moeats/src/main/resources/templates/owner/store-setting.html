@@ -9,7 +9,7 @@
         <div class="card-body p-4 p-md-5">
             
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
-                <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-gear-fill me-2 text-orange"></i>매장 설정</h2>
+                <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-shop me-2 text-orange"></i>매장 등록</h2>
                 <a th:href="@{/owner/dashboard}" class="text-decoration-none text-secondary small fw-bold">
                     <i class="bi bi-speedometer2 me-1"></i>대시보드 이동
                 </a>
@@ -18,7 +18,29 @@
             <form id="storeSettingForm" onsubmit="return false;">
                 
                 <div class="mb-4 row align-items-center">
-                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Store ID</label>
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">대표 사진</label>
+                    <div class="col-md-9">
+                        <div id="dropZone" class="upload-area bg-light border border-2 rounded-3 p-4 text-center position-relative" style="border-style: dashed !important; border-color: #dee2e6;">
+                            <input type="file" name="storeImg" id="storeImg" accept="image/*" class="position-absolute w-100 h-100 opacity-0" style="top:0; left:0; cursor: pointer;" onchange="handleFiles(this.files)">
+                            
+                            <div id="uploadContent" class="py-2">
+                                <i class="bi bi-cloud-arrow-up text-muted" style="font-size: 2.5rem;"></i>
+                                <p class="mt-2 mb-1 fw-bold text-navy">클릭하거나 이미지를 드래그하여 업로드하세요</p>
+                                <p class="small text-muted mb-0">jpg, png, jpeg 확장자만 업로드 가능 (권장 비율 1:1)</p>
+                            </div>
+                            
+                            <div id="imagePreview" style="display: none;">
+                                <div class="position-relative d-inline-block shadow-sm rounded-3 overflow-hidden border" style="width: 120px; height: 120px;">
+                                    <img id="previewImg" src="" alt="미리보기" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <p class="small text-orange fw-bold mt-2 mb-0" style="position: relative; z-index: 10;">클릭하여 다른 사진으로 변경</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">매장 번호</label>
                     <div class="col-md-9">
                         <input type="text" name="storeIdx" th:value="${storeVo['storeIdx'] ?: 0}" 
                                class="form-control fw-bold bg-light border-0 py-2 shadow-none rounded-3" readonly>
@@ -26,7 +48,7 @@
                 </div>
 
                 <div class="mb-4 row align-items-center">
-                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Store Name</label>
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">매장명</label>
                     <div class="col-md-9">
                         <input type="text" name="storeName" th:value="${storeVo['storeName'] ?: ''}" 
                                class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" required placeholder="매장 이름을 입력하세요">
@@ -34,7 +56,7 @@
                 </div>
 
                 <div class="mb-4 row align-items-center">
-                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Min Order</label>
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">최소 주문 금액</label>
                     <div class="col-md-9">
                         <div class="input-group">
                             <input type="number" name="minimumOrderAmount" th:value="${storeVo['minimumOrderAmount'] ?: 0}" 
@@ -45,7 +67,7 @@
                 </div>
 
                 <div class="mb-4 row align-items-center">
-                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Business Hours</label>
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">영업 시간</label>
                     <div class="col-md-9">
                         <div class="d-flex align-items-center gap-2">
                             <input type="time" name="openTime" th:value="${storeVo['openTime'] ?: '09:00'}" 
@@ -58,15 +80,23 @@
                 </div>
 
                 <div class="mb-4 row align-items-center">
-                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">Off Days</label>
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">휴무일</label>
                     <div class="col-md-9">
-                        <input type="text" name="offDays" th:value="${storeVo['offDays'] ?: '연중무휴'}" 
-                               class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" placeholder="예: 매주 일요일 정기 휴무">
+                        <select name="offDays" class="form-select py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" style="cursor: pointer;">
+                            <option value="연중무휴" th:selected="${storeVo['offDays'] == '연중무휴' or storeVo['offDays'] == null}">연중무휴</option>
+                            <option value="월요일" th:selected="${storeVo['offDays'] == '월요일'}">월요일</option>
+                            <option value="화요일" th:selected="${storeVo['offDays'] == '화요일'}">화요일</option>
+                            <option value="수요일" th:selected="${storeVo['offDays'] == '수요일'}">수요일</option>
+                            <option value="목요일" th:selected="${storeVo['offDays'] == '목요일'}">목요일</option>
+                            <option value="금요일" th:selected="${storeVo['offDays'] == '금요일'}">금요일</option>
+                            <option value="토요일" th:selected="${storeVo['offDays'] == '토요일'}">토요일</option>
+                            <option value="일요일" th:selected="${storeVo['offDays'] == '일요일'}">일요일</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="mb-4 row">
-                    <label class="col-md-3 fw-bold small text-secondary text-uppercase pt-2">Description</label>
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase pt-2">매장 소개</label>
                     <div class="col-md-9">
                         <textarea name="storeDescription" rows="4" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" 
                                   style="resize: none;" th:text="${storeVo['storeDescription'] ?: ''}" 
@@ -78,9 +108,9 @@
                     <button type="button" id="saveBtn" class="btn btn-warning text-white fw-bold w-100 py-3 rounded-pill fs-5 shadow-sm"
                             style="background-color: var(--moeats-orange); border: none;"
                             onclick="handleStoreUpdate()">
-                        설정 저장하기
+                        매장 등록하기
                     </button>
-                    <a th:href="@{/owner/dashboard}" class="text-decoration-none text-muted small fw-bold d-block mt-3 hover-opacity">저장하지 않고 돌아가기</a>
+                    <a th:href="@{/owner/dashboard}" class="text-decoration-none text-muted small fw-bold d-block mt-3">등록하지 않고 돌아가기</a>
                 </div>
             </form>
         </div>
@@ -89,42 +119,79 @@
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
-        /**
-         * [6대원칙: AJAX] 매장 정보 비동기 업데이트
-         */
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('storeImg');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--moeats-orange)';
+            dropZone.style.backgroundColor = '#fff3cd';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#dee2e6';
+            dropZone.style.backgroundColor = '';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#dee2e6';
+            dropZone.style.backgroundColor = '';
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        function handleFiles(files) {
+            if (files && files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('uploadContent').style.display = 'none';
+                    document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('previewImg').src = e.target.result;
+                }
+                reader.readAsDataURL(files[0]);
+            }
+        }
+
         async function handleStoreUpdate() {
             const form = document.getElementById('storeSettingForm');
-            
-            // ⭐ 보정: querySelector를 이용한 명시적 데이터 추출 (무결성 확보)
             const storeName = form.querySelector('[name="storeName"]').value.trim();
             if(!storeName) { alert("매장 이름을 입력해 주세요."); return; }
 
-            if(!confirm("입력하신 정보로 매장 설정을 변경하시겠습니까?")) return;
+            if(!confirm("입력하신 정보로 매장을 등록하시겠습니까?")) return;
 
             const saveBtn = document.getElementById('saveBtn');
             const originalText = saveBtn.innerText;
             
-            // 폼 데이터를 JSON으로 변환
             const formData = new FormData(form);
-            const jsonData = Object.fromEntries(formData.entries());
 
             saveBtn.disabled = true;
-            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>저장 중...';
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>등록 중...';
+
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             try {
-                // [Security] moeatsFetch 사용하여 비동기 요청 전송
-                const result = await moeatsFetch('/owner/store/update_proc', jsonData);
+                const response = await fetch('/owner/store/update_proc', {
+                    method: 'POST',
+                    headers: { ...(header && { [header]: token }) },
+                    body: formData
+                });
+                
+                const result = await response.json();
 
                 if (result && result.success) {
-                    alert("매장 정보가 성공적으로 변경되었습니다.");
-                    location.href = '/owner/dashboard';
+                    alert("매장 정보가 성공적으로 등록되었습니다.");
+                    location.href = '/owner/dashboard'; 
                 } else {
-                    alert(result ? result.message : "저장에 실패했습니다.");
                     resetBtn(saveBtn, originalText);
                 }
             } catch (error) {
                 console.error("[Store Update Error]", error);
-                alert("서버 통신 중 오류가 발생했습니다.");
                 resetBtn(saveBtn, originalText);
             }
         }
@@ -133,15 +200,6 @@
             btn.disabled = false;
             btn.innerText = text;
         }
-
-        /* [6대원칙: Anti-Null] 초기화 확인 */
-        document.addEventListener("DOMContentLoaded", () => {
-            const currentStoreIdx = /*[[${storeVo != null ? storeVo['storeIdx'] : 0}]]*/ 0;
-            console.log(`[Store Module] Settings ready for Idx: ${currentStoreIdx}`);
-        });
     </script>
-    <style>
-        .hover-opacity:hover { opacity: 0.7; }
-    </style>
 </th:block>
 </html>

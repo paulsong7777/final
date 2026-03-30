@@ -16,7 +16,7 @@
                 
                 <div class="mb-4" th:with="safeCats=${categoryList ?: {}}">
                     <div class="d-flex justify-content-between mb-2">
-                        <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
+                        <label class="form-label small fw-bold text-secondary text-uppercase">카테고리</label>
                         <a th:href="@{/owner/category/setting}" class="text-decoration-none small fw-bold text-orange">+ 설정</a>
                     </div>
                     <select id="categoryIdx" name="categoryIdx" class="form-select py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" required>
@@ -30,9 +30,10 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Image</label>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 사진</label>
                     <input type="file" id="imageFile" name="menuFile" class="form-control d-none" accept="image/*" onchange="previewImage(this)">
-                    <div id="imageContainer" class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden" 
+                    
+                    <div id="imageContainer" class="bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden" 
                          onclick="document.getElementById('imageFile').click()" 
                          style="width: 100%; height: 220px; border: 2px dashed #ddd; cursor: pointer;">
                         
@@ -49,12 +50,12 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Name</label>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">메뉴명</label>
                     <input type="text" id="menuName" name="menuName" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" placeholder="메뉴 이름을 입력하세요" required>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">Price (KRW)</label>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">가격</label>
                     <div class="input-group">
                         <input type="number" id="menuPrice" name="menuPrice" class="form-control py-3 text-end border-0 bg-light shadow-none rounded-start-3 fw-bold" placeholder="0" required min="0">
                         <span class="input-group-text bg-light border-0 text-navy fw-bold rounded-end-3">원</span>
@@ -62,7 +63,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">Description</label>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 설명</label>
                     <textarea id="menuDescription" name="menuDescription" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" 
                               rows="3" placeholder="메뉴에 대한 설명을 입력하세요" style="resize: none;"></textarea>
                 </div>

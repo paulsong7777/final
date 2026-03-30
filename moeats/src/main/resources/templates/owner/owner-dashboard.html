@@ -1,7 +1,17 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/main-layout}">
 <div layout:fragment="content" class="container-fluid">
-    <div class="row">
+
+    <div th:if="${#maps.isEmpty(storeVo)}" class="d-flex flex-column justify-content-center align-items-center" style="min-height: 70vh;">
+        <i class="bi bi-shop text-muted mb-3" style="font-size: 5rem;"></i>
+        <h2 class="fw-bold mb-2">아직 등록된 매장이 없습니다.</h2>
+        <p class="text-muted mb-4">매장 정보를 등록해야 모이츠(MoEats) 점주 서비스를 이용하실 수 있습니다.</p>
+        <a th:href="@{/owner/store/setting}" class="btn btn-warning btn-lg text-white fw-bold px-5">
+            매장 등록하러 가기
+        </a>
+    </div>
+
+    <div th:if="${not #maps.isEmpty(storeVo)}" class="row">
         <div class="col-lg-4 col-xl-3">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3">
@@ -111,7 +121,7 @@
         const map = new kakao.maps.Map(container, { center: new kakao.maps.LatLng(lat, lng), level: 3 });
         new kakao.maps.Marker({ position: new kakao.maps.LatLng(lat, lng), map: map });
         
-        // 🚩 레이아웃에 있는 사이드바 호환용 릴레이아웃 함수 호출!
+        // 레이아웃에 있는 사이드바 호환용 릴레이아웃 함수 호출!
         if(typeof bindMapRelayout === 'function') {
             bindMapRelayout(map);
         }

@@ -12,8 +12,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/owner")
 public class ViewOwnerController {
 
-    // 🚩 데이터 유무 테스트 스위치
+    //  데이터 유무 테스트 스위치 - 기존회원 로그인시 false, 신규회원 true 
     private static boolean IS_EMPTY_DATA_TEST = false; 
+ //   private static boolean IS_EMPTY_DATA_TEST = true; 
 
     private static List<Map<String, Object>> orderList = new ArrayList<>();
     private static List<Map<String, Object>> menuList = new ArrayList<>();
@@ -37,7 +38,7 @@ public class ViewOwnerController {
         menuList.clear();
         menuList.add(createMenu(101, "황금올리브 치킨", 20000, "치킨", "AVAILABLE", "바삭함의 대명사", 1, 1));
 
-        // ⭐ [해결] 누락되었던 가상 주문 데이터(orderList) 생성
+        // 누락되었던 가상 주문 데이터(orderList) 생성
         orderList.clear();
         orderList.add(createOrder(2001, "ORD-2026-001", "17:30", "황금올리브 치킨", 20000, "PENDING", "대구 중구 중앙대로 101"));
         orderList.add(createOrder(2002, "ORD-2026-002", "17:45", "양념치킨 세트", 22000, "ACCEPTED", "대구 수성구 범어동 202"));
@@ -153,9 +154,9 @@ public class ViewOwnerController {
     @GetMapping("/support/notice") public String supportNotice(Model model) { model.addAttribute("menu", "notice"); return "owner/owner-dashboard"; }
     @GetMapping("/settlement/info") public String settlementInfo(Model model) { model.addAttribute("menu", "settle"); return "owner/owner-dashboard"; }
 
-    /* ==========================================================
-     * [UTIL] 헬퍼 메서드
-     * ========================================================== */
+    
+    /* [가상 데이터 만들기용] 주문/메뉴 데이터를 길게 쓰기 귀찮아서 만든 임시 함수 모음 */
+    
     private static Map<String, Object> createOrder(int idx, String code, String date, String menu, int price, String status, String addr) {
         Map<String, Object> o = new HashMap<>();
         o.put("roomIdx", idx); o.put("orderCode", code); o.put("orderDate", date);
@@ -178,5 +179,37 @@ public class ViewOwnerController {
         Map<String, Object> m = new HashMap<>();
         for (int i = 0; i < args.length; i += 2) m.put(args[i].toString(), args[i + 1]);
         return m;
+    }
+ // ==========================================
+    // [임시 디버깅용] 카테고리 등록 API
+    // ==========================================
+    @PostMapping("/category/insert_proc")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> categoryInsertProc(@RequestBody Map<String, Object> params) {
+        // 프론트에서 보낸 '음료' 등의 이름을 꺼냅니다.
+        String categoryName = String.valueOf(params.get("categoryName"));
+        
+        // 가짜 카테고리 번호를 하나 만들고 리스트에 추가합니다.
+        int newIdx = categoryList.size() + 1;
+        categoryList.add(createMap("categoryIdx", newIdx, "categoryName", categoryName, "menuCount", 0));
+        
+        // 프론트로 성공(true) 신호를 보냅니다!
+        return ResponseEntity.ok(Collections.singletonMap("success", true));
+    }
+
+    // ==========================================
+    // [임시 디버깅용] 카테고리 삭제 API
+    // ==========================================
+    @PostMapping("/category/delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> categoryDelete(@RequestBody Map<String, Object> params) {
+        // 프론트에서 삭제하라고 보낸 카테고리 번호를 꺼냅니다.
+        String targetIdx = String.valueOf(params.get("categoryIdx"));
+        
+        // 해당 번호를 가진 카테고리를 리스트에서 날려버립니다.
+        categoryList.removeIf(c -> String.valueOf(c.get("categoryIdx")).equals(targetIdx));
+        
+        // 프론트로 성공(true) 신호를 보냅니다!
+        return ResponseEntity.ok(Collections.singletonMap("success", true));
     }
 }
