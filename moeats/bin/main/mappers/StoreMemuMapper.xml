@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--	
+	마이바티스 참고 사이트
+	  - http://blog.mybatis.org/
+	  - http://www.mybatis.org/mybatis-3/ko/index.html
+	  
+	@Mapper 애노테이션이 적용된 인터페이스와 맵퍼 XML파일은
+	namespace 속성으로 연결되기 때문에 맵퍼 XML의 namespace를
+	지정할 때 @Mapper 애노테이션이 적용된 맵퍼 인터페이스의
+	완전한 클래스 이름(패키지를 포함한 이름)을 지정하면 된다.   
+-->
+<mapper namespace="com.moeats.mapper.StoreMenuMapper" >
+	
+	<!-- 메뉴 삭제 -->
+<!-- 	<delete id="deleteMenu" parameterType="int">
+		delete from Store_menu where menu_idx = #{menuIdx}
+	</delete> -->
+	
+	
+	<!-- 메뉴 상태 변경 (활성, 품절, 숨김 등)-->
+	<update id="updateStatus">
+		update Store_Menu set
+			menu_status = #{menuStatus}
+		where store_idx = #{storeIdx} and menu_idx = #{menuIdx}
+	</update>
+	
+	<!-- 메뉴 수정 -->
+	<update id="updateMenu">
+		update Store_Menu set
+			menu_name = #{menuName},
+			menu_description = #{menuDescription},
+			menu_price = #{menuPrice},
+			menu_status = #{menuStatus},
+			display_order = #{displayOrder}
+		where store_idx = #{storeIdx} and menu_idx = #{menuIdx}
+	</update>
+	
+	<!-- 메뉴 추가 -->
+	<insert id="insertMenu" parameterType="Store_Menu"
+		useGeneratedKeys="true" keyProperty="menuIdx">
+		insert into Store_Menu(
+					store_idx,
+					menu_name,
+					menu_description,
+					menu_price,
+					menu_status,
+					display_order
+					)
+		values(
+			#{storeIdx},
+			#{menuName},
+			#{menuDescription},
+			#{menuPrice},
+			#{menuStatus},
+			#{displayOrder}
+				)
+	</insert>
+	
+	<!-- “이 메뉴가 내 가게 것 맞냐?” 확인하는 필수 메서드 -->
+	<select id="findByMenuIdx" resultType="StoreMenu">
+	    select 
+	        menu_idx,
+	        store_idx,
+	        menu_name,
+	        menu_description,
+	        menu_price,
+	        menu_status,
+	        display_order,
+	        created_at,
+	        updated_at
+	    from Store_Menu
+	    where store_idx = #{storeIdx}
+	      and menu_idx = #{menuIdx}
+	</select>
+	
+	<!-- 메뉴 검색 점주
+	"특정 가게에서 '치킨' 같은 키워드로 메뉴 여러 개 검색"
+	-->
+	<select id="searchMenu" resultType="StoreMenu">
+	    select
+   	        menu_idx,
+		    store_idx,
+		    menu_name,
+		    menu_description,
+		    menu_price,
+		    menu_status,
+		    display_order,
+		    created_at,
+		    updated_at
+	    from Store_Menu
+	    where store_idx = #{storeIdx}
+	      and menu_name like CONCAT('%', #{keyword}, '%')
+	</select>
+	
+	<!-- 메뉴 검색 사용자용 -->
+	<select id="searchMenuForUser" resultType="StoreMenu">
+	    select
+	        menu_idx,
+	        store_idx,
+	        menu_name,
+	        menu_description,
+	        menu_price,
+	        menu_status,
+	        display_order,
+	        created_at,
+	        updated_at
+	    from Store_Menu
+	    where store_idx = #{storeIdx}
+	      and menu_status != 'HIDDEN'
+	      and menu_name like CONCAT('%', #{keyword}, '%')
+	</select>
+	
+	<!-- 점주 - 메뉴 조회(리스트) 메인 사이드 음료 등으로 정렬-->
+	<select id="menuList" resultType="StoreMenu">
+	    select 
+	        menu_idx,
+		    store_idx,
+		    menu_name,
+		    menu_description,
+		    menu_price,
+		    menu_status,
+		    display_order,
+		    created_at,
+		    updated_at
+	    from Store_Menu
+	    where store_idx = #{storeIdx}
+	    order by display_order asc, menu_idx asc
+	</select>
+	
+	<!-- 사용자 - 메뉴 조회, 숨김메뉴 표시 안함-->
+	<select id="menuListForUser" resultType="StoreMenu">
+	    select 
+	        menu_idx,
+	        store_idx,
+	        menu_name,
+	        menu_description,
+	        menu_price,
+	        menu_status,
+	        display_order,
+	        created_at,
+	        updated_at
+	    from Store_Menu
+	    where store_idx = #{storeIdx}
+	      and menu_status != 'HIDDEN'
+	    order by display_order asc, menu_idx asc
+	</select>
+	
+</mapper>
+
+
+

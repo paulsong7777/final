@@ -1,0 +1,43 @@
+@charset "UTF-8";
+스토리지의 94% 사용됨 … 스토리지가 부족하면 파일을 만들거나 수정하거나 업로드할 수 없습니다. 3개월 동안 ₩600 ₩2,400에 가족 구성원과 100GB 스토리지를 공유하세요.
+.mo-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: var(--mo-radius-pill);
+    font-weight: 700;
+    font-size: 0.88rem;
+    border: 1px solid transparent;
+}
+
+.mo-status--waiting {
+    color: var(--mo-navy-900);
+    background: rgba(42, 54, 89, 0.08);
+    border-color: rgba(42, 54, 89, 0.14);
+}
+
+.mo-status--progress {
+    color: var(--mo-primary);
+    background: rgba(255, 128, 0, 0.10);
+    border-color: rgba(255, 128, 0, 0.16);
+}
+
+.mo-status--warning {
+    color: var(--mo-accent);
+    background: rgba(248, 94, 40, 0.10);
+    border-color: rgba(248, 94, 40, 0.18);
+}
+
+.mo-status--success {
+    color: var(--mo-success);
+    background: rgba(15, 118, 110, 0.10);
+    border-color: rgba(15, 118, 110, 0.18);
+}
+
+.mo-status--danger {
+    color: var(--mo-danger);
+    background: rgba(220, 38, 38, 0.10);
+    border-color: rgba(220, 38, 38, 0.18);
+}

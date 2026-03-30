@@ -2,6 +2,7 @@ package com.moeats.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
+
 import com.moeats.domain.Member;
 
 @Mapper
@@ -24,3 +25,4 @@ public interface MemberMapper {
 	public Member getMember(int memberIdx);
 	
 }
+

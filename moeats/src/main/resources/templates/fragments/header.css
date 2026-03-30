@@ -1,0 +1,98 @@
+@charset "UTF-8";
+
+스토리지의 94% 사용됨 … 스토리지가 부족하면 파일을 만들거나 수정하거나 업로드할 수 없습니다. 3개월 동안 ₩600 ₩2,400에 가족 구성원과 100GB 스토리지를 공유하세요.
+.mo-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--mo-border);
+}
+
+.mo-header__inner {
+    display: grid;
+    grid-template-columns: auto minmax(240px, 420px) 1fr auto;
+    align-items: center;
+    gap: 16px;
+    min-height: 80px;
+}
+
+.mo-header__brand {
+    display: inline-flex;
+    align-items: center;
+}
+
+.mo-header__logo {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--mo-navy-900);
+    letter-spacing: -0.04em;
+}
+
+.mo-header__search .form-control {
+    min-height: 44px;
+    border-radius: var(--mo-radius-pill);
+}
+
+.mo-header__nav {
+    justify-content: center;
+    gap: 20px;
+}
+
+.mo-header__link {
+    font-weight: 600;
+    color: var(--mo-text-default);
+    transition: color var(--mo-transition);
+}
+
+.mo-header__link:hover {
+    color: var(--mo-navy-900);
+}
+
+.mo-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mo-header__menu-btn {
+    width: 44px;
+    height: 44px;
+    padding: 8px;
+    border: 1px solid var(--mo-border);
+    border-radius: 14px;
+    background: #FFFFFF;
+}
+
+.mo-header__menu-btn span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    margin: 5px 0;
+    background: var(--mo-navy-900);
+    border-radius: 999px;
+}
+
+.mo-mobile-nav {
+    display: none;
+    padding: 0 0 16px;
+    gap: 10px;
+}
+
+.mo-mobile-nav.is-open {
+    display: grid;
+}
+
+.mo-mobile-nav__search {
+    margin-bottom: 8px;
+}
+
+.mo-mobile-nav__link {
+    display: block;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(42, 54, 89, 0.04);
+    font-weight: 600;
+    color: var(--mo-text-strong);
+}

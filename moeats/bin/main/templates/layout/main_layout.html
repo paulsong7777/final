@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!--/* Thymeleaf와 Thymeleaf Layout을 사용하기 위한 NameSpace 정의 */-->
+<html xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BoardService</title>      
+    <link th:href="@{bootstrap/bootstrap.min.css}" rel="stylesheet" >
+    <script th:src="@{js/jquery-3.7.1.min.js}"></script>
+    <script th:src="@{js/formcheck.js}"></script>
+    <script th:src="@{js/member.js}"></script>    
+  </head>
+  <body>
+  	<div class="container">
+ 		<!--/* header */--> 		
+		<!--/* 
+			~{} 표현식은 화면의 조각인 프래그먼트를 지정하는 표현식으로
+			th:replace 속성에 지정했기 때문에 div 요소의 내용을 대체한다.
+			프래그먼트는 ~{경로/파일명::프래그먼트 이름} 형식으로 지정한다.
+			경로는 templates 폴더를 기준으로 상대 경로 방식으로 지정하면 된다. 
+		*/--> 		
+		<div th:replace="~{fragments/header::header}"></div>
+  		<!--/* content : 요청 마다 변경되는 부분 */-->
+  		<div layout:fragment="content"></div>
+  		<!--/* footer */-->
+		<div th:replace="~{fragments/footer::footer}"></div> 
+	</div>	
+    <script th:src="@{bootstrap/bootstrap.bundle.min.js}"></script>
+    <!-- 모달 로그인 폼 추가 -->
+	<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true"
+		data-bs-backdrop="static" data-bs-keyboard="false">
+		<div class="modal-dialog">
+		    <div class="modal-content">
+		      	<div class="modal-header bg-primary bg-gradient text-white">
+			        <h1 class="modal-title fs-5 fw-bold" id="modalLabel">회원 로그인</h1>
+			        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      	</div>
+				<form id="modalLoginForm" action="login" method="post">
+					<div class="modal-body">	        
+						<div class="mb-3">
+		            		<label for="modalUserId" class="col-form-label fw-bold">아이디 : </label>
+		            		<input type="text" class="form-control" id="modalUserId" name="userId">
+		          		</div>
+			          	<div class="mb-3">
+				            <label for="modalUserPass" class="col-form-label fw-bold">비밀번호 : </label>
+			            	<input type="password" class="form-control" id="modalUserPass" name="pass">
+			          	</div>	        
+		    		</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+				        <button type="submit" class="btn btn-primary">로그인</button>
+			      	</div>
+		      	</form>
+	    	</div>	    
+		</div>
+	</div>	
+  </body>
+</html>
