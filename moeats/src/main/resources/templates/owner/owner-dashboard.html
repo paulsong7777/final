@@ -16,7 +16,7 @@
                                     <span class="badge bg-dark" th:text="${order['orderDate']}">시간</span>
                                     <span class="fw-bold small" 
                                           th:classappend="${order['roomStatus'] == 'PENDING' ? 'text-danger' : (order['roomStatus'] == 'ACCEPTED' ? 'text-warning' : 'text-primary')}"
-                                          th:text="|● ${order['roomStatus']}|"></span>
+                                          th:text="| ${order['roomStatus']}|"></span>
                                 </div>
 
                                 <div class="fw-bold mb-1" th:text="${order['menuName']}">메뉴명</div>
@@ -69,6 +69,8 @@
 </div>
 
 <th:block layout:fragment="script">
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3355be34fede739dcf93c2a5f3ec84f1&libraries=services&autoload=false"></script>
+
 <script th:inline="javascript">
     /**
      * [6대원칙: AJAX] 비동기 상태 업데이트 (fetch 주소 유지)
@@ -108,6 +110,11 @@
 
         const map = new kakao.maps.Map(container, { center: new kakao.maps.LatLng(lat, lng), level: 3 });
         new kakao.maps.Marker({ position: new kakao.maps.LatLng(lat, lng), map: map });
+        
+        // 🚩 레이아웃에 있는 사이드바 호환용 릴레이아웃 함수 호출!
+        if(typeof bindMapRelayout === 'function') {
+            bindMapRelayout(map);
+        }
     }
     window.addEventListener('load', () => { if(window.kakao) kakao.maps.load(initMap); });
 </script>

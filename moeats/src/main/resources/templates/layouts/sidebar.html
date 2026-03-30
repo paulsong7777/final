@@ -36,13 +36,6 @@
         </div>
 
         <div class="mb-2">
-            <a th:href="@{/owner/menu/edit-status}" class="nav-capsule" th:classappend="${menu == 'menu_edit'} ? 'active'">
-                <i class="bi bi-pencil-square"></i>
-                <span class="menu-text">메뉴 수정/품절관리</span>
-            </a>
-        </div>
-
-        <div class="mb-2">
             <a th:href="@{/owner/category/setting}" class="nav-capsule" th:classappend="${menu == 'category'} ? 'active'">
                 <i class="bi bi-collection"></i>
                 <span class="menu-text">카테고리 구성 설정</span>
@@ -96,47 +89,49 @@
     #moeats-sidebar-fragment .nav-capsule {
         display: flex;
         align-items: center;
-        padding: 12px 18px;
+        padding: 14px 20px; /* 터치/클릭 영역을 조금 더 넓힘 */
         border-radius: 12px;
         text-decoration: none !important;
         transition: all 0.2s ease-in-out;
-        margin: 0 15px 4px 15px;
+        margin: 0 15px 6px 15px; /* 메뉴 간격 살짝 넓힘 */
         border: 1px solid transparent;
     }
 
-    /* 텍스트 및 아이콘 기본 색상 (레이아웃 상속) */
+    /* 🚀 시인성 극대화 수정 부분 */
     #moeats-sidebar-fragment .nav-capsule span {
-        color: #ffffff !important;
-        font-size: 0.9rem;
-        font-weight: 500;
+        color: #FFFFFF !important; /* 쨍하고 맑은 화이트로 대비 극대화 */
+        font-size: 1.05rem;        /* 폰트 크기 확대 (기존 0.9rem) */
+        font-weight: 600;          /* 글씨 두께 세미볼드로 강화 (기존 500) */
+        letter-spacing: 0.3px;     /* 답답했던 자간 넓힘 (기존 -0.5px) */
     }
 
+    /* 아이콘도 글자 크기에 맞춰 밸런스 조정 */
     #moeats-sidebar-fragment .nav-capsule i {
         color: #FF8000 !important;
-        font-size: 1.1rem;
-        margin-right: 12px;
+        font-size: 1.25rem;        
+        margin-right: 14px;
     }
 
-    /* Hover 효과 */
+    /* Hover (마우스 올렸을 때) 효과 강화 */
     #moeats-sidebar-fragment .nav-capsule:hover {
-        background-color: rgba(255, 128, 0, 0.1) !important;
-        transform: translateX(4px);
+        background-color: rgba(255, 128, 0, 0.15) !important;
+        transform: translateX(5px);
     }
 
-    /* Active 상태 (6대원칙 준수) */
+    /* Active (현재 페이지) 상태 */
     #moeats-sidebar-fragment .nav-capsule.active {
         background: linear-gradient(135deg, #FF8000, #FF6A00) !important;
-        box-shadow: 0 4px 12px rgba(255, 128, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(255, 128, 0, 0.3);
     }
 
     #moeats-sidebar-fragment .nav-capsule.active span,
     #moeats-sidebar-fragment .nav-capsule.active i {
         color: #ffffff !important;
+        font-weight: 700; /* 활성화 시엔 엑스트라 볼드로 확실한 강조 */
     }
 
     #moeats-sidebar-fragment .menu-text {
         white-space: nowrap;
-        letter-spacing: -0.5px;
     }
 </style>
 
