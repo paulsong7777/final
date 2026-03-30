@@ -2,6 +2,7 @@ package com.moeats.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
+<<<<<<< HEAD
 
 /* @Mapper는 MyBatis 3.0부터 지원하는 애노테이션으로 이 애노테이션이 붙은
  * 인터페이스는 별도의 구현 클래스를 작성하지 않아도 MyBatis 맵퍼로 인식해
@@ -14,10 +15,13 @@ import org.apache.ibatis.annotations.Mapper;
 
 
 
+=======
+>>>>>>> 1e76dca (myOrderList.html추가 커밋)
 import com.moeats.domain.Member;
 
 @Mapper
 public interface MemberMapper {
+<<<<<<< HEAD
 	
 	
 	// 회원정보 수정
@@ -37,3 +41,8 @@ public interface MemberMapper {
 	
 }
 
+=======
+
+	public void updateMember(Member member);
+}
+>>>>>>> 1e76dca (myOrderList.html추가 커밋)
