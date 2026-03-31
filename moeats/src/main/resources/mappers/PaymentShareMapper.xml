@@ -21,7 +21,7 @@
 		SELECT * FROM payment_share WHERE payment_idx = #{paymentIdx} AND share_status = 'PENDING'
 	</select>
 	<select id="findPaymentPaidSelf" resultType="PaymentShare">
-		SELECT * FROM payment_share WHERE payment_idx = #{paymentIdx} AND share_status = 'PAID_SELF'
+		SELECT * FROM payment_share WHERE payment_idx = #{paymentIdx} AND share_status = 'PAID_SELF' AND NOT share_amout = 0
 	</select>
 	<insert id="insert" parameterType="PaymentShare">
 		INSERT INTO payment_share(
@@ -59,4 +59,7 @@
 			share_status	= 'CANCELLED'
 		WHERE payment_idx	= #{paymentIdx}
 	</update>
+	<delete id="delete" parameterType="int">
+		DELETE FROM payment_share WHERE payment_idx	= #{paymentIdx}
+	</delete>
 </mapper>

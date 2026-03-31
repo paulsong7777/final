@@ -23,11 +23,13 @@ public class GroupOrder {
 	Timestamp createdAt;
 	Timestamp updatedAt;
 	
-	public void setFrom(OrderRoom orderRoom) {
-		setRoomIdx(orderRoom.getRoomIdx());
-		setStoreIdx(orderRoom.getStoreIdx());
-		setLeaderMemberIdx(orderRoom.getLeaderMemberIdx());
-		setOrderMode(orderRoom.getOrderMode());
-		setPaymentMode(orderRoom.getPaymentMode());
+	public static GroupOrder from(OrderRoom orderRoom) {
+		GroupOrder groupOrder = new GroupOrder(); 
+		groupOrder.setRoomIdx(orderRoom.getRoomIdx());
+		groupOrder.setStoreIdx(orderRoom.getStoreIdx());
+		groupOrder.setLeaderMemberIdx(orderRoom.getLeaderMemberIdx());
+		groupOrder.setOrderMode(orderRoom.getOrderMode());
+		groupOrder.setPaymentMode(orderRoom.getPaymentMode());
+		return groupOrder;
 	}
 }

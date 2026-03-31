@@ -28,4 +28,5 @@ public interface PaymentShareMapper {
 	int paySelf(int paymentShareIdx);
 	// 취소된다면 방 전체가 취소된다	- 따라서 paymentIdx를 받는다
 	int cancel(int paymentIdx);
+	int delete(int paymentIdx);
 }

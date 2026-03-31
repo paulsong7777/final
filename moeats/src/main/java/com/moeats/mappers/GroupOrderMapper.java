@@ -21,6 +21,7 @@ public interface GroupOrderMapper {
 	int ready(int orderIdx);
 	int complete(int orderIdx);
 	int cancel(int orderIdx);
+	int delete(int orderIdx);
 	
 	int checkIn(int orderIdx);
 	int expectVisit(

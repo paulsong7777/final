@@ -22,6 +22,7 @@ public interface OrderRoomMapper {
 	int paymentPend(
 		@Param("roomIdx") int roomIdx,
 		@Param("expiresAt") Timestamp expiresAt);
+	int revertToSelect(int roomIdx);
 	int confirm(int roomIdx);
 	int cancel(int roomIdx);
 	int expire(int roomIdx);

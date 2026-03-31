@@ -32,4 +32,7 @@
 			#{deliveryRequest}
 		)
 	</insert>
+	<delete id="delete" parameterType="int">
+		DELETE FROM order_delivery WHERE order_idx = #{orderIdx}
+	</delete>
 </mapper>

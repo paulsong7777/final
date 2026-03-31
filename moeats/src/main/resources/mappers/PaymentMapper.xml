@@ -51,4 +51,7 @@
 			cancelled_at	= CURRENT_TIMESTAMP
 		WHERE payment_idx	= #{paymentIdx}
 	</update>
+	<delete id="delete" parameterType="int">
+		DELETE FROM payment WHERE payment_idx = #{paymentIdx}
+	</delete>
 </mapper>

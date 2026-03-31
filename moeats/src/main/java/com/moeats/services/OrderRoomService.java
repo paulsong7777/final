@@ -60,11 +60,18 @@ public class OrderRoomService {
 			return 0;
 		return orderRoomMapper.menuSelect(orderRoom);
 	}
+	// 단독으로 사용되어선 안됨
 	public int paymentPend(int roomIdx,Timestamp expiresAt) {
 		OrderRoom orderRoom = findByIdx(roomIdx);
 		if(!orderRoom.getRoomStatus().equals("SELECTING"))
 			return 0;
 		return orderRoomMapper.paymentPend(roomIdx, expiresAt);
+	}
+	public int revertToSelect(int roomIdx) {
+		OrderRoom orderRoom = findByIdx(roomIdx);
+		if(!orderRoom.getRoomStatus().equals("PAYMENT_PENDING"))
+			return 0;
+		return orderRoomMapper.revertToSelect(roomIdx);
 	}
 	public int confirm(int roomIdx) {
 		OrderRoom orderRoom = findByIdx(roomIdx);
@@ -74,7 +81,9 @@ public class OrderRoomService {
 		return orderRoomMapper.confirm(roomIdx);
 	}
 	public int cancel(int roomIdx) {
-		// TODO 취소는 여러 status에서 가능하기 때문에 다뤄줘야 함
+		OrderRoom orderRoom = findByIdx(roomIdx);
+		if(!orderRoom.getRoomStatus().equals("PAYMENT_PENDING"))
+			return 0;
 		return orderRoomMapper.cancel(roomIdx);
 	}
 	public int expire(int roomIdx) {
@@ -91,6 +100,11 @@ public class OrderRoomService {
 		return roomParticipantMapper.findByIdx(roomParticipantIdx);
 	}
 	public List<RoomParticipant> findByRoom(int roomIdx){
+		return roomParticipantMapper.findByRoom(roomIdx);
+	}
+	public List<RoomParticipant> findParticipantByCode(String roomCode){
+		OrderRoom orderRoom = findByCode(roomCode);
+		int roomIdx = orderRoom!=null ? orderRoom.getRoomIdx() : 0;
 		return roomParticipantMapper.findByRoom(roomIdx);
 	}
 //	public List<RoomParticipant> findByMember(int memberIdx){

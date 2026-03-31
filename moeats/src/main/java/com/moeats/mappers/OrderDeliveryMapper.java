@@ -12,4 +12,5 @@ public interface OrderDeliveryMapper {
 	OrderDelivery findByIdx(int orderDeliveryIdx);
 	OrderDelivery findByOrder(int orderIdx);
 	int insert(OrderDelivery orderDelivery);
+	int delete(int orderIdx);
 }

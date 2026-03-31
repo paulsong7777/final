@@ -42,4 +42,7 @@
 			#{itemTotalAmount}
 		)
 	</insert>
+	<delete id="delete" parameterType="int">
+		DELETE FROM group_order_item WHERE order_idx = #{orderIdx}
+	</delete>
 </mapper>

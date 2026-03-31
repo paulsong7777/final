@@ -19,9 +19,11 @@ public class Payment {
 	Timestamp createdAt;
 	Timestamp updatedAt;
 	
-	public void setFrom(GroupOrder groupOrder) {
-		setOrderIdx(groupOrder.getOrderIdx());
-		setPaymentMode(groupOrder.getPaymentMode());
-		setPaymentRequestAmount(groupOrder.getOrderTotalAmount());
+	public static Payment from(GroupOrder groupOrder) {
+		Payment payment = new Payment();
+		payment.setOrderIdx(groupOrder.getOrderIdx());
+		payment.setPaymentMode(groupOrder.getPaymentMode());
+		payment.setPaymentRequestAmount(groupOrder.getOrderTotalAmount());
+		return payment;
 	}
 }

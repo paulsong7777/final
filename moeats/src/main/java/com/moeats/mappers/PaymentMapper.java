@@ -11,7 +11,7 @@ import com.moeats.domain.Payment;
 public interface PaymentMapper {
 	List<Payment> findAll();
 	Payment findByIdx(int paymentIdx);
-	List<Payment> findByOrder(int orderIdx);
+	Payment findByOrder(int orderIdx);
 	int insert(Payment payment);
 	int payAmount(
 		@Param("paymentIdx") int paymentIdx,
@@ -19,4 +19,5 @@ public interface PaymentMapper {
 	int progress(int paymentIdx);
 	int pay(int paymentIdx);
 	int cancel(int paymentIdx);
+	int delete(int paymentIdx);
 }

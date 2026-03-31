@@ -20,6 +20,9 @@ public class PaymentService {
 	@Autowired
 	PaymentShareMapper paymentShareMapper;
 	
+	public Payment findByOrder(int orderIdx) {
+		return paymentMapper.findByOrder(orderIdx);
+	}
 	public int insert(Payment payment) {
 		return paymentMapper.insert(payment);
 	}
@@ -30,11 +33,25 @@ public class PaymentService {
 	public List<PaymentShare> findByPayment(int paymentIdx) {
 		return paymentShareMapper.findByPayment(paymentIdx);
 	}
+	public List<PaymentShare> findPaymentPaidSelf(int paymentIdx) {
+		return paymentShareMapper.findPaymentPaidSelf(paymentIdx);
+	}
 	public int insert(PaymentShare paymentShare) {
 		return paymentShareMapper.insert(paymentShare);
 	}
 	public int paySelf(int paymentShareIdx) {
 		return paymentShareMapper.paySelf(paymentShareIdx);
+	}
+	
+	public int cancel(int paymentIdx) {
+		int res = paymentShareMapper.cancel(paymentIdx);
+		res += paymentMapper.cancel(paymentIdx);
+		return res;
+	}
+	public int delete(int paymentIdx) {
+		int res = paymentShareMapper.delete(paymentIdx);
+		res += paymentMapper.delete(paymentIdx);
+		return res;
 	}
 	
 	public void setRepresentativePaymentShares(List<PaymentShare> paymentShares, Payment payment, List<RoomParticipant> roomParticipants, int representativeMemberIdx) {

@@ -72,6 +72,9 @@
 			cancelled_at	= CURRENT_TIMESTAMP
 		WHERE order_idx		= #{orderIdx}
 	</update>
+	<delete id="delete" parameterType="int">
+		DELETE FROM group_order WHERE order_idx = #{orderIdx}
+	</delete>
 	
 	<!-- 이후는 현장 모드 -->
 	<update id="checkIn" parameterType="int">

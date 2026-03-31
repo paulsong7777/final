@@ -53,4 +53,11 @@ public class GroupOrderService {
 	public int insertDelivery(OrderDelivery orderDelivery) {
 		return orderDeliveryMapper.insert(orderDelivery);
 	}
+	
+	public int delete(int orderIdx) {
+		int res = orderDeliveryMapper.delete(orderIdx);
+		res += groupOrderItemMapper.delete(orderIdx);
+		res += groupOrderMapper.delete(orderIdx);
+		return res;
+	}
 }
