@@ -12,6 +12,7 @@ import com.moeats.mappers.GroupCartItemMapper;
 public class GroupCartItemService {
 	@Autowired
 	GroupCartItemMapper groupCartItemMapper;
+	
 	public GroupCartItem findByIdx(int cartItemIdx) {
 		return groupCartItemMapper.findByIdx(cartItemIdx);
 	}

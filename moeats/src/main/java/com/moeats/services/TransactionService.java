@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.moeats.domain.DeliveryAddress;
 import com.moeats.domain.GroupOrder;
 import com.moeats.domain.OrderDelivery;
 import com.moeats.domain.OrderRoom;
@@ -31,30 +32,29 @@ public class TransactionService {
 	
 	@Transactional
 	public Map<String,Object> beginPayment(OrderRoom orderRoom,int representativeMemberIdx) {
-		boolean representative = orderRoom.getPaymentMode().equals("REPRESENTATIVE");
-		if(	representative && orderRoomService.findRoomMember(orderRoom.getRoomIdx(),representativeMemberIdx)==null)
+		boolean isRepresentative = orderRoom.getPaymentMode().equals("REPRESENTATIVE");
+		DeliveryAddress deliveryAddress = memberService.findAddressByIdx(orderRoom.getSelectedDeliveryAddressIdx());
+		if(	isRepresentative && orderRoomService.findRoomMember(orderRoom.getRoomIdx(),representativeMemberIdx)==null ||
+			deliveryAddress==null || deliveryAddress.getMemberIdx() != orderRoom.getLeaderMemberIdx() )
 			// representativeMemberIdx = orderRoom.getLeaderMemberIdx();
 			return null;
 		Map<String,Object> map = new HashMap<>();
-		GroupOrder groupOrder = new GroupOrder();
-		Payment payment = new Payment();
-		OrderDelivery orderDelivery = new OrderDelivery();
-		
-		groupOrder.setFrom(orderRoom);
+		GroupOrder groupOrder = GroupOrder.from(orderRoom);
 		groupOrder.setOrderTotalAmount(groupCartItemService.findRoomAmount(orderRoom.getRoomIdx()));
 		groupOrderService.insert(groupOrder);
 		
-		payment.setFrom(groupOrder);
+		
+		Payment payment = Payment.from(groupOrder);
 		paymentService.insert(payment);
 		
 		List<PaymentShare> paymentShares = new ArrayList<>();
-		if(representative)
+		if(isRepresentative)
 			paymentService.setRepresentativePaymentShares(paymentShares, payment, orderRoomService.findByRoom(orderRoom.getRoomIdx()), representativeMemberIdx);
 		else
 			paymentService.setIndividualPaymentShares(paymentShares, payment, groupCartItemService.findRoomMemberAmount(orderRoom.getRoomIdx()));
 		paymentShares.forEach(paymentShare->paymentService.insert(paymentShare));
-		orderDelivery.setFrom(groupOrder.getOrderIdx(),
-				memberService.findAddressByIdx(orderRoom.getSelectedDeliveryAddressIdx()));
+		
+		OrderDelivery orderDelivery = OrderDelivery.from(groupOrder.getOrderIdx(),deliveryAddress);
 		groupOrderService.insertDelivery(orderDelivery);
 		
 		Timestamp expiresAt = payment.getPaymentExpiresAt();
@@ -66,5 +66,16 @@ public class TransactionService {
 		map.put("paymentShares",paymentShares);
 		map.put("orderDelivery",orderDelivery);
 		return map;
+	}
+	@Transactional
+	public int revertToSelect(OrderRoom orderRoom) {
+		// 결제한 사람이 없을때만 가능
+		Payment payment = paymentService.findByOrder(orderRoom.getRoomIdx());
+		if(		orderRoom==null	||!orderRoom.getRoomStatus().equals("PAYMENT_PENDING")||
+				payment==null	||!paymentService.findPaymentPaidSelf(payment.getPaymentIdx()).isEmpty())
+			return 0;
+		paymentService.delete(payment.getPaymentIdx());
+		groupOrderService.delete(orderRoom.getRoomIdx());
+		return orderRoomService.revertToSelect(orderRoom.getRoomIdx());
 	}
 }
