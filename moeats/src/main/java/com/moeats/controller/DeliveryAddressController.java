@@ -61,7 +61,7 @@ public class DeliveryAddressController {
 
 	    model.addAttribute("address", address);
 
-	    return "views/address-edit";
+	    return "views/members/address-edit";
 	}
 	
 	

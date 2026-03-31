@@ -42,7 +42,7 @@ public class StoreController {
 		
 		
 		
-		return "views/store-edit";
+		return "views/owner/store-edit";
 	}
 	
 	
@@ -59,7 +59,7 @@ public class StoreController {
 	@GetMapping("/owner/store/new")
 	public String insertStore() {
 		
-		return "views/store-create";
+		return "views/owner/store-create";
 	}
 	
 	// 내 가게 조회
@@ -69,7 +69,7 @@ public class StoreController {
 	@GetMapping("/owner/store")
 	public String myStore() {
 		
-		return "views/store-manage";
+		return "views/owner/store-manage";
 	}
 	
 }

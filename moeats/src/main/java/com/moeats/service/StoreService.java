@@ -47,10 +47,19 @@ public class StoreService {
 	
 	// 가게 등록
 	public void insertStore(Store store) {
-		
+		// 카테고리 유효성 검사 (추가)
+        validateCategory(store.getStoreCategory());
+        
 		storeMapper.insertStore(store);
 	}
 	
+	// 카테고리 검증용 private 메서드 추가
+    private void validateCategory(String category) {
+        if (category == null || !(category.equals("CHICKEN") || category.equals("PIZZA") || 
+            category.equals("CHINESE") || category.equals("KOREAN") || category.equals("CAFE"))) {
+            throw new IllegalArgumentException("유효하지 않은 가게 카테고리입니다: " + category);
+        }
+    }
 	
 	// 내 가게 조회
 	public Store myStore(int ownerMemberIdx) {

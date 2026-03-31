@@ -24,6 +24,12 @@ public class MemberController {
 	@Autowired
 	private MemberService memberService;
 	
+	// ===== 상수 정의 ======
+	private static final String ROLE_OWNER = "OWNER";
+	private static final String ROLE_CUSTOMER = "CUSTOMER";
+	
+	
+	
 	// 이메일 중복 확인 true → 사용 가능 (중복 없음)	false → 이미 존재
 	@GetMapping("/member/email-check")
 	@ResponseBody
@@ -63,14 +69,14 @@ public class MemberController {
 			return "redirect:/login";
 		}
 		
-		return "views/member-profile-edit";
+		return "views/members/member-profile-edit";
 	}
 	
 	// 마이페이지 띄우기 폼
 	@GetMapping("/member/me")
 	public String myPage(@SessionAttribute(name="member", required=false) Member member) {
 
-		return "views/member-profile";
+		return "views/members/member-profile";
 	}
 	
 	// 로그아웃 처리
@@ -81,56 +87,61 @@ public class MemberController {
 	}
 	
 	// 로그인 처리
-		@PostMapping("/login")
-		public String login(Model model,
-						@RequestParam("memberEmail") String memberEmail,
-						@RequestParam("memberPassword") String memberPassword,
-						HttpSession session,
-						HttpServletResponse response,
-						RedirectAttributes ra) throws Exception {
+	@PostMapping("/login")
+	public String login(Model model,
+					@RequestParam("memberEmail") String memberEmail,
+					@RequestParam("memberPassword") String memberPassword,
+					HttpSession session,
+					HttpServletResponse response,
+					RedirectAttributes ra) throws Exception {
+		
+		Member member = memberService.login(memberEmail, memberPassword);
+		
+		if(member == null) {
+			// 원인 분리
+			Member findMember = memberService.getMemberFromEmail(memberEmail);
 			
-			Member member = memberService.login(memberEmail, memberPassword);
-			
-			if(member == null) {
-				// 원인 분리
-				Member findMember = memberService.getMemberFromEmail(memberEmail);
-				
-				if(findMember == null) {
-					ra.addFlashAttribute("error", "존재하지 않는 아이디 입니다.");
-				}else {
-					ra.addFlashAttribute("error", "아이디 혹은 비밀번호를 확인해주세요.");
-				}
-				return "redirect:/login";
-				
+			if(findMember == null) {
+				ra.addFlashAttribute("error", "존재하지 않는 아이디 입니다.");
+			}else {
+				ra.addFlashAttribute("error", "아이디 혹은 비밀번호를 확인해주세요.");
 			}
+			return "redirect:/login";
 			
-			// --- ✅ 로그인 성공 처리 ---
-			model.addAttribute("member", member);
-			session.setAttribute("memberIdx", member.getMemberIdx());
-			
-			// 💡 핵심 추가 로직: 인터셉터가 세션에 남겨둔 '원래 가려던 주소'를 꺼내옵니다.
-			String redirectURI = (String) session.getAttribute("redirectURI");
-			
-			if (redirectURI != null && !redirectURI.isEmpty()) {
-				// 다 쓴 주소 메모는 세션에서 깔끔하게 지워줍니다.
-				session.removeAttribute("redirectURI"); 
-				
-				// 원래 가려던 페이지로 스무스하게 보냅니다!
-				return "redirect:" + redirectURI;
-			}
-			
-			// 만약 가려던 주소가 없었다면(그냥 로그인 버튼 누르고 들어온 경우) 메인으로 보냅니다.
-			return "redirect:/main";		
 		}
-	
+		
+		// --- ✅ 로그인 성공 처리 ---
+		model.addAttribute("member", member);
+		session.setAttribute("memberIdx", member.getMemberIdx());
+		
+		// 💡 핵심 추가 로직: 인터셉터가 세션에 남겨둔 '원래 가려던 주소'를 꺼내옵니다.
+		String redirectURI = (String) session.getAttribute("redirectURI");
+		
+		if (redirectURI != null && !redirectURI.isEmpty()) {
+			// 다 쓴 주소 메모는 세션에서 깔끔하게 지워줍니다.
+			session.removeAttribute("redirectURI"); 
+			
+			// 원래 가려던 페이지로 스무스하게 보냅니다!
+			return "redirect:" + redirectURI;
+		}
+
+	    // 사업자 회원이면 사업자 대시보드로 리다이렉트
+	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
+	        return "redirect:/member/dashboard";
+	    }
+	    
+		// 만약 가려던 주소가 없었다면(그냥 로그인 버튼 누르고 들어온 경우) 메인으로 보냅니다.
+		return "redirect:/main";		
+	}
+
 	// 로그인 폼
 	@GetMapping("/login")
 	public String login() {
 		
-		return "views/login";
+		return "views/members/login";
 	}
 	
-	// 회원가입	- 일반/사업자 분기 or 회원가입 폼에서 체크박스로 분기
+	// 회원가입	- 일반/사업자 분기
 	@PostMapping("/member")
 	public String insertMember(Member member, RedirectAttributes ra) {
 
@@ -138,16 +149,42 @@ public class MemberController {
 	        memberService.insertMember(member);
 	        return "redirect:/login";
 
-	    } catch (IllegalArgumentException | IllegalStateException e) {
+	    } catch (Exception e) {
 	        ra.addFlashAttribute("error", e.getMessage());
-	        return "redirect:/members/new";
+	        return "redirect:/members/createType";
 	    }
 	}
 	
-	// 회원가입 폼
-	@GetMapping("/members/new")
-	public String insertMember() {
-		
-		return "views/auth-signup";
+	// 통합 대시보드 분기(역할분기 일반/사업자)
+	@GetMapping("/member/dashboard")
+	public String dashboard(@SessionAttribute("member") Member member) {
+
+	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
+	        return "views/owner/dashboard";
+	    }
+
+	    return "redirect:/main";
 	}
+	
+	// 회원가입 폼 - 사업자
+	@GetMapping("/members/new-owner")
+	public String insertMemberOwner() {
+		
+		return "views/members/auth-signup-owner";
+	}
+
+	// 회원가입 폼 - 일반
+	@GetMapping("/members/new-customer")
+	public String insertMemberCustomer() {
+		
+		return "views/members/auth-signup-customer";
+	}
+
+	// 회원가입 유형 선택 폼(일반/사업자)
+	@GetMapping("/members/createType")
+	public String createType() {
+		
+		return "views/members/create-type";
+	}
+	
 }
