@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문방 상세</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" th:href="@{/css/test/FinalTest.css}" href="/css/test/FinalTest.css">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#f8f9fa",
+                        "primary": "#964900",
+                        "primary-container": "#ff8000",
+                        "on-primary": "#ffffff",
+                        "brand-navy": "#252D59",
+                        "outline-variant": "#dfc1af",
+                        "surface-container": "#edeeef"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                    },
+                },
+            },
+        };
+    </script>
+</head>
+<body class="bg-surface font-body text-brand-navy">
+
+<header class="bg-brand-navy text-white p-4 flex justify-between items-center sticky top-0 z-50">
+    <div class="flex items-center gap-4">
+        <span class="material-symbols-outlined">menu</span>
+        <h1 class="text-xl font-bold font-headline">Mo-Eats</h1>
+    </div>
+    <div class="flex gap-4">
+        <span class="material-symbols-outlined">search</span>
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span class="material-symbols-outlined">account_circle</span>
+    </div>
+</header>
+
+<main class="max-w-md mx-auto p-4 space-y-6">
+
+    <section id="roomInfo" class="space-y-3">
+        <div class="flex justify-between items-start">
+            <h2 class="text-2xl font-bold text-primary">[테스트 가게] 주문방</h2>
+            <button id="btnCopyCode" data-code="135797" class="flex items-center gap-1 border border-primary text-primary px-3 py-1 rounded-full text-sm">
+                <span class="material-symbols-outlined text-sm">content_copy</span> 135797
+            </button>
+        </div>
+        
+        <div class="flex gap-2">
+            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">SELECTING</span>
+            <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">모아결제</span>
+        </div>
+
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+            <span class="material-symbols-outlined text-base">location_on</span>
+            <span>서울시 강남구 테헤란로 1</span>
+        </div>
+    </section>
+
+    <section id="participantSection" class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined">group</span> 참여자 현황
+            </h3>
+            <span class="text-xs text-gray-400">3/4명 완료</span>
+        </div>
+        
+        <div class="space-y-3">
+            <div class="flex items-center justify-between p-2 border-b border-gray-50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-surface-container rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-gray-400">person</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-sm">김방장 <span class="text-[10px] bg-primary text-white px-1 rounded">방장</span></p>
+                        <p class="text-xs text-green-600 font-medium">선택 완료</p>
+                    </div>
+                </div>
+                <span class="font-bold text-sm">12,000원</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2 border-b border-gray-50 bg-orange-50 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary-container text-white rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined">person</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-sm text-primary">이참여 (나)</p>
+                        <p class="text-xs text-orange-600 font-medium animate-pulse">메뉴 고르는 중...</p>
+                    </div>
+                </div>
+                <span class="font-bold text-sm text-primary" id="moneyCal">10,000원</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-surface-container rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-gray-400">person</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-sm">박참여</p>
+                        <p class="text-xs text-green-600 font-medium">선택 완료</p>
+                    </div>
+                </div>
+                <span class="font-bold text-sm">9,500원</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="myCartSection" class="bg-white rounded-xl p-4 shadow-sm">
+        <h3 class="font-bold mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined">shopping_bag</span> 내 장바구니
+        </h3>
+        
+        <table class="w-full text-sm border-collapse">
+            <thead>
+                <tr class="text-gray-400 border-b border-outline-variant">
+                    <th class="py-2 text-left">메뉴</th>
+                    <th class="py-2">수량</th>
+                    <th class="py-2 text-right">소계</th>
+                    <th class="py-2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b border-gray-50">
+                    <td class="py-3">순대국밥</td>
+                    <td class="py-3 text-center">1</td>
+                    <td class="py-3 text-right font-medium">8,000원</td>
+                    <td class="py-3 text-right">
+                        <span class="material-symbols-outlined text-gray-400 text-lg cursor-pointer">close</span>
+                    </td>
+                </tr>
+                <tr class="border-b border-gray-50">
+                    <td class="py-3">공기밥</td>
+                    <td class="py-3 text-center">2</td>
+                    <td class="py-3 text-right font-medium">2,000원</td>
+                    <td class="py-3 text-right">
+                        <span class="material-symbols-outlined text-gray-400 text-lg cursor-pointer">close</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="mt-4 flex flex-col gap-2">
+            <button type="button" id="btnGoAddMenu" class="w-full py-2 border border-dashed border-primary text-primary rounded-lg text-sm font-medium">
+                + 메뉴 추가
+            </button>
+            <button type="button" id="btnTestAddRow" class="w-full py-2 bg-gray-100 text-gray-600 rounded-lg text-xs">
+                더미 행 추가 (테스트 전용)
+            </button>
+        </div>
+    </section>
+
+    <section id="totalSection" class="bg-brand-navy text-white rounded-xl p-5 space-y-4">
+        <div class="space-y-2 text-sm opacity-80">
+            <div class="flex justify-between">
+                <span>총 메뉴 금액</span>
+                <span>31,500원</span>
+            </div>
+            <div class="flex justify-between">
+                <span>배달비</span>
+                <span>3,000원</span>
+            </div>
+        </div>
+        
+        <div class="pt-3 border-t border-white/10 flex justify-between items-end">
+            <span class="font-bold">최종 결제 예정 금액</span>
+            <span class="text-2xl font-bold text-primary-container">34,500원</span>
+        </div>
+
+        <div class="space-y-2 pt-2">
+            <div class="flex justify-between text-[10px] font-bold">
+                <span>최소 주문 금액 40,000원</span>
+                <span class="text-orange-400">5,500원 더 필요</span>
+            </div>
+            <div class="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+                <div class="bg-primary-container h-full" style="width: 86%;"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="nextStepSection" class="grid grid-cols-2 gap-3 pb-10">
+        <button type="button" id="btnTestLeaveRoom" class="py-4 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold">
+            방 나가기
+        </button>
+        <button type="button" id="btnTestSelectDone" class="py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30">
+            선택 완료
+        </button>
+        <button type="button" id="btnTestProceedPayment" class="col-span-2 py-4 bg-gray-300 text-white rounded-xl font-bold cursor-not-allowed">
+            결제 진행하기 (방장 전용)
+        </button>
+    </section>
+
+</main>
+
+<input type="hidden" id="roomIdx" value="1">
+<input type="hidden" id="myRole" value="LEADER">
+<input type="hidden" id="roomStatus" value="SELECTING">
+
+<script src="/js/jquery-3.7.1.min.js"></script>
+<script src="/js/test/room-detail.test.js"></script>
+
+</body>
+</html>

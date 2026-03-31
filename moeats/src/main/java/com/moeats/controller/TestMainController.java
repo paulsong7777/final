@@ -4,7 +4,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 // static 이하의 파일은 controller로는 접속할 수 없으니 주의
-// static은 다음 주소를 직접 쳐라: http://localhost:8080/templates/room/test/room-create.html
 @Controller
 public class TestMainController {
 

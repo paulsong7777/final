@@ -1,0 +1,95 @@
+/* ============================================================
+   mo-eats-theme.css
+   출처: code.html (Group Created Success 화면)
+   용도: 다른 HTML 파일에 <link> 태그로 연결하여 사용
+   ============================================================ */
+
+/* ① 직접 작성 CSS */
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ② Tailwind 커스텀 CSS 변수 (colors → CSS 변수로 변환)
+   Tailwind 없이도 var(--color-primary) 형태로 사용 가능 */
+:root {
+    /* Surface */
+    --color-surface:                    #f8f9fa;
+    --color-surface-dim:                #d9dadb;
+    --color-surface-bright:             #f8f9fa;
+    --color-surface-variant:            #e1e3e4;
+    --color-surface-container:          #edeeef;
+    --color-surface-container-low:      #f3f4f5;
+    --color-surface-container-high:     #e7e8e9;
+    --color-surface-container-highest:  #e1e3e4;
+    --color-surface-container-lowest:   #ffffff;
+    --color-surface-tint:               #964900;
+
+    /* Primary */
+    --color-primary:                    #964900;
+    --color-primary-container:          #ff8000;
+    --color-primary-fixed:              #ffdcc7;
+    --color-primary-fixed-dim:          #ffb787;
+    --color-on-primary:                 #ffffff;
+    --color-on-primary-container:       #5e2b00;
+    --color-on-primary-fixed:           #311300;
+    --color-on-primary-fixed-variant:   #723600;
+    --color-inverse-primary:            #ffb787;
+
+    /* Secondary */
+    --color-secondary:                  #545b8a;
+    --color-secondary-container:        #c1c9ff;
+    --color-secondary-fixed:            #dee0ff;
+    --color-secondary-fixed-dim:        #bcc3f9;
+    --color-on-secondary:               #ffffff;
+    --color-on-secondary-container:     #4b5381;
+    --color-on-secondary-fixed:         #0f1743;
+    --color-on-secondary-fixed-variant: #3c4471;
+
+    /* Tertiary */
+    --color-tertiary:                   #ad3300;
+    --color-tertiary-container:         #ff7e54;
+    --color-tertiary-fixed:             #ffdbd0;
+    --color-tertiary-fixed-dim:         #ffb59e;
+    --color-on-tertiary:                #ffffff;
+    --color-on-tertiary-container:      #6e1d00;
+    --color-on-tertiary-fixed:          #3a0b00;
+    --color-on-tertiary-fixed-variant:  #842500;
+
+    /* Background & On-surface */
+    --color-background:                 #f8f9fa;
+    --color-on-background:              #191c1d;
+    --color-on-surface:                 #191c1d;
+    --color-on-surface-variant:         #574235;
+
+    /* Outline */
+    --color-outline:                    #8b7263;
+    --color-outline-variant:            #dfc1af;
+
+    /* Error */
+    --color-error:                      #ba1a1a;
+    --color-error-container:            #ffdad6;
+    --color-on-error:                   #ffffff;
+    --color-on-error-container:         #93000a;
+
+    /* Inverse */
+    --color-inverse-surface:            #2e3132;
+    --color-inverse-on-surface:         #f0f1f2;
+
+    /* Brand */
+    --color-brand-navy:                 #252D59;
+
+    /* Border Radius */
+    --radius-default:   1rem;
+    --radius-lg:        2rem;
+    --radius-xl:        3rem;
+    --radius-full:      9999px;
+
+    /* Font */
+    --font-headline: 'Plus Jakarta Sans', sans-serif;
+    --font-body:     'Plus Jakarta Sans', sans-serif;
+    --font-label:    'Plus Jakarta Sans', sans-serif;
+}

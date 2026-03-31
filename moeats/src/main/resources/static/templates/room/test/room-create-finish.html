@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mo-Eats | Group Created Success</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#f8f9fa",
+                        "surface-dim": "#d9dadb",
+                        "on-primary-fixed": "#311300",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#e7e8e9",
+                        "primary-fixed-dim": "#ffb787",
+                        "outline": "#8b7263",
+                        "surface-variant": "#e1e3e4",
+                        "on-background": "#191c1d",
+                        "inverse-primary": "#ffb787",
+                        "outline-variant": "#dfc1af",
+                        "tertiary-container": "#ff7e54",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#dee0ff",
+                        "surface-container-low": "#f3f4f5",
+                        "secondary-container": "#c1c9ff",
+                        "on-primary-container": "#5e2b00",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#3a0b00",
+                        "surface-bright": "#f8f9fa",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-tertiary-fixed-variant": "#842500",
+                        "tertiary-fixed": "#ffdbd0",
+                        "on-surface": "#191c1d",
+                        "on-secondary-fixed": "#0f1743",
+                        "on-primary": "#ffffff",
+                        "background": "#f8f9fa",
+                        "on-primary-fixed-variant": "#723600",
+                        "inverse-surface": "#2e3132",
+                        "primary": "#964900",
+                        "on-surface-variant": "#574235",
+                        "primary-fixed": "#ffdcc7",
+                        "secondary": "#545b8a",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-error": "#ffffff",
+                        "tertiary": "#ad3300",
+                        "on-secondary-container": "#4b5381",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb59e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#6e1d00",
+                        "surface-tint": "#964900",
+                        "on-secondary-fixed-variant": "#3c4471",
+                        "surface-container": "#edeeef",
+                        "secondary-fixed-dim": "#bcc3f9",
+                        "primary-container": "#ff8000",
+                        "brand-navy": "#252D59"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 left-0 w-full h-16 flex justify-between items-center px-6 md:px-12 bg-white dark:bg-white shadow-[0_20px_40px_rgba(37,45,89,0.06)] z-50">
+<div class="text-2xl font-black text-brand-navy tracking-tighter">Mo-Eats</div>
+<nav class="hidden md:flex items-center gap-8 font-plus-jakarta-sans font-bold text-sm tracking-wide">
+<a class="text-on-surface-variant hover:text-brand-navy transition-colors" href="#">Home</a>
+<a class="text-brand-navy border-b-2 border-brand-navy pb-1" href="#">Groups</a>
+<a class="text-on-surface-variant hover:text-brand-navy transition-colors" href="#">Orders</a>
+<a class="text-on-surface-variant hover:text-brand-navy transition-colors" href="#">Offers</a>
+</nav>
+<div class="flex items-center gap-4 text-brand-navy">
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-12 px-6 md:px-12 max-w-7xl mx-auto w-full flex flex-col items-center justify-center">
+<!-- Success Card (Bento Layout Style) -->
+<div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+<!-- Left Column: Visual Confirmation -->
+<div class="md:col-span-7 bg-surface-container-lowest rounded-xl p-8 md:p-12 shadow-[0_20px_40px_rgba(37,45,89,0.06)] flex flex-col items-center text-center justify-center relative overflow-hidden">
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-tertiary-fixed opacity-20 rounded-full blur-3xl"></div>
+<!-- Success Icon -->
+<div class="w-24 h-24 bg-primary-container rounded-full flex items-center justify-center mb-8 shadow-lg ring-8 ring-primary-fixed">
+<span class="material-symbols-outlined text-white text-5xl font-bold" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h1 class="text-3xl md:text-4xl font-extrabold text-[#000000] tracking-tight mb-4">
+                    배달 룸이 성공적으로 만들어졌습니다!
+                </h1>
+<p class="text-on-surface-variant max-w-md text-lg leading-relaxed">
+                    이제 친구들을 초대하거나 다른 사람들을 기다려 함께 배달 팁을 절약해보세요.
+                </p>
+</div>
+<!-- Right Column: Room Details & Actions -->
+<div class="md:col-span-5 flex flex-col gap-6">
+<!-- Group Preview Card -->
+<div class="bg-surface-container-low rounded-xl p-6 flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-[0.05em] text-tertiary px-2 py-1 bg-tertiary-fixed rounded-md mb-2 inline-block">New Room</span>
+<h3 class="text-xl font-bold text-on-secondary-fixed">맛있는 타이 푸드 파티</h3>
+</div>
+<div class="flex -space-x-3">
+<img class="w-10 h-10 rounded-full border-2 border-white object-cover" data-alt="close-up portrait of a smiling young professional man in warm natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl9WVDjenhJ5ZbrbSf58oVwB6T3TIOry5WLwwhPDJR-6SwBrGOb1t6-go54AQ5mxJZiaApc3WPOFAVExb3iZNV8mZf0lkyUNrs4I7-E8qS0pMmGrH53I03eG7QW6oAd11FP8SWFoQUQoBse1yx1r2bG9knw-42pvKgshdpVctQJURSUZAhiGPmvf00Jp8FiEn-jXyrxvUOIxd7C00WoySZX0lbiqHtn5-hGHeiABjy3ybEQmuMfnTVpfYW2ouh0Jt41tAfH5RREhgq"/>
+<div class="w-10 h-10 rounded-full border-2 border-white bg-surface-container-highest flex items-center justify-center text-xs font-bold text-on-surface-variant">
+                                +3
+                            </div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-2 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="restaurant">restaurant</span>
+<span>타이 가든 강남본점</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="location_on">location_on</span>
+<span>서울 서초구 서초대로 123</span>
+</div>
+</div>
+<!-- Progress Bar (Shared Platter Mandate) -->
+<div class="mt-4">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">
+<span>Target: 20,000₩</span>
+<span>1/4 Members</span>
+</div>
+<div class="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 25%;"></div>
+</div>
+</div>
+</div>
+<!-- Primary Actions -->
+<div class="flex flex-col gap-3">
+<button class="w-full bg-primary-container text-white py-4 px-8 rounded-full font-bold text-lg shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+		id="btnTestGoDetail">
+<span class="material-symbols-outlined" data-icon="door_open">door_open</span>
+                        방으로 이동하기
+                    </button>
+<button class="w-full bg-secondary-container text-on-secondary-fixed py-4 px-8 rounded-full font-bold text-lg shadow-sm hover:shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+		id="btnCopyCode" data-code="135797">
+<span class="material-symbols-outlined" data-icon="content_copy">content_copy</span>
+                        링크 복사하기
+                    </button>
+</div>
+<!-- Social Share Hints -->
+<div class="flex justify-center gap-6 mt-2">
+<button class="text-on-surface-variant hover:text-primary transition-colors flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-2xl" data-icon="chat">chat</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Kakao</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-2xl" data-icon="ios_share">ios_share</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Share</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Decorative Elements for "Elegance" -->
+<div class="mt-16 w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-4 opacity-60">
+<div class="h-32 rounded-lg bg-surface-container-low overflow-hidden group">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="close-up of vibrant red thai curry with fresh basil leaves and steam rising in soft morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiZG3dRlXriEQ026fdSeDLkXofhyRC3RgTiZ3adWkg0P3P_lHhhKQCXkcYjBmp07yK0EOnb_A4N1PTp2ovJVreLMKMBJwMMA3Kq_J0zQgLuvqy0YiknPXXNdBzQqErl1Ua90hJ-wxZaxggpLIu8CKbQH_23KvgqtZz5EcoLQNKeHH51v4DHgm6ul-8vY4zS7aYRKHQFakHcaxrMtG5XKEvmBGBmLrnzVV01gLf4AeMdLdo5USMIi5ArCu38TIp2hVFH0PXPt-hWTxB"/>
+</div>
+<div class="h-32 rounded-lg bg-surface-container-low overflow-hidden group">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="artistic composition of fresh ingredients like chili, garlic and ginger on a rustic wooden table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRITXo1TksPRXuC6AMwQn6bVyOEleAIFp3kHesAK_Sk-gwp3-iIosxENMhF6L9ojcWCaYbIGiKtw-kb_dDE0BFckYd4DS-WC7KfHDB9978kkXekN9uousnXrqyCAXT3y_bOdmuZx_fewQjjVzAIbin-d8JqL9p0liAZaJMRena9mJ3BlpgDD80Ir6Q8lLayVXPsC8F4FOWBAfTKrX4fQ2WvuJo4e7xbwgczdLf71KbEInSZwCgLsoebgeXxlxalKSvXW-BGeWMiPnQ"/>
+</div>
+<div class="h-32 rounded-lg bg-surface-container-low overflow-hidden group">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="top view of various asian side dishes in ceramic bowls arranged on a dark stone surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeLVDX-SHO_g4tcX7hENmws761iCF4DAueuCKaicFBinHQs3xpyi6xfs8xS_JOoWQSx3XdS5ekEJBu8OvuyRTgZYC4ToXXB1o3IADG_KhNKs0xyaC03NlIfB_j8gswSHkfrNmSwas0ttAtCqgSWRrrhBUIx4A2P2jwbRVl16oFKsRyZNkzJXtMtEnkvcaddtnLO8wL81uruifZ14nDPWq5oCp-45b7S2b2EmynamyTHmtEe-Ath3_0zGJyssX1IK-7QA5Lh1TOeH_d"/>
+</div>
+<div class="h-32 rounded-lg bg-surface-container-low overflow-hidden group">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="close-up of steaming noodles being lifted with chopsticks from a patterned bowl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDETO4FrgX7ynGjLsYetSL5aGJEa0ncTcIOXfNbKlp_plxNnokDfkw4-urJAA9vQ6ZNCodOeMCufsvQHIvcSV1WBS6NS4bOdGHJEL6d2lKimp6GE4PV_abjHKmqWVNfr4TtwMkXyNJomrE3pBEhkC7d_wWu60QTt10WTos4dIj7Q56xAFXwdaYteciqdRwP5V9PuTl-zZ8FuGfIV5Eqg6WZxT60wnaYcWvsV7fQKh8gOlIRRQzM1Eluy6csNRT_r_MpnILYYyeEcl9W"/>
+</div>
+</div>
+
+<!-- 테스트용 임시 import -->
+<script src="/js/jquery-3.7.1.min.js"></script>
+<script src="/js/test/room-create.test.js"></script>
+
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full h-24 py-6 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-6 bg-brand-navy dark:bg-brand-navy border-t border-white/10 mt-auto">
+<div class="text-base font-bold text-white">Mo-Eats</div>
+<div class="flex flex-wrap justify-center gap-8 font-plus-jakarta-sans text-[10px] uppercase tracking-[0.05em]">
+<a class="text-slate-400 hover:text-orange-500 transition-colors" href="#">Privacy Policy</a>
+<a class="text-slate-400 hover:text-orange-500 transition-colors" href="#">Terms of Service</a>
+<a class="text-slate-400 hover:text-orange-500 transition-colors" href="#">Contact Us</a>
+<a class="text-slate-400 hover:text-orange-500 transition-colors" href="#">Help Center</a>
+</div>
+<div class="text-slate-400 font-plus-jakarta-sans text-[10px] uppercase tracking-[0.05em]">
+            © 2024 Mo-Eats. All rights reserved.
+        </div>
+</footer>
+</body></html>

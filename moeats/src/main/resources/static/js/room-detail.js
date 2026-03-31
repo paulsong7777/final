@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const roomIdx    = document.getElementById('roomIdx')?.value;
     const myRole     = document.getElementById('myRole')?.value;
-    const roomStatus = document.getElementById('roomStatus')?.value;
+    const roomStatus = document.getElementById('roomStatus')?.value;	
 
     // ── 방 코드 복사 ────────────────────────────────────────────────────────
     const btnCopyCode = document.getElementById('btnCopyCode');
@@ -56,5 +56,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.preventDefault();
             }
         });
-    }
+    }	
+		
 });

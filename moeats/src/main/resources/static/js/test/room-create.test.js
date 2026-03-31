@@ -14,5 +14,24 @@ $(function () {
     $('#btnTestGoJoin').on('click', function () {
         location.href = "room-join.html";
     });
+	
+	// 주문방 참여화면으로 이동
+    $('#btnTestGoCfinish').on('click', function () {
+        location.href = "room-create-finish.html";
+    });
+	
+	// 방 코드 복사
+    // 실전: 동일 로직 그대로 사용 가능
+    $('#btnCopyCode').on('click', function () {
+        var code = $(this).data('code');
+        if (!code) return;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(code).then(function () {
+                alert('방 코드 복사 완료: ' + code);
+            });
+        } else {
+            prompt('코드를 직접 복사하세요:', code);
+        }
+    });
 
 });

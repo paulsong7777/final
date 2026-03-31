@@ -20,14 +20,14 @@
     [실전] 방 기본 정보
     서버 제공 model 변수:
         - room.storeName       : 가게명
-        - room.roomCode        : 방 코드 (6자리)
+        - room.roomCode        : 방 코드 (6자리, 숫자, 생성로직은 서버(백엔드))
         - room.roomStatus      : OPEN | SELECTING | PAYMENT_PENDING | ORDER_CONFIRMED
         - room.paymentMode     : REPRESENTATIVE | INDIVIDUAL
         - room.deliveryAddress : 배송 주소 문자열
         - room.roomIdx         : 방 식별자 (하단 form action에 사용)
         - room.storeIdx        : 가게 식별자 (메뉴 추가 링크에 사용)
         - room.minimumOrderAmount : 최소 주문 금액
-        - room.orderIdx        : 주문 완료 후 결제/완료 화면 이동에 사용
+        - room.orderIdx        : 주문 완료 후 결제/완료 화면 이동에 사용              
 
     <h2>주문방 <span th:text="'[' + ${room.storeName} + ']'"></span></h2>
     <section id="roomInfo">
@@ -35,7 +35,7 @@
             <tr>
                 <th>방 코드</th>
                 <td>
-                    <strong th:text="${room.roomCode}">A7B2X9</strong>
+                    <strong th:text="${room.roomCode}">135797</strong>
                     목적: 방 코드 클립보드 복사. data-code를 JS에서 읽어 clipboard API 호출
                     <button type="button" id="btnCopyCode" th:data-code="${room.roomCode}">코드 복사</button>
                 </td>
@@ -54,8 +54,8 @@
             <tr>
                 <th>방 코드</th>
                 <td>
-                    <strong id="roomCodeDisplay">A7B2X9</strong>
-                    <button type="button" id="btnCopyCode" data-code="A7B2X9">코드 복사</button>
+                    <strong id="roomCodeDisplay">135797</strong>
+                    <button type="button" id="btnCopyCode" data-code="135797">코드 복사</button>
                 </td>
             </tr>
             <tr><th>방 상태</th>   <td id="roomStatusDisplay">SELECTING</td></tr>
@@ -102,7 +102,7 @@
             <thead><tr><th>이름</th><th>역할</th><th>선택 상태</th><th>담은 금액</th></tr></thead>
             <tbody>
                 <tr><td>김방장</td><td>방장</td>  <td>[완료]</td>   <td>12,000원</td></tr>
-                <tr><td>이참여</td><td>참여자</td><td>[선택중]</td> <td>8,000원</td></tr>
+                <tr><td>이참여</td><td>참여자</td><td>[선택중]</td> <td id="moneyCal">10,000원</td></tr>
                 <tr><td>박참여</td><td>참여자</td><td>[완료]</td>   <td>9,500원</td></tr>
             </tbody>
         </table>
@@ -122,18 +122,42 @@
         - myTotal              : 내 장바구니 합계
         - mySelectionStatus    : NOT_SELECTED | SELECTED
 
+	me: 메뉴선택존을 따로 만들어야 하므로 메뉴선택 관련된 변수도 다 주고받아야 한다. 이 방을 boardList라 생각하고 메뉴선택존을 boardDetail이라 생각하면 room-detail 에서도 db 가져가야 한다
+		혹은 layout-contents 구조라면 컨텐츠만 메뉴페이지를 빼오므로 
+    me: 주문방의 내 장바구니는 실시간으로 메뉴선택을 수정 및 삭제해야 하는데, 삭제는 경고메시지 표출 직후 삭제하며 수정은 cart-item.html과 같게 한다
+
     방 상태가 PAYMENT_PENDING 또는 ORDER_CONFIRMED이면 수정/삭제/선택완료 버튼 숨김
+    
+    [추가 버튼]
+    목적		: 목록에 cart_item 추가. 조건이 현재 페이지 유지 / selection_status 갱신 이므로 실제로는 별도의 form으로 link나 redirect를 거는 대신 cart상 목록페이지를 붙여넣고
+    		  추가폼은 thymeleaf로 장바구니 부분만 화면이 부분적으로 바뀌게끔 
+    method	: Post
+    action	: /rooms/code/{room_code}/cart/items/add
+    /rooms/code/{room_code}/cart 는 해당 화면을 테이블에 띄우기 위해 쓰이고 있지 않을까
 
     [수정 버튼]
-    목적    : 해당 cart_item 수정 폼으로 이동
+    목적   	: 해당 cart_item 수정 폼으로 이동. 수정폼은 최초 선택폼(cart-item.html)과 같은 형식에 기존의 cartItemIdx만 가져오거나 해당 cart_item를 지워버리고 추가폼으로 넘긴다
     method  : GET
-    action  : /rooms/{roomIdx}/cart/{cartItemIdx}/edit
+    action  : /rooms/code/{room_code}/cart/items/{cart_item_idx}/edit
+    
+    서로 다른 id를 가진 여러 개의 form이? 
 
     [삭제 버튼]
-    목적    : 해당 cart_item 삭제 요청
+    목적    	: 해당 cart_item 삭제 요청
     method  : POST (_method=DELETE 히든 필드로 PUT/DELETE 우회)
-    action  : /rooms/{roomIdx}/cart/{cartItemIdx}
+    action  :  /rooms/code/{room_code}/cart/items/{cart_item_idx}/delete
     전송 파라미터: _method=DELETE
+
+	_method=DELETE (Hidden Method Filter) 해석
+	가장 질문하셨던 **_method=DELETE**는 **"HTML Form의 한계를 극복하기 위한 RESTful 통신 기법"**입니다.
+
+	문제점: 표준 HTML의 <form> 태그는 method 속성으로 GET과 POST만 지원합니다. 하지만 현대적인 REST API 설계에서는 삭제는 DELETE, 일부 수정은 PATCH나 PUT을 사용해야 합니다.
+
+	해결책 (Hidden Method Tunneling): 1.  실제 Form 전송은 method="post"로 보냅니다.
+	2.  그 안에 <input type="hidden" name="_method" value="DELETE">를 숨겨서 보냅니다.
+	3.  Spring Boot 서버의 HiddenHttpMethodFilter가 이 값을 읽고, 컨트롤러의 @DeleteMapping으로 매핑된 메서드로 요청을 전달합니다.
+
+	의도: "이 요청은 형식상 POST지만, 실제로는 데이터를 삭제하려는 의도이다"라고 서버에 알리는 것입니다.
 
     [선택 완료 버튼]
     목적    : 내 selectionStatus를 SELECTED로 변경
@@ -145,7 +169,7 @@
     <section id="myCartSection">
         <p th:if="${#lists.isEmpty(myCartItems)}">
             아직 담은 메뉴가 없습니다.
-            <a th:href="@{/stores/{idx}(idx=${room.storeIdx})}">메뉴 보러 가기</a>
+            <a th:href="@{/stores/{idx}(idx=${room.storeIdx})}">메뉴 선택하러 가기</a>
         </p>
         <table border="1" th:unless="${#lists.isEmpty(myCartItems)}">...</table>
         <p>내 주문 합계: <strong th:text="...">0원</strong></p>
@@ -162,7 +186,7 @@
 
     <!-- [더미] 내 장바구니 -->
     <section id="myCartSection">
-        <h3>내 장바구니 (더미)</h3>
+        <h3>내 장바구니 (더미)(이참여 시점)</h3>
         <table border="1">
             <thead>
                 <tr><th>메뉴명</th><th>수량</th><th>단가</th><th>소계</th><th>수정/삭제</th></tr>
@@ -171,21 +195,23 @@
                 <tr>
                     <td>순대국밥</td><td>1</td><td>8,000원</td><td>8,000원</td>
                     <td>
-                        <button type="button">수정 (더미)</button>
+                        <button type="button" id="btnGoEditMenu">수정 (더미)</button>
                         <button type="button">삭제 (더미)</button>
                     </td>
                 </tr>
                 <tr>
                     <td>공기밥</td><td>2</td><td>1,000원</td><td>2,000원</td>
                     <td>
-                        <button type="button">수정 (더미)</button>
+                        <button type="button" id="btnGoEditMenu">수정 (더미)</button>
                         <button type="button">삭제 (더미)</button>
                     </td>
                 </tr>
             </tbody>
         </table>
         <p>내 주문 합계: <strong>10,000원</strong></p>
-        <button type="button">+ 메뉴 추가 (더미)</button>
+        <button type="button" id="btnGoAddMenu">+ 메뉴 추가 (더미)</button>
+        <br>
+        <button type="button" id="btnTestAddRow" style="background-color: #ffc107;">더미 행 추가 (테스트 전용)</button>
         <br>
         <button type="button" id="btnTestSelectDone">선택 완료 (더미)</button>
         <!-- 실전: 위 버튼은 form POST → /rooms/{rIdx}/members/{mIdx} (_method=PATCH, selectionStatus=SELECTED) -->
@@ -212,16 +238,19 @@
             최소 주문 금액에 미달합니다. (OO원 더 필요)
         </p>
     </section>
+    
+    [개인 장바구니 테이블]
+    목적 : 
     ================================ -->
 
     <!-- [더미] 전체 합계 -->
     <section id="totalSection">
         <h3>전체 합계 (더미)</h3>
         <table border="1">
-            <tr><th>메뉴 합계</th>    <td>29,500원</td></tr>
+            <tr><th>메뉴 합계</th>    <td>31,500원</td></tr>
             <tr><th>배달비</th>       <td>3,000원</td></tr>
-            <tr><th>최종 합계</th>    <td><strong>32,500원</strong></td></tr>
-            <tr><th>최소 주문 금액</th><td>12,000원</td></tr>
+            <tr><th>최종 합계</th>    <td><strong>34,500원</strong></td></tr>
+            <tr><th>최소 주문 금액</th><td>40,000원</td></tr>
         </table>
     </section>
 
@@ -313,6 +342,9 @@
         </button>
         <button type="button" id="btnTestGoJoin">
             → 주문방 참여화면으로 이동
+        </button>
+        <button type="button" id="btnTestGoDetailDesign">
+            → 주문방 디자인화면으로 이동
         </button>
     </section>
 

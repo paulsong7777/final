@@ -114,7 +114,7 @@
             <option value="2">회사 - 서울시 중구 을지로 2</option>
         </select>
         <br>
-        <a href="#">+ 새 배송지 추가 (더미 링크)</a>
+        <a href="#">+ 새 배송지 추가 (더미 링크: 개인정보폼)</a>
     </section>
 
     <section>
@@ -147,7 +147,10 @@
     <hr>
 
     <!-- ================================ -->
-    <!-- [테스트 이동 버튼]                -->
+    <!-- [테스트 이동 버튼]                
+    	 생성완료화면 별도 생성할 필요성?2티어?    
+    	 그냥 만들어도 될것같기도. 간단한데? 
+    	 css만 추출할까?					  -->
     <!-- ================================ -->
     <section id="testNav">
         <p><strong>[테스트] 화면 이동 확인용</strong></p>
@@ -156,8 +159,13 @@
         아래 버튼은 서버 없이 직접 이동 (더미 roomIdx = 1 사용)
         -->
         <button type="button" id="btnTestGoDetail">
-            → 주문방 협업화면으로 이동 (더미 방장 시나리오)
+            → 주문방 협업화면으로 이동 (방장 직행 시나리오)
         </button>
+        
+        <button type="button" id="btnTestGoCfinish">
+            → 주문방 생성완료화면(디자인테스트)으로 이동
+        </button>
+        
         <button type="button" id="btnTestGoJoin">
             → 주문방 참여화면으로 이동
         </button>

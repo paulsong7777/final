@@ -5,6 +5,24 @@
 <!--
 실전: th:replace로 공통 head 삽입
 <head th:replace="~{fragments/header :: headMeta('결제 진행')}"></head>
+
+payment.html
+individual / representitive 분리 (6시이후 클로드 리젠)
+결제모드 분리는 room-dtail에서는 할 필요 없고, 결제모드로 진입하면 그때 나누면 된다
+payment-representative.html 모아결제창 생성
+payment-individual.html 개인결제창 생성 
+payment-wait.html 결제완료자 대기석 생성
+
+order-status.html을 어디에서 이을지 논의
+html대신에 db가 가지고 있을지? 별도의 폼을 보여줄지?
+요구사항정의서에 의하면 "order_status 전이 규칙과 사용자·점주 공통 조회 API 구현" 이라 하므로 별도 폼 필요
+
+order-complete.html 주문완료페이지 생성
+order-list 전체주문내역 생성 혹은 complete 페이지에 삽입
+
+api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로 
+경고문만 띄우고 room-detail.html로 보내면 될 것 같다. 이때 파라미터 분석은 별도로 기재한다
+
 -->
 <meta charset="UTF-8">
 <title>결제 진행 | Mo-Eats (테스트)</title>
