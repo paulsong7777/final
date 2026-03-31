@@ -118,7 +118,9 @@
                     headers: { ...(header && { [header]: token }) }, 
                     body: formData
                 });
-
+		
+                
+                // 백엔드와 연동 시 발생할 수 있는 오류 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 const result = await response.json();

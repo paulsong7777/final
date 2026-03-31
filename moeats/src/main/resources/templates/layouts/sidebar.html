@@ -8,7 +8,7 @@
         <div class="mb-2">
             <a th:href="@{/owner/dashboard}" class="nav-capsule" th:classappend="${menu == 'dash'} ? 'active'">
                 <i class="bi bi-grid-1x2-fill"></i>
-                <span class="menu-text">실시간 주문 관제</span>
+                <span class="menu-text">실시간 주문 현황</span>
             </a>
         </div>
 
@@ -58,26 +58,19 @@
             </a>
         </div>
 
-        <div class="mb-2">
-            <a th:href="@{/owner/settlement/info}" class="nav-capsule" th:classappend="${menu == 'settle'} ? 'active'">
-                <i class="bi bi-wallet2"></i>
-                <span class="menu-text">정산 내역 확인</span>
-            </a>
-        </div>
-
         <div class="my-3 border-top border-secondary border-opacity-25 mx-3"></div>
 
         <div class="mb-2">
             <a th:href="@{/owner/store/setting}" class="nav-capsule" th:classappend="${menu == 'store'} ? 'active'">
                 <i class="bi bi-sliders"></i>
-                <span class="menu-text">매장 운영 정보</span>
+                <span class="menu-text">매장 등록 폼</span>
             </a>
         </div>
 
         <div class="mb-2">
             <a th:href="@{/owner/support/notice}" class="nav-capsule" th:classappend="${menu == 'notice'} ? 'active'">
                 <i class="bi bi-megaphone"></i>
-                <span class="menu-text">공지 및 고객지원</span>
+                <span class="menu-text">사업자 이용 가이드</span>
             </a>
         </div>
 
@@ -85,40 +78,37 @@
 </div>
 
 <style>
-    /* 6대원칙 [Layout]: 사이드바 디자인 표준화 */
+    /* [스타일 유지: 디자인팀 요구사항 반영] */
     #moeats-sidebar-fragment .nav-capsule {
         display: flex;
         align-items: center;
-        padding: 14px 20px; /* 터치/클릭 영역을 조금 더 넓힘 */
+        padding: 14px 20px;
         border-radius: 12px;
         text-decoration: none !important;
         transition: all 0.2s ease-in-out;
-        margin: 0 15px 6px 15px; /* 메뉴 간격 살짝 넓힘 */
+        margin: 0 15px 6px 15px;
         border: 1px solid transparent;
+        cursor: pointer; /* 클릭 가능하도록 커서 추가 */
     }
 
-    /* 🚀 시인성 극대화 수정 부분 */
     #moeats-sidebar-fragment .nav-capsule span {
-        color: #FFFFFF !important; /* 쨍하고 맑은 화이트로 대비 극대화 */
-        font-size: 1.05rem;        /* 폰트 크기 확대 (기존 0.9rem) */
-        font-weight: 600;          /* 글씨 두께 세미볼드로 강화 (기존 500) */
-        letter-spacing: 0.3px;     /* 답답했던 자간 넓힘 (기존 -0.5px) */
+        color: #FFFFFF !important;
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
     }
 
-    /* 아이콘도 글자 크기에 맞춰 밸런스 조정 */
     #moeats-sidebar-fragment .nav-capsule i {
         color: #FF8000 !important;
         font-size: 1.25rem;        
         margin-right: 14px;
     }
 
-    /* Hover (마우스 올렸을 때) 효과 강화 */
     #moeats-sidebar-fragment .nav-capsule:hover {
         background-color: rgba(255, 128, 0, 0.15) !important;
         transform: translateX(5px);
     }
 
-    /* Active (현재 페이지) 상태 */
     #moeats-sidebar-fragment .nav-capsule.active {
         background: linear-gradient(135deg, #FF8000, #FF6A00) !important;
         box-shadow: 0 4px 12px rgba(255, 128, 0, 0.3);
@@ -127,7 +117,7 @@
     #moeats-sidebar-fragment .nav-capsule.active span,
     #moeats-sidebar-fragment .nav-capsule.active i {
         color: #ffffff !important;
-        font-weight: 700; /* 활성화 시엔 엑스트라 볼드로 확실한 강조 */
+        font-weight: 700;
     }
 
     #moeats-sidebar-fragment .menu-text {

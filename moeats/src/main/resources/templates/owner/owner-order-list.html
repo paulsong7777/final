@@ -4,49 +4,83 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content" class="container-fluid">
+<div layout:fragment="content" class="container-fluid py-4">
     
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-        <h3 class="fw-bold mb-0 text-navy">주문 내역 조회</h3>
+    <div class="d-flex justify-content-between align-items-end mb-4 border-bottom border-2 pb-3" style="border-bottom-color: var(--moeats-navy) !important;">
+        <div>
+            <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-clock-history me-2 text-orange"></i>주문 내역 관리</h2>
+            <p class="text-secondary small mb-0 mt-1">매장에서 접수된 모든 주문을 상세히 조회합니다.</p>
+        </div>
+        <div class="bg-white border rounded-pill px-3 py-2 fw-bold text-secondary small shadow-sm d-none d-md-block">
+             <i class="bi bi-calendar-event me-1 text-orange"></i>
+             조회 기준: <span th:text="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd HH:mm')}"></span>
+        </div>
     </div>
 
-    <div class="card">
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr class="table-light">
-                        <th class="px-4">NO.</th>
+                <thead class="bg-light text-secondary small fw-bold text-center">
+                    <tr>
+                        <th class="py-3 ps-4 text-start">번호</th>
                         <th>주문일시</th>
-                        <th>주문번호(코드)</th>
-                        <th>메뉴명</th>
-                        <th>결제 금액</th>
-                        <th class="text-center">상태</th>
+                        <th>주문코드</th>
+                        <th class="text-start">메뉴명</th>
+                        <th class="text-end">결제금액</th>
+                        <th>진행상태</th>
+                        <th class="pe-4">상세</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="text-center border-top-0">
                     <th:block th:if="${not #lists.isEmpty(orderList)}">
                         <tr th:each="order, stat : ${orderList}">
-                            <td class="px-4" th:text="${stat.count}">1</td>
-                            <td th:text="${order['orderDate'] ?: '0000-00-00 00:00'}">2026-03-27 16:18</td>
+                            <td class="ps-4 text-start text-muted small" th:text="${stat.count}">1</td>
+                            
+                            <td class="small text-secondary" th:text="${order['orderDate'] ?: '00:00'}">0000-00-00 00:00</td>
+                            
                             <td>
-                                <code th:text="${order['orderCode'] ?: 'CODE-NULL'}">ORD-001</code>
+                                <span class="fw-bold px-2 py-1 rounded border" 
+                                      style="background-color: #f1f3f5; color: #252D59 !important; font-family: 'Courier New', monospace; font-size: 0.85rem; border-color: #dee2e6 !important;">
+                                    <th:block th:text="${order['orderCode'] ?: 'N/A'}">ORD-001</th:block>
+                                </span>
                             </td>
-                            <td class="fw-bold" th:text="${order['menuName']}">황금올리브</td>
-                            <td th:text="|${#numbers.formatInteger(order['totalPrice'] ?: 0, 0, 'COMMA')}원|">0원</td>
-                            <td class="text-center">
-                                <span class="badge" 
-                                      th:classappend="${order['roomStatus'] == 'DELIVERING' ? 'bg-success' : 'bg-secondary'}"
-                                      th:text="${order['roomStatus'] == 'DELIVERING' ? '완료' : '진행중'}">상태</span>
+                            
+                            <td class="text-start fw-bold text-navy" th:text="${order['menuName']}">황금올리브 치킨</td>
+                            <td class="text-end fw-bold text-orange" th:text="|${#numbers.formatInteger(order['totalPrice'] ?: 0, 0, 'COMMA')}원|">20,000원</td>
+                            
+                            <td>
+                                <span th:switch="${order['roomStatus']}">
+                                    <span th:case="'PENDING'" class="badge bg-danger-subtle text-danger px-3 rounded-pill">대기중</span>
+                                    <span th:case="'ACCEPTED'" class="badge bg-warning-subtle text-warning px-3 rounded-pill">접수완료</span>
+                                    <span th:case="'COOKING'" class="badge bg-info-subtle text-info px-3 rounded-pill">조리중</span>
+                                    <span th:case="'DELIVERING'" class="badge bg-primary-subtle text-primary px-3 rounded-pill">배달중</span>
+                                    <span th:case="'COMPLETED'" class="badge bg-success-subtle text-success px-3 rounded-pill">완료</span>
+                                    <span th:case="'CANCELLED'" class="badge bg-secondary-subtle text-secondary px-3 rounded-pill">취소</span>
+                                    <span th:case="*" class="badge bg-dark-subtle text-dark px-3 rounded-pill">알수없음</span>
+                                </span>
+                            </td>
+                            
+                            <td class="pe-4">
+                                <a th:href="@{/owner/order/detail(roomIdx=${order['roomIdx']})}" 
+                                   class="btn btn-sm btn-outline-navy rounded-pill px-3 border-0 bg-light fw-bold"
+                                   style="font-size: 0.75rem; color: var(--moeats-navy);">보기</a>
                             </td>
                         </tr>
                     </th:block>
-
+                    
                     <tr th:if="${#lists.isEmpty(orderList)}">
-                        <td colspan="6" class="text-center py-5">데이터가 존재하지 않습니다.</td>
+                        <td colspan="7" class="py-5 text-center text-muted">
+                            <i class="bi bi-inbox d-block fs-1 mb-3 opacity-25"></i>
+                            <p class="fw-bold mb-0">표시할 주문 내역이 없습니다.</p>
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<th:block layout:fragment="script">
+</th:block>
+
 </html>

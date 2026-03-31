@@ -20,28 +20,28 @@
     <div class="row g-3 mb-4 text-center">
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white">
-                <span class="small text-secondary fw-bold text-uppercase">Total Sales</span>
+                <span class="small text-secondary fw-bold text-uppercase">총 매출액</span>
                 <div class="mt-2 fw-bold fs-3 text-orange report-value" 
                      th:text="|${#numbers.formatInteger(totalSales ?: 0, 0, 'COMMA')}원|">0원</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white">
-                <span class="small text-secondary fw-bold text-uppercase">Orders</span>
+                <span class="small text-secondary fw-bold text-uppercase">주문 건수</span>
                 <div class="mt-2 fw-bold fs-3 text-navy report-value" 
                      th:text="|${orderCount ?: 0}건|">0건</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white">
-                <span class="small text-secondary fw-bold text-uppercase">Cancelled</span>
+                <span class="small text-secondary fw-bold text-uppercase">주문 취소</span>
                 <div class="mt-2 fw-bold fs-3 text-danger report-value" 
                      th:text="|${cancelCount ?: 0}건|">0건</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white">
-                <span class="small text-secondary fw-bold text-uppercase">Rating</span>
+                <span class="small text-secondary fw-bold text-uppercase">평균 별점</span>
                 <div class="mt-2 fw-bold fs-3 text-orange report-value" 
                      th:text="|★ ${avgRating ?: 0.0}|">★ 0.0</div>
             </div>
@@ -95,7 +95,7 @@
 <th:block layout:fragment="script">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script th:inline="javascript">
-        /* [6대원칙: Anti-Null] JS 데이터 무결성 초기화 */
+        /* [Anti-Null] JS 데이터 무결성 초기화 */
         const chartLabels = /*[[${chartLabels ?: {}}]]*/ ['09시', '12시', '15시', '18시', '21시'];
         const chartDataValues = /*[[${chartData ?: {}}]]*/ [0, 0, 0, 0, 0];
 

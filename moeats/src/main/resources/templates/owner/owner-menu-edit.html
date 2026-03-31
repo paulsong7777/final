@@ -10,7 +10,7 @@
             
             <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
                 <a th:href="@{/owner/menu/management}" class="text-navy text-decoration-none fw-bold me-3">
-                    <i class="bi bi-arrow-left"></i> BACK
+                    <i class="bi bi-arrow-left"></i> 뒤로가기
                 </a>
                 <h3 class="fw-bold mb-0 text-navy">메뉴 정보 수정</h3>
             </div>
@@ -20,7 +20,7 @@
                 <input type="hidden" name="menuIdx" th:value="${menuVo['menuIdx'] ?: 0}">
 
                 <div class="mb-4 text-center">
-                    <label class="form-label d-block small fw-bold text-secondary text-uppercase text-start">Menu Image</label>
+                    <label class="form-label d-block small fw-bold text-secondary text-uppercase text-start">메뉴 사진</label>
                     <input type="file" id="menuFile" name="menuFile" accept="image/*" class="d-none" onchange="previewImage(this)">
                     <div class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden shadow-none" 
                          onclick="document.getElementById('menuFile').click()"
@@ -31,7 +31,7 @@
                              class="w-100 h-100" style="object-fit: cover; display: block;">
                         
                         <div id="uploadOverlay" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 opacity-0 transition-all" 
-                             style="top:0; left:0; pointer-events: none;">
+                             style="top:0; left:0; pointer-events: none; transition: 0.3s;">
                             <span class="fw-bold small text-white text-center">
                                 <i class="bi bi-camera-fill d-block fs-3 mb-1"></i>
                                 이미지를 변경하려면 클릭하세요
@@ -42,7 +42,7 @@
                 </div>
 
                 <div class="mb-4" th:with="safeCats=${categoryList ?: {}}">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">카테고리 선택</label>
                     <select name="categoryIdx" class="form-select border-0 bg-light py-3 shadow-none rounded-3 fw-bold text-navy" required>
                         <option value="">카테고리를 선택하세요</option>
                         <option th:each="cat : ${safeCats}" 
@@ -53,13 +53,13 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Name</label>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 이름</label>
                     <input type="text" name="menuName" class="form-control border-0 bg-light py-3 shadow-none rounded-3 fw-bold" 
                            th:value="${menuVo['menuName'] ?: ''}" required placeholder="메뉴 이름을 입력하세요">
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">Price (KRW)</label>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">판매 가격</label>
                     <div class="input-group">
                         <input type="number" name="menuPrice" class="form-control border-0 bg-light py-3 shadow-none text-end rounded-start-3 fw-bold" 
                                th:value="${menuVo['menuPrice'] ?: 0}" required min="0">
@@ -68,10 +68,10 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">Description</label>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 상세 설명</label>
                     <textarea name="menuDescription" class="form-control border-0 bg-light py-3 shadow-none rounded-3" 
                               rows="4" th:text="${menuVo['menuDescription'] ?: ''}" 
-                              style="resize: none;" placeholder="메뉴 설명을 입력하세요"></textarea>
+                              style="resize: none;" placeholder="메뉴에 대한 설명을 입력하세요"></textarea>
                 </div>
 
                 <div class="row g-2 pt-3">
@@ -95,17 +95,15 @@
 <th:block layout:fragment="script">
     <script th:inline="javascript">
         /**
-         * [6대원칙: AJAX] Fetch API 비동기 멀티파트 수정 처리
+         * [AJAX] Fetch API 비동기 멀티파트 수정 처리
          */
         async function handleEditSubmit() {
             const form = document.getElementById('menuEditForm');
             
-            // ⭐ [사용자 기준 보정] querySelector를 활용한 명시적 데이터 추출
             const categoryIdx = form.querySelector('[name="categoryIdx"]').value;
             const menuName = form.querySelector('[name="menuName"]').value.trim();
             const menuPrice = form.querySelector('[name="menuPrice"]').value;
 
-            // 1. 유효성 검증
             if(!categoryIdx) { alert("카테고리를 선택해 주세요."); return; }
             if(!menuName) { alert("메뉴 이름을 입력해 주세요."); return; }
             if(!menuPrice) { alert("가격을 입력해 주세요."); return; }
@@ -117,19 +115,16 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>수정 중...';
 
-            // 2. [Security] CSRF 토큰 매핑
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
             
             const formData = new FormData(form);
 
             try {
-                // [Rule] 데이터 수정 요청은 POST 고정
                 const response = await fetch('/owner/menu/edit_proc', {
                     method: 'POST',
                     headers: { 
                         ...(header && { [header]: token })
-                        // multipart/form-data 시 경계값 자동 생성을 위해 Content-Type 생략
                     },
                     body: formData
                 });
@@ -158,9 +153,6 @@
             btn.innerText = text;
         }
 
-        /**
-         * 이미지 미리보기 로직
-         */
         function previewImage(input) {
             const preview = document.getElementById('imagePreview');
             if (input.files && input.files[0]) {
@@ -170,9 +162,6 @@
             }
         }
 
-        /**
-         * 이미지 업로드 영역 마우스 인터랙션 (시인성 강화)
-         */
         document.addEventListener("DOMContentLoaded", () => {
             const uploadArea = document.querySelector('.card-body div[onclick]');
             const overlay = document.getElementById('uploadOverlay');
@@ -181,8 +170,6 @@
                 uploadArea.onmouseenter = () => { overlay.style.opacity = '1'; };
                 uploadArea.onmouseleave = () => { overlay.style.opacity = '0'; };
             }
-            
-            console.log("[Menu Edit Module] Ready.");
         });
     </script>
 </th:block>

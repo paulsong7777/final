@@ -22,13 +22,10 @@
                     <div class="col-md-9">
                         <div id="dropZone" class="upload-area bg-light border border-2 rounded-3 p-4 text-center position-relative" style="border-style: dashed !important; border-color: #dee2e6;">
                             <input type="file" name="storeImg" id="storeImg" accept="image/*" class="position-absolute w-100 h-100 opacity-0" style="top:0; left:0; cursor: pointer;" onchange="handleFiles(this.files)">
-                            
                             <div id="uploadContent" class="py-2">
                                 <i class="bi bi-cloud-arrow-up text-muted" style="font-size: 2.5rem;"></i>
                                 <p class="mt-2 mb-1 fw-bold text-navy">클릭하거나 이미지를 드래그하여 업로드하세요</p>
-                                <p class="small text-muted mb-0">jpg, png, jpeg 확장자만 업로드 가능 (권장 비율 1:1)</p>
                             </div>
-                            
                             <div id="imagePreview" style="display: none;">
                                 <div class="position-relative d-inline-block shadow-sm rounded-3 overflow-hidden border" style="width: 120px; height: 120px;">
                                     <img id="previewImg" src="" alt="미리보기" style="width: 100%; height: 100%; object-fit: cover;">
@@ -42,16 +39,14 @@
                 <div class="mb-4 row align-items-center">
                     <label class="col-md-3 fw-bold small text-secondary text-uppercase">매장 번호</label>
                     <div class="col-md-9">
-                        <input type="text" name="storeIdx" th:value="${storeVo['storeIdx'] ?: 0}" 
-                               class="form-control fw-bold bg-light border-0 py-2 shadow-none rounded-3" readonly>
+                        <input type="text" name="storeIdx" th:value="${storeVo['storeIdx'] ?: 0}" class="form-control fw-bold bg-light border-0 py-2 shadow-none rounded-3" readonly>
                     </div>
                 </div>
 
                 <div class="mb-4 row align-items-center">
                     <label class="col-md-3 fw-bold small text-secondary text-uppercase">매장명</label>
                     <div class="col-md-9">
-                        <input type="text" name="storeName" th:value="${storeVo['storeName'] ?: ''}" 
-                               class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" required placeholder="매장 이름을 입력하세요">
+                        <input type="text" name="storeName" th:value="${storeVo['storeName'] ?: ''}" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" required placeholder="매장 이름을 입력하세요">
                     </div>
                 </div>
 
@@ -59,8 +54,7 @@
                     <label class="col-md-3 fw-bold small text-secondary text-uppercase">최소 주문 금액</label>
                     <div class="col-md-9">
                         <div class="input-group">
-                            <input type="number" name="minimumOrderAmount" th:value="${storeVo['minimumOrderAmount'] ?: 0}" 
-                                   class="form-control py-3 border-0 bg-light shadow-none text-end rounded-start-3 fw-bold" required min="0">
+                            <input type="number" name="minimumOrderAmount" th:value="${storeVo['minimumOrderAmount'] ?: 0}" class="form-control py-3 border-0 bg-light shadow-none text-end rounded-start-3 fw-bold" required min="0">
                             <span class="input-group-text bg-light border-0 text-navy fw-bold rounded-end-3">원</span>
                         </div>
                     </div>
@@ -70,11 +64,9 @@
                     <label class="col-md-3 fw-bold small text-secondary text-uppercase">영업 시간</label>
                     <div class="col-md-9">
                         <div class="d-flex align-items-center gap-2">
-                            <input type="time" name="openTime" th:value="${storeVo['openTime'] ?: '09:00'}" 
-                                   class="form-control border-0 bg-light py-3 shadow-none rounded-3 text-center fw-bold">
+                            <input type="time" name="openTime" th:value="${storeVo['openTime'] ?: '09:00'}" class="form-control border-0 bg-light py-3 shadow-none rounded-3 text-center fw-bold">
                             <span class="fw-bold text-muted px-1">~</span>
-                            <input type="time" name="closeTime" th:value="${storeVo['closeTime'] ?: '22:00'}" 
-                                   class="form-control border-0 bg-light py-3 shadow-none rounded-3 text-center fw-bold">
+                            <input type="time" name="closeTime" th:value="${storeVo['closeTime'] ?: '22:00'}" class="form-control border-0 bg-light py-3 shadow-none rounded-3 text-center fw-bold">
                         </div>
                     </div>
                 </div>
@@ -82,7 +74,7 @@
                 <div class="mb-4 row align-items-center">
                     <label class="col-md-3 fw-bold small text-secondary text-uppercase">휴무일</label>
                     <div class="col-md-9">
-                        <select name="offDays" class="form-select py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" style="cursor: pointer;">
+                        <select id="offDaysSelect" name="offDays" class="form-select py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy mb-2" style="cursor: pointer;" onchange="toggleDirectInput(this.value)">
                             <option value="연중무휴" th:selected="${storeVo['offDays'] == '연중무휴' or storeVo['offDays'] == null}">연중무휴</option>
                             <option value="월요일" th:selected="${storeVo['offDays'] == '월요일'}">월요일</option>
                             <option value="화요일" th:selected="${storeVo['offDays'] == '화요일'}">화요일</option>
@@ -91,7 +83,10 @@
                             <option value="금요일" th:selected="${storeVo['offDays'] == '금요일'}">금요일</option>
                             <option value="토요일" th:selected="${storeVo['offDays'] == '토요일'}">토요일</option>
                             <option value="일요일" th:selected="${storeVo['offDays'] == '일요일'}">일요일</option>
+                            <option value="direct">직접 입력 (복수 선택 등)</option>
                         </select>
+                        <input type="text" id="offDaysDirect" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" 
+                               placeholder="예: 토요일, 일요일 또는 격주 화요일" style="display: none;">
                     </div>
                 </div>
 
@@ -119,30 +114,42 @@
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
+        /* 직접 입력 창 토글 */
+        function toggleDirectInput(value) {
+            const directInput = document.getElementById('offDaysDirect');
+            if (value === 'direct') {
+                directInput.style.display = 'block';
+                directInput.focus();
+            } else {
+                directInput.style.display = 'none';
+                directInput.value = '';
+            }
+        }
+
+        /*  이미지 드래그 앤 드롭 인터랙션 */
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('storeImg');
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--moeats-orange)';
-            dropZone.style.backgroundColor = '#fff3cd';
+        dropZone.addEventListener('dragover', (e) => { 
+            e.preventDefault(); 
+            dropZone.style.borderColor = 'var(--moeats-orange)'; 
+            dropZone.style.backgroundColor = 'rgba(255, 128, 0, 0.05)'; 
         });
 
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#dee2e6';
-            dropZone.style.backgroundColor = '';
+        dropZone.addEventListener('dragleave', (e) => { 
+            e.preventDefault(); 
+            dropZone.style.borderColor = '#dee2e6'; 
+            dropZone.style.backgroundColor = ''; 
         });
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#dee2e6';
-            dropZone.style.backgroundColor = '';
-            
-            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files;
-                handleFiles(e.dataTransfer.files);
-            }
+        dropZone.addEventListener('drop', (e) => { 
+            e.preventDefault(); 
+            dropZone.style.borderColor = '#dee2e6'; 
+            dropZone.style.backgroundColor = ''; 
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) { 
+                fileInput.files = e.dataTransfer.files; 
+                handleFiles(e.dataTransfer.files); 
+            } 
         });
 
         function handleFiles(files) {
@@ -157,6 +164,7 @@
             }
         }
 
+        /*  서버 응답 방어 로직이 강화된 전송 함수 */
         async function handleStoreUpdate() {
             const form = document.getElementById('storeSettingForm');
             const storeName = form.querySelector('[name="storeName"]').value.trim();
@@ -167,11 +175,19 @@
             const saveBtn = document.getElementById('saveBtn');
             const originalText = saveBtn.innerText;
             
-            const formData = new FormData(form);
-
             saveBtn.disabled = true;
-            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>등록 중...';
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
 
+            const formData = new FormData(form);
+            
+            // 직접 입력값 보정
+            const offDaysSelect = document.getElementById('offDaysSelect');
+            if(offDaysSelect.value === 'direct') {
+                const directValue = document.getElementById('offDaysDirect').value.trim();
+                formData.set('offDays', directValue || '요일 협의');
+            }
+
+            // CSRF 보안
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
@@ -181,24 +197,45 @@
                     headers: { ...(header && { [header]: token }) },
                     body: formData
                 });
-                
+
+                //  방어 1단계: 서버 상태 코드 확인 (404, 500 에러 방어)
+                if (!response.ok) {
+                    throw new Error(`서버 에러가 발생했습니다. (상태코드: ${response.status})`);
+                }
+
+                // 방어 2단계: 응답 데이터 형식 확인 (JSON 여부)
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new TypeError("서버가 JSON 형식이 아닌 잘못된 데이터를 응답했습니다.");
+                }
+
                 const result = await response.json();
 
+                // 방어 3단계: 비즈니스 결과 처리
                 if (result && result.success) {
                     alert("매장 정보가 성공적으로 등록되었습니다.");
                     location.href = '/owner/dashboard'; 
                 } else {
+                    alert(result.message || "등록에 실패했습니다. 입력 정보를 다시 확인해 주세요.");
                     resetBtn(saveBtn, originalText);
                 }
+
             } catch (error) {
-                console.error("[Store Update Error]", error);
+                // 모든 예외 상황(네트워크 단절, 서버 다운 등) 핸들링
+                console.error("[Critical Store Update Error]", error);
+                
+                let errorMsg = "서버 통신 중 알 수 없는 오류가 발생했습니다.";
+                if (error instanceof TypeError) errorMsg = "응답 데이터 형식이 올바르지 않습니다.";
+                else if (error.message.includes("상태코드")) errorMsg = error.message;
+                
+                alert(errorMsg + "\n잠시 후 다시 시도하거나 관리자에게 문의하세요.");
                 resetBtn(saveBtn, originalText);
             }
         }
 
-        function resetBtn(btn, text) {
-            btn.disabled = false;
-            btn.innerText = text;
+        function resetBtn(btn, text) { 
+            btn.disabled = false; 
+            btn.innerText = text; 
         }
     </script>
 </th:block>
