@@ -17,6 +17,9 @@
 	<select id="findRoomMember" resultType="RoomParticipant">
 		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND member_idx = #{memberIdx}
 	</select>
+	<select id="findNotSelected" resultType="RoomParticipant">
+		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND selection_status = 'NOT_SELECTED'
+	</select>
 	<select id="findUnpaid" resultType="RoomParticipant">
 		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND payment_status = 'UNPAID'
 	</select>

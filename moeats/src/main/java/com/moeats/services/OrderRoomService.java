@@ -113,8 +113,11 @@ public class OrderRoomService {
 	public RoomParticipant findRoomMember(int roomIdx,int memberIdx) {
 		return roomParticipantMapper.findRoomMember(roomIdx, memberIdx);
 	}
-	public List<RoomParticipant> findUnpaid(int memberIdx){
-		return roomParticipantMapper.findUnpaid(memberIdx);
+	public List<RoomParticipant> findNotSelected(int roomIdx){
+		return roomParticipantMapper.findNotSelected(roomIdx);
+	}
+	public List<RoomParticipant> findUnpaid(int roomIdx){
+		return roomParticipantMapper.findUnpaid(roomIdx);
 	}
 	public int join(RoomParticipant roomParticipant) {
 		if(findByIdx(roomParticipant.getRoomIdx()).isJoinLocked())

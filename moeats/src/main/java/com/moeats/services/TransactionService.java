@@ -30,19 +30,18 @@ public class TransactionService {
 	@Autowired
 	MemberService memberService;
 	
-	@Transactional
-	public Map<String,Object> beginPayment(OrderRoom orderRoom,int representativeMemberIdx) {
+	@Transactional(rollbackFor=Exception.class)
+	public Map<String,Object> beginPayment(OrderRoom orderRoom,int representativeMemberIdx) throws Exception {
 		boolean isRepresentative = orderRoom.getPaymentMode().equals("REPRESENTATIVE");
 		DeliveryAddress deliveryAddress = memberService.findAddressByIdx(orderRoom.getSelectedDeliveryAddressIdx());
 		if(	isRepresentative && orderRoomService.findRoomMember(orderRoom.getRoomIdx(),representativeMemberIdx)==null ||
 			deliveryAddress==null || deliveryAddress.getMemberIdx() != orderRoom.getLeaderMemberIdx() )
 			// representativeMemberIdx = orderRoom.getLeaderMemberIdx();
-			return null;
+			throw new Exception();
 		Map<String,Object> map = new HashMap<>();
 		GroupOrder groupOrder = GroupOrder.from(orderRoom);
 		groupOrder.setOrderTotalAmount(groupCartItemService.findRoomAmount(orderRoom.getRoomIdx()));
 		groupOrderService.insert(groupOrder);
-		
 		
 		Payment payment = Payment.from(groupOrder);
 		paymentService.insert(payment);
@@ -61,13 +60,14 @@ public class TransactionService {
 		orderRoomService.paymentPend(orderRoom.getRoomIdx(), expiresAt);
 		orderRoom.setExpiresAt(expiresAt);
 		
+		assert groupOrder!=null && payment!=null && paymentShares!=null && orderDelivery!=null;
 		map.put("groupOrder",groupOrder);
 		map.put("payment",payment);
 		map.put("paymentShares",paymentShares);
 		map.put("orderDelivery",orderDelivery);
 		return map;
 	}
-	@Transactional
+	@Transactional(rollbackFor=Exception.class)
 	public int revertToSelect(OrderRoom orderRoom) {
 		// 결제한 사람이 없을때만 가능
 		Payment payment = paymentService.findByOrder(orderRoom.getRoomIdx());

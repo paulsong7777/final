@@ -32,8 +32,11 @@
 		)
 	</insert>
 	<update id="payAmount">
+		<selectKey keyColumn="paymentPaidAmount" order="BEFORE">
+			SELECT payment_paid_amount + #{paymentPaidAmount} FROM payment WHERE payment_idx = #{paymentIdx}
+		</selectKey>
 		UPDATE payment SET
-			payment_paid_amount = payment_paid_amount + #{paymentPaidAmount}
+			payment_paid_amount = #{paymentPaidAmount}
 		WHERE payment_idx		= #{paymentIdx}
 	</update>
 	<update id="progress" parameterType="int">
