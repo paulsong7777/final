@@ -25,5 +25,28 @@ $(function () {
     $('#btnTestGoCreate').on('click', function () {
         location.href = "room-create.html";
     });
+	
+	// 풀방경고로직
+	let isRoomFull = true; 
+
+    // $('#btnJoinRoom').on('click', function(e) {
+	$('#btnTestFullJoin').on('click', function(e) {
+        // 실제 form 제출을 방지 (테스트용)
+        e.preventDefault();
+
+        if (isRoomFull) {
+            // 방식 1: 브라우저 기본 알람(alert) 사용
+            alert("주문방이 꽉 찼습니다. 잠시 기다려 주세요.");
+
+            // 방식 2: 페이지 내 메시지 출력 (hidden 요소 노출)
+            $('#fullRoomMsg').show();
+            
+            console.log("❌ 참여 실패: 인원 초과");
+        } else {
+            // 성공 시 상세 페이지로 이동
+            console.log("✅ 참여 성공: 상세 페이지로 이동합니다.");
+            location.href = "/room/detail"; // 실제 연동 시 서버 리다이렉트 경로
+        }
+    });
 
 });
