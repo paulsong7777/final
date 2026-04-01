@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!--/* Thymeleaf 주석  - Thymeleaf를 사용하기 위한 네임스페이스 적용 */-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link href="/bootstrap/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>	
+	<div class="container">
+		<!--/* messages.properties 파일에서 스프링의 메시지 자원 읽어오기 */-->
+		<div th:utext="#{thymeleaf2.title}"></div>	
+		<table class="table">
+		    <tr>
+		      <th>NO</th>
+		      <th>제목</th>
+		      <th>작성자</th>
+		      <th>작성일</th>
+		    </tr>
+		    <!--/* 
+		    	<th:bolck>은 Thymeleaf의 유일한 자체 태그로 뷰가 렌더링 될 때 이 태그는 출력되지 않는다.
+		    	https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#comments-and-blocks
+		    */-->
+			<th:block th:if="${!#lists.isEmpty(mList)}">
+				<!--/* https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#using-theach */-->							
+				<th:block th:each="memo, status: ${mList}">
+			      <tr>
+			      	<!--/* 
+			      		인라인 표현식(Expression inlining)을 사용해 th:text와 동일하게 출력
+			      		https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#inlining 
+			      	*/-->
+			        <td>[[${ memo.no }]] [[${status.index}]] [[${status.count}]]</td>       
+			        <td>
+			        	<a th:href="@{/thymeleaf3(no=${ memo.no})}">[[ ${ memo.title } ]]</a>
+			        </td>
+			        <td th:text="${ memo.writer }"></td>
+			        
+			        <!--/* 인라인 표현식(Expression inlining)을 사용해 th:utext와 동일하게 출력 */-->
+			        <td>[(${#dates.format(memo.regDate, 'yyyy-MM-dd')})]</td>
+			      </tr>
+		      </th:block>
+		    </th:block>
+		    <th:block th:if="${#lists.isEmpty(mList)}">
+					<tr>
+						<td>작성된 메모가 없습니다.</td>
+					</tr>
+				</th:block>
+		</table>
+		<a th:href="@{/thymeleaf1}">이전 보기</a>		
+  	</div>
+</body>
+</html>

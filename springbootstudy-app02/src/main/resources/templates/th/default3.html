@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<!--/* Thymeleaf 주석  - Thymeleaf를 사용하기 위한 네임스페이스 적용 */-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link th:href="@{bootstrap/bootstrap.min.css}" th:attr="rel='stylesheet'">
+</head>
+<body>
+	<div class="container">
+		<!--/* messages.properties 파일에서 스프링의 메시지 자원 읽어오기 */-->
+		<h1 th:text="#{thymeleaf3.title}" class="fw-bold"></h1>
+		<!--/* 
+			https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#conditional-evaluation 
+		*/-->		
+		<div th:if="${score >= 60}">if - 점수 : [[ ${score} ]] - 합격</div>
+		
+		<!--/* th:unless는 if의 반대 개념으로 false 일 때 출력됨 */-->		
+		<div th:unless="${score lt 60}">unless - 점수 : [[ ${score} ]] - 합격</div>
+		<div th:unless="${score ge 60}">unless - 점수 : [[ ${score} ]] - 불합격</div>
+		
+		<!--/* th:with 속성으로 지역 변수 s를 선언하고 switch case에서 사용  */-->	
+		<div th:switch="${s}" th:with="s = ${score / 10}">				
+			<span th:case="9">점수 : 90점대</span>
+			<span th:case="8">점수 : 80점대</span>
+			<span th:case="7">점수 : 70점대</span>
+			<span th:case="6">점수 : 60점대</span>
+			<span th:case="*">낙제</span>
+		</div>
+		
+		<!--/* 삼 항 연산자는 조건이 true라면 물음표(?) 바로 뒤의 값이 출력되고 false라면 콜론(:) 뒤의 값이 출력됨  */-->
+		<div th:text="${memo} != null ? '삼 항 연산자-메모 있음' : '삼 항 연산자-메모 없음'"></div>
+				
+		<!--/* Elvis 연산자는 지정한 data가 null이 아니면 그 값을 출력하고 null이면 연산자(?:) 뒤의 문자열을 출력 */-->
+		<div th:text="${memo} != null ?: 'Elvis 연산자-true or false'"></div>
+		<div th:text="${memo} ?: 'Elvis 연산자-메모 없음'"></div>
+		
+		<!--/* 
+			Elvis 연산자에 data가 null인 경우에 언더스코어(_)를 지정하면 아무것도 출력되지 않도록 할 수 있다.   
+			그래서 아래는 memo가 null이라면 div 태그 안의 내용이 그대로 출력된다. 
+		*/-->
+		<div th:text="${memo} != null ?: _">No-Operation-true of false</div>
+		<div th:text="${memo} ?: _">No-Operation-메모 없음'"></div>		
+	</div>
+	<a th:href="@{thymeleaf1}">처음으로</a>	
+	<a th:href="@{thymeleaf2/{no}(no=${param.no})}">이전으로</a>
+</body>
+</html>
