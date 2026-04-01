@@ -16,6 +16,7 @@ import com.moeats.domain.OrderDelivery;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.Payment;
 import com.moeats.domain.PaymentShare;
+import com.moeats.timer.OrderRoomTimer;
 
 @Service
 public class TransactionService {
@@ -29,6 +30,9 @@ public class TransactionService {
 	GroupCartItemService groupCartItemService;
 	@Autowired
 	MemberService memberService;
+	
+	@Autowired
+	OrderRoomTimer orderRoomTimer;
 	
 	@Transactional(rollbackFor=Exception.class)
 	public Map<String,Object> beginPayment(OrderRoom orderRoom,int representativeMemberIdx) throws Exception {
@@ -59,7 +63,8 @@ public class TransactionService {
 		Timestamp expiresAt = payment.getPaymentExpiresAt();
 		orderRoomService.paymentPend(orderRoom.getRoomIdx(), expiresAt);
 		orderRoom.setExpiresAt(expiresAt);
-		
+
+		orderRoomTimer.start(orderRoom.getRoomIdx(),expiresAt);
 		assert groupOrder!=null && payment!=null && paymentShares!=null && orderDelivery!=null;
 		map.put("groupOrder",groupOrder);
 		map.put("payment",payment);

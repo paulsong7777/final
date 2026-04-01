@@ -1,15 +1,20 @@
 package com.moeats.controller;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -22,8 +27,6 @@ import com.moeats.services.GroupCartItemService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.TransactionService;
 import com.moeats.timer.OrderRoomTimer;
-
-import jakarta.websocket.server.PathParam;
 
 @Controller
 public class RoomController {
@@ -54,7 +57,7 @@ public class RoomController {
 			orderRoom.setRoomCode(code);
 			res = orderRoomService.insert(orderRoom);
 		}
-		if(code==null) {
+		if(res==0) {
 			ra.addFlashAttribute("error","방을 생성하는 중 오류가 발생했습니다");
 			return "redirect:/rooms/new";
 		}
@@ -64,10 +67,10 @@ public class RoomController {
 	public String codeRoom(
 			RedirectAttributes ra,
 			Model model,
-			@PathParam("room_code") String roomCode,
+			@PathVariable("room_code") String roomCode,
 			@SessionAttribute("member") Member member) {
 		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
-		if( orderRoom==null/*||member==null		-Intercepter에서 처리해줌*/ ) {
+		if( orderRoom==null) {
 			ra.addFlashAttribute("error","해당하는 방을 찾을 수 없습니다");
 			return "redirect:/rooms/join";
 		}
@@ -88,33 +91,72 @@ public class RoomController {
 		return "room-detail";
 	}
 	@GetMapping("/rooms/join")
-	public String joinRoom() {
+	public String joinRoom(Model model,String roomCode) {
+		model.addAttribute("roomCode",roomCode);
 		return "room-join";
 	}
+	
+	// 이후는 Intercepter에서 코드를 처리함
 	@PostMapping("/rooms/code/{room_code}/leave")
 	public String leaveRoom(
 			RedirectAttributes ra,
-			@PathParam("room_code") String roomCode,
+			@PathVariable("room_code") String roomCode,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
-		ra.addFlashAttribute("action","leaveRoom");
 		RoomParticipant roomParticipant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
 		if( roomParticipant==null ) {
-			ra.addFlashAttribute("result", "invalid");
+			ra.addFlashAttribute("error", "잘못된 접근입니다");
 			return "redirect:/main";
 		}
-		if( orderRoomService.leave(roomParticipant.getRoomParticipantIdx())==0 )
-			ra.addFlashAttribute("result", "fail");
+		if( orderRoom.getLeaderMemberIdx()==member.getMemberIdx() )
+			ra.addFlashAttribute("error", "방장은 방을 나갈 수 없습니다");
+		else if( orderRoomService.leave(roomParticipant.getRoomParticipantIdx())==0 )
+			ra.addFlashAttribute("error", "방을 나가는데 실패했습니다");
 		else
-			ra.addFlashAttribute("result", "success");
-		return "redirect:/main";
+			return "redirect:/main";
+		return "redirect:/rooms/code/"+roomCode;
+	}
+	@PostMapping("/rooms/code/{room_code}/kick")
+	public String kickRoom(
+			RedirectAttributes ra,
+			@RequestParam(defaultValue = "0") int kickMemberIdx,
+			@PathVariable("room_code") String roomCode,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
+			@SessionAttribute("member") Member member) {
+		if( orderRoom.getLeaderMemberIdx()!=member.getMemberIdx() ) {
+			ra.addFlashAttribute("error", "잘못된 접근입니다");
+			return "redirect:/main";
+		}
+		if( orderRoom.isJoinLocked() || kickMemberIdx==orderRoom.getLeaderMemberIdx() || orderRoomService.leave(kickMemberIdx)==0 )
+			ra.addFlashAttribute("error", "사용자를 강퇴하는 중 오류가 발생했습니다");
+		return "redirect:/rooms/code/"+roomCode;
+	}
+	@PostMapping("/rooms/code/{room_code}/select")
+	public String selectRoom(
+			RedirectAttributes ra,
+			@PathVariable("room_code") String roomCode,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
+			@SessionAttribute("member") Member member) {
+		if( orderRoom.isJoinLocked() || orderRoomService.setSelect(member.getMemberIdx())==0 )
+			ra.addFlashAttribute("error", "주문을 확정하는 중 오류가 발생했습니다");
+		return "redirect:/rooms/code/"+roomCode;
+	}
+	@PostMapping("/rooms/code/{room_code}/unselect")
+	public String unselectRoom(
+			RedirectAttributes ra,
+			@PathVariable("room_code") String roomCode,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
+			@SessionAttribute("member") Member member) {
+		if( orderRoom.isJoinLocked() || orderRoomService.unselect(member.getMemberIdx())==0 )
+			ra.addFlashAttribute("error", "주문을 확정을 취소하는 중 오류가 발생했습니다");
+		return "redirect:/rooms/code/"+roomCode;
 	}
 	@PostMapping("/rooms/code/{room_code}/cancel")
 	public String cancelRoom(
 			RedirectAttributes ra,
-			@PathParam("room_code") String roomCode,
+			@PathVariable("room_code") String roomCode,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
 		if( orderRoom.getLeaderMemberIdx()!=member.getMemberIdx() ) {
 			ra.addFlashAttribute("error", "잘못된 접근입니다");
 			return "redirect:/main";
@@ -126,20 +168,19 @@ public class RoomController {
 			orderRoomTimer.stop(orderRoom.getRoomIdx());
 		return "redirect:/main";
 	}
-	
 	@GetMapping("/rooms/code/{room_code}/cart")
 	public String roomCart(
 			RedirectAttributes ra,
 			Model model,
-			@PathParam("room_code") String roomCode,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
-		List<GroupCartItem> myCartItems = groupCartItemService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
-		Map<RoomParticipant,List<GroupCartItem>> otherCartItems = new HashMap<>();
+		List<GroupCartItem> myCartItems = null;
+		Map<RoomParticipant,List<GroupCartItem>> otherCartItems = new LinkedHashMap<>();
+		Map<Integer,List<GroupCartItem>> groupCartitems = groupCartItemService.findByRoom(orderRoom.getRoomIdx()).stream().collect(Collectors.groupingBy(GroupCartItem::getMemberIdx));
 		for(RoomParticipant roomParticipant : orderRoomService.findByRoom(orderRoom.getRoomIdx())){
 			if(roomParticipant.getMemberIdx()==member.getMemberIdx())
-				continue;
-			otherCartItems.put(roomParticipant, groupCartItemService.findRoomMember(orderRoom.getRoomIdx(), roomParticipant.getMemberIdx()));
+				myCartItems = groupCartitems.getOrDefault(roomParticipant.getMemberIdx(), new ArrayList<>());
+			otherCartItems.put(roomParticipant,groupCartitems.getOrDefault(roomParticipant.getMemberIdx(), List.of()));
 		}
 		model.addAttribute("orderRoom",orderRoom);
 		model.addAttribute("myCartItems",myCartItems);
@@ -149,13 +190,13 @@ public class RoomController {
 	@PostMapping("/rooms/code/{room_code}/cart")
 	public String roomCartAdd(
 			RedirectAttributes ra,
-			@RequestBody GroupCartItem groupCartItem,
-			@PathParam("room_code") String roomCode,
+			GroupCartItem groupCartItem,
+			@PathVariable("room_code") String roomCode,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
 		groupCartItem.setMemberIdx(member.getMemberIdx());
 		groupCartItem.setRoomIdx(orderRoom.getRoomIdx());
-		if(groupCartItemService.insert(groupCartItem)==0)
+		if( orderRoom.isJoinLocked() || groupCartItemService.insert(groupCartItem)==0 )
 			ra.addFlashAttribute("error", "메뉴를 추가하는 중 오류가 발생했습니다");
 		// GET으로 다시 오게 만든다
 		return String.format("redirect:/rooms/code/%s/cart",roomCode);
@@ -164,12 +205,12 @@ public class RoomController {
 	public String cartItemEditForm(
 			RedirectAttributes ra,
 			Model model,
-			@PathParam("room_code") String roomCode,
-			@PathParam("cart_item_idx") int cartItemIdx,
-			@SessionAttribute Member member) {
-		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
+			@PathVariable("room_code") String roomCode,
+			@PathVariable("cart_item_idx") int cartItemIdx,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
+			@SessionAttribute("member") Member member) {
 		GroupCartItem groupCartItem = groupCartItemService.findByIdx(cartItemIdx);
-		if( groupCartItem==null || groupCartItem.getMemberIdx()!=member.getMemberIdx() ) {
+		if( orderRoom.isJoinLocked() || groupCartItem==null || groupCartItem.getRoomIdx()!=orderRoom.getRoomIdx() || groupCartItem.getMemberIdx()!=member.getMemberIdx() ) {
 			ra.addFlashAttribute("error","해당 장바구니 항목을 찾을 수 없거나 잘못된 접근입니다");
 			return String.format("redirect:/rooms/code/%s/cart",roomCode);
 		}
@@ -179,38 +220,38 @@ public class RoomController {
 	@PostMapping("/rooms/code/{room_code}/cart/items/{cart_item_idx}/edit")
 	public String cartItemEdit(
 			RedirectAttributes ra,
-			@RequestBody GroupCartItem groupCartItem,
-			@PathParam("room_code") String roomCode,
-			@PathParam("cart_item_idx") int cartItemIdx,
+			GroupCartItem groupCartItem,
+			@PathVariable("room_code") String roomCode,
+			@PathVariable("cart_item_idx") int cartItemIdx,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
 		GroupCartItem preExist = groupCartItemService.findByIdx(cartItemIdx);
 		groupCartItem.setCartItemIdx(cartItemIdx);
 		groupCartItem.setRoomIdx(orderRoom.getRoomIdx());
 		groupCartItem.setMemberIdx(member.getMemberIdx());
-		if( preExist==null || preExist.getRoomIdx()!=orderRoom.getRoomIdx() || preExist.getMemberIdx()!=member.getMemberIdx() || groupCartItemService.insert(groupCartItem)==0 )
-			ra.addFlashAttribute("result","해당 장바구니 항목을 수정하는 중 오류가 발생했습니다");
+		if( orderRoom.isJoinLocked() || preExist==null || preExist.getRoomIdx()!=orderRoom.getRoomIdx() || preExist.getMemberIdx()!=member.getMemberIdx() || groupCartItemService.update(groupCartItem)==0 )
+			ra.addFlashAttribute("error","해당 장바구니 항목을 수정하는 중 오류가 발생했습니다");
 		return String.format("redirect:/rooms/code/%s/cart",roomCode);
 	}
 	@PostMapping("/rooms/code/{room_code}/cart/items/{cart_item_idx}/delete")
 	public String cartItemDelete(
 			RedirectAttributes ra,
-			@PathParam("room_code") String roomCode,
-			@PathParam("cart_item_idx") int cartItemIdx,
+			@PathVariable("room_code") String roomCode,
+			@PathVariable("cart_item_idx") int cartItemIdx,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
 		GroupCartItem groupCartItem = groupCartItemService.findByIdx(cartItemIdx);
-		if( groupCartItem==null || groupCartItem.getRoomIdx()!=orderRoom.getRoomIdx() || groupCartItem.getMemberIdx()!=member.getMemberIdx() || groupCartItemService.remove(cartItemIdx)==0 )
+		if( orderRoom.isJoinLocked() || groupCartItem==null || groupCartItem.getRoomIdx()!=orderRoom.getRoomIdx() || groupCartItem.getMemberIdx()!=member.getMemberIdx() || groupCartItemService.remove(cartItemIdx)==0 )
 			ra.addFlashAttribute("error","해당 장바구니 항목을 제거하는 중 오류가 발생했습니다");
 		return String.format("redirect:/rooms/code/%s/cart",roomCode);
 	}
 	@PostMapping("/rooms/code/{room_code}/checkout")
 	public String checkout(
 			RedirectAttributes ra,
-			@PathParam("room_code") String roomCode,
-			@RequestBody Integer representativeMemberIdx,
+			@PathVariable("room_code") String roomCode,
+			@RequestParam(defaultValue = "0") int representativeMemberIdx,
+			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
 		if( orderRoom.getLeaderMemberIdx()!=member.getMemberIdx() ) {
 			ra.addFlashAttribute("error", "잘못된 접근입니다");
 			return String.format("redirect:/rooms/code/%s",roomCode);
@@ -219,10 +260,9 @@ public class RoomController {
 			ra.addFlashAttribute("error", "아직 선택이 완료되지 않은 참여자가 있습니다");
 			return String.format("redirect:/rooms/code/%s",roomCode);
 		}
-		int representative = representativeMemberIdx != null ? representativeMemberIdx : 0;
 		Map<String, Object> res;
 		try {
-			res = transactionService.beginPayment(orderRoom,representative);
+			res = transactionService.beginPayment(orderRoom,representativeMemberIdx);
 		} catch (Exception e) {
 			ra.addFlashAttribute("error","오류가 발생하여 결제화면으로 넘어가지 못했습니다");
 			return String.format("redirect:/rooms/code/%s",roomCode);

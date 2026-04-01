@@ -36,9 +36,10 @@ public class RoomMemberIntercepter implements HandlerInterceptor {
 				FlashMapManager flashMapManager = RequestContextUtils.getFlashMapManager(request);
 				flashMap.put("error", "잘못된 접근입니다");
 				flashMapManager.saveOutputFlashMap(flashMap, request, response);
-				response.sendRedirect("/rooms/join");
+				response.sendRedirect(String.format("/rooms/join?roomCode=%s",roomCode));
 				return false;
 			}
+			request.setAttribute("orderRoom", orderRoom);
 		}
 		return true;
 	}
