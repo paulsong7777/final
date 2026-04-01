@@ -1,6 +1,9 @@
 package com.moeats.domain;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> a241daed0341297332c508edf883a682b80f8ba0
 import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;

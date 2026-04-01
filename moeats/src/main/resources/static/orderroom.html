@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mo-Eats | Master Layout v1.3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mo-navy: #0A174E;
+            --mo-orange: #FF6B00;
+            --white: #FFFFFF;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --radius: 24px;
+        }
+
+        /* 0. 초기화 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans KR', sans-serif; }
+        body { background-color: var(--white); color: var(--mo-navy); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* 1. [고정] 상단 헤더: 네이비 로고 + 주황 M 배지 */
+        header {
+            height: 75px; background: var(--white); display: flex; 
+            align-items: center; justify-content: space-between; padding: 0 40px;
+            border-bottom: 2px solid var(--gray-100); z-index: 1001; flex-shrink: 0;
+        }
+        .logo-area { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        /* 요청사항: 로고 옆 M 배지 */
+        .m-badge {
+            background: var(--mo-orange); color: white; width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; font-weight: 900; font-size: 16px;
+            box-shadow: 0 2px 8px rgba(255,107,0,0.3);
+        }
+        .logo-text { font-weight: 900; font-size: 26px; color: var(--mo-navy); letter-spacing: -1px; }
+
+        .header-nav { display: flex; gap: 35px; list-style: none; margin-left: 50px; }
+        .header-nav li { font-size: 15px; font-weight: 800; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .header-nav li.active { color: var(--mo-orange); }
+
+        .user-actions { display: flex; align-items: center; gap: 15px; }
+        .user-profile { display: flex; align-items: center; gap: 10px; background: var(--gray-50); padding: 6px 16px; border-radius: 30px; border: 1px solid var(--gray-200); }
+
+        /* 2. 메인 레이아웃 (사이드바 + 와이드 컨텐츠) */
+        .wrapper { display: flex; flex: 1; overflow: hidden; }
+
+        /* [좌측] 실시간 참여 방 정보 */
+        nav.sidebar-left { 
+            width: 280px; background: var(--gray-50); padding: 30px 25px; 
+            border-right: 1px solid var(--gray-200); overflow-y: auto; 
+        }
+        .sb-label { font-size: 12px; font-weight: 800; color: #999; margin-bottom: 15px; letter-spacing: 0.5px; text-transform: uppercase; }
+        .room-card { 
+            background: white; border: 1px solid var(--mo-orange); border-radius: 18px; 
+            padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(255,107,0,0.1);
+        }
+        .room-status { font-size: 11px; color: var(--mo-orange); font-weight: 800; margin-bottom: 6px; }
+        .room-name { font-size: 15px; font-weight: 800; margin-bottom: 12px; line-height: 1.4; }
+        .member-list { display: flex; align-items: center; }
+        .member-avatar { width: 28px; height: 28px; border-radius: 50%; background: #eee; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; margin-left: -8px; }
+        .member-avatar:first-child { margin-left: 0; }
+
+        /* [중앙] 와이드 컨텐츠 영역 (우측 카테고리 제거로 넓어짐) */
+        main.content { flex: 1; overflow-y: auto; padding: 40px 60px 250px 60px; scroll-behavior: smooth; }
+        .content-header { margin-bottom: 30px; }
+        .section-title { font-size: 24px; font-weight: 900; margin-bottom: 20px; }
+        
+        /* 메뉴 배너 (사용자 친화적 디자인) */
+        .wide-banner { 
+            width: 100%; height: 320px; border-radius: var(--radius); overflow: hidden; position: relative;
+            background: #eee; cursor: pointer; box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+        }
+        .wide-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .banner-content { position: absolute; inset: 0; background: linear-gradient(to right, rgba(10,23,78,0.85), transparent); padding: 50px; display: flex; flex-direction: column; justify-content: center; color: white; }
+        .banner-tag { background: var(--mo-orange); width: fit-content; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 900; margin-bottom: 10px; }
+
+        /* 메뉴 리스트 가로 배치 */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; margin-top: 20px; }
+        .menu-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; transition: 0.3s; cursor: pointer; }
+        .menu-card:hover { transform: translateY(-8px); border-color: var(--mo-orange); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .menu-card img { width: 100%; height: 160px; object-fit: cover; }
+        .menu-card-body { padding: 20px; }
+        .menu-card-price { color: var(--mo-orange); font-weight: 900; font-size: 18px; margin-top: 8px; }
+
+        /* 3. [고정] 반응형 가로 장바구니 (금액 왼쪽) */
+        .cart-float-container {
+            position: fixed; bottom: 95px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 1200px; height: 90px; background: var(--mo-navy);
+            border-radius: 45px; display: flex; align-items: center; padding: 0 10px 0 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4); z-index: 999;
+        }
+        .cart-price-box { min-width: 160px; border-right: 1px solid rgba(255,255,255,0.2); }
+        .price-val { font-size: 26px; font-weight: 900; color: var(--mo-orange); }
+        .cart-items-wrap { flex: 1; display: flex; gap: 15px; padding: 0 30px; overflow-x: auto; scrollbar-width: none; }
+        .cart-items-wrap::-webkit-scrollbar { display: none; }
+        .item-capsule { background: rgba(255,255,255,0.12); padding: 10px 20px; border-radius: 30px; color: white; font-size: 14px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.1); }
+
+        .btn-order-action { background: var(--mo-orange); color: white; border: none; padding: 18px 40px; border-radius: 40px; font-weight: 900; font-size: 16px; cursor: pointer; margin-left: auto; transition: 0.2s; }
+        .btn-order-action:hover { background: #e65a00; transform: scale(1.03); }
+
+        /* 4. [고정] 마스터 푸터 */
+        footer {
+            height: 75px; background: var(--white); border-top: 1px solid var(--gray-200);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: fixed; bottom: 0; width: 100%; z-index: 1000;
+        }
+        .footer-nav { display: flex; gap: 20px; font-size: 12px; color: #666; font-weight: 700; margin-bottom: 8px; }
+        .footer-nav span { cursor: pointer; }
+        .footer-copyright { display: flex; align-items: center; gap: 12px; font-size: 11px; color: #bbb; }
+        .footer-m-badge { background: var(--mo-navy); color: white; padding: 2px 6px; border-radius: 4px; font-weight: 900; font-size: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="m-badge">M</div>
+            <a href="#" class="logo-text">Mo<span>-Eats</span></a>
+        </div>
+
+        <ul class="header-nav">
+            <li class="active">🏠 가게찾기</li>
+            <li>🤝 공동구매</li>
+            <li>📊 1/N 정산</li>
+            <li>💬 커뮤니티</li>
+        </ul>
+
+        <div class="user-actions">
+            <div class="user-profile">
+                <span style="font-size:14px; font-weight:800; color:var(--mo-navy);">유서윤 님</span>
+                <div style="width:32px; height:32px; background:var(--mo-navy); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:bold;">서</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="wrapper">
+        <nav class="sidebar-left">
+            <p class="sb-label">LIVE 배달방</p>
+            <div class="room-card">
+                <p class="room-status">● 실시간 모집 중</p>
+                <p class="room-name">홍대 피자 파티🍕<br>공동 주문방</p>
+                <div class="member-list">
+                    <div class="member-avatar" style="background:var(--mo-orange); color:white;">서</div>
+                    <div class="member-avatar">김</div>
+                    <div class="member-avatar">이</div>
+                    <div class="member-avatar" style="background:var(--mo-navy); color:white; font-size:8px;">+2</div>
+                </div>
+            </div>
+            
+            <p class="sb-label" style="margin-top:40px;">MY 서비스</p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="font-size:14px; font-weight:700; color:#555; cursor:pointer;">📍 등록된 주소록</div>
+                <div style="font-size:14px; font-weight:700; color:#555; cursor:pointer;">🧾 내 주문 내역</div>
+            </div>
+        </nav>
+
+        <main class="content">
+            <div class="content-header">
+                <h2 class="section-title">🔥 오늘의 주방장 추천</h2>
+            </div>
+            
+            <div class="wide-banner">
+                <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1400">
+                <div class="banner-content">
+                    <div class="banner-tag">SIGNATURE MENU</div>
+                    <h1 style="font-size: 42px; font-weight: 900; margin-bottom: 10px;">프리미엄 콰트로 피자</h1>
+                    <p style="font-size: 18px; opacity: 0.9;">네 가지 맛을 한 번에, 팀 주문 인기 1위 메뉴</p>
+                    <div style="margin-top: 25px;">
+                        <span style="font-size: 32px; font-weight: 900; color: var(--mo-orange);">24,900원</span>
+                    </div>
+                </div>
+            </div>
+
+            <section style="margin-top: 50px;">
+                <h2 class="section-title">🍝 전체 메뉴 탐색</h2>
+                <div class="menu-grid">
+                    <div class="menu-card">
+                        <img src="https://images.unsplash.com/photo-1620079150708-5d3090753630?w=500">
+                        <div class="menu-card-body">
+                            <p style="font-weight: 800; font-size: 16px;">치즈 오븐 스파게티</p>
+                            <p class="menu-card-price">8,500원</p>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=500">
+                        <div class="menu-card-body">
+                            <p style="font-weight: 800; font-size: 16px;">케이준 양념 감자</p>
+                            <p class="menu-card-price">4,500원</p>
+                        </div>
+                    </div>
+                    <div class="menu-card">
+                        <img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500">
+                        <div class="menu-card-body">
+                            <p style="font-weight: 800; font-size: 16px;">제로 콜라 500ml</p>
+                            <p class="menu-card-price">2,000원</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="cart-float-container">
+        <div class="cart-price-box">
+            <p style="font-size:11px; color:rgba(255,255,255,0.6); font-weight:700;">PAYMENT TOTAL</p>
+            <p class="price-val">26,400원</p>
+        </div>
+        <div class="cart-items-wrap">
+            <div class="item-capsule">🍕 콰트로 피자 (1)</div>
+            <div class="item-capsule">🍝 치즈 스파게티 (1)</div>
+            <div class="item-capsule">🥤 제로 콜라 (2)</div>
+        </div>
+        <button class="btn-order-action">배달방 참여하기</button>
+    </div>
+
+    <footer>
+        <div class="footer-nav">
+            <span>서비스</span> | <span>가게찾기</span> | <span>가게상세</span> | <span>메뉴탐색</span> | <span>주문</span> | <span>주문방참여</span> | <span>주문진행</span> | <span>주문내역</span> | <span>계정</span> | <span>로그인</span> | <span>주소록</span> | <span>내주문</span>
+        </div>
+        <div class="footer-copyright">
+            <div class="footer-m-badge">M</div>
+            <b>모잇츠 (Mo-Eats)</b> | &copy; 2026 Team Project. ysy9038@gmail.com
+        </div>
+    </footer>
+
+</body>
+</html>
