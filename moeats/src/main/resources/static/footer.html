@@ -1,21 +1,37 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<!--/* footer */-->
-<!--/* footer라는 프래그먼트를 정의	*/-->
-<div th:fragment="footer" class="row border-top border-primary my-5">
-	<div class="col text-center py-3">
-			<p> 서비스 
-				가게찾기 가게상세 메뉴탐색<br/>
-				주문 
-				주문방참여 주문 진행 주문 내역<br/>
-				계정
-				로그인 주소록 내 주문<br/>
-				운영 
-				
-      	개인정보관리책임자:임꺽정 분쟁조정기관표시 : 소비자보호원, 전자거래분쟁중재위원회<br/>      	
-      	Copyright (c) 2016 Moeats. All right Reserved.	
-			</p>
-		</div>
-	</div> 
+<html xmlns:th="http://www.thymeleaf.org">
+<footer th:fragment="footerFragment" style="background: var(--mo-navy-900); color: rgba(255, 255, 255, 0.92); padding: 24px 0 32px; font-family: 'Pretendard', -apple-system, sans-serif; margin-top: auto;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 25px;">
+            <div style="margin-bottom: 20px;">
+                <h2 style="color: #ff8c00; margin: 0 0 8px 0; font-size: 22px; letter-spacing: -0.5px;">Mo-Eats</h2>
+                <p style="font-size: 13px; color: #afbac5; margin: 0;">함께 먹고, 똑똑하게 나누는 우리들의 결제 플랫폼</p>
+            </div>
+            
+            <div style="display: flex; gap: 20px; font-size: 14px;">
+                <a href="/terms" style="color: #ffffff; text-decoration: none; opacity: 0.8;">이용약관</a>
+                <a href="/privacy" style="color: #ff8c00; text-decoration: none; font-weight: 700;">개인정보처리방침</a>
+                <a href="/refund" style="color: #ffffff; text-decoration: none; opacity: 0.8;">환불정책</a>
+                <a href="/cs" style="color: #ffffff; text-decoration: none; opacity: 0.8;">고객센터</a>
+            </div>
+        </div>
 
+        <div style="margin-top: 25px; font-size: 12px; color: #8a99a8; line-height: 1.8;">
+            <div style="margin-bottom: 8px;">
+                <span style="color: #cbd5e0;">상호명: Mo-Eats (모잇)</span> | <span>대표자: 유서윤</span> | <span>사업자등록번호: 202-88-01234</span><br>
+                <span>통신판매업신고: 제 2026-서울마포-0000호</span> | <span>이메일: support@mo-eats.com</span><br>
+                <span>주소: 서울특별시 마포구 대흥로 123, 5층 (모잇 빌딩)</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                <p style="margin: 0;">Copyright © 2026 <strong>Mo-Eats Team</strong>. All rights reserved.</p>
+                <div style="display: flex; gap: 16px; opacity: 0.6;">
+                    <span>Instagram</span>
+                    <span>Blog</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
 </html>

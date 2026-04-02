@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>파티 매칭 서비스</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html { scroll-behavior: smooth; }
+        .scroll-container { height: 600px; overflow-y: scroll; position: relative; }
+        section { padding-top: 20px; min-height: 400px; }
+        .restaurant-img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
+    </style>
+</head>
+<body class="container py-4">
+
+    <form name="searchForm" id="searchForm" action="boardList" method="get" class="row justify-content-end my-3">
+        <div class="col-4">
+            <input type="text" name="keyword" class="form-control" placeholder="검색어를 입력하세요"/>
+        </div>
+        <div class="col-auto">
+            <input type="submit" value="검색" class="btn btn-primary">
+        </div>
+    </form>
+
+    <th:block th:if="${searchOption}">
+        <div class="row my-3">
+            <div class="col text-start alert alert-info">
+                "<strong>[[${keyword}]]</strong>" 에 대한 검색 결과입니다.<br>
+                총 <strong>[[${totalCount}]]</strong>건의 매칭되는 결과가 발견되었습니다.
+            </div>
+        </div>
+    </th:block>
+
+    <nav id="navbar-example" class="navbar sticky-top navbar-light bg-light px-3 mb-3 shadow-sm rounded">
+        <a class="navbar-brand" href="#">Party Match</a>
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a class="nav-link" href="#scroll-section1">전체</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scroll-section2">진행중인 파티</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scroll-section3">식당</a></li>
+        </ul>
+    </nav>
+
+    <div data-bs-spy="scroll" data-bs-target="#navbar-example" data-bs-offset="100" class="scroll-container" tabindex="0">
+        
+        <section id="scroll-section1">
+            <h2 class="mb-4">전체 요약</h2>
+            <div class="card shadow-sm mb-5 p-4 text-center">
+                <h4>오늘의 인기 파티와 맛집을 확인하세요!</h4>
+            </div>
+        </section>
+
+        <section id="scroll-section2">
+            <h2 class="mb-4 text-primary">진행중인 파티</h2>
+            
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="fw-bold">도미노피자 같이 시키실분!</h5>
+                    <p class="text-muted">강남역 5번 출구 앞 직거래 희망합니다.</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="fw-bold">피자헛 프리미엄 콰트로 세트</h5>
+                    <p class="text-muted">최소 주문 금액 5000원 남았습니다.</p>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="fw-bold">파파존스 강남점</h5>
+                    <p class="text-muted">금요일 1+1 혜택이 가능한 매장입니다. 다양한 프리미엄 피자를 즐겨보세요.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="scroll-section3">
+            <h2 class="mb-4 text-success">식당 목록</h2>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <img src="https://via.placeholder.com/150" class="restaurant-img" alt="식당 이미지">
+                        </div>
+                        <div class="col-md-6 border-start border-end">
+                            <h4 class="fw-bold">알볼로피자 강남점</h4>
+                            <p class="mb-0">"어깨피자. 꿈을피자가 대표 메뉴인 수제 피자 전문점"</p>
+                            <span class="badge bg-warning text-dark mt-2">인기 매장</span>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <button class="btn btn-outline-primary btn-lg w-100">파티 만들기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <img src="https://via.placeholder.com/150" class="restaurant-img" alt="식당 이미지">
+                        </div>
+                        <div class="col-md-6 border-start border-end">
+                            <h4 class="fw-bold">파파존스 서초점</h4>
+                            <p class="mb-0">"더 나은 재료, 더 맛있는 피자. 정통 아메리칸 스타일"</p>
+                            <span class="badge bg-warning text-dark mt-2">인기 매장</span>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <button class="btn btn-outline-primary btn-lg w-100">파티 만들기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <img src="https://via.placeholder.com/150" class="restaurant-img" alt="식당 이미지">
+                        </div>
+                        <div class="col-md-6 border-start border-end">
+                            <h4 class="fw-bold">피자스쿨 역삼점</h4>
+                            <p class="mb-0">"가성비 최고의 국민 피자. 고구마 피자가 인기입니다."</p>
+                            <span class="badge bg-warning text-dark mt-2">인기 매장</span>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <button class="btn btn-outline-primary btn-lg w-100">파티 만들기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
