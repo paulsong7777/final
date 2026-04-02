@@ -35,11 +35,10 @@ public class TransactionService {
 	OrderRoomTimer orderRoomTimer;
 	
 	@Transactional(rollbackFor=Exception.class)
-	public Map<String,Object> beginPayment(OrderRoom orderRoom,int representativeMemberIdx) throws Exception {
+	public Map<String,Object> beginPayment(OrderRoom orderRoom) throws Exception {
 		boolean isRepresentative = orderRoom.getPaymentMode().equals("REPRESENTATIVE");
 		DeliveryAddress deliveryAddress = memberService.findAddressByIdx(orderRoom.getSelectedDeliveryAddressIdx());
-		if(	isRepresentative && orderRoomService.findRoomMember(orderRoom.getRoomIdx(),representativeMemberIdx)==null ||
-			deliveryAddress==null || deliveryAddress.getMemberIdx() != orderRoom.getLeaderMemberIdx() )
+		if(	deliveryAddress==null || deliveryAddress.getMemberIdx() != orderRoom.getLeaderMemberIdx() )
 			// representativeMemberIdx = orderRoom.getLeaderMemberIdx();
 			throw new Exception();
 		Map<String,Object> map = new HashMap<>();
@@ -52,7 +51,7 @@ public class TransactionService {
 		
 		List<PaymentShare> paymentShares = new ArrayList<>();
 		if(isRepresentative)
-			paymentService.setRepresentativePaymentShares(paymentShares, payment, orderRoomService.findByRoom(orderRoom.getRoomIdx()), representativeMemberIdx);
+			paymentService.setRepresentativePaymentShares(paymentShares, payment, orderRoomService.findByRoom(orderRoom.getRoomIdx()),orderRoom.getLeaderMemberIdx());
 		else
 			paymentService.setIndividualPaymentShares(paymentShares, payment, groupCartItemService.findRoomMemberAmount(orderRoom.getRoomIdx()));
 		paymentShares.forEach(paymentShare->paymentService.insert(paymentShare));
@@ -63,8 +62,7 @@ public class TransactionService {
 		Timestamp expiresAt = payment.getPaymentExpiresAt();
 		orderRoomService.paymentPend(orderRoom.getRoomIdx(), expiresAt);
 		orderRoom.setExpiresAt(expiresAt);
-
-		orderRoomTimer.start(orderRoom.getRoomIdx(),expiresAt);
+		
 		assert groupOrder!=null && payment!=null && paymentShares!=null && orderDelivery!=null;
 		map.put("groupOrder",groupOrder);
 		map.put("payment",payment);

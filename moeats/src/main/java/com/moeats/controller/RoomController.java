@@ -1,7 +1,5 @@
 package com.moeats.controller;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,21 +22,31 @@ import com.moeats.domain.Member;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.RoomParticipant;
 import com.moeats.services.GroupCartItemService;
+import com.moeats.services.MemberService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.TransactionService;
+import com.moeats.services.sse.SSEService;
 import com.moeats.timer.OrderRoomTimer;
 
 @Controller
 public class RoomController {
+
+    private final MemberService memberService;
 	@Autowired
 	OrderRoomService orderRoomService;
 	@Autowired
 	GroupCartItemService groupCartItemService;
 	@Autowired
 	TransactionService transactionService;
+	@Autowired
+	SSEService sseService;
 	
 	@Autowired
 	OrderRoomTimer orderRoomTimer;
+
+    RoomController(MemberService memberService) {
+        this.memberService = memberService;
+    }
 	
 	@GetMapping("/rooms/new")
 	public String roomCreateForm() {
@@ -85,7 +93,14 @@ public class RoomController {
 				return "redirect:/rooms/join";
 			}
 		}
-		List<RoomParticipant> roomParticipants = orderRoomService.findParticipantByCode(roomCode);
+		
+		final record MemberParticipant(RoomParticipant roomParticipant,Member member) {}
+		
+		Map<Integer,RoomParticipant> roomParticipantMap = orderRoomService.findByRoom(orderRoom.getRoomIdx())
+				.stream().collect(Collectors.toMap(RoomParticipant::getMemberIdx, roomParticipant -> roomParticipant));
+		List<MemberParticipant> roomParticipants = memberService.findByIdxs(roomParticipantMap.keySet())
+				.stream().map(roomMember->(new MemberParticipant(roomParticipantMap.get(roomMember.getMemberIdx()), roomMember))).toList();
+		
 		model.addAttribute("orderRoom",orderRoom);
 		model.addAttribute("roomParticipants",roomParticipants);
 		return "room-detail";
@@ -174,15 +189,26 @@ public class RoomController {
 			Model model,
 			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		List<GroupCartItem> myCartItems = null;
-		Map<RoomParticipant,List<GroupCartItem>> otherCartItems = new LinkedHashMap<>();
-		Map<Integer,List<GroupCartItem>> groupCartitems = groupCartItemService.findByRoom(orderRoom.getRoomIdx()).stream().collect(Collectors.groupingBy(GroupCartItem::getMemberIdx));
-		for(RoomParticipant roomParticipant : orderRoomService.findByRoom(orderRoom.getRoomIdx())){
-			if(roomParticipant.getMemberIdx()==member.getMemberIdx())
-				myCartItems = groupCartitems.getOrDefault(roomParticipant.getMemberIdx(), new ArrayList<>());
-			otherCartItems.put(roomParticipant,groupCartitems.getOrDefault(roomParticipant.getMemberIdx(), List.of()));
-		}
+		
+		final record MemberItems(RoomParticipant roomParticipant,Member member,List<GroupCartItem> items) {}
+		
+		Map<Integer,List<GroupCartItem>> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx())
+				.stream().collect(Collectors.groupingBy(GroupCartItem::getMemberIdx));
+		Map<Integer,RoomParticipant> roomParticipantMap = orderRoomService.findByRoom(orderRoom.getRoomIdx())
+				.stream().collect(Collectors.toMap(RoomParticipant::getMemberIdx, roomParticipant -> roomParticipant));
+		
+		RoomParticipant myState = roomParticipantMap.remove(member.getMemberIdx());
+		List<GroupCartItem> myCartItems = groupCartItems.getOrDefault(member.getMemberIdx(),List.of());
+		
+		List<MemberItems> otherCartItems = memberService.findByIdxs(roomParticipantMap.keySet())
+				.stream().map(roomMember->new MemberItems(
+						roomParticipantMap.get(roomMember.getMemberIdx()),
+						roomMember,
+						groupCartItems.getOrDefault(roomMember.getMemberIdx(), List.of())
+				)).toList();
+		
 		model.addAttribute("orderRoom",orderRoom);
+		model.addAttribute("myState",myState);
 		model.addAttribute("myCartItems",myCartItems);
 		model.addAttribute("otherCartItems",otherCartItems);
 		return "room-cart";
@@ -262,13 +288,15 @@ public class RoomController {
 		}
 		Map<String, Object> res;
 		try {
-			res = transactionService.beginPayment(orderRoom,representativeMemberIdx);
+			res = transactionService.beginPayment(orderRoom);
 		} catch (Exception e) {
 			ra.addFlashAttribute("error","오류가 발생하여 결제화면으로 넘어가지 못했습니다");
 			return String.format("redirect:/rooms/code/%s",roomCode);
 			//e.printStackTrace();
 		}
 		GroupOrder groupOrder = (GroupOrder) res.get("groupOrder");
+		orderRoomTimer.start(orderRoom.getRoomIdx(),orderRoom.getExpiresAt());
+		sseService.beginOrder(orderRoom.getRoomIdx());
 		return String.format("redirect:/orders/%s/payment",groupOrder.getOrderIdx());
 	}
 }

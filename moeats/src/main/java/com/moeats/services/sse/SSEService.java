@@ -1,7 +1,6 @@
 package com.moeats.services.sse;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +28,7 @@ public class SSEService {
 	}
 	public int send(int roomIdx,SseEventBuilder message) {
 		int sent = 0;
+		message.id(String.valueOf(System.currentTimeMillis()));
 		for( SseEmitter sseEmitter : roomMap.get(roomIdx) )
 			try {
 				sseEmitter.send(message);
@@ -38,5 +38,8 @@ public class SSEService {
 				roomMap.get(roomIdx).remove(sseEmitter);
 			}
 		return sent;
+	}
+	public int beginOrder(int roomIdx) {
+		return send(roomIdx,SseEmitter.event().name("to_order"));
 	}
 }
