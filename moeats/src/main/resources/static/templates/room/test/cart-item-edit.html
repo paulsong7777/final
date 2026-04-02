@@ -3,10 +3,41 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{/layouts/main_layout}">
 
+<!--
+파일명 변경: cart-edit.html → cart-item-edit.html
+이유: Controller가 return "cart-item-edit" 을 반환하므로
+     Spring은 templates/cart-item-edit.html 을 찾음
+-->
+
 <div layout:fragment="content">
     <h2>메뉴 수정</h2>
     <p>변경하실 메뉴와 수량을 선택하여 장바구니에 담으세요.</p>
 
+    <!--
+    ================================
+    [실전] 백엔드 연동 완료 후 아래 더미 섹션을 제거하고 이 주석 블록을 활성화
+    Controller: GET /rooms/code/{room_code}/cart/items/{cart_item_idx}/edit
+    model 변수:
+        - groupCartItem.cartItemIdx : 항목 식별자
+        - groupCartItem.menuIdx     : 메뉴 식별자
+        - groupCartItem.quantity    : 현재 수량
+
+    수정 완료 후 전송:
+    Controller: POST /rooms/code/{room_code}/cart/items/{cart_item_idx}/edit
+    method : POST
+    action : /rooms/code/{room_code}/cart/items/{cart_item_idx}/edit
+    전송 데이터: GroupCartItem (menuIdx, quantity 등)
+
+    <form th:action="@{/rooms/code/{code}/cart/items/{idx}/edit(code=${roomCode},idx=${groupCartItem.cartItemIdx})}"
+          method="post" id="cartItemEditForm">
+        <input type="hidden" name="cartItemIdx" th:value="${groupCartItem.cartItemIdx}">
+        현재 선택된 메뉴: <span th:text="${groupCartItem.menuName}">메뉴명</span>
+        <label>수량: <input type="number" name="quantity" th:value="${groupCartItem.quantity}" min="1"></label>
+        <button type="submit">수정 완료</button>
+    </form>
+    ================================ -->
+
+    <!-- [더미] 메뉴 수정 폼 -->
     <section id="dummyMenuSection">
         <h3>테스트 비상구 치킨 - 메뉴 목록</h3>
         <table border="1" style="width:100%; text-align:center;">

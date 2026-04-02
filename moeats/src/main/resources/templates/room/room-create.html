@@ -14,7 +14,7 @@
         방장
     -->
 
-    <form th:action="@{/room/detailForm}" method="post" id="roomCreateForm">
+    <form th:action="@{/rooms}" method="post" id="roomCreateForm">
 
         <!-- 가게 정보 (가게 상세에서 넘어올 때 hidden으로 전달) -->
         <input type="hidden" th:name="storeIdx" th:value="${store?.storeIdx}" id="storeIdx">

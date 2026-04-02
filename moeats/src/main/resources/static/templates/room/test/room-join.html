@@ -8,66 +8,67 @@
     <h2>주문방 참여</h2>
     <p>방장에게 받은 코드 또는 링크로 참여하세요.</p>
 
-    <!-- ================================
-    [실전 폼] 백엔드 연동 완료 후 주석 해제
-    목적     : 방 코드로 주문방에 참여 요청
-    method   : POST
-    action   : /rooms/{code}/join  ({code}는 JS에서 입력값으로 동적 교체)
-    전송 파라미터:
-        - roomCode (text input) : 참여할 방의 코드
-    세션 의존 : session.loginMember.memberIdx → 참여자 식별자로 서버에서 직접 사용
-    성공 리다이렉트 : /rooms/{roomIdx} (room-detail.html)
+    <!--
+    ================================
+    [실전] 백엔드 연동 완료 후 아래 더미 섹션을 제거하고 이 주석 블록을 활성화
+    목적      : 방 코드 입력 → 주문방 참여
+    전송 방식 : POST form 불가 (Controller에 /rooms/{code}/join 엔드포인트 없음)
+                → room-join.js 의 GET redirect 가 대신 처리
+    전송 URL  : GET /rooms/code/{roomCode}
+    동작      : Controller가 방 존재 확인 + 미참가 시 자동 참가 + room-detail 렌더링
+    세션 의존  : session의 member → memberIdx로 서버에서 직접 처리
+    실패 케이스:
+        - 방 없음 → redirect:/rooms/join (error 메시지 포함)
+        - 방 잠김(isJoinLocked=true) → redirect:/rooms/join (error 메시지 포함)
 
-    <form th:action="@{/rooms/{code}/join(code=${roomCode})}" method="post" id="roomJoinForm">
-
-        목적: 서버에서 URL 파라미터로 내려준 roomCode를 input에 미리 채움
-              (링크 공유로 직접 접근 시 자동 입력)
+    <section>
+        <h3>방 코드로 참여</h3>
+        목적: 링크 공유 접근 시 th:value로 코드 자동 채움. JS가 값 읽어 GET redirect
+        <label for="roomCodeInput">주문방 코드 입력</label>
+        <br>
         <input type="text"
                id="roomCodeInput"
-               name="roomCode"
                th:value="${roomCode}"
                placeholder="예) A7B2X9"
-               maxlength="10"
-               required>
-
-        목적: 링크로 들어왔을 때 자동 입력된 코드를 사용자에게 안내
+               maxlength="10">
         <span th:if="${roomCode != null}">
             자동 입력된 코드: <strong th:text="${roomCode}"></strong>
         </span>
+        <br>
+        <button type="button" id="btnJoinRoom">참여하기</button>
 
-        <button type="submit" id="btnJoinRoom">참여하기</button>
-        
-        <div id="fullRoomMsg" style="display: none; color: #ff4d4d; margin-top: 10px; font-weight: bold;">
-        ⚠️ 현재 주문방의 인원이 가득 차서 참여할 수 없습니다.
-    	</div>
-    </form>
+        목적: 방이 꽉 찼을 때(isJoinLocked) Controller가 error 플래시 메시지 전달
+        <div th:if="${error != null}" style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">
+            <span th:text="${error}">오류 메시지</span>
+        </div>
+    </section>
     ================================ -->
 
     <!-- ================================ -->
-    <!-- [더미 데이터] 실전 폼 대체 표시   -->
+    <!-- [더미 데이터] 실전 연동 전 표시용  -->
     <!-- ================================ -->
     <section>
         <h3>방 코드로 참여 (더미)</h3>
         <!--
-        실전: form action="/rooms/{code}/join" POST
-        서버 요청 파라미터: roomCode
+        실전: id="roomCodeInput", th:value="${roomCode}"
+        JS(room-join.js)가 값을 읽어 GET /rooms/code/{code} 로 이동
         -->
-        <label for="roomCodeInput_dummy">주문방 코드 입력</label>
+        <label for="roomCodeInput">주문방 코드 입력</label>
         <br>
         <input type="text"
-               id="roomCodeInput_dummy"
+               id="roomCodeInput"
                placeholder="예) A7B2X9"
                maxlength="10"
                value="A7B2X9">
         <br>
-        <button type="button" id="btnTestJoin">참여하기 (더미)</button>
-        
-        <br>
-        <button type="button" id="btnTestFullJoin">플방참여하기 (테스트)</button>
+        <button type="button" id="btnJoinRoom">참여하기 (더미)</button>
+
+        <br><br>
+        <!-- 꽉 찬 방 진입 시뮬레이션 (테스트 전용) -->
+        <button type="button" id="btnTestFullJoin">꽉 찬 방 참여 테스트</button>
         <div id="fullRoomMsg" style="display: none; color: #ff4d4d; margin-top: 10px; font-weight: bold;">
-        ⚠️ 현재 주문방의 인원이 가득 차서 참여할 수 없습니다.
-    	</div>
-        
+            ⚠️ 현재 주문방의 인원이 가득 차서 참여할 수 없습니다.
+        </div>
     </section>
 
     <hr>
@@ -75,40 +76,27 @@
     <!--
     ================================
     [실전] 방 정보 미리보기 - 백엔드 연동 후 주석 해제
-    목적     : 입력한 roomCode로 조회한 방 정보를 사전 표시
-    서버 제공 model 변수:
-        - room.storeName         : 가게명
-        - room.leaderName        : 방장 이름
-        - room.paymentMode       : REPRESENTATIVE | INDIVIDUAL
-        - room.currentParticipants : 현재 참여 인원 수
-        - room.roomStatus        : OPEN | SELECTING | PAYMENT_PENDING | ORDER_CONFIRMED
+    목적     : Controller가 model에 담아준 방 정보 표시 (현재 미구현, 추후 추가 요청)
+    서버 제공 model 변수 (추후 Controller 추가 필요):
+        - orderRoom.storeName          : 가게명
+        - orderRoom.leaderMemberIdx    : 방장 식별자 (이름은 별도 조회 필요)
+        - orderRoom.paymentMode        : REPRESENTATIVE | INDIVIDUAL
+        - orderRoom.roomStatus         : OPEN | LOCKED 등
 
-    <section th:if="${room != null}">
+    <section th:if="${orderRoom != null}">
         <h3>참여할 주문방 정보</h3>
         <table border="1">
-            <tr><th>가게명</th>          <td th:text="${room.storeName}">가게 이름</td></tr>
-            <tr><th>방장</th>            <td th:text="${room.leaderName}">방장 이름</td></tr>
+            <tr><th>가게명</th>    <td th:text="${orderRoom.storeName}">가게 이름</td></tr>
             <tr><th>결제 방식</th>
-                <td th:text="${room.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">각자결제</td></tr>
-            <tr><th>현재 참여 인원</th>  <td th:text="${room.currentParticipants} + '명'">0명</td></tr>
-            <tr><th>방 상태</th>         <td th:text="${room.roomStatus}">OPEN</td></tr>
+                <td th:text="${orderRoom.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">각자결제</td></tr>
         </table>
     </section>
 
-    목적: 이미 참여 중인 방이 있을 때 분기 표시
-    서버 제공 model 변수: alreadyJoined(boolean), currentRoomCode(String)
-    <section th:if="${alreadyJoined}">
-        <p>이미 참여 중인 주문방이 있습니다.</p>
-        <a th:href="@{/rooms/{code}(code=${currentRoomCode})}">현재 참여 중인 방으로 이동</a>
-    </section>
-
-    목적: 방 상태가 OPEN이 아닐 때(잠금·완료 등) 참여 불가 안내
-    서버 제공 model 변수: roomClosed(boolean)
-    <section th:if="${roomClosed}">
-        <p>이 주문방은 현재 참여가 불가능한 상태입니다.</p>
-        <p th:text="'방 상태: ' + ${room?.roomStatus}"></p>
+    목적: Controller가 error 플래시 메시지를 보낼 때 표시
+    <div th:if="${error != null}" style="color: #ff4d4d; font-weight: bold;">
+        <p th:text="${error}">오류 메시지</p>
         <a th:href="@{/}">홈으로 돌아가기</a>
-    </section>
+    </div>
     ================================ -->
 
     <!-- [더미] 방 정보 미리보기 -->
@@ -127,18 +115,11 @@
 
     <!-- ================================ -->
     <!-- [테스트 이동 버튼]
-		 추가해야 할 기능 : 1 - 방이 꽉 찼을 때 
-		ㄴ 홈페이지로 리다이렉트는 하면 안 되고 
-			대기방에서 계속 기다리게 해야 한다	  -->
+         추가 필요: 방이 꽉 찼을 때 홈 redirect 대신
+         대기 상태 유지 또는 안내 화면 처리 → 백엔드 협의 필요 -->
     <!-- ================================ -->
     <section id="testNav">
         <p><strong>[테스트] 화면 이동 확인용</strong></p>
-        <!--
-        실전: POST /rooms/{code}/join 후 서버가 redirect → room-detail
-        	서버단에서 방의 사람수를 항상 카운팅해야 한다
-        	방이 꽉 찼거나 하면 사람이 더 들어갈 수 없어야 하기 때문
-        아래 버튼은 서버 없이 직접 이동 (더미 roomIdx = 1 사용)
-        -->
         <button type="button" id="btnTestGoDetail">
             → 주문방 협업화면으로 이동 (더미 참여자 시나리오)
         </button>
@@ -150,7 +131,7 @@
     <script src="/js/jquery-3.7.1.min.js"></script>
     <!--
     실전용: <script src="/js/room-join.js"></script>
-    -->
+    -->    
     <script src="/js/test/room-join.test.js"></script>
 
 </div>
