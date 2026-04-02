@@ -16,9 +16,9 @@
                 → room-create.js 의 AJAX POST 가 대신 처리
     전송 URL  : POST /rooms
     전송 형식 : Content-Type: application/json
-    전송 데이터:
+    송신 데이터:
         - storeIdx           (int)     : 가게 식별자. 가게 상세에서 hidden으로 넘어옴
-        - deliveryAddressIdx (int)     : 선택한 배송지 식별자
+        - selectedDeliveryAddress  	   : 배송 주소 문자열
         - paymentMode        (String)  : REPRESENTATIVE | INDIVIDUAL
         - maxParticipants    (Integer) : 최대 인원 (선택값, null 가능)
     세션 의존  : session의 member → leaderMemberIdx로 서버에서 직접 설정

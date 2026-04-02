@@ -19,16 +19,22 @@
     <!-- ================================
     [실전] 방 기본 정보
     Controller: GET /rooms/code/{room_code}
-    model 변수명 수정: room → orderRoom, participants → roomParticipants
     서버 제공 model 변수:
-        - orderRoom.storeName         : 가게명
+        - orderRoom.storeIdx          : 가게 식별자
+        - orderRoom.leaderMemberIdx   : 방장 식별자
+		- orderRoom.roomIdx           : 방 식별자
+        - orderRoom.selectedDeliveryAddress   : 배송 주소 문자열		
         - orderRoom.roomCode          : 방 코드 (6자리)
         - orderRoom.roomStatus        : OPEN | LOCKED 등
+        - orderRoom.orderMode     	  : REPRESENTATIVE | INDIVIDUAL
         - orderRoom.paymentMode       : REPRESENTATIVE | INDIVIDUAL
-        - orderRoom.roomIdx           : 방 식별자
         - orderRoom.isJoinLocked      : 잠금 여부
+        - store.minimumOrderAmount	  : 최소주문액수는 orderRoom 도메인에 없다(4/1)
+        - store.storeName			  : 가게이름도 orderRoom 도메인에 없다. 깐츄롤러가 주겠지 설마
+        							    안주면 해당 깐츄롤러에 별도로 요청해야
 
-    <h2>주문방 <span th:text="'[' + ${orderRoom.storeName} + ']'"></span></h2>
+	// storeIdx로 
+    <h2>주문방 <span th:text="'[' + ${storeName} + ']'"></span></h2>
     <section id="roomInfo">
         <table border="1">
             <tr>
@@ -64,13 +70,13 @@
     <hr>
 
     <!-- ================================
-    ① [실전] 참여자 카드 목록
-    변수명 수정: participants → roomParticipants
+    ① [실전] 참여자 카트 목록
     서버 제공 model 변수: roomParticipants (List<RoomParticipant>)
         - p.memberIdx      : 참여자 식별자
         - p.selectionStatus: NOT_SELECTED | SELECTED (Controller에 추가 요청 필요)
-        현재 Controller가 roomParticipants는 전달하나 cartTotal, selectionStatus 등
-        추가 필드는 미구현 → 백엔드 협의 후 추가 요청
+        현재 Controller가 roomParticipants는 전달하나 selectionStatus 등
+        추가 필드는 → GroupCartItem.itemStatus 있긴 있음
+        		   더 추가 필요시 백엔드 협의 후 추가 요청
 
     <section id="participantSection">
         <table border="1">
@@ -197,8 +203,7 @@
     <hr>
 
     <!-- ================================
-    ③ [실전] 전체 합계
-    (Controller 미구현 → 백엔드에 totalMenuAmount, deliveryFee, grandTotal 추가 요청 필요)
+    ③ [실전] 전체 합계    
     ================================ -->
 
     <!-- [더미] 전체 합계 -->
@@ -215,8 +220,7 @@
     <hr>
 
     <!-- ================================
-    ④ [실전] 다음 단계 / 액션 버튼
-    (myRole, allSelected, grandTotal → Controller 추가 요청 필요)
+    ④ [실전] 다음 단계 / 액션 버튼   
 
     [결제 진행하기 버튼] - 방장 전용
     목적   : 방 잠금 + 주문 생성 요청
@@ -298,7 +302,6 @@
 
 <!--
 실전: Thymeleaf가 서버 값으로 채워서 JS에 전달
-변수명 수정: room.roomIdx → orderRoom.roomIdx, room.roomStatus → orderRoom.roomStatus
 roomCode 추가 (방 나가기/checkout URL에 사용)
 
 <input type="hidden" id="roomIdx"    th:value="${orderRoom.roomIdx}">
