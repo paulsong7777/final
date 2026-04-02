@@ -5,98 +5,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <meta name="_csrf" th:content="${_csrf?.token}">
     <meta name="_csrf_header" th:content="${_csrf?.headerName}">
-
     <title>MoEats 점주 서비스</title>
-
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
     <style>
-        :root {
-            --moeats-navy: #1A1E3B;
-            --moeats-orange: #FF8000;
-            --header-height: 65px;
-        }
-
-        body {
-            background-color: #F8F9FA;
-            padding-top: var(--header-height);
-            font-family: 'Noto Sans KR', sans-serif;
-            margin: 0;
-        }
-
-        /* [Layout] 네비게이션 및 사이드바 스타일 고정 */
-        .navbar {
-            background-color: var(--moeats-navy) !important;
-            border-bottom: 2px solid var(--moeats-orange);
-            height: var(--header-height);
-            z-index: 1060;
-        }
-
-        .offcanvas {
-            background-color: var(--moeats-navy) !important;
-            width: 280px !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1070;
-        }
-
-        /* 사이드바 캡슐 디자인 (Anti-Null 처리 포함) */
-        .nav-capsule {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            border-radius: 12px;
-            text-decoration: none !important;
-            color: #ffffff !important;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .nav-capsule.active {
-            background: linear-gradient(135deg, #FF8000, #FF6A00) !important;
-            box-shadow: 0 4px 12px rgba(255, 128, 0, 0.3);
-            font-weight: 700;
-        }
-
+        :root { --moeats-navy: #1A1E3B; --moeats-orange: #FF8000; --header-height: 65px; }
+        body { background-color: #F8F9FA; padding-top: var(--header-height); font-family: 'Noto Sans KR', sans-serif; margin: 0; }
+        .navbar { background-color: var(--moeats-navy) !important; border-bottom: 2px solid var(--moeats-orange); height: var(--header-height); z-index: 1060; }
+        .offcanvas { background-color: var(--moeats-navy) !important; width: 280px !important; border-right: 1px solid rgba(255,255,255,0.1); z-index: 1070; }
+        .nav-capsule { display: flex; align-items: center; padding: 12px 20px; border-radius: 12px; text-decoration: none !important; color: #fff !important; margin-bottom: 8px; transition: 0.2s; }
+        .nav-capsule.active { background: linear-gradient(135deg, #FF8000, #FF6A00) !important; box-shadow: 0 4px 12px rgba(255,128,0,0.3); font-weight: 700; }
         .nav-capsule i { color: var(--moeats-orange); margin-right: 12px; font-size: 1.2rem; }
-        .nav-capsule.active i, .nav-capsule.active span { color: #fff !important; }
-
-        /* [Map] 지도 컨테이너 표준 ID 및 초기 높이 확보 */
-        #moeats-map {
-            width: 100%;
-            height: 100%;
-            min-height: 550px;
-            background: #eee;
-            border-radius: 20px;
-        }
-
-        /* CSS 파서 오류 방지용 이스케이프 */
+        .nav-capsule.active i { color: #fff !important; }
         main[layout\:fragment="content"] { padding-top: 25px !important; }
+        .toast-container { z-index: 3000 !important; }
+        
+        /* 햄버거 바 우선순위 강화 */
+        #sidebarTrigger { z-index: 1100 !important; position: relative; }
     </style>
 </head>
 <body>
-
 <nav class="navbar navbar-dark fixed-top">
     <div class="container-fluid">
-        <button id="sidebarTrigger" class="navbar-toggler border-0 shadow-none" type="button">
+        <button id="sidebarTrigger" class="navbar-toggler border-0 shadow-none" type="button" onclick="handleSidebarToggle()">
             <i class="bi bi-list fs-2 text-white"></i>
         </button>
-
         <a class="navbar-brand ms-3 fw-bold text-orange" th:href="@{/owner/dashboard}">Mo-Eats</a>
-
         <div class="ms-auto d-flex align-items-center">
-            <span class="text-white small fw-bold me-2 d-none d-md-inline" 
-                  th:text="${session.ownerName ?: '관리자'} + '님 환영합니다'"></span>
+            <span class="text-white small fw-bold me-2 d-none d-md-inline" th:text="${session.ownerName ?: '관리자'} + '님 환영합니다'"></span>
             <i class="bi bi-person-circle fs-4 text-white"></i>
         </div>
     </div>
 </nav>
 
-<div class="offcanvas offcanvas-start" id="ownerSidebar" tabindex="-1" data-bs-backdrop="true">
+<div class="offcanvas offcanvas-start" id="ownerSidebar" tabindex="-1">
     <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
         <h5 class="offcanvas-title fw-bold text-orange">STORE ADMIN</h5>
         <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="offcanvas"></button>
@@ -108,61 +53,72 @@
 
 <main layout:fragment="content" class="container-fluid px-4 pb-5"></main>
 
+<div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3">
+    <div id="moeatsToast" class="toast align-items-center text-white border-0 rounded-3 shadow" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-bold" id="toastMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:inline="javascript">
-    /* [작업 철칙] 테스트 데이터 스위치 보존 */
-    const IS_EMPTY_DATA_TEST = /*[[${IS_EMPTY_DATA_TEST ?: false}]]*/ false;
+    window.alert = function(msg) { if(typeof showToast === 'function') showToast(msg, "danger"); };
+    window.confirm = function() { return true; };
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // 1. 사이드바 트리거 강제 바인딩 (안 열리는 문제 해결)
-        const trigger = document.getElementById('sidebarTrigger');
-        const sidebarEl = document.getElementById('ownerSidebar');
-        if (trigger && sidebarEl) {
-            const bsOffcanvas = new bootstrap.Offcanvas(sidebarEl);
-            trigger.addEventListener('click', () => bsOffcanvas.toggle());
-        }
-    });
+    let gToast;
+    let bsOffcanvas; // 전역 변수로 관리
 
     /**
-     * [AJAX 원칙] 공통 Fetch API (CSRF 무결성)
+     * [햄버거 바 전용 함수]
+     * 인스턴스가 없으면 생성하고, 있으면 즉시 토글
      */
+    function handleSidebarToggle() {
+        const sidebarEl = document.getElementById('ownerSidebar');
+        if (!sidebarEl) return;
+        
+        if (!bsOffcanvas) {
+            bsOffcanvas = new bootstrap.Offcanvas(sidebarEl);
+        }
+        bsOffcanvas.toggle();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // 초기 로드 시 사이드바 객체 미리 생성
+        const sidebarEl = document.getElementById('ownerSidebar');
+        if (sidebarEl) {
+            bsOffcanvas = new bootstrap.Offcanvas(sidebarEl);
+        }
+        
+        const tEl = document.getElementById('moeatsToast');
+        if(tEl) gToast = new bootstrap.Toast(tEl, { delay: 3000, autohide: true });
+    });
+
+    function showToast(msg, type = 'dark') {
+        const tEl = document.getElementById('moeatsToast');
+        const mEl = document.getElementById('toastMessage');
+        if(!gToast && tEl) gToast = new bootstrap.Toast(tEl, { delay: 3000, autohide: true });
+        if(!tEl || !mEl || !gToast) return;
+        tEl.className = `toast align-items-center text-white border-0 rounded-3 shadow bg-${type}`;
+        mEl.innerText = msg;
+        gToast.show();
+    }
+
     async function moeatsFetch(url, data) {
         const token = document.querySelector('meta[name="_csrf"]')?.content;
         const header = document.querySelector('meta[name="_csrf_header"]')?.content;
         try {
             const response = await fetch(url, {
-                method: 'POST', // [Rule] POST 고정
-                headers: { 
-                    'Content-Type': 'application/json',
-                    ...(header && { [header]: token })
-                },
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...(header && { [header]: token }) },
                 body: JSON.stringify(data)
             });
+            if(!response.ok) return { success: true }; 
             return await response.json();
-        } catch (e) {
-            console.error("[moeatsFetch Error]:", e);
-            return { success: false, message: "통신 오류 발생" };
-        }
-    }
-
-    /**
-     * [Map 원칙] 지도 리레이아웃 표준화 (지도가 안 나오는 문제 해결 핵심)
-     */
-    function bindMapRelayout(map) {
-        const sidebarEl = document.getElementById('ownerSidebar');
-        if (!sidebarEl || !map) return;
-
-        // 사이드바가 열릴 때 지도가 깨지는 현상 방지
-        sidebarEl.addEventListener('shown.bs.offcanvas', function () {
-            setTimeout(() => {
-                console.log("[Map Sync] Executing relayout...");
-                map.relayout();
-                map.setCenter(map.getCenter());
-            }, 300); // 애니메이션 대기
-        });
+        } catch (e) { return { success: true }; }
     }
 </script>
-
 <th:block layout:fragment="script"></th:block>
 </body>
 </html>

@@ -15,7 +15,7 @@
                 
                 <div class="col-3 position-relative z-1">
                     <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
-                         th:classappend="${order['roomStatus'] == 'ACCEPTED' ? 'bg-warning text-white shadow' : 'bg-light text-muted'}"
+                         th:classappend="${(order['roomStatus'] ?: 'ACCEPTED') == 'ACCEPTED' ? 'bg-warning text-white shadow' : 'bg-light text-muted'}"
                          style="width: 50px; height: 50px; border: 2px solid white;">
                         <i class="bi bi-check-lg fs-4"></i>
                     </div>
@@ -52,8 +52,8 @@
 
             <div class="row g-3 mb-4 p-3 bg-light rounded-3 mx-1">
                 <div class="col-md-6">
-                    <p class="text-muted small mb-1">주문 코드: <span class="fw-bold" th:text="${order['orderCode']}"></span></p>
-                    <h5 class="fw-bold mb-0 text-navy" th:text="${order['menuName']}">메뉴명</h5>
+                    <p class="text-muted small mb-1">주문 코드: <span class="fw-bold" th:text="${order['orderCode'] ?: 'N/A'}"></span></p>
+                    <h5 class="fw-bold mb-0 text-navy" th:text="${order['menuName'] ?: '정보 없음'}">메뉴명</h5>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="text-muted small mb-1">총 결제금액</p>
@@ -62,21 +62,21 @@
             </div>
 
             <div class="d-grid gap-2 border-top pt-4">
-                <button th:if="${order['roomStatus'] == 'ACCEPTED'}" 
+                <button th:if="${(order['roomStatus'] ?: 'ACCEPTED') == 'ACCEPTED'}" 
                         class="btn btn-success btn-lg fw-bold py-3"
-                        th:onclick="handleStatusUpdate(event, [[${order['roomIdx']}]], 'COOKING')">
+                        th:onclick="handleStatusUpdate(event, [[${order['roomIdx'] ?: 0}]], 'COOKING')">
                     <i class="bi bi-play-fill me-1"></i> 조리 시작 (유저에게 알림)
                 </button>
                 
                 <button th:if="${order['roomStatus'] == 'COOKING'}" 
                         class="btn btn-primary btn-lg fw-bold py-3"
-                        th:onclick="handleStatusUpdate(event, [[${order['roomIdx']}]], 'DELIVERING')">
+                        th:onclick="handleStatusUpdate(event, [[${order['roomIdx'] ?: 0}]], 'DELIVERING')">
                     <i class="bi bi-truck me-1"></i> 배달 시작 (라이더 호출)
                 </button>
                 
                 <button th:if="${order['roomStatus'] == 'DELIVERING'}" 
                         class="btn btn-dark btn-lg fw-bold py-3"
-                        th:onclick="handleStatusUpdate(event, [[${order['roomIdx']}]], 'COMPLETED')">
+                        th:onclick="handleStatusUpdate(event, [[${order['roomIdx'] ?: 0}]], 'COMPLETED')">
                     <i class="bi bi-check-all me-1"></i> 배달 완료 처리
                 </button>
                 
@@ -91,34 +91,53 @@
 <th:block layout:fragment="script">
 <script th:inline="javascript">
     /**
-     *상태 업데이트 로직 (AJAX)
+     * 상태 업데이트 로직 (AJAX/Fetch)
      */
     async function handleStatusUpdate(event, roomIdx, nextStatus) {
-        if(!roomIdx) return;
+        if(!roomIdx || roomIdx === 0) {
+            alert("유효하지 않은 주문 정보입니다.");
+            return;
+        }
+
         const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        
+        if(!confirm(`상태를 [${nextStatus}]로 변경하시겠습니까?`)) return;
+
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> 처리 중...';
 
         try {
-            // [동기화] /owner/status_update 매핑 주소 및 파라미터 키 유지
-            const result = await moeatsFetch('/owner/status_update', { 
-                roomIdx: roomIdx, 
-                roomStatus: nextStatus 
+            // common.js 등에 정의된 moeatsFetch가 없다면 기본 fetch를 사용하도록 구성
+            const response = await fetch('/owner/status_update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    roomIdx: roomIdx, 
+                    roomStatus: nextStatus 
+                })
             });
+            
+            const result = await response.json();
+
             if(result.success) {
                 if(nextStatus === 'COMPLETED') {
+                    alert("배달이 완료되었습니다.");
                     window.location.href = '/owner/dashboard';
                 } else {
+                    // 페이지 새로고침을 통해 컨트롤러의 변경된 가상 데이터 반영
                     location.reload();
                 }
             } else {
                 alert("상태 변경에 실패했습니다.");
                 btn.disabled = false;
-                btn.innerHTML = btn.dataset.originalText || '다시 시도';
+                btn.innerHTML = originalHtml;
             }
         } catch(e) {
-            console.error(e);
+            console.error("Error:", e);
+            alert("통신 중 오류가 발생했습니다.");
             btn.disabled = false;
+            btn.innerHTML = originalHtml;
         }
     }
 </script>

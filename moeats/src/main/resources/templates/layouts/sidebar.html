@@ -4,11 +4,18 @@
 
 <div th:fragment="ownerSidebar" id="moeats-sidebar-fragment" class="d-flex flex-column h-100">
 
-    <div class="flex-grow-1">
+    <div class="flex-grow-1" style="position: relative; z-index: 1050;">
         <div class="mb-2">
             <a th:href="@{/owner/dashboard}" class="nav-capsule" th:classappend="${menu == 'dash'} ? 'active'">
                 <i class="bi bi-grid-1x2-fill"></i>
                 <span class="menu-text">실시간 주문 현황</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a th:href="@{/owner/order/detail}" class="nav-capsule" th:classappend="${menu == 'order_detail'} ? 'active'">
+                <i class="bi bi-search"></i>
+                <span class="menu-text">주문 상세 관리</span>
             </a>
         </div>
 
@@ -69,8 +76,15 @@
 
         <div class="mb-2">
             <a th:href="@{/owner/support/notice}" class="nav-capsule" th:classappend="${menu == 'notice'} ? 'active'">
-                <i class="bi bi-megaphone"></i>
-                <span class="menu-text">사업자 이용 가이드</span>
+                <i class="bi bi-exclamation-triangle"></i>
+                <span class="menu-text">등록된 매장이 없음</span>
+            </a>
+        </div>
+
+        <div class="mb-2">
+            <a href="/menu/register" class="nav-capsule" th:classappend="${menu == 'menu_none'} ? 'active'">
+                <i class="bi bi-patch-question"></i>
+                <span class="menu-text">등록된 메뉴 없음</span>
             </a>
         </div>
 
@@ -78,9 +92,13 @@
 </div>
 
 <style>
-    /* [스타일 유지: 디자인팀 요구사항 반영] */
+    /* [기존 고장 방지 스타일 유지] */
+    #moeats-sidebar-fragment {
+        pointer-events: auto !important;
+    }
+
     #moeats-sidebar-fragment .nav-capsule {
-        display: flex;
+        display: flex !important;
         align-items: center;
         padding: 14px 20px;
         border-radius: 12px;
@@ -88,14 +106,21 @@
         transition: all 0.2s ease-in-out;
         margin: 0 15px 6px 15px;
         border: 1px solid transparent;
-        cursor: pointer; /* 클릭 가능하도록 커서 추가 */
+        cursor: pointer !important;
+        position: relative;
+        z-index: 1100 !important; 
+    }
+
+    #moeats-sidebar-fragment .nav-capsule i,
+    #moeats-sidebar-fragment .nav-capsule span {
+        pointer-events: none; 
+        user-select: none;
     }
 
     #moeats-sidebar-fragment .nav-capsule span {
         color: #FFFFFF !important;
         font-size: 1.05rem;
         font-weight: 600;
-        letter-spacing: 0.3px;
     }
 
     #moeats-sidebar-fragment .nav-capsule i {
@@ -105,7 +130,7 @@
     }
 
     #moeats-sidebar-fragment .nav-capsule:hover {
-        background-color: rgba(255, 128, 0, 0.15) !important;
+        background-color: rgba(255, 128, 0, 0.2) !important;
         transform: translateX(5px);
     }
 
@@ -117,7 +142,6 @@
     #moeats-sidebar-fragment .nav-capsule.active span,
     #moeats-sidebar-fragment .nav-capsule.active i {
         color: #ffffff !important;
-        font-weight: 700;
     }
 
     #moeats-sidebar-fragment .menu-text {

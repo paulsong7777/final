@@ -15,19 +15,19 @@
                 <h3 class="fw-bold mb-0 text-navy">메뉴 정보 수정</h3>
             </div>
 
-            <form id="menuEditForm" enctype="multipart/form-data" onsubmit="return false;">
+            <form id="menuEditForm" enctype="multipart/form-data" onsubmit="return false;" novalidate>
                 
                 <input type="hidden" name="menuIdx" th:value="${menuVo['menuIdx'] ?: 0}">
 
                 <div class="mb-4 text-center">
                     <label class="form-label d-block small fw-bold text-secondary text-uppercase text-start">메뉴 사진</label>
                     <input type="file" id="menuFile" name="menuFile" accept="image/*" class="d-none" onchange="previewImage(this)">
-                    <div class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden shadow-none" 
+                    <div id="uploadArea" class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden shadow-none" 
                          onclick="document.getElementById('menuFile').click()"
                          style="width: 100%; height: 250px; border: 2px dashed #ddd; cursor: pointer;">
                         
                         <img id="imagePreview" 
-                             th:src="${menuVo['menuImg'] ?: 'https://via.placeholder.com/500/FF8000/FFFFFF?text=No+Image'}" 
+                             th:src="${menuVo['menuImg'] != null and menuVo['menuImg'] != '' ? menuVo['menuImg'] : 'https://via.placeholder.com/500/FF8000/FFFFFF?text=No+Image'}" 
                              class="w-100 h-100" style="object-fit: cover; display: block;">
                         
                         <div id="uploadOverlay" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 opacity-0 transition-all" 
@@ -38,12 +38,12 @@
                             </span>
                         </div>
                     </div>
-                    <div class="form-text mt-2 small text-muted">이미지를 클릭하면 사진을 변경할 수 있습니다.</div>
+                    <div class="form-text mt-2 small text-muted text-start">이미지를 클릭하면 사진을 변경할 수 있습니다.</div>
                 </div>
 
                 <div class="mb-4" th:with="safeCats=${categoryList ?: {}}">
                     <label class="form-label small fw-bold text-secondary text-uppercase">카테고리 선택</label>
-                    <select name="categoryIdx" class="form-select border-0 bg-light py-3 shadow-none rounded-3 fw-bold text-navy" required>
+                    <select name="categoryIdx" class="form-select border-0 bg-light py-3 shadow-none rounded-3 fw-bold text-navy">
                         <option value="">카테고리를 선택하세요</option>
                         <option th:each="cat : ${safeCats}" 
                                 th:value="${cat['categoryIdx'] ?: 0}" 
@@ -55,14 +55,14 @@
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 이름</label>
                     <input type="text" name="menuName" class="form-control border-0 bg-light py-3 shadow-none rounded-3 fw-bold" 
-                           th:value="${menuVo['menuName'] ?: ''}" required placeholder="메뉴 이름을 입력하세요">
+                           th:value="${menuVo['menuName'] ?: ''}" placeholder="메뉴 이름을 입력하세요">
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">판매 가격</label>
                     <div class="input-group">
                         <input type="number" name="menuPrice" class="form-control border-0 bg-light py-3 shadow-none text-end rounded-start-3 fw-bold" 
-                               th:value="${menuVo['menuPrice'] ?: 0}" required min="0">
+                               th:value="${menuVo['menuPrice'] ?: 0}">
                         <span class="input-group-text border-0 bg-light text-navy fw-bold rounded-end-3">원</span>
                     </div>
                 </div>
@@ -80,9 +80,9 @@
                                 onclick="location.href='/owner/menu/management'">취소</button>
                     </div>
                     <div class="col-8">
-                        <button type="button" id="submitBtn" class="btn btn-warning text-white fw-bold w-100 py-3 rounded-pill fs-5 shadow-sm"
+                        <button type="button" class="btn btn-warning text-white fw-bold w-100 py-3 rounded-pill fs-5 shadow-sm"
                                 style="background-color: var(--moeats-orange); border: none;"
-                                onclick="handleEditSubmit()">
+                                onclick="showEditConfirm()">
                             수정 완료
                         </button>
                     </div>
@@ -92,85 +92,118 @@
     </div>
 </div>
 
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-body text-center p-4">
+                <div class="mb-3">
+                    <i class="bi bi-pencil-square" style="font-size: 3rem; color: var(--moeats-orange);"></i>
+                </div>
+                <h5 class="fw-bold mb-2">정보 수정</h5>
+                <p class="text-muted small mb-4">입력하신 정보로 메뉴를<br>수정하시겠습니까?</p>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light w-50 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">취소</button>
+                    <button type="button" id="submitBtn" class="btn btn-warning text-white w-50 py-2 rounded-3 fw-bold" 
+                            style="background-color: var(--moeats-orange); border:none;" onclick="handleEditSubmit()">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <th:block layout:fragment="script">
     <script th:inline="javascript">
-        /**
-         * [AJAX] Fetch API 비동기 멀티파트 수정 처리
-         */
-        async function handleEditSubmit() {
-            const form = document.getElementById('menuEditForm');
+        let editModal;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            editModal = new bootstrap.Modal(document.getElementById('editModal'));
             
+            // 이미지 영역 마우스 호버 효과
+            const uploadArea = document.getElementById('uploadArea');
+            const overlay = document.getElementById('uploadOverlay');
+            if(uploadArea && overlay) {
+                uploadArea.onmouseenter = () => { overlay.style.opacity = '1'; };
+                uploadArea.onmouseleave = () => { overlay.style.opacity = '0'; };
+            }
+        });
+
+        /**
+         * [1단계] 유효성 검사 및 모달 노출
+         */
+        function showEditConfirm() {
+            const form = document.getElementById('menuEditForm');
             const categoryIdx = form.querySelector('[name="categoryIdx"]').value;
             const menuName = form.querySelector('[name="menuName"]').value.trim();
             const menuPrice = form.querySelector('[name="menuPrice"]').value;
 
-            if(!categoryIdx) { alert("카테고리를 선택해 주세요."); return; }
-            if(!menuName) { alert("메뉴 이름을 입력해 주세요."); return; }
-            if(!menuPrice) { alert("가격을 입력해 주세요."); return; }
+            // [전역 showToast 사용]
+            if(!categoryIdx) { showToast("카테고리를 선택해 주세요.", "danger"); return; }
+            if(!menuName) { showToast("메뉴 이름을 입력해 주세요.", "danger"); return; }
+            if(!menuPrice) { showToast("가격을 입력해 주세요.", "danger"); return; }
 
-            if(!confirm("변경 사항을 저장하시겠습니까?")) return;
+            editModal.show();
+        }
 
+        /**
+         * [2단계] AJAX 비동기 수정 처리
+         */
+        async function handleEditSubmit() {
+            const form = document.getElementById('menuEditForm');
             const submitBtn = document.getElementById('submitBtn');
-            const originalText = submitBtn.innerText;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>수정 중...';
+            const formData = new FormData(form);
 
+            // [Security] CSRF
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
             
-            const formData = new FormData(form);
+            // UI 상태 변경
+            editModal.hide();
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
             try {
+                // [Rule] 변경은 POST 고정
                 const response = await fetch('/owner/menu/edit_proc', {
                     method: 'POST',
-                    headers: { 
-                        ...(header && { [header]: token })
-                    },
+                    headers: { ...(header && { [header]: token }) },
                     body: formData
                 });
 
+                // [테스트 보정: moeatsFetch 로직 차용 가능하나 개별 fetch 사용 시]
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 const result = await response.json();
 
                 if (result.success) {
-                    alert("성공적으로 수정되었습니다.");
-                    location.href = '/owner/menu/management';
+                    showToast("메뉴 정보가 수정되었습니다.", "success");
+                    setTimeout(() => location.href = '/owner/menu/management', 1000);
                 } else {
-                    alert(result.message || "수정에 실패했습니다.");
-                    resetSubmitBtn(submitBtn, originalText);
+                    showToast(result.message || "수정 실패", "danger");
+                    resetSubmitBtn(submitBtn);
                 }
-
             } catch (error) {
                 console.error("[Critical Edit Error]:", error);
-                alert("서버 통신 중 오류가 발생했습니다.");
-                resetSubmitBtn(submitBtn, originalText);
+                showToast("통신 중 오류가 발생했습니다.", "danger");
+                resetSubmitBtn(submitBtn);
             }
         }
 
-        function resetSubmitBtn(btn, text) {
+        function resetSubmitBtn(btn) {
             btn.disabled = false;
-            btn.innerText = text;
+            btn.innerText = "확인";
         }
 
         function previewImage(input) {
             const preview = document.getElementById('imagePreview');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = e => { preview.src = e.target.result; };
+                reader.onload = e => { 
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
                 reader.readAsDataURL(input.files[0]);
             }
         }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const uploadArea = document.querySelector('.card-body div[onclick]');
-            const overlay = document.getElementById('uploadOverlay');
-            
-            if(uploadArea && overlay) {
-                uploadArea.onmouseenter = () => { overlay.style.opacity = '1'; };
-                uploadArea.onmouseleave = () => { overlay.style.opacity = '0'; };
-            }
-        });
     </script>
 </th:block>
 </html>

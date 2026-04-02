@@ -5,26 +5,32 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.*;
+
 import java.time.LocalDateTime;
+import java.util.*;
 
 @Controller
 @RequestMapping("/owner")
 public class ViewOwnerController {
 
-	// 데이터 유무 테스트 스위치 - 기존회원 로그인시 가상 데이터 false, 신규회원(실제DB연동) true 
-	// db 로 연동 시 true 로 바꿔서 사용해야 함.
-    private static boolean IS_EMPTY_DATA_TEST = false; 
-    // private static boolean IS_EMPTY_DATA_TEST = true; 
+    /* ==========================================================
+     * [SECTION 0] 설정 및 가상 데이터 저장소
+     * ========================================================== */
+    
+    // [확인] 데이터 유무 테스트 스위치 (false: 데이터 있음 / true: 빈 데이터)
+    private static final boolean IS_EMPTY_DATA_TEST = false; 
 
-    private static List<Map<String, Object>> orderList = new ArrayList<>();
-    private static List<Map<String, Object>> menuList = new ArrayList<>();
-    private static List<Map<String, Object>> categoryList = new ArrayList<>();
-    private static List<Map<String, Object>> reviewList = new ArrayList<>();
-    private static Map<String, Object> storeData = new HashMap<>();
+    private static final List<Map<String, Object>> orderList = new ArrayList<>();
+    private static final List<Map<String, Object>> menuList = new ArrayList<>();
+    private static final List<Map<String, Object>> categoryList = new ArrayList<>();
+    private static final List<Map<String, Object>> reviewList = new ArrayList<>();
+    private static final Map<String, Object> storeData = new HashMap<>();
 
     static { initMockData(); }
 
+    /**
+     * 가상 데이터 초기 세팅 (반복 테스트를 위해 상시 호출 가능)
+     */
     private static void initMockData() {
         // [1] Store Data
         storeData.clear();
@@ -33,18 +39,16 @@ public class ViewOwnerController {
         storeData.put("storeDescription", "모이면 더 맛있는 Mo-eats");
         storeData.put("storePhone", "010-1234-5678");
         storeData.put("minimumOrderAmount", 15000);
-        storeData.put("latitude", 35.8714);
-        storeData.put("longitude", 128.6014);
 
         // [2] Menu Data
         menuList.clear();
         menuList.add(createMenu(101, "황금올리브 치킨", 20000, "치킨", "AVAILABLE", "바삭함의 대명사", 1, 1));
 
-        // [3] Order Data
+        // [3] Order Data (무한 반복 테스트를 위해 ACCEPTED 상태로 초기화)
         orderList.clear();
-        orderList.add(createOrder(2001, "ORD-2026-001", "17:30", "황금올리브 치킨", 20000, "PENDING", "대구 중구 중앙대로 101"));
+        orderList.add(createOrder(2001, "ORD-2026-001", "17:30", "황금올리브 치킨", 20000, "ACCEPTED", "대구 중구 중앙대로 101"));
         orderList.add(createOrder(2002, "ORD-2026-002", "17:45", "양념치킨 세트", 22000, "ACCEPTED", "대구 수성구 범어동 202"));
-        orderList.add(createOrder(2003, "ORD-2026-003", "18:10", "치즈볼 & 콜라", 8500, "COOKING", "대구 남구 봉덕동 303"));
+        orderList.add(createOrder(2003, "ORD-2026-003", "18:10", "치즈볼 & 콜라", 8500, "ACCEPTED", "대구 남구 봉덕동 303"));
 
         // [4] Category Data
         categoryList.clear();
@@ -62,7 +66,9 @@ public class ViewOwnerController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        initMockData(); //  새로고침 시 데이터 초기화
+        // [반복 테스트 기능] 대시보드 진입 시마다 데이터를 초기화하여 무한 테스트 환경 제공
+        initMockData(); 
+
         model.addAttribute("orderList", IS_EMPTY_DATA_TEST ? new ArrayList<>() : orderList);
         model.addAttribute("storeVo", IS_EMPTY_DATA_TEST ? new HashMap<>() : storeData);
         model.addAttribute("menu", "dash");
@@ -70,10 +76,15 @@ public class ViewOwnerController {
     }
 
     @GetMapping("/order/detail")
-    public String orderDetail(@RequestParam("roomIdx") String roomIdx, Model model) {
+    public String orderDetail(@RequestParam(value="roomIdx", required = false) String roomIdx, Model model) {
+        // 상세 페이지에서 바로 새로고침하여 테스트할 경우를 대비해 데이터가 없으면 초기화
+        if (orderList.isEmpty()) initMockData();
+
         Map<String, Object> target = orderList.stream()
                 .filter(o -> String.valueOf(o.get("roomIdx")).equals(roomIdx))
-                .findFirst().orElse(orderList.isEmpty() ? new HashMap<>() : orderList.get(0));
+                .findFirst()
+                .orElse(!orderList.isEmpty() ? orderList.get(0) : new HashMap<>());
+        
         model.addAttribute("order", IS_EMPTY_DATA_TEST ? new HashMap<>() : target);
         model.addAttribute("menu", "dash");
         return "owner/owner-order-detail";
@@ -81,7 +92,6 @@ public class ViewOwnerController {
 
     @GetMapping("/order/history")
     public String orderHistory(Model model) {
-        initMockData(); // 새로고침 시 데이터 초기화
         model.addAttribute("orderList", IS_EMPTY_DATA_TEST ? new ArrayList<>() : orderList);
         model.addAttribute("menu", "history");
         return "owner/owner-order-list";
@@ -102,10 +112,11 @@ public class ViewOwnerController {
     }
 
     @GetMapping("/menu/edit")
-    public String menuEdit(@RequestParam("menuIdx") String menuIdx, Model model) {
+    public String menuEdit(@RequestParam(value="menuIdx", defaultValue="101") String menuIdx, Model model) {
         Map<String, Object> target = menuList.stream()
                 .filter(m -> String.valueOf(m.get("menuIdx")).equals(menuIdx))
                 .findFirst().orElse(menuList.isEmpty() ? new HashMap<>() : menuList.get(0));
+
         model.addAttribute("menuVo", IS_EMPTY_DATA_TEST ? new HashMap<>() : target);
         model.addAttribute("categoryList", IS_EMPTY_DATA_TEST ? new ArrayList<>() : categoryList);
         model.addAttribute("menu", "menu_list");
@@ -133,9 +144,17 @@ public class ViewOwnerController {
         return "owner/review-management";
     }
 
-    @GetMapping("/sales/report") public String salesReport(Model model) { model.addAttribute("menu", "report"); return "owner/sales-report"; }
-    @GetMapping("/support/notice") public String supportNotice(Model model) { model.addAttribute("menu", "notice"); return "owner/owner-dashboard"; }
-    @GetMapping("/settlement/info") public String settlementInfo(Model model) { model.addAttribute("menu", "settle"); return "owner/owner-dashboard"; }
+    @GetMapping("/sales/report") 
+    public String salesReport(Model model) { 
+        model.addAttribute("menu", "report"); 
+        return "owner/sales-report"; 
+    }
+
+    @GetMapping("/support/notice") 
+    public String supportNotice(Model model) { 
+        model.addAttribute("menu", "notice"); 
+        return "owner/owner-dashboard"; 
+    }
 
     /* ==========================================================
      * [SECTION 2] 비동기 처리 API (POST Mapping)
@@ -146,37 +165,25 @@ public class ViewOwnerController {
     public ResponseEntity<Map<String, Object>> updateStatus(@RequestBody Map<String, Object> params) {
         String targetIdx = String.valueOf(params.get("roomIdx"));
         String nextStatus = String.valueOf(params.get("roomStatus"));
-        orderList.forEach(o -> { if(String.valueOf(o.get("roomIdx")).equals(targetIdx)) o.put("roomStatus", nextStatus); });
-        return ResponseEntity.ok(Collections.singletonMap("success", true));
-    }
-
-    @PostMapping("/store/update_proc")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> storeUpdateProc(@RequestParam("storeName") String storeName, @RequestParam(value = "storeImg", required = false) MultipartFile storeImg) {
-        storeData.put("storeName", storeName);
-        return ResponseEntity.ok(Collections.singletonMap("success", true));
-    }
-
-    @PostMapping("/category/insert_proc")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> categoryInsertProc(@RequestBody Map<String, Object> params) {
-        String name = String.valueOf(params.get("categoryName"));
-        categoryList.add(createMap("categoryIdx", categoryList.size() + 1, "categoryName", name, "menuCount", 0));
-        return ResponseEntity.ok(Collections.singletonMap("success", true));
-    }
-
-    @PostMapping("/category/delete")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> categoryDelete(@RequestBody Map<String, Object> params) {
-        String targetIdx = String.valueOf(params.get("categoryIdx"));
-        categoryList.removeIf(c -> String.valueOf(c.get("categoryIdx")).equals(targetIdx));
-        return ResponseEntity.ok(Collections.singletonMap("success", true));
+        
+        boolean isUpdated = false;
+        for (Map<String, Object> order : orderList) {
+            if (String.valueOf(order.get("roomIdx")).equals(targetIdx)) {
+                order.put("roomStatus", nextStatus);
+                isUpdated = true;
+                break;
+            }
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", isUpdated);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/menu/register_proc")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> menuRegisterProc(@RequestParam("categoryIdx") int catIdx, @RequestParam("menuName") String name, @RequestParam("menuPrice") int price, @RequestParam(value="menuDescription", required=false) String desc, @RequestParam(value="menuFile", required=false) MultipartFile file) {
-        menuList.add(createMenu(menuList.size() + 101, name, price, "카테고리", "HIDDEN", desc, catIdx, menuList.size() + 1));
+        menuList.add(createMenu(menuList.size() + 101, name, price, "카테고리", "AVAILABLE", desc, catIdx, menuList.size() + 1));
         return ResponseEntity.ok(Collections.singletonMap("success", true));
     }
 
@@ -208,9 +215,7 @@ public class ViewOwnerController {
                 break;
             }
         }
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", updated);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(Collections.singletonMap("success", updated));
     }
 
     /* ==========================================================
@@ -247,6 +252,23 @@ public class ViewOwnerController {
         for (int i = 0; i < args.length; i += 2) m.put(args[i].toString(), args[i + 1]);
         return m;
     }
-    
-    
+}
+
+/**
+ * 테스트용 독립 컨트롤러 (클래스 유지)
+ */
+@Controller
+class TestMenuController {
+    @GetMapping("/menu/register_backup")
+    public String viewBackupPage(Model model) {
+        List<Map<String, Object>> mockCats = new ArrayList<>();
+        Map<String, Object> cat1 = new HashMap<>();
+        cat1.put("categoryIdx", 1);
+        cat1.put("categoryName", "치킨(테스트)");
+        mockCats.add(cat1);
+
+        model.addAttribute("categoryList", mockCats);
+        model.addAttribute("menu", "menu_none");
+        return "owner/menu-register"; 
+    }
 }
