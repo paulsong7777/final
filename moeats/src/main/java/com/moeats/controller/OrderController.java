@@ -25,6 +25,7 @@ import com.moeats.services.MemberService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.PaymentService;
 import com.moeats.services.sse.SSEService;
+import com.moeats.timer.OrderRoomTimer;
 
 
 @Controller
@@ -40,6 +41,8 @@ public class OrderController {
 	
 	@Autowired
 	SSEService sseService;
+	@Autowired
+	OrderRoomTimer orderRoomTimer;
 	
 	@GetMapping("/orders/{order_idx}")
 	public String orderDetail(
@@ -147,10 +150,12 @@ public class OrderController {
  			}
  			paymentShare = paymentService.findShareByIdx(paymentShareIdx);
  			paymentService.paidByRepresentative(orderIdx,paymentShare.getPaidAt());
+ 			orderRoomTimer.stop(orderIdx);
  			sseService.completeOrder(orderIdx);
  			return String.format("redirect:/orders/%d/status",orderIdx);
  		}
  		if( paymentService.findPaymentPending(orderIdx).isEmpty() ){
+ 			orderRoomTimer.stop(orderIdx);
  			sseService.completeOrder(orderIdx);
  			return String.format("redirect:/orders/%d/status",orderIdx);
  		}
