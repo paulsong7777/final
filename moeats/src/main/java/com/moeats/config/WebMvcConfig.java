@@ -26,7 +26,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/member/me/**",     	// 마이페이지 관련 전부
                         "/members/me/**",    	// 배송지 관리 등 전부
                         "/member/dashboard", // 사업자 회원일 경우 로그인 필요
-                        "/owner/**",         		// 사장님 기능 전부 (메뉴 사진, 가게 관리 등)
+                        "/owners/**",         		// 사장님 기능 전부 (메뉴 사진, 가게 관리 등)
                         "/rooms/**"				// 장바구니, 그룹룸 등 
                 )
                 // 🟢 2. 예외적으로 문지기가 그냥 통과시켜줄 URL 주소들을 지정합니다. (필요시)
@@ -34,7 +34,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 		"/", "/main",
                         "/login", 
                         "/members/**", 
-                        "/store/**",     // 가게 조회 (비회원 가능)
+                        "/stores/**",     // 가게 조회 (비회원 가능)
                         "/css/**", "/js/**", "/images/**" // 정적 리소스는 무조건 통과!
                 );
         

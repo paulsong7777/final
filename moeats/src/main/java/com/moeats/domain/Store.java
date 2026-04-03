@@ -29,4 +29,6 @@ public class Store {
 	Timestamp updatedAt;			// 수정 시각
 	Double longitude;				// 경도
 	Double latitude;					//	위도
+	
+	int deliveryRadius;				// 배달 가능 반경
 }

@@ -26,12 +26,12 @@ public class MemberController {
 	
 	// ===== 상수 정의 ======
 	private static final String ROLE_OWNER = "OWNER";
-	private static final String ROLE_CUSTOMER = "CUSTOMER";
+	private static final String ROLE_USER = "USER";
 	
 	
 	
 	// 이메일 중복 확인 true → 사용 가능 (중복 없음)	false → 이미 존재
-	@GetMapping("/member/email-check")
+	@GetMapping("/members/email-check")
 	@ResponseBody
 	public boolean checkEmail(@RequestParam("memberEmail") String memberEmail) {
 		return memberService.getMemberFromEmail(memberEmail) == null;
@@ -39,7 +39,7 @@ public class MemberController {
 	
 	
 	// 회원 수정
-	@PostMapping("/member/me/edit")
+	@PostMapping("/members/me/edit")
 	public String updateMember(Member member,
 			Model model,
 			RedirectAttributes ra,
@@ -57,13 +57,13 @@ public class MemberController {
 		member.setMemberIdx(loginUser.getMemberIdx());
 		memberService.updateMember(member);
 		
-		return "redirect:/member/me";
+		return "redirect:/members/me";
 	}
 	
 	
 	
 	// 회원 수정 폼 요청
-	@GetMapping("/member/me/edit")
+	@GetMapping("/members/me/edit")
 	public String updateMemberForm(@SessionAttribute(name="member", required=false) Member member) {
 		if(member==null) {
 			return "redirect:/login";
@@ -73,7 +73,7 @@ public class MemberController {
 	}
 	
 	// 마이페이지 띄우기 폼
-	@GetMapping("/member/me")
+	@GetMapping("/members/me")
 	public String myPage(@SessionAttribute(name="member", required=false) Member member) {
 
 		return "views/members/member-profile";
@@ -142,7 +142,7 @@ public class MemberController {
 	}
 	
 	// 회원가입	- 일반/사업자 분기
-	@PostMapping("/member")
+	@PostMapping("/members")
 	public String insertMember(Member member, RedirectAttributes ra) {
 
 	    try {
@@ -156,7 +156,7 @@ public class MemberController {
 	}
 	
 	// 통합 대시보드 분기(역할분기 일반/사업자)
-	@GetMapping("/member/dashboard")
+	@GetMapping("/members/dashboard")
 	public String dashboard(@SessionAttribute("member") Member member) {
 
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
@@ -174,10 +174,10 @@ public class MemberController {
 	}
 
 	// 회원가입 폼 - 일반
-	@GetMapping("/members/new-customer")
-	public String insertMemberCustomer() {
+	@GetMapping("/members/new-user")
+	public String insertMemberUSER() {
 		
-		return "views/members/auth-signup-customer";
+		return "views/members/auth-signup-user";
 	}
 
 	// 회원가입 유형 선택 폼(일반/사업자)

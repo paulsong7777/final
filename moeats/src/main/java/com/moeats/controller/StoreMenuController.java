@@ -30,7 +30,7 @@ public class StoreMenuController {
      */
 
     // 메뉴 리스트 조회
-    @GetMapping("/store/{storeIdx}/menu")
+    @GetMapping("/stores/{storeIdx}/menu")
     public String menuListForUser(@PathVariable int storeIdx, Model model) {
 
         List<StoreMenu> menuList = storeMenuService.menuListForUser(storeIdx);
@@ -42,7 +42,7 @@ public class StoreMenuController {
 
 
     // 메뉴 검색
-    @GetMapping("/store/{storeIdx}/menu/search")
+    @GetMapping("/stores/{storeIdx}/menu/search")
     public String searchMenuForUser(
             @PathVariable int storeIdx,
             @RequestParam String keyword,
@@ -64,7 +64,7 @@ public class StoreMenuController {
      */
 
     // 메뉴 관리 화면
-    @GetMapping("/owner/menu")
+    @GetMapping("/owners/menu")
     public String menuListForOwner(HttpSession session, Model model) {
 
         int storeIdx = (int) session.getAttribute("storeIdx"); // 로그인 기반
@@ -78,7 +78,7 @@ public class StoreMenuController {
 
 
     // 메뉴 등록
-    @PostMapping("/owner/menu")
+    @PostMapping("/owners/menu")
     public String insertMenu(StoreMenu storeMenu, HttpSession session) {
 
         int storeIdx = (int) session.getAttribute("storeIdx");
@@ -92,7 +92,7 @@ public class StoreMenuController {
 
 
     // 메뉴 수정
-    @PostMapping("/owner/menu/edit")
+    @PostMapping("/owners/menu/edit")
     public String updateMenu(StoreMenu storeMenu, HttpSession session) {
 
         int storeIdx = (int) session.getAttribute("storeIdx");
@@ -106,7 +106,7 @@ public class StoreMenuController {
 
 
     // 메뉴 상태 변경 (AJAX 추천)
-    @PostMapping("/owner/menu/status")
+    @PostMapping("/owners/menu/status")
     @ResponseBody
     public String updateStatus(
             @RequestParam int menuIdx,

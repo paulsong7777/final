@@ -45,7 +45,9 @@
 	        zip_code = #{zipCode},
 	        delivery_address1 = #{deliveryAddress1},
 	        delivery_address2 = #{deliveryAddress2},
-	        delivery_request = #{deliveryRequest}
+	        delivery_request = #{deliveryRequest},
+   	       	longitude = #{longitude},		
+			latitude	=  #{latitude}
 	     where delivery_address_idx = #{deliveryAddressIdx}
 	     	and member_idx = #{memberIdx}
 	</update>
@@ -61,7 +63,9 @@
 	        zip_code,
 	        delivery_address1,
 	        delivery_address2,
-	        delivery_request
+	        delivery_request,
+	        longitude,		
+			latitude		
 	    ) values (
 	        #{memberIdx},
 	        #{deliveryLabel},
@@ -70,7 +74,9 @@
 	        #{zipCode},
 	        #{deliveryAddress1},
 	        #{deliveryAddress2},
-	        #{deliveryRequest}
+	        #{deliveryRequest},
+	        #{longitude},
+	        #{latitude}
 	    )
 	</insert>
 	

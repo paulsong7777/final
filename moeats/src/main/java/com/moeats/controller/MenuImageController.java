@@ -17,7 +17,7 @@ import com.moeats.domain.MenuImage;
 import com.moeats.service.MenuImageService;
 
 @Controller
-@RequestMapping("/owner")
+@RequestMapping("/owners")
 public class MenuImageController {
 	
 	@Autowired
@@ -57,7 +57,7 @@ public class MenuImageController {
 		
 		// 기존 파일 삭제 + 새 파일 업로드 + DB업데이트
 		
-		return "redirect:/owner/menus/" + menuIdx + "/images";
+		return "redirect:/owners/menus/" + menuIdx + "/images";
 	}
 	// 이미지 수정 폼
 	@GetMapping("/menus/{menuIdx}/images/{menuImageIdx}/edit")
@@ -78,7 +78,7 @@ public class MenuImageController {
 				@RequestParam("file") MultipartFile file) {
 		
 		// 파일업로드 로직 + menuImageService.insertImage()
-		return "redirect:/owner/menus/" + menuIdx + "/images";
+		return "redirect:/owners/menus/" + menuIdx + "/images";
 	}
 	
 	// 이미지 등록 폼

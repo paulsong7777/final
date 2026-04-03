@@ -1,12 +1,16 @@
 package com.moeats.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.moeats.domain.Store;
+import com.moeats.dto.StoreSearchCond;
 import com.moeats.service.StoreService;
 
 @Controller
@@ -15,29 +19,37 @@ public class StoreController {
 	@Autowired
 	private StoreService storeService;
 	
+	// 가게 전체 조회
+	@GetMapping("/stores")
+	@ResponseBody
+	public List<Store> storeList(StoreSearchCond cond, int memberIdx) {
+
+	    return storeService.getStoreList(cond, memberIdx);
+	}
+	
 	// 가게 상태 수정(수정 폼에서 관리 or 내 가게 정보에서 관리)
 	// 활성화, 비활성화 / responseBody 사용?
-	@PostMapping("/owner/store/status")
+	@PostMapping("/owners/store/status")
 	public String updateStatus(@RequestParam("storeIdx") int storeIdx,
 			@RequestParam("ownerMemberIdx") int ownerMemberIdx,
 		    @RequestParam("storeStatus") String storeStatus) {
 		
 		storeService.updateStatus(storeIdx, ownerMemberIdx, storeStatus);
 		
-		return "redirect:/owner/store";
+		return "redirect:/owners/store";
 	}
 	
 	// 가게 정보 수정
-	@PostMapping("/owner/store/edit")
+	@PostMapping("/owners/store/edit")
 	public String updateStore(Store store) {
 		
 		storeService.updateStore(store);
 		
-		return "redirect:/owner/store";
+		return "redirect:/owners/store";
 	}
 	
 	// 가게 정보 수정 폼
-	@GetMapping("/owner/store/edit")
+	@GetMapping("/owners/store/edit")
 	public String updateStore() {
 		
 		
@@ -47,16 +59,16 @@ public class StoreController {
 	
 	
 	// 가게 등록
-	@PostMapping("/owner/store")
+	@PostMapping("/owners/store")
 	public String insertStore(Store store) {
 		
 		storeService.insertStore(store);
 		
-		return "redirect:/owner/store";
+		return "redirect:/owners/store";
 	}
 	
 	// 가게 등록 폼
-	@GetMapping("/owner/store/new")
+	@GetMapping("/owners/store/new")
 	public String insertStore() {
 		
 		return "views/owner/store-create";
@@ -66,7 +78,7 @@ public class StoreController {
 	
 	
 	// 내 가게 정보 폼
-	@GetMapping("/owner/store")
+	@GetMapping("/owners/store")
 	public String myStore() {
 		
 		return "views/owner/store-manage";

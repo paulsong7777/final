@@ -13,7 +13,55 @@
 -->
 <mapper namespace="com.moeats.mapper.StoreMapper">
 	
+<select id="storeList" resultType="Store">
+	SELECT *
+		FROM (
+		    SELECT 
+		        s.*,
+		        (
+		            6371 * ACOS(
+		                COS(RADIANS(#{userLat})) * COS(RADIANS(s.latitude)) *
+		                COS(RADIANS(s.longitude) - RADIANS(#{userLng})) +
+		                SIN(RADIANS(#{userLat})) * SIN(RADIANS(s.latitude))
+		            )
+		        ) AS distance
+		    FROM store s
+		
+		    <where>
+		
+		        <if test="userLat != null and userLng != null">
+		            AND s.latitude BETWEEN (#{userLat} - 0.05) AND (#{userLat} + 0.05)
+		            AND s.longitude BETWEEN (#{userLng} - 0.05) AND (#{userLng} + 0.05)
+		        </if>
+		
+		        <if test="category != null and category != ''">
+		            AND s.store_category = #{category}
+		        </if>
+		
+		        <if test="keyword != null and keyword != ''">
+		            AND (
+		                s.store_name LIKE CONCAT('%', #{keyword}, '%')
+		                OR EXISTS (
+		                    SELECT 1
+		                    FROM store_menu m
+		                    WHERE m.store_idx = s.store_idx
+		                    AND m.menu_name LIKE CONCAT('%', #{keyword}, '%')
+		                )
+		            )
+		        </if>
+		
+		    </where>
+		) t
+		
+		<if test="userLat != null and userLng != null">
+		    WHERE t.distance <![CDATA[<=]]> 4			<!-- 4km 고정 -->
+		    <!-- WHERE t.distance <![CDATA[<=]]> t.delivery_radius  동적 반경 할거면 이거로 -->
+		</if>
 	
+	ORDER BY t.distance ASC
+</select>
+	
+	<!-- 가게 번호와 점주 번호가 일치하는 가게 찾기 -->
 	<select id="findByStoreIdxAndOwner" resultType="Store">
 	    select * from store
 	    where store_idx = #{storeIdx} and owner_member_idx = #{ownerMemberIdx}
