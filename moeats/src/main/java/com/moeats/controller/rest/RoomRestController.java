@@ -15,6 +15,6 @@ public class RoomRestController {
 	SSEService sseService;
 	@GetMapping("/rooms/code/{room_code}/subscribe")
 	public SseEmitter subscribeRoom(@RequestAttribute("orderRoom") OrderRoom orderRoom) {
-		return sseService.join(orderRoom.getRoomIdx());
+		return sseService.joinRoom(orderRoom.getRoomIdx());
 	}
 }

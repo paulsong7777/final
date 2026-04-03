@@ -25,15 +25,15 @@ public class OrderRoomTimer {
 		scheduler.setPoolSize(50);
 		scheduler.initialize();
 	}
-	public void start(int roomIdx,Timestamp expire) {
-		stop(roomIdx);
+	public void start(int orderIdx,Timestamp expire) {
+		stop(orderIdx);
 		ScheduledFuture<?> timer = scheduler.schedule(() -> {
-			sseService.send(roomIdx,SseEmitter.event().name("expired"));
+			sseService.expireOrder(orderIdx);
 		}, expire.toInstant());
-		timers.put(roomIdx, timer);
+		timers.put(orderIdx, timer);
 	}
-	public void stop(int roomIdx) {
-		ScheduledFuture<?> timer = timers.remove(roomIdx);
+	public void stop(int orderIdx) {
+		ScheduledFuture<?> timer = timers.remove(orderIdx);
 		if( timer!=null && !timer.isDone() ) timer.cancel(false);
 	}
 }

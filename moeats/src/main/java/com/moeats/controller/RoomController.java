@@ -179,8 +179,8 @@ public class RoomController {
 		if( orderRoomService.cancel(orderRoom.getRoomIdx())==0 ) {
 			ra.addFlashAttribute("error", "방을 삭제하는 중 오류가 발생했습니다");
 			return "redirect:/rooms/code/"+roomCode;
-		}else
-			orderRoomTimer.stop(orderRoom.getRoomIdx());
+		}
+		sseService.cancelRoom(orderRoom.getRoomIdx());
 		return "redirect:/main";
 	}
 	@GetMapping("/rooms/code/{room_code}/cart")
@@ -295,7 +295,7 @@ public class RoomController {
 			//e.printStackTrace();
 		}
 		GroupOrder groupOrder = (GroupOrder) res.get("groupOrder");
-		orderRoomTimer.start(orderRoom.getRoomIdx(),orderRoom.getExpiresAt());
+		orderRoomTimer.start(groupOrder.getOrderIdx(),orderRoom.getExpiresAt());
 		sseService.beginOrder(orderRoom.getRoomIdx());
 		return String.format("redirect:/orders/%s/payment",groupOrder.getOrderIdx());
 	}
