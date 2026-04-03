@@ -58,5 +58,8 @@ $(function () {
     $('#btnTestGoDetail').on('click', function () {
         location.href = "room-detail.html";
     });
+	$('#btnTestGoPayRepr').on('click', function () {
+        location.href = "payment-repr-test.html";
+    });
 
 });

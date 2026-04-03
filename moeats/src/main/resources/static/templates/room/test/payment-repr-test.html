@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+
+<!--
+실전: th:replace로 공통 head 삽입
+<head th:replace="~{fragments/header :: headMeta('결제 진행')}"></head>
+
+payment.html
+individual / representitive 분리 (매일1회? 클로드 리젠)
+결제모드 분리는 room-dtail에서는 할 필요 없고, 결제모드로 진입하면 그때 나누면 된다
+payment-representative.html 모아결제창 생성
+payment-individual.html 개인결제창 생성 
+payment-wait.html 결제완료자 대기석 생성
+
+order-status.html을 어디에서 이을지 논의
+html대신에 db가 가지고 있을지? 별도의 폼을 보여줄지?
+요구사항정의서에 의하면 "order_status 전이 규칙과 사용자·점주 공통 조회 API 구현" 이라 하므로 별도 폼 필요
+
+order-complete.html 주문완료페이지 생성
+order-list 전체주문내역 생성 혹은 complete 페이지에 삽입
+
+api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로 
+경고문만 띄우고 room-detail.html로 보내면 될 것 같다. 이때 파라미터 분석은 별도로 기재한다
+
+
+
+
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/main_layout}">
+
+-->
+
+<html> <!-- 임시용 -->
+
+<!-- <div layout:fragment="content"> -->
+<div class="content">
+    <h2>대표 결제 (모아결제)</h2>
+    <p>방장님, 팀원들의 전체 주문 금액을 한 번에 결제해 주세요.</p>
+
+    <section id="dummyPaymentSection">
+        <h3>결제 정보 (더미)</h3>
+        <table border="1" style="width:100%; text-align:left;">
+            <tr><th>결제 방식</th><td>대표결제 (모아결제)</td></tr>
+            <tr><th>주문 건수</th><td>총 4건</td></tr>
+            <tr>
+                <th>총 결제 금액</th>
+                <td><strong style="color:red; font-size: 1.2em;">40,000원</strong></td>
+            </tr>
+        </table>
+        
+        <h3 style="margin-top: 20px;">결제 수단 선택</h3>
+        <div style="margin-bottom: 20px;">
+            <label><input type="radio" name="dummyMethod" value="CARD" checked> 신용/체크카드</label><br>
+            <label><input type="radio" name="dummyMethod" value="KAKAOPAY"> 카카오페이</label><br>
+            <label><input type="radio" name="dummyMethod" value="TOSS"> 토스페이</label>
+        </div>
+
+        <button type="button" id="btnTestSubmitPayment" style="padding: 10px 20px; font-weight: bold; cursor: pointer;">
+            총 40,000원 결제하기 (더미)
+        </button>
+    </section>
+
+    <hr>
+
+    <section id="testNav">
+        <p><strong>[테스트] 화면 이동 확인용</strong></p>
+        <button type="button" id="btnTestGoWait">
+            → 결제 완료 후 대기실(Wait) 이동
+        </button>
+        <button type="button" id="btnTestGoDetail">
+            ← 주문방 상세로 돌아가기
+        </button>
+    </section>
+
+<footer>
+    <hr><p>[더미 푸터] Mo-Eats 테스트</p>
+</footer>
+
+<!--
+실전: 아래 hidden input들은 Thymeleaf가 서버 값으로 채워서 JS에 전달
+roomCode 추가: payment.js 가 읽어 GET /rooms/code/{roomCode}/sse 에 연결
+               → SSEService.join(roomIdx) 호출 → 결제 현황 실시간 수신
+
+SSE 연결 흐름:
+    payment.js → EventSource('/rooms/code/' + roomCode + '/sse')
+    → SSEService.join(roomIdx) 등록
+    → 누군가 결제 완료 시 서버가 SSEService.send(roomIdx, "paymentUpdate") 브로드캐스트
+    → payment.js의 addEventListener('paymentUpdate') 가 결제 현황 테이블 DOM 갱신
+    → 전원 완료 시 SSEService.send(roomIdx, "paymentCompleted") → /orders/{orderIdx}/complete 이동
+    → 타임아웃/취소 시 SSEService.send(roomIdx, "paymentCancelled") → 방으로 복귀
+
+수신 이벤트 (이벤트명 오타 주의: "connnect" n 3개, 서버 SSEService 원본과 동일하게):
+    "connect"         - 연결 확인
+    "paymentUpdate"    - 결제 현황 변경
+    "paymentCompleted" - 전원 결제 완료
+    "paymentCancelled" - 타임아웃 또는 취소
+
+<input type="hidden" id="orderIdx"         th:value="${order.orderIdx}">
+<input type="hidden" id="paymentMode"      th:value="${order.paymentMode}">
+<input type="hidden" id="paymentStartedAt" th:value="${order.paymentStartedAt}">
+<input type="hidden" id="roomCode"         th:value="${order.roomCode}">
+-->
+
+	<script src="/js/jquery-3.7.1.min.js"></script>
+	
+	<!-- 실전용 <script src="/js/payment-repr.js"></script> -->
+    
+    <script src="/js/test/payment-repr.test.js"></script>
+</div>
+</html>

@@ -120,9 +120,14 @@ $(function () {
     });
 
     // 테스트 이동 버튼
-    $('#btnTestGoPayment').on('click', function () {
-        location.href = "payment-test.html";
+	$('#btnTestGoPayRepr').on('click', function () {
+        location.href = "payment-repr-test.html";
     });
+	$('#btnTestGoPayIndi').on('click', function () {
+        location.href = "payment-indi-test.html";
+    });
+	
+	
     $('#btnTestGoCreate').on('click', function () {
         location.href = "room-create.html";
     });
