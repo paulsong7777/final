@@ -37,6 +37,28 @@
     </form>
     ================================ -->
 
+<!-- 
+컨트롤러가 GroupCartItem 객체를 통째로 폼 파라미터로 받으므로 순수 HTML <form> 전송으로 묶어주는 것이 가장 완벽하게 호환된다고(4.1)
+<form th:action="@{/rooms/code/{code}/cart(code=${roomCode})}" method="post" id="cartAddForm">
+    <table border="1">
+        <tbody>
+            <tr>
+                <td><input type="radio" name="menuRadio" value="1" data-name="후라이드 치킨" data-price="18000"></td>
+                <td>후라이드 치킨</td>
+                <td>18,000원</td>
+                <td><input type="number" class="menu-qty" value="1" min="1"></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <input type="hidden" name="menuName" id="inputMenuName">
+    <input type="hidden" name="price" id="inputPrice">
+    <input type="hidden" name="quantity" id="inputQuantity">
+
+    <button type="submit" id="btnAddToCart">장바구니에 담기</button>
+</form>
+ -->
+
     <!-- [더미] 메뉴 수정 폼 -->
     <section id="dummyMenuSection">
         <h3>테스트 비상구 치킨 - 메뉴 목록</h3>

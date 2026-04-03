@@ -72,27 +72,49 @@
     <!-- ================================
     ① [실전] 참여자 카트 목록
     서버 제공 model 변수: roomParticipants (List<RoomParticipant>)
-        - p.memberIdx      : 참여자 식별자
-        - p.selectionStatus: NOT_SELECTED | SELECTED (Controller에 추가 요청 필요)
-        현재 Controller가 roomParticipants는 전달하나 selectionStatus 등
-        추가 필드는 → GroupCartItem.itemStatus 있긴 있음
-        		   더 추가 필요시 백엔드 협의 후 추가 요청
+        - memberIdx        : 참여자 식별자 (kick 요청에 사용)
+		- roomIdx		   : 방 식별자	
+        - participantRole  : LEADER | PARTICIPANT
+        - selectionStatus  : NOT_SELECTED | SELECTED  
+
+    [KICK 버튼]
+    목적    : 방장이 특정 참여자를 강제 퇴장
+    노출 조건: participantRole == 'LEADER' AND participantRole != 'LEADER' (방장 본인 제외)
+    method  : POST
+    action  : /rooms/code/{roomCode}/kick
+    전송 파라미터: memberIdx (kick 대상 참여자 식별자)
+    성공 리다이렉트: /rooms/code/{roomCode} (현재 페이지 갱신)
+    
+     ================================
 
     <section id="participantSection">
         <table border="1">
-            <thead><tr><th>이름</th><th>역할</th><th>선택 상태</th><th>담은 금액</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>이름</th><th>역할</th><th>선택 상태</th><th>담은 금액</th>
+                    <th th:if="${myRole == 'LEADER'}">강제 퇴장</th>
+                </tr>
+            </thead>
             <tbody>
-                <tr th:each="p : ${roomParticipants}">
+                <tr th:each="p : ${participants}">
                     <td th:text="${p.memberName}">홍길동</td>
-                    <td th:text="${p.memberIdx == orderRoom.leaderMemberIdx} ? '방장' : '참여자'">참여자</td>
+                    <td th:text="${p.role == 'LEADER'} ? '방장' : '참여자'">참여자</td>
                     <td>
                         <span th:if="${p.selectionStatus == 'SELECTED'}">[완료]</span>
                         <span th:unless="${p.selectionStatus == 'SELECTED'}">[선택중]</span>
                     </td>
                     <td th:text="${#numbers.formatInteger(p.cartTotal ?: 0, 1, 'COMMA')} + '원'">0원</td>
+                    <td th:if="${myRole == 'LEADER' and p.role != 'LEADER'}">
+						<form th:action="@{/rooms/code/{code}/kick(code=${room.roomCode})}"
+						      method="post" class="formKick" th:data-name="${p.memberName}">
+						        <input type="hidden" name="kickMemberIdx" th:value="${p.memberIdx}">
+						        <button type="submit" class="btnKick">내보내기</button>
+						    </form>
+						</td>
+                    <td th:if="${myRole == 'LEADER' and p.role == 'LEADER'}">-</td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(roomParticipants)}">
-                    <td colspan="4">참여자가 없습니다.</td>
+                <tr th:if="${#lists.isEmpty(participants)}">
+                    <td colspan="5">참여자가 없습니다.</td>
                 </tr>
             </tbody>
         </table>
@@ -102,12 +124,53 @@
     <!-- [더미] 참여자 카드 목록 -->
     <section id="participantSection">
         <h3>참여자 현황 (더미)</h3>
-        <table border="1">
-            <thead><tr><th>이름</th><th>역할</th><th>선택 상태</th><th>담은 금액</th></tr></thead>
-            <tbody>
-                <tr><td>김방장</td><td>방장</td>  <td>[완료]</td>   <td>12,000원</td></tr>
-                <tr><td>이참여</td><td>참여자</td><td>[선택중]</td> <td id="moneyCal">10,000원</td></tr>
-                <tr><td>박참여</td><td>참여자</td><td>[완료]</td>   <td>9,500원</td></tr>
+        <!--
+        [테스트 전용] 인원 추가 버튼
+        버튼을 누르면 JS(room-detail.test.js)가 더미 참여자 행 + 더미 장바구니 행을 동시에 추가
+        실전에서는 이 버튼 섹션 전체 제거
+        -->
+        <button type="button" id="btnTestAddParticipant" style="background-color: #17a2b8; color: white;">
+            [테스트] 임의 참여자 추가
+        </button>
+
+        <table border="1" id="participantTable">
+            <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>역할</th>
+                    <th>선택 상태</th>
+                    <th>담은 금액</th>
+                    <th>강제 퇴장 (더미)</th>
+                </tr>
+            </thead>
+            <tbody id="participantTbody">
+                <!-- 방장 행: kick 버튼 없음 -->
+                <tr data-role="LEADER" data-member-idx="0">
+                    <td>김방장</td>
+                    <td>방장</td>
+                    <td>[완료]</td>
+                    <td class="participantCartTotal">12,000원</td>
+                    <td>-</td>
+                </tr>
+                <!-- 참여자 행: kick 버튼 있음 -->
+                <tr data-role="PARTICIPANT" data-member-idx="2">
+                    <td>이참여</td>
+                    <td>참여자</td>
+                    <td>[선택중]</td>
+                    <td class="participantCartTotal" id="moneyCal">10,000원</td>
+                    <td>
+                        <button type="button" class="btnKickTest" data-name="이참여">내보내기 (더미)</button>
+                    </td>
+                </tr>
+                <tr data-role="PARTICIPANT" data-member-idx="3">
+                    <td>박참여</td>
+                    <td>참여자</td>
+                    <td>[완료]</td>
+                    <td class="participantCartTotal">9,500원</td>
+                    <td>
+                        <button type="button" class="btnKickTest" data-name="박참여">내보내기 (더미)</button>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </section>
@@ -128,7 +191,6 @@
     목적   : cart_item 삭제
     method : POST
     action : /rooms/code/{room_code}/cart/items/{cart_item_idx}/delete
-    주의   : _method=DELETE hidden 필드 제거 (Controller가 @DeleteMapping 아닌 @PostMapping으로 처리)
 
     <section id="myCartSection">
         <p th:if="${#lists.isEmpty(myCartItems)}">
@@ -165,10 +227,22 @@
            th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">
             <button type="button">+ 메뉴 추가</button>
         </a>
+        <div th:if="${room.roomStatus == 'SELECTING'}">
+		    <form th:if="${mySelectionStatus != 'SELECTED'}" 
+		          th:action="@{/rooms/code/{code}/select(code=${room.roomCode})}" method="post">
+		        <button type="submit" id="btnSelectDone">선택 완료</button>
+		    </form>
+		
+		    <form th:if="${mySelectionStatus == 'SELECTED'}" 
+		          th:action="@{/rooms/code/{code}/unselect(code=${room.roomCode})}" method="post">
+		        <button type="submit" id="btnUnselect">선택 취소</button>
+		    </form>
+		</div>
     </section>
     ================================ -->
 
     <!-- [더미] 내 장바구니 -->
+    <!-- 수정필요 : 내 장바구니와 팀 장바구니 구별 -->
     <section id="myCartSection">
         <h3>내 장바구니 (더미)(이참여 시점)</h3>
         <table border="1">
@@ -177,30 +251,50 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>순대국밥</td><td>1</td><td>8,000원</td><td>8,000원</td>
-                    <td>
-                        <button type="button" id="btnGoEditMenu">수정 (더미)</button>
+                    <td>순대국밥</td><td>1</td><td>8,000원</td><td class="my-subtotal">8,000원</td> <td>
+                        <button type="button" class="btnGoEditMenu">수정 (더미)</button>
                         <button type="button" class="btn-delete-test">삭제 (더미)</button>
                     </td>
                 </tr>
                 <tr>
-                    <td>공기밥</td><td>2</td><td>1,000원</td><td>2,000원</td>
-                    <td>
-                        <button type="button" id="btnGoEditMenu">수정 (더미)</button>
+                    <td>공기밥</td><td>2</td><td>1,000원</td><td class="my-subtotal">2,000원</td> <td>
+                        <button type="button" class="btnGoEditMenu">수정 (더미)</button>
                         <button type="button" class="btn-delete-test">삭제 (더미)</button>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <p>내 주문 합계: <strong>10,000원</strong></p>
+        <p>내 주문 합계: <strong id="myCartTotal">10,000원</strong></p>
         <button type="button" id="btnGoAddMenu">+ 메뉴 추가 (더미)</button>
         <br>
-        <button type="button" id="btnTestAddRow" style="background-color: #ffc107;">더미 행 추가 (테스트 전용)</button>
+        <button type="button" id="btnTestAddRow" style="background-color: #ffc107;">더미 메뉴 행 추가 (테스트 전용)</button>
         <br>
         <button type="button" id="btnTestSelectDone">선택 완료 (더미)</button>
     </section>
 
     <hr>
+
+    <section id="teamCartSection">
+        <h3>팀 장바구니 (더미)</h3>
+        <table border="1">
+            <thead>
+                <tr><th>메뉴명</th><th>수량</th><th>단가</th><th>소계</th><th>참여자</th></tr>
+            </thead>
+            <tbody>
+                <tr data-member-name="김방장">
+                    <td>김치찌개</td><td>1</td><td>8,000원</td><td class="team-subtotal">8,000원</td><td>김방장</td>
+                </tr>
+                <tr data-member-name="김방장">
+                    <td>계란말이</td><td>1</td><td>4,000원</td><td class="team-subtotal">4,000원</td><td>김방장</td>
+                </tr>
+                <tr data-member-name="박참여">
+                    <td>해장국</td><td>1</td><td>9,500원</td><td class="team-subtotal">9,500원</td><td>박참여</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>팀 주문 합계: <strong id="teamCartTotal">21,500원</strong></p>
+    </section>    
+
 
     <!-- ================================
     ③ [실전] 전체 합계    
@@ -210,9 +304,9 @@
     <section id="totalSection">
         <h3>전체 합계 (더미)</h3>
         <table border="1">
-            <tr><th>메뉴 합계</th>    <td>31,500원</td></tr>
+            <tr><th>메뉴 합계</th>    <td id="totalMenuAmount">31,500원</td></tr>
             <tr><th>배달비</th>       <td>3,000원</td></tr>
-            <tr><th>최종 합계</th>    <td><strong>34,500원</strong></td></tr>
+            <tr><th>최종 합계</th>    <td><strong id="grandTotal">34,500원</strong></td></tr>
             <tr><th>최소 주문 금액</th><td>40,000원</td></tr>
         </table>
     </section>
@@ -236,22 +330,32 @@
     성공 리다이렉트: /main
 
     <section id="nextStepSection">
-        <div th:if="${myRole == 'LEADER'}">
-            <form th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}" method="post" id="formProceedPayment">
-                <input type="hidden" name="representativeMemberIdx" th:value="${orderRoom.paymentMode == 'REPRESENTATIVE' ? orderRoom.leaderMemberIdx : null}">
-                <button type="submit" id="btnProceedPayment">
-                    결제 진행하기 (방 잠금)
-                </button>
+        <div th:if="${room.roomStatus == 'OPEN' or room.roomStatus == 'SELECTING'}">
+            <div th:if="${myRole == 'LEADER'}">
+                <form th:action="@{/rooms/code/{code}/checkout(code=${room.roomCode})}" method="post" id="formProceedPayment">
+                    <button type="submit" id="btnProceedPayment"
+                            th:disabled="${!allSelected or grandTotal < room.minimumOrderAmount}">
+                        결제 진행하기 (방 잠금)
+                    </button>
+                </form>
+            </div>
+            <div th:unless="${myRole == 'LEADER'}">
+                <p>방장이 결제를 시작할 때까지 대기하세요.</p>
+            </div>
+            <form th:action="@{/rooms/code/{code}/leave(code=${room.roomCode})}" method="post" id="formLeaveRoom">
+                <button type="submit">방 나가기</button>
             </form>
         </div>
-        <div th:unless="${myRole == 'LEADER'}">
-            <p>방장이 결제를 시작할 때까지 대기하세요.</p>
+        <div th:if="${room.roomStatus == 'PAYMENT_PENDING'}">
+            <a th:href="@{/orders/{oIdx}/payment/select(oIdx=${room.orderIdx})}">
+                <button type="button">결제 화면으로 이동</button>
+            </a>
         </div>
-
-        방 나가기: POST /rooms/code/{roomCode}/leave
-        <form th:action="@{/rooms/code/{code}/leave(code=${orderRoom.roomCode})}" method="post" id="formLeaveRoom">
-            <button type="submit">방 나가기</button>
-        </form>
+        <div th:if="${room.roomStatus == 'ORDER_CONFIRMED'}">
+            <a th:href="@{/orders/{oIdx}/complete(oIdx=${room.orderIdx})}">
+                <button type="button">주문 완료 화면으로 이동</button>
+            </a>
+        </div>
     </section>
     ================================ -->
 
