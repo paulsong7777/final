@@ -4,78 +4,83 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content" class="container-fluid py-4" style="max-width: 1100px;">
+<head>
+    <title>영업 리포트 - MoEats</title>
+    </head>
+
+<body>
+<main layout:fragment="content" class="sales-report-page">
     
-    <div class="d-flex justify-content-between align-items-end mb-4 border-bottom border-2 pb-3" style="border-bottom-color: var(--moeats-navy) !important;">
+    <div class="d-flex justify-content-between align-items-end mb-4 border-bottom border-2 pb-3 report-main-header">
         <div>
             <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-graph-up-arrow me-2 text-orange"></i>영업 리포트</h2>
             <p class="text-secondary small mb-0 mt-1">매장의 매출 실적과 인기 메뉴를 분석하여 효율적인 운영을 돕습니다.</p>
         </div>
-        <div class="bg-white border rounded-pill px-3 py-2 fw-bold text-secondary small shadow-sm">
+        <div class="bg-white border rounded-pill px-3 py-2 fw-bold text-secondary small shadow-sm report-date-badge">
              <i class="bi bi-calendar-check me-1 text-orange"></i>
              기준일: <span th:text="${reportDate ?: #calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">2026-03-26</span>
         </div>
     </div>
 
-    <div class="row g-3 mb-4 text-center">
+    <div class="row g-3 mb-4 text-center summary-card-row">
         <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white">
-                <span class="small text-secondary fw-bold text-uppercase">총 매출액</span>
-                <div class="mt-2 fw-bold fs-3 text-orange report-value" 
+            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white metric-card">
+                <span class="small text-secondary fw-bold text-uppercase metric-label">총 매출액</span>
+                <div class="mt-2 fw-bold fs-3 text-orange metric-value sales-total" 
                      th:text="|${#numbers.formatInteger(totalSales ?: 0, 0, 'COMMA')}원|">0원</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white">
-                <span class="small text-secondary fw-bold text-uppercase">주문 건수</span>
-                <div class="mt-2 fw-bold fs-3 text-navy report-value" 
+            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white metric-card">
+                <span class="small text-secondary fw-bold text-uppercase metric-label">주문 건수</span>
+                <div class="mt-2 fw-bold fs-3 text-navy metric-value order-count" 
                      th:text="|${orderCount ?: 0}건|">0건</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white">
-                <span class="small text-secondary fw-bold text-uppercase">주문 취소</span>
-                <div class="mt-2 fw-bold fs-3 text-danger report-value" 
+            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white metric-card">
+                <span class="small text-secondary fw-bold text-uppercase metric-label">주문 취소</span>
+                <div class="mt-2 fw-bold fs-3 text-danger metric-value cancel-count" 
                      th:text="|${cancelCount ?: 0}건|">0건</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white">
-                <span class="small text-secondary fw-bold text-uppercase">평균 별점</span>
-                <div class="mt-2 fw-bold fs-3 text-orange report-value" 
+            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white metric-card">
+                <span class="small text-secondary fw-bold text-uppercase metric-label">평균 별점</span>
+                <div class="mt-2 fw-bold fs-3 text-orange metric-value rating-avg" 
                      th:text="|★ ${avgRating ?: 0.0}|">★ 0.0</div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4 report-detail-row">
         <div class="col-lg-8">
-            <div class="card p-4 bg-white shadow-sm h-100 rounded-4 border-0">
-                <h6 class="fw-bold mb-4 ps-2 border-start border-4 border-dark text-navy">시간대별 주문 트렌드</h6>
-                <div class="w-100" style="height: 320px; position: relative;">
+            <div class="card p-4 bg-white shadow-sm h-100 rounded-4 border-0 chart-main-card">
+                <h6 class="fw-bold mb-4 ps-2 border-start border-4 border-dark text-navy chart-title">시간대별 주문 트렌드</h6>
+                <div class="report-chart-container">
                     <canvas id="salesChart"></canvas>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-4">
-            <div class="card p-4 bg-white shadow-sm h-100 rounded-4 border-0">
-                <h6 class="fw-bold mb-4 ps-2 border-start border-4 border-warning text-navy">인기 메뉴 TOP 5</h6>
-                <div class="list-group list-group-flush border-0" th:with="safePopular=${popularMenuList ?: {}}">
+            <div class="card p-4 bg-white shadow-sm h-100 rounded-4 border-0 popular-list-card">
+                <h6 class="fw-bold mb-4 ps-2 border-start border-4 border-warning text-navy list-title">인기 메뉴 TOP 5</h6>
+                <div class="list-group list-group-flush border-0 popular-menu-group" th:with="safePopular=${popularMenuList ?: {}}">
                     <th:block th:if="${not #lists.isEmpty(safePopular)}">
                         <div th:each="popular, stat : ${safePopular}" 
-                             class="list-group-item px-0 py-3 d-flex align-items-center justify-content-between border-0 border-bottom">
+                             class="list-group-item px-0 py-3 d-flex align-items-center justify-content-between border-0 popular-item-row">
                             <div class="d-flex align-items-center">
-                                <span class="fw-bold me-3 fs-5 text-orange" th:text="${stat.count}">1</span>
-                                <span class="fw-bold text-navy small text-truncate" style="max-width: 150px;" 
+                                <span class="fw-bold me-3 fs-5 text-orange item-rank" th:text="${stat.count}">1</span>
+                                <span class="fw-bold text-navy small text-truncate item-name" 
                                       th:text="${popular['menuName'] ?: '정보 없음'}">메뉴명</span>
                             </div>
-                            <span class="badge bg-light text-navy border rounded-pill fw-bold px-3 py-2" 
+                            <span class="badge bg-light text-navy border rounded-pill fw-bold px-3 py-2 item-badge" 
                                   th:text="|${popular['orderCount'] ?: 0} 건|">0 건</span>
                         </div>
                     </th:block>
                     
-                    <div th:if="${#lists.isEmpty(safePopular)}" class="py-5 text-center text-muted">
+                    <div th:if="${#lists.isEmpty(safePopular)}" class="py-5 text-center text-muted empty-data-msg">
                         <i class="bi bi-database-fill-dash d-block fs-1 mb-3 text-light opacity-50"></i>
                         <p class="fw-bold mb-0">데이터 집계 중입니다.</p>
                     </div>
@@ -84,18 +89,18 @@
         </div>
     </div>
 
-    <div class="text-end mt-4 d-print-none">
-        <button class="btn btn-dark px-5 py-3 rounded-pill shadow-sm fw-bold border-0" 
-                style="background-color: var(--moeats-navy);" onclick="window.print()">
+    <div class="text-end mt-4 d-print-none print-action-area">
+        <button class="btn btn-navy px-5 py-3 rounded-pill shadow-sm fw-bold border-0 text-white report-print-btn" 
+                onclick="window.print()">
             <i class="bi bi-printer me-2"></i>리포트 인쇄하기
         </button>
     </div>
-</div>
+</main>
 
 <th:block layout:fragment="script">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script th:inline="javascript">
-        /* [Anti-Null] JS 데이터 무결성 초기화 */
+        /*<![CDATA[*/
         const chartLabels = /*[[${chartLabels ?: {}}]]*/ ['09시', '12시', '15시', '18시', '21시'];
         const chartDataValues = /*[[${chartData ?: {}}]]*/ [0, 0, 0, 0, 0];
 
@@ -108,12 +113,12 @@
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: chartLabels.length > 0 ? chartLabels : ['진입 대기'],
+                    labels: chartLabels.length > 0 ? chartLabels : ['데이터 없음'],
                     datasets: [{
                         label: '주문수',
                         data: chartDataValues.length > 0 ? chartDataValues : [0],
-                        borderColor: '#252D59',
-                        backgroundColor: 'rgba(37, 45, 89, 0.05)',
+                        borderColor: '#1A1E3B',
+                        backgroundColor: 'rgba(26, 30, 59, 0.05)',
                         borderWidth: 4,
                         fill: true,
                         tension: 0.4,
@@ -134,18 +139,7 @@
                 }
             });
         });
+        /*]]>*/
     </script>
-    
-    <style>
-        /* 폰트 두께 및 강조 디자인 내부 통합 */
-        .report-value { font-weight: 800 !important; letter-spacing: -1px; }
-        
-        @media print {
-            body { background: white !important; }
-            .navbar, .offcanvas, .d-print-none, .navbar-toggler, .btn-close { display: none !important; }
-            .container-fluid { padding: 0 !important; margin: 0 !important; }
-            .card { border: 1px solid #eee !important; box-shadow: none !important; break-inside: avoid; }
-        }
-    </style>
 </th:block>
 </html>

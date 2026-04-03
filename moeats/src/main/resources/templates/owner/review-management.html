@@ -4,10 +4,14 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content" class="container-fluid px-4 py-4" style="max-width: 900px;">
+<head>
+    <title>리뷰 및 답변 관리 - MoEats</title>
+    </head>
+
+<body>
+<main layout:fragment="content" class="review-page-wrapper">
     
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2"
-         style="border-color: var(--moeats-navy) !important;">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2 review-manage-header">
         <div>
             <h3 class="fw-bold mb-0 text-navy">
                 <i class="bi bi-chat-right-text me-2 text-orange"></i>리뷰 및 답변 관리
@@ -19,41 +23,42 @@
     <div class="review-container" th:with="safeReviews=${reviewList ?: {}}">
         
         <th:block th:if="${not #lists.isEmpty(safeReviews)}">
-            <div th:each="rev : ${safeReviews}" class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden animate-fade-in">
+            <div th:each="rev : ${safeReviews}" class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden review-item-card">
                 <div class="card-body p-4">
                     
-                    <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-3 review-info-header">
                         <div>
-                            <span class="fw-bold text-navy fs-5" th:text="${rev['memberNickname'] ?: '익명 고객님'}">닉네임</span>
-                            <span class="ms-2 text-muted small" th:text="${rev['regDate'] ?: '0000-00-00'}">날짜</span>
-                            <div class="text-warning mt-1">
+                            <span class="fw-bold text-navy fs-5 member-nickname" th:text="${rev['memberNickname'] ?: '익명 고객님'}">닉네임</span>
+                            <span class="ms-2 text-muted small reg-date" th:text="${rev['regDate'] ?: '0000-00-00'}">날짜</span>
+                            
+                            <div class="star-rating-container mt-1">
                                 <i th:each="num : ${#numbers.sequence(1, 5)}"
                                    class="bi"
-                                   th:classappend="${num <= (rev['reviewRating'] ?: 0)} ? 'bi-star-fill' : 'bi-star'"></i>
+                                   th:classappend="${num <= (rev['reviewRating'] ?: 0)} ? 'bi-star-fill active-star' : 'bi-star'"></i>
                             </div>
                         </div>
-                        <div class="badge bg-light text-navy border px-3 py-2" th:text="${rev['menuName'] ?: '주문 메뉴'}">메뉴명</div>
+                        <div class="badge bg-light text-navy border px-3 py-2 fw-bold ordered-menu-name" th:text="${rev['menuName'] ?: '주문 메뉴'}">메뉴명</div>
                     </div>
 
-                    <p class="text-dark mb-4 leading-relaxed" th:text="${rev['reviewContent'] ?: '내용이 없습니다.'}">리뷰 본문</p>
+                    <p class="text-dark mb-4 review-text-content" th:text="${rev['reviewContent'] ?: '내용이 없습니다.'}">리뷰 본문</p>
 
-                    <hr class="opacity-10">
+                    <hr class="review-divider">
 
-                    <div th:id="|reply-section-${rev['reviewIdx']}|" class="bg-light rounded-4 p-3">
-                        <div th:if="${rev['replyContent'] != null and rev['replyContent'] != ''}">
+                    <div th:id="|reply-section-${rev['reviewIdx']}|" class="rounded-4 p-3 store-reply-area">
+                        <div th:if="${rev['replyContent'] != null and rev['replyContent'] != ''}" class="existing-reply">
                             <div class="d-flex align-items-center mb-2">
                                 <span class="badge bg-navy text-white me-2">사장님 답변</span>
-                                <span class="text-muted small" th:text="${rev['replyRegDate'] ?: '방금 전'}">날짜</span>
+                                <span class="text-muted small reply-date" th:text="${rev['replyRegDate'] ?: '방금 전'}">날짜</span>
                             </div>
-                            <p class="text-secondary mb-0 small" th:text="${rev['replyContent']}">답변</p>
+                            <p class="text-secondary mb-0 small reply-text" th:text="${rev['replyContent']}">답변 내용</p>
                         </div>
 
-                        <div th:unless="${rev['replyContent'] != null and rev['replyContent'] != ''}">
+                        <div th:unless="${rev['replyContent'] != null and rev['replyContent'] != ''}" class="reply-input-wrapper">
                             <div class="input-group">
                                 <textarea th:id="|reply-input-${rev['reviewIdx']}|"
-                                          class="form-control border-0 bg-white shadow-none rounded-start-3"
+                                          class="form-control border-0 bg-white shadow-none rounded-start-3 reply-textarea"
                                           rows="2" placeholder="고객님께 따뜻한 답변을 남겨주세요."></textarea>
-                                <button class="btn btn-warning text-white fw-bold px-4 rounded-end-3 reply-btn"
+                                <button class="btn btn-orange text-white fw-bold px-4 rounded-end-3 reply-submit-btn"
                                         th:data-idx="${rev['reviewIdx']}">등록</button>
                             </div>
                         </div>
@@ -62,32 +67,29 @@
             </div>
         </th:block>
 
-        <div th:if="${#lists.isEmpty(safeReviews)}" class="text-center py-5 bg-white rounded-4 shadow-sm border border-dashed">
-            <i class="bi bi-chat-dots fs-1 text-light d-block mb-3 opacity-50"></i>
+        <div th:if="${#lists.isEmpty(safeReviews)}" class="text-center py-5 empty-review-container">
+            <i class="bi bi-chat-dots fs-1 text-light d-block mb-3 empty-icon"></i>
             <h5 class="fw-bold text-secondary">작성된 리뷰가 없습니다.</h5>
             <p class="text-muted small">첫 리뷰가 달리면 이곳에서 확인하고 답변하실 수 있습니다.</p>
         </div>
     </div>
-</div>
+</main>
 
 <th:block layout:fragment="script">
-    <style>
-        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .leading-relaxed { line-height: 1.6; }
-        .bg-navy { background-color: var(--moeats-navy) !important; }
-    </style>
-
     <script th:inline="javascript">
+        /*<![CDATA[*/
+        
         /**
-         *답글 등록 함수 (UX 최적화: 새로고침 없음)
+         * 답글 등록 비동기 처리
          */
         async function handleReplySubmit(idx) {
             const inputElement = document.getElementById(`reply-input-${idx}`);
+            if (!inputElement) return;
+            
             const replyContent = inputElement.value.trim();
 
             if (!replyContent) {
-                alert("답변 내용을 입력해 주세요.");
+                showToast("답변 내용을 입력해 주세요.", "danger");
                 inputElement.focus();
                 return;
             }
@@ -100,36 +102,40 @@
                 });
 
                 if (result && result.success) {
-                    //  성공 시 해당 영역만 HTML 교체 (새로고침 X)
+                    showToast("답변이 성공적으로 등록되었습니다.", "success");
+                    
+                    // 성공 시 해당 영역만 HTML 교체 (클래스 기반 애니메이션 위임)
                     const section = document.getElementById(`reply-section-${idx}`);
                     section.innerHTML = `
-                        <div class="d-flex align-items-center mb-2 animate-fade-in">
+                        <div class="d-flex align-items-center mb-2 new-reply-fade">
                             <span class="badge bg-navy text-white me-2">사장님 답변</span>
                             <span class="text-muted small">방금 전</span>
                         </div>
-                        <p class="text-secondary mb-0 small animate-fade-in">${replyContent}</p>
+                        <p class="text-secondary mb-0 small new-reply-text">${replyContent}</p>
                     `;
                 } else {
-                    alert(result.message || "답글 등록에 실패했습니다.");
+                    showToast(result.message || "답글 등록에 실패했습니다.", "danger");
                 }
             } catch (error) {
-                console.error("[Reply Error]:", error);
-                alert("서버와 통신 중 오류가 발생했습니다.");
+                showToast("서버와 통신 중 오류가 발생했습니다.", "danger");
             }
         }
 
         /**
-         * 이벤트 바인딩 (DOM 생성 후 실행)
+         * 이벤트 위임 바인딩
          */
         document.addEventListener("DOMContentLoaded", () => {
-            // 이벤트 위임(Event Delegation) 방식으로 작성하면 리스트가 많아도 효율적
-            document.querySelector(".review-container").addEventListener("click", (e) => {
-                if (e.target.classList.contains("reply-btn")) {
-                    const idx = e.target.getAttribute("data-idx");
-                    handleReplySubmit(idx);
-                }
-            });
+            const container = document.querySelector(".review-container");
+            if (container) {
+                container.addEventListener("click", (e) => {
+                    if (e.target.classList.contains("reply-submit-btn")) {
+                        const idx = e.target.getAttribute("data-idx");
+                        handleReplySubmit(idx);
+                    }
+                });
+            }
         });
+        /*]]>*/
     </script>
 </th:block>
 </html>

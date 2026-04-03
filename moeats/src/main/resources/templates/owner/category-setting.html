@@ -4,92 +4,117 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content" class="container-fluid px-4" style="max-width: 1000px;">
+<head>
+    <title>카테고리 설정 - MoEats </title>
+</head>
 
-    <h2 class="fw-bold mb-4">카테고리 설정</h2>
+<body>
+<main layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">카테고리 구성 설정</h3>
+        <span class="badge bg-secondary" th:text="'총 ' + ${#lists.size(categoryList)} + '개'">0개</span>
+    </div>
 
-    <!-- 등록 -->
-    <div class="card p-3 mb-4">
-        <div class="row g-2">
-            <div class="col-9">
-                <input type="text" id="newCategoryName" class="form-control" placeholder="카테고리명">
-            </div>
-            <div class="col-3">
-                <button class="btn btn-primary w-100" onclick="addCategory()">등록</button>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-9">
+                    <label for="newCategoryName" class="form-label small fw-bold text-secondary">신규 카테고리명</label>
+                    <input type="text" id="newCategoryName" class="form-control form-control-lg border-2" 
+                           placeholder="예: 추천메뉴, 사이드, 음료 등">
+                </div>
+                <div class="col-md-3 mt-md-auto">
+                    <button class="btn btn-orange w-100 btn-lg fw-bold text-white" onclick="addCategory()">
+                        <i class="bi bi-plus-lg me-2"></i>카테고리 등록
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 목록 -->
-    <table class="table text-center">
-        <thead>
-        <tr>
-            <th>#</th>
-            <th class="text-start">이름</th>
-            <th>관리</th>
-        </tr>
-        </thead>
-
-        <tbody id="category-table-body">
-        <tr th:each="cat, stat : ${categoryList}" th:id="|row-${cat.categoryIdx}|">
-            <td th:text="${stat.count}"></td>
-            <td class="text-start" th:text="${cat.categoryName}"></td>
-            <td>
-                <button class="btn btn-danger btn-sm"
-                        th:onclick="|deleteCategory('${cat.categoryIdx}')|">
-                    삭제
-                </button>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-</div>
+    <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-center mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="py-3" style="width: 100px;">번호</th>
+                        <th class="text-start py-3">카테고리 명칭</th>
+                        <th class="py-3" style="width: 150px;">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="category-table-body">
+                    <tr th:each="cat, stat : ${categoryList}" 
+                        th:if="${not #lists.isEmpty(categoryList)}" 
+                        th:id="|row-${cat.categoryIdx}|">
+                        <td class="fw-bold text-secondary" th:text="${stat.count}">1</td>
+                        <td class="text-start fw-medium" th:text="${cat.categoryName}">카테고리 이름</td>
+                        <td>
+                            <button class="btn btn-outline-danger btn-sm px-3"
+                                    th:onclick="|deleteCategory('${cat.categoryIdx}')|">
+                                <i class="bi bi-trash3 me-1"></i>삭제
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <tr th:if="${#lists.isEmpty(categoryList)}">
+                        <td colspan="3" class="py-5 text-center">
+                            <div class="text-light mb-3"><i class="bi bi-folder-x fs-1"></i></div>
+                            <p class="text-secondary mb-0">등록된 카테고리가 없습니다.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
 
 <th:block layout:fragment="script">
-<script>
+<script th:inline="javascript">
+    /**
+     * 카테고리 등록 함수
+     * 레이아웃의 moeatsFetch 표준 함수를 사용하여 CSRF와 에러 처리를 통합.
+     */
     async function addCategory() {
-        const name = document.getElementById('newCategoryName').value.trim();
+        const nameInput = document.getElementById('newCategoryName');
+        const name = nameInput.value.trim();
 
         if (!name) {
-            alert("입력하세요");
+            showToast("카테고리명을 입력해주세요.", "danger");
+            nameInput.focus();
             return;
         }
 
-        const res = await fetch('/owner/category/insert_proc', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ categoryName: name })
-        });
+        // 레이아웃의 공통 Fetch 함수 활용 (CSRF 자동 포함)
+        const result = await moeatsFetch('/owner/category/insert_proc', { categoryName: name });
 
-        const result = await res.json();
-
-        if (result.success) {
-            alert("등록 완료");
-            location.reload();
+        if (result && result.success) {
+            showToast("카테고리가 정상적으로 등록되었습니다.", "success");
+            setTimeout(() => location.reload(), 1000);
         } else {
-            alert("실패");
+            showToast("등록에 실패했습니다. 다시 시도해주세요.", "danger");
         }
     }
 
+    /**
+     * 카테고리 삭제 함수
+     */
     async function deleteCategory(idx) {
-        if (!confirm("삭제?")) return;
+        // 커스텀 confirm 로직은 레이아웃 가이드에 따라 처리 (여기선 기본 confirm 유지)
+        if (!confirm("해당 카테고리를 삭제하시겠습니까?\n삭제 시 소속된 메뉴의 카테고리 정보가 사라질 수 있습니다.")) return;
 
-        const res = await fetch('/owner/category/delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ categoryIdx: idx })
-        });
+        const result = await moeatsFetch('/owner/category/delete', { categoryIdx: idx });
 
-        const result = await res.json();
-
-        if (result.success) {
-            document.getElementById('row-' + idx).remove();
+        if (result && result.success) {
+            const row = document.getElementById('row-' + idx);
+            if (row) {
+                row.classList.add('fade-out'); // 애니메이션 효과용 클래스
+                setTimeout(() => row.remove(), 300);
+            }
+            showToast("삭제 완료되었습니다.", "dark");
         } else {
-            alert("삭제 실패");
+            showToast("삭제 실패. 관리자에게 문의하세요.", "danger");
         }
     }
 </script>
 </th:block>
-
 </html>

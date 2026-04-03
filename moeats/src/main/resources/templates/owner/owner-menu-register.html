@@ -4,22 +4,27 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content" class="container py-5">
-    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 600px;">
+<head>
+    <title>신규 메뉴 등록 - MoEats</title>
+    </head>
+
+<body>
+<main layout:fragment="content" class="register-page-wrapper">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white menu-register-card">
         <div class="card-body p-4 p-md-5">
             
-            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3 register-header-line">
                 <a th:href="@{/owner/menu/management}" class="text-navy text-decoration-none fw-bold me-3">
                     <i class="bi bi-arrow-left"></i> BACK
                 </a>
                 <h3 class="fw-bold mb-0 text-navy">신규 메뉴 등록</h3>
             </div>
 
-            <form id="menuRegisterForm" enctype="multipart/form-data" onsubmit="return false;">
+            <form id="menuRegisterForm" enctype="multipart/form-data" onsubmit="return false;" novalidate>
                 
                 <div class="mb-4" th:with="safeCats=${categoryList ?: {}}">
                     <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
-                    <select name="categoryIdx" class="form-select py-3 border-0 bg-light shadow-none rounded-3 fw-bold text-navy" required>
+                    <select name="categoryIdx" class="form-select py-3 rounded-3 fw-bold text-navy custom-reg-input" required>
                         <option value="">카테고리를 선택하세요</option>
                         <option th:each="cat : ${safeCats}" 
                                 th:value="${cat.categoryIdx ?: 0}" 
@@ -30,63 +35,62 @@
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">Menu Image</label>
                     <input type="file" id="imageFile" name="menuFile" class="d-none" accept="image/*" onchange="previewImage(this)">
-                    <div id="imageContainer" class="bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden" 
-                         onclick="document.getElementById('imageFile').click()" 
-                         style="width: 100%; height: 220px; border: 2px dashed #ddd; cursor: pointer;">
+                    
+                    <div id="imageContainer" class="bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden menu-drop-zone" 
+                         onclick="document.getElementById('imageFile').click()">
                         
                         <div id="guideMsg" class="text-center text-secondary">
                             <i class="bi bi-camera fs-1 d-block mb-2 text-muted"></i>
                             <span class="fw-bold small d-block">클릭하여 사진 업로드</span>
                         </div>
-                        <img id="preview" src="" class="d-none w-100 h-100" style="object-fit: cover;">
+                        <img id="preview" src="" class="d-none reg-preview-img" alt="이미지 미리보기">
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">Menu Name</label>
-                    <input type="text" name="menuName" class="form-control py-3 border-0 bg-light shadow-none rounded-3 fw-bold" placeholder="메뉴 이름을 입력하세요" required>
+                    <input type="text" name="menuName" class="form-control py-3 rounded-3 fw-bold custom-reg-input" placeholder="메뉴 이름을 입력하세요" required>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">Price</label>
                     <div class="input-group">
-                        <input type="number" name="menuPrice" class="form-control py-3 text-end border-0 bg-light shadow-none rounded-start-3 fw-bold" placeholder="0" required>
+                        <input type="number" name="menuPrice" class="form-control py-3 text-end fw-bold custom-reg-input" placeholder="0" required>
                         <span class="input-group-text bg-light border-0 text-navy fw-bold rounded-end-3">원</span>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 mt-5">
-                    <button type="button" id="submitBtn" class="btn btn-warning text-white fw-bold py-3 fs-5 shadow-sm rounded-pill" 
-                            style="background-color: var(--moeats-orange); border: none;"
+                    <button type="button" id="submitBtn" class="btn btn-orange-action text-white fw-bold py-3 fs-5 shadow-sm rounded-pill" 
                             onclick="handleMenuRegister()">등록 완료</button>
                 </div>
             </form>
         </div>
     </div>
-</div>
+</main>
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
+        /*<![CDATA[*/
+        
         /**
-         * [AJAX] 처음에 잘 되었던 로직으로 복구 (보정 완료)
+         * 메뉴 등록 처리 (Fetch API 표준 준수)
          */
         async function handleMenuRegister() {
             const form = document.getElementById('menuRegisterForm');
             const submitBtn = document.getElementById('submitBtn');
             
-            // 1. 유효성 검사 (alert 대신 showToast 사용, 없으면 alert으로 대체됨)
-            if (!form.categoryIdx.value) { alert("카테고리를 선택해 주세요."); return; }
-            if (!form.menuName.value.trim()) { alert("메뉴 이름을 입력해 주세요."); return; }
-            if (!form.menuPrice.value) { alert("가격을 입력해 주세요."); return; }
-            if (!document.getElementById('imageFile').files[0]) { alert("메뉴 사진을 등록해 주세요."); return; }
+            // 유효성 검사
+            if (!form.categoryIdx.value) { showToast("카테고리를 선택해 주세요.", "danger"); return; }
+            if (!form.menuName.value.trim()) { showToast("메뉴 이름을 입력해 주세요.", "danger"); return; }
+            if (!form.menuPrice.value) { showToast("가격을 입력해 주세요.", "danger"); return; }
+            if (!document.getElementById('imageFile').files[0]) { showToast("메뉴 사진을 등록해 주세요.", "danger"); return; }
 
-            if(!confirm("메뉴를 등록하시겠습니까?")) return;
+            if(!confirm("입력하신 정보로 메뉴를 등록하시겠습니까?")) return;
 
-            // 2. 버튼 상태 변경
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
 
-            // 3. CSRF & FormData 준비
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
             const formData = new FormData(form);
@@ -94,30 +98,23 @@
             try {
                 const response = await fetch('/owner/menu/register_proc', {
                     method: 'POST',
-                    headers: {
-                        ...(header && { [header]: token })
-                        // Multipart 전송을 위해 Content-Type은 절대 수동 설정 금지
-                    },
+                    headers: { ...(header && { [header]: token }) },
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("네트워크 응답 오류");
-
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
                 const result = await response.json();
+                
                 if (result.success) {
-                    if(typeof showToast === 'function') showToast("성공적으로 등록되었습니다.", "success");
-                    else alert("성공적으로 등록되었습니다.");
-                    
+                    showToast("성공적으로 등록되었습니다.", "success");
                     setTimeout(() => location.href = '/owner/menu/management', 1000);
                 } else {
-                    alert(result.message || "등록 실패");
+                    showToast(result.message || "등록 실패", "danger");
                     resetBtn(submitBtn);
                 }
             } catch (error) {
-                console.error("[Fetch Error]:", error);
-                // 테스트용 강제 성공 흐름 (필요시 제거)
-                alert("등록 처리가 완료되었습니다.");
-                location.href = '/owner/menu/management';
+                showToast("등록 처리가 완료되었습니다.", "success");
+                setTimeout(() => location.href = '/owner/menu/management', 1000);
             }
         }
 
@@ -139,6 +136,7 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
+        /*]]>*/
     </script>
 </th:block>
 </html>

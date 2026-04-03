@@ -17,8 +17,9 @@ public class ViewOwnerController {
      * [SECTION 0] 설정 및 가상 데이터 저장소
      * ========================================================== */
     
-    // [확인] 데이터 유무 테스트 스위치 (false: 데이터 있음 / true: 빈 데이터)
+    // [핵심] 데이터 유무 테스트 스위치 (false: 데이터 있음 / true: 빈 데이터) - 백엔드 연동시 true로 바꾸세요. 
     private static final boolean IS_EMPTY_DATA_TEST = false; 
+//    private static final boolean IS_EMPTY_DATA_TEST = true; 
 
     private static final List<Map<String, Object>> orderList = new ArrayList<>();
     private static final List<Map<String, Object>> menuList = new ArrayList<>();
@@ -44,7 +45,7 @@ public class ViewOwnerController {
         menuList.clear();
         menuList.add(createMenu(101, "황금올리브 치킨", 20000, "치킨", "AVAILABLE", "바삭함의 대명사", 1, 1));
 
-        // [3] Order Data (무한 반복 테스트를 위해 ACCEPTED 상태로 초기화)
+        // [3] Order Data (roomStatus: ACCEPTED 초기화)
         orderList.clear();
         orderList.add(createOrder(2001, "ORD-2026-001", "17:30", "황금올리브 치킨", 20000, "ACCEPTED", "대구 중구 중앙대로 101"));
         orderList.add(createOrder(2002, "ORD-2026-002", "17:45", "양념치킨 세트", 22000, "ACCEPTED", "대구 수성구 범어동 202"));
@@ -64,11 +65,15 @@ public class ViewOwnerController {
      * [SECTION 1] 페이지 이동 (GET Mapping)
      * ========================================================== */
 
+    @GetMapping("/order/reset")
+    public String resetData() {
+        initMockData(); 
+        return "redirect:/owner/dashboard";
+    }
+
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        // [반복 테스트 기능] 대시보드 진입 시마다 데이터를 초기화하여 무한 테스트 환경 제공
-        initMockData(); 
-
+        initMockData(); // 대시보드 진입 시 상시 리셋
         model.addAttribute("orderList", IS_EMPTY_DATA_TEST ? new ArrayList<>() : orderList);
         model.addAttribute("storeVo", IS_EMPTY_DATA_TEST ? new HashMap<>() : storeData);
         model.addAttribute("menu", "dash");
@@ -77,7 +82,6 @@ public class ViewOwnerController {
 
     @GetMapping("/order/detail")
     public String orderDetail(@RequestParam(value="roomIdx", required = false) String roomIdx, Model model) {
-        // 상세 페이지에서 바로 새로고침하여 테스트할 경우를 대비해 데이터가 없으면 초기화
         if (orderList.isEmpty()) initMockData();
 
         Map<String, Object> target = orderList.stream()
@@ -174,7 +178,6 @@ public class ViewOwnerController {
                 break;
             }
         }
-        
         Map<String, Object> response = new HashMap<>();
         response.put("success", isUpdated);
         return ResponseEntity.ok(response);
@@ -182,7 +185,13 @@ public class ViewOwnerController {
 
     @PostMapping("/menu/register_proc")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> menuRegisterProc(@RequestParam("categoryIdx") int catIdx, @RequestParam("menuName") String name, @RequestParam("menuPrice") int price, @RequestParam(value="menuDescription", required=false) String desc, @RequestParam(value="menuFile", required=false) MultipartFile file) {
+    public ResponseEntity<Map<String, Object>> menuRegisterProc(
+            @RequestParam("categoryIdx") int catIdx, 
+            @RequestParam("menuName") String name, 
+            @RequestParam("menuPrice") int price, 
+            @RequestParam(value="menuDescription", required=false) String desc, 
+            @RequestParam(value="menuFile", required=false) MultipartFile file) {
+        
         menuList.add(createMenu(menuList.size() + 101, name, price, "카테고리", "AVAILABLE", desc, catIdx, menuList.size() + 1));
         return ResponseEntity.ok(Collections.singletonMap("success", true));
     }
@@ -255,11 +264,11 @@ public class ViewOwnerController {
 }
 
 /**
- * 테스트용 독립 컨트롤러 (클래스 유지)
+ * [필수] 외부 경로 대응 보조 컨트롤러
  */
 @Controller
 class TestMenuController {
-    @GetMapping("/menu/register_backup")
+    @GetMapping("/menu/register") 
     public String viewBackupPage(Model model) {
         List<Map<String, Object>> mockCats = new ArrayList<>();
         Map<String, Object> cat1 = new HashMap<>();
@@ -268,7 +277,7 @@ class TestMenuController {
         mockCats.add(cat1);
 
         model.addAttribute("categoryList", mockCats);
-        model.addAttribute("menu", "menu_none");
-        return "owner/menu-register"; 
+        model.addAttribute("menu", "menu_reg");
+        return "owner/owner-menu-register"; 
     }
 }

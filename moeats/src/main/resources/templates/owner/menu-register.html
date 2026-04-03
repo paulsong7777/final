@@ -4,51 +4,58 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content" class="container-fluid px-4 py-4" style="max-width: 1000px;">
+<head>
+    <title>메뉴 목록 관리 - MoEats</title>
+    </head>
+
+<body>
+<main layout:fragment="content" class="menu-page-wrapper">
     
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2" style="border-color: var(--moeats-navy) !important;">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2 menu-manage-header">
         <div>
-            <h3 class="fw-bold mb-0 text-navy"><i class="bi bi-journal-text me-2 text-orange"></i>등록메뉴가 없습니다.</h3>
-            <p class="text-secondary small mb-0 mt-1">메뉴를 등록하고 모이츠에서 번창하세요. </p>
+            <h3 class="fw-bold mb-0 text-navy">
+                <i class="bi bi-journal-text me-2 text-orange"></i>
+                <span th:text="${not #lists.isEmpty(menuList)} ? '메뉴 목록 관리' : '등록메뉴가 없습니다.'">메뉴 관리</span>
+            </h3>
+            <p class="text-secondary small mb-0 mt-1">등록된 메뉴의 판매 상태와 정보를 관리합니다.</p>
         </div>
-        <a th:href="@{/owner/menu/register}" class="btn btn-warning text-white fw-bold px-4 rounded-pill shadow-sm" style="background-color: var(--moeats-orange); border: none;">
+        <a th:href="@{/owner/menu/register}" class="btn btn-orange text-white fw-bold px-4 rounded-pill shadow-sm">
             <i class="bi bi-plus-lg me-1"></i> 신규 메뉴 등록
         </a>
     </div>
 
-    <div class="row g-4" th:with="safeList=${menuList ?: {}}">
-        <th:block th:if="${not #lists.isEmpty(safeList)}">
-            <div th:each="menu : ${safeList}" class="col-md-6 col-lg-4 col-xl-4" th:id="|menu-wrapper-${menu['menuIdx'] ?: 0}|">
-                <div th:id="|menu-card-${menu['menuIdx'] ?: 0}|" 
+    <div class="row g-4">
+        <th:block th:if="${not #lists.isEmpty(menuList)}">
+            <div th:each="menu : ${menuList}" class="col-md-6 col-lg-4" th:id="|menu-wrapper-${menu['menuIdx']}|">
+                <div th:id="|menu-card-${menu['menuIdx']}|" 
                      class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden menu-item-card"
-                     th:classappend="${menu['menuStatus'] == 'SOLD_OUT'} ? 'sold-out-card' : ''">
+                     th:classappend="${menu['menuStatus'] == 'SOLD_OUT'} ? 'is-sold-out' : ''">
                     
                     <div class="card-body p-3 d-flex align-items-center">
-                        <div class="flex-shrink-0 position-relative" style="width: 100px; height: 100px;">
-                            <img th:id="|menu-img-${menu['menuIdx'] ?: 0}|"
+                        <div class="flex-shrink-0 position-relative menu-img-container">
+                            <img th:id="|menu-img-${menu['menuIdx']}|"
                                  th:src="${menu['menuImg'] != null and menu['menuImg'] != '' ? menu['menuImg'] : 'https://via.placeholder.com/150/FF8000/FFFFFF?text=No+Image'}" 
-                                 class="w-100 h-100 rounded-3 border menu-img-thumb" 
-                                 style="object-fit: cover;"
-                                 th:styleappend="${menu['menuStatus'] == 'SOLD_OUT'} ? 'filter: grayscale(1) blur(1px) opacity(0.6);' : ''">
+                                 class="rounded-3 border menu-img-thumb" 
+                                 th:classappend="${menu['menuStatus'] == 'SOLD_OUT'} ? 'img-grayscale-effect' : ''">
                             
-                            <div th:id="|soldout-badge-${menu['menuIdx'] ?: 0}|" 
+                            <div th:id="|soldout-badge-${menu['menuIdx']}|" 
                                  class="position-absolute top-50 start-50 translate-middle badge bg-dark opacity-75 px-3 py-2 fw-bold"
-                                 th:style="${menu['menuStatus'] == 'SOLD_OUT' ? 'display: block;' : 'display: none;'}">품절</div>
+                                 th:classappend="${menu['menuStatus'] == 'SOLD_OUT'} ? 'd-block' : 'd-none'">품절</div>
                         </div>
 
                         <div class="flex-grow-1 ms-3 overflow-hidden">
                             <div class="small text-muted mb-1" th:text="${menu['categoryName'] ?: '기본'}">카테고리</div>
-                            <h5 class="fw-bold mb-1 text-navy text-truncate" th:text="${menu['menuName'] ?: '이름 없음'}">메뉴명</h5>
-                            <div class="fw-bold text-orange fs-5" th:text="|${#numbers.formatInteger(menu['menuPrice'] ?: 0, 0, 'COMMA')}원|">0원</div>
+                            <h5 class="fw-bold mb-1 text-navy text-truncate-custom" th:text="${menu['menuName'] ?: '이름 없음'}">메뉴명</h5>
+                            <div class="fw-bold text-orange fs-5" th:text="${#numbers.formatInteger(menu['menuPrice'] ?: 0, 0, 'COMMA')} + '원'">0원</div>
                         </div>
                     </div>
 
                     <div class="card-footer bg-white border-0 p-3 pt-0 d-flex justify-content-between align-items-center">
                         <div class="form-check form-switch m-0 d-flex align-items-center gap-2">
-                            <input class="form-check-input custom-switch cursor-pointer" type="checkbox" role="switch"
+                            <input class="form-check-input custom-switch-toggle" type="checkbox" role="switch"
                                    th:checked="${menu['menuStatus'] == 'AVAILABLE'}"
-                                   th:onchange="handleToggleSoldOut([[${menu['menuIdx'] ?: 0}]], this.checked)">
-                            <label th:id="|status-label-${menu['menuIdx'] ?: 0}|" 
+                                   th:onchange="|handleToggleSoldOut('${menu['menuIdx']}', this.checked)|">
+                            <label th:id="|status-label-${menu['menuIdx']}|" 
                                    class="form-check-label small fw-bold" 
                                    th:classappend="${menu['menuStatus'] == 'AVAILABLE'} ? 'text-success' : 'text-danger'"
                                    th:text="${menu['menuStatus'] == 'AVAILABLE' ? '판매중' : '품절중'}">상태</label>
@@ -56,85 +63,28 @@
 
                         <div class="d-flex gap-2">
                             <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-bold" 
-                                    th:onclick="|location.href='/owner/menu/edit?menuIdx=' + [[${menu['menuIdx'] ?: 0}]]|">수정</button>
+                                    th:onclick="|location.href='/owner/owner-menu-edit?menuIdx=' + '${menu['menuIdx']}'|">수정</button>
                             <button class="btn btn-link text-danger btn-sm text-decoration-none p-0 fw-bold" 
-                                    th:onclick="handleDeleteMenu([[${menu['menuIdx'] ?: 0}]])">삭제</button>
+                                    th:onclick="|handleDeleteMenu('${menu['menuIdx']}')|">삭제</button>
                         </div>
                     </div>
                 </div>
             </div>
         </th:block>
 
-        <div th:if="${#lists.isEmpty(safeList)}" class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border border-dashed">
+        <div th:if="${#lists.isEmpty(menuList)}" class="col-12 text-center py-5 empty-list-container">
             <i class="bi bi-inbox fs-1 text-light d-block mb-3 opacity-50"></i>
             <p class="text-muted fw-bold">등록된 메뉴가 없습니다.</p>
             <a th:href="@{/owner/menu/register}" class="btn btn-sm btn-outline-warning rounded-pill px-4">메뉴 등록하러 가기</a>
         </div>
     </div>
-
-    <div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1060;">
-        <div id="moeatsToast" class="toast align-items-center text-white bg-dark border-0 rounded-3 shadow" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body fw-bold" id="toastMessage"></div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    </div>
-</div>
+</main>
 
 <th:block layout:fragment="script">
-    <style>
-        .sold-out-card { background-color: #f8f9fa !important; border: 1px solid #eee !important; }
-        .custom-switch { width: 3.2rem !important; height: 1.6rem !important; cursor: pointer; }
-        .custom-switch:checked { background-color: var(--moeats-orange) !important; border-color: var(--moeats-orange) !important; }
-        .menu-item-card { transition: all 0.3s ease; border: 1px solid transparent !important; }
-        .menu-item-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; border-color: #eee !important; }
-    </style>
-    
     <script th:inline="javascript">
-        let moeatsToast;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            moeatsToast = new bootstrap.Toast(document.getElementById('moeatsToast'), { delay: 2500 });
-        });
-
-        // ⭐ 공통 Toast 함수
-        function showToast(msg, type = 'dark') {
-            const toastEl = document.getElementById('moeatsToast');
-            const msgEl = document.getElementById('toastMessage');
-            toastEl.className = `toast align-items-center text-white border-0 rounded-3 shadow bg-${type}`;
-            msgEl.innerText = msg;
-            moeatsToast.show();
-        }
-
+        /*<![CDATA[*/
         /**
-         * [AJAX 공통 함수] moeatsFetch
-         * 테스트 중 백엔드 오류가 나도 무조건 성공으로 보정
-         */
-        async function moeatsFetch(url, data) {
-            const token = document.querySelector('meta[name="_csrf"]')?.content;
-            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(header && { [header]: token })
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (!response.ok) return { success: true }; // 테스트 보정
-                return await response.json();
-            } catch (e) {
-                console.error("Fetch Error:", e);
-                return { success: true }; // 테스트 보정
-            }
-        }
-
-        /**
-         * [AJAX] 품절 상태 토글 (alert 제거 완료)
+         * [AJAX] 품절 상태 토글
          */
         async function handleToggleSoldOut(idx, isChecked) {
             if(!idx) return;
@@ -144,7 +94,6 @@
                 menuStatus: isChecked ? 'AVAILABLE' : 'SOLD_OUT'
             });
 
-            // ⭐ alert 대신 Toast와 UI 변경 로직만 남김
             if(result && result.success) {
                 const card = document.getElementById(`menu-card-${idx}`);
                 const img = document.getElementById(`menu-img-${idx}`);
@@ -152,48 +101,42 @@
                 const label = document.getElementById(`status-label-${idx}`);
                 
                 if(isChecked) {
-                    card.classList.remove('sold-out-card');
-                    img.style.filter = "none";
-                    badge.style.display = "none";
+                    card.classList.remove('is-sold-out');
+                    img.classList.remove('img-grayscale-effect');
+                    badge.classList.replace('d-block', 'd-none');
                     label.innerText = "판매중";
                     label.className = "form-check-label small fw-bold text-success";
                 } else {
-                    card.classList.add('sold-out-card');
-                    img.style.filter = "grayscale(1) blur(1px) opacity(0.6)";
-                    badge.style.display = "block";
+                    card.classList.add('is-sold-out');
+                    img.classList.add('img-grayscale-effect');
+                    badge.classList.replace('d-none', 'd-block');
                     label.innerText = "품절중";
                     label.className = "form-check-label small fw-bold text-danger";
                 }
-                showToast("상태가 변경되었습니다.", "success");
-            } else {
-                showToast("상태 변경에 실패했습니다.", "danger");
+                showToast("상태가 업데이트되었습니다.", "success");
             }
         }
 
         /**
-         * [AJAX] 메뉴 삭제 처리 (alert 제거 완료)
+         * [AJAX] 메뉴 삭제 처리
          */
         async function handleDeleteMenu(idx) {
             if(!idx) return;
-            
-            // confirm은 브라우저 기본창을 쓰되, 결과 알림은 Toast로 처리
             if(!confirm("정말로 이 메뉴를 삭제하시겠습니까?")) return;
 
             const result = await moeatsFetch('/owner/menu/delete', { menuIdx: idx });
             
             if(result && result.success) {
-                showToast("메뉴가 성공적으로 삭제되었습니다.", "success");
+                showToast("메뉴가 삭제되었습니다.", "dark");
                 const wrapper = document.getElementById(`menu-wrapper-${idx}`);
                 if(wrapper) {
-                    wrapper.style.transition = "all 0.4s ease";
-                    wrapper.style.opacity = "0";
-                    wrapper.style.transform = "scale(0.9)";
-                    setTimeout(() => wrapper.remove(), 400);
+                    // 애니메이션은 클래스 기반으로 외부 CSS에서 처리하도록 유도
+                    wrapper.classList.add('fade-out-animation');
+                    setTimeout(() => wrapper.remove(), 300);
                 }
-            } else {
-                showToast("삭제 처리에 실패했습니다.", "danger");
             }
         }
+        /*]]>*/
     </script>
 </th:block>
 </html>

@@ -4,11 +4,16 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/main-layout}">
 
-<div layout:fragment="content" class="container-fluid py-4">
-    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 650px;">
+<head>
+    <title>메뉴 정보 수정 - MoEats</title>
+    </head>
+
+<body>
+<main layout:fragment="content" class="edit-page-wrapper">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white menu-edit-card">
         <div class="card-body p-4 p-md-5">
             
-            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3" style="border-color: var(--moeats-navy) !important;">
+            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3 edit-header-line">
                 <a th:href="@{/owner/menu/management}" class="text-navy text-decoration-none fw-bold me-3">
                     <i class="bi bi-arrow-left"></i> 뒤로가기
                 </a>
@@ -22,16 +27,15 @@
                 <div class="mb-4 text-center">
                     <label class="form-label d-block small fw-bold text-secondary text-uppercase text-start">메뉴 사진</label>
                     <input type="file" id="menuFile" name="menuFile" accept="image/*" class="d-none" onchange="previewImage(this)">
-                    <div id="uploadArea" class="cursor-pointer border-dashed bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden shadow-none" 
-                         onclick="document.getElementById('menuFile').click()"
-                         style="width: 100%; height: 250px; border: 2px dashed #ddd; cursor: pointer;">
+                    
+                    <div id="uploadArea" class="cursor-pointer bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden menu-upload-box" 
+                         onclick="document.getElementById('menuFile').click()">
                         
                         <img id="imagePreview" 
                              th:src="${menuVo['menuImg'] != null and menuVo['menuImg'] != '' ? menuVo['menuImg'] : 'https://via.placeholder.com/500/FF8000/FFFFFF?text=No+Image'}" 
-                             class="w-100 h-100" style="object-fit: cover; display: block;">
+                             class="menu-preview-img" alt="메뉴 미리보기">
                         
-                        <div id="uploadOverlay" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 opacity-0 transition-all" 
-                             style="top:0; left:0; pointer-events: none; transition: 0.3s;">
+                        <div id="uploadOverlay" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 menu-upload-overlay">
                             <span class="fw-bold small text-white text-center">
                                 <i class="bi bi-camera-fill d-block fs-3 mb-1"></i>
                                 이미지를 변경하려면 클릭하세요
@@ -43,7 +47,7 @@
 
                 <div class="mb-4" th:with="safeCats=${categoryList ?: {}}">
                     <label class="form-label small fw-bold text-secondary text-uppercase">카테고리 선택</label>
-                    <select name="categoryIdx" class="form-select border-0 bg-light py-3 shadow-none rounded-3 fw-bold text-navy">
+                    <select name="categoryIdx" class="form-select py-3 rounded-3 fw-bold text-navy custom-edit-input">
                         <option value="">카테고리를 선택하세요</option>
                         <option th:each="cat : ${safeCats}" 
                                 th:value="${cat['categoryIdx'] ?: 0}" 
@@ -54,14 +58,14 @@
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 이름</label>
-                    <input type="text" name="menuName" class="form-control border-0 bg-light py-3 shadow-none rounded-3 fw-bold" 
+                    <input type="text" name="menuName" class="form-control py-3 rounded-3 fw-bold custom-edit-input" 
                            th:value="${menuVo['menuName'] ?: ''}" placeholder="메뉴 이름을 입력하세요">
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">판매 가격</label>
                     <div class="input-group">
-                        <input type="number" name="menuPrice" class="form-control border-0 bg-light py-3 shadow-none text-end rounded-start-3 fw-bold" 
+                        <input type="number" name="menuPrice" class="form-control py-3 text-end fw-bold custom-edit-input" 
                                th:value="${menuVo['menuPrice'] ?: 0}">
                         <span class="input-group-text border-0 bg-light text-navy fw-bold rounded-end-3">원</span>
                     </div>
@@ -69,9 +73,9 @@
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 상세 설명</label>
-                    <textarea name="menuDescription" class="form-control border-0 bg-light py-3 shadow-none rounded-3" 
+                    <textarea name="menuDescription" class="form-control py-3 rounded-3 custom-edit-input no-resize-area" 
                               rows="4" th:text="${menuVo['menuDescription'] ?: ''}" 
-                              style="resize: none;" placeholder="메뉴에 대한 설명을 입력하세요"></textarea>
+                              placeholder="메뉴에 대한 설명을 입력하세요"></textarea>
                 </div>
 
                 <div class="row g-2 pt-3">
@@ -80,8 +84,7 @@
                                 onclick="location.href='/owner/menu/management'">취소</button>
                     </div>
                     <div class="col-8">
-                        <button type="button" class="btn btn-warning text-white fw-bold w-100 py-3 rounded-pill fs-5 shadow-sm"
-                                style="background-color: var(--moeats-orange); border: none;"
+                        <button type="button" class="btn btn-orange-action text-white fw-bold w-100 py-3 rounded-pill fs-5 shadow-sm"
                                 onclick="showEditConfirm()">
                             수정 완료
                         </button>
@@ -90,102 +93,76 @@
             </form>
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content border-0 shadow rounded-4">
-            <div class="modal-body text-center p-4">
-                <div class="mb-3">
-                    <i class="bi bi-pencil-square" style="font-size: 3rem; color: var(--moeats-orange);"></i>
-                </div>
-                <h5 class="fw-bold mb-2">정보 수정</h5>
-                <p class="text-muted small mb-4">입력하신 정보로 메뉴를<br>수정하시겠습니까?</p>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-light w-50 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">취소</button>
-                    <button type="button" id="submitBtn" class="btn btn-warning text-white w-50 py-2 rounded-3 fw-bold" 
-                            style="background-color: var(--moeats-orange); border:none;" onclick="handleEditSubmit()">확인</button>
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-pencil-square fs-1 icon-orange"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">정보 수정</h5>
+                    <p class="text-muted small mb-4">입력하신 정보로 메뉴를<br>수정하시겠습니까?</p>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light w-50 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">취소</button>
+                        <button type="button" id="submitBtn" class="btn btn-orange-action text-white w-50 py-2 rounded-3 fw-bold" 
+                                onclick="handleEditSubmit()">확인</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</main>
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
+        /*<![CDATA[*/
         let editModal;
 
         document.addEventListener("DOMContentLoaded", () => {
             editModal = new bootstrap.Modal(document.getElementById('editModal'));
-            
-            // 이미지 영역 마우스 호버 효과
-            const uploadArea = document.getElementById('uploadArea');
-            const overlay = document.getElementById('uploadOverlay');
-            if(uploadArea && overlay) {
-                uploadArea.onmouseenter = () => { overlay.style.opacity = '1'; };
-                uploadArea.onmouseleave = () => { overlay.style.opacity = '0'; };
-            }
         });
 
-        /**
-         * [1단계] 유효성 검사 및 모달 노출
-         */
-        function showEditConfirm() {
-            const form = document.getElementById('menuEditForm');
-            const categoryIdx = form.querySelector('[name="categoryIdx"]').value;
-            const menuName = form.querySelector('[name="menuName"]').value.trim();
-            const menuPrice = form.querySelector('[name="menuPrice"]').value;
-
-            // [전역 showToast 사용]
-            if(!categoryIdx) { showToast("카테고리를 선택해 주세요.", "danger"); return; }
-            if(!menuName) { showToast("메뉴 이름을 입력해 주세요.", "danger"); return; }
-            if(!menuPrice) { showToast("가격을 입력해 주세요.", "danger"); return; }
-
-            editModal.show();
-        }
-
-        /**
-         * [2단계] AJAX 비동기 수정 처리
-         */
         async function handleEditSubmit() {
             const form = document.getElementById('menuEditForm');
             const submitBtn = document.getElementById('submitBtn');
             const formData = new FormData(form);
-
-            // [Security] CSRF
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
             
-            // UI 상태 변경
             editModal.hide();
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
             try {
-                // [Rule] 변경은 POST 고정
                 const response = await fetch('/owner/menu/edit_proc', {
                     method: 'POST',
                     headers: { ...(header && { [header]: token }) },
                     body: formData
                 });
 
-                // [테스트 보정: moeatsFetch 로직 차용 가능하나 개별 fetch 사용 시]
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast("메뉴 정보가 수정되었습니다.", "success");
+                    showToast("메뉴 정보가 성공적으로 수정되었습니다.", "success");
                     setTimeout(() => location.href = '/owner/menu/management', 1000);
                 } else {
                     showToast(result.message || "수정 실패", "danger");
                     resetSubmitBtn(submitBtn);
                 }
             } catch (error) {
-                console.error("[Critical Edit Error]:", error);
-                showToast("통신 중 오류가 발생했습니다.", "danger");
+                showToast("통신 오류가 발생했습니다.", "danger");
                 resetSubmitBtn(submitBtn);
             }
+        }
+
+        function showEditConfirm() {
+            const form = document.getElementById('menuEditForm');
+            if(!form.categoryIdx.value) { showToast("카테고리를 선택해 주세요.", "danger"); return; }
+            if(!form.menuName.value.trim()) { showToast("이름을 입력해 주세요.", "danger"); return; }
+            if(!form.menuPrice.value) { showToast("가격을 입력해 주세요.", "danger"); return; }
+            editModal.show();
         }
 
         function resetSubmitBtn(btn) {
@@ -197,13 +174,11 @@
             const preview = document.getElementById('imagePreview');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = e => { 
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                };
+                reader.onload = e => { preview.src = e.target.result; };
                 reader.readAsDataURL(input.files[0]);
             }
         }
+        /*]]>*/
     </script>
 </th:block>
 </html>
