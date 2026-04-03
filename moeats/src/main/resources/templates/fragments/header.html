@@ -1,20 +1,157 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<!-- header 여기는 화이트 헤더 
-M배지 Mo-eats로고 가게찾기 주문방참여 내주문 코드참여 로그인
--->
-<div th:fragment="header" class="row  border-bottom border-primary my -3">
-	@{fragments/::header}
-</div>
+<html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <style>
+
+.mo-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--mo-border);
+}
+
+.mo-header__inner {
+    display: grid;
+    grid-template-columns: auto minmax(240px, 420px) 1fr auto;
+    align-items: center;
+    gap: 16px;
+    min-height: 80px;
+}
+
+.mo-header__brand {
+    display: inline-flex;
+    align-items: center;
+}
+
+.mo-header__logo {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--mo-navy-900);
+    letter-spacing: -0.04em;
+}
+
+.mo-header__search .form-control {
+    min-height: 44px;
+    border-radius: var(--mo-radius-pill);
+}
+
+.mo-header__nav {
+    justify-content: center;
+    gap: 20px;
+}
+
+.mo-header__link {
+    font-weight: 600;
+    color: var(--mo-text-default);
+    transition: color var(--mo-transition);
+}
+
+.mo-header__link:hover {
+    color: var(--mo-navy-900);
+}
+
+.mo-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mo-header__menu-btn {
+    width: 44px;
+    height: 44px;
+    padding: 8px;
+    border: 1px solid var(--mo-border);
+    border-radius: 14px;
+    background: #FFFFFF;
+}
+
+.mo-header__menu-btn span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    margin: 5px 0;
+    background: var(--mo-navy-900);
+    border-radius: 999px;
+}
+
+.mo-mobile-nav {
+    display: none;
+    padding: 0 0 16px;
+    gap: 10px;
+}
+
+.mo-mobile-nav.is-open {
+    display: grid;
+}
+
+.mo-mobile-nav__search {
+    margin-bottom: 8px;
+}
+
+.mo-mobile-nav__link {
+    display: block;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(42, 54, 89, 0.04);
+    font-weight: 600;
+    color: var(--mo-text-strong);
+}
+    </style>
 </head>
-<img src="images/recommend.png" alt="배지">&nbsp;M
-<!-- content가 들어올때마다 바뀌는 부분 -->
-<div class="row ">
-</div>
 <body>
+<!-- /* header */ -->
+<!-- /* header라는 프래그먼트를 정의*/ -->
+<div th:fragment="header" class="row border-bottom border"></div>
+<header class="container-fluid" id="global-header">
+    <div class="row align-items-center px-lg-5 px-3">
+        <div class="col-4 logo-box">
+            <a href="main.jsp">
+                <img src="https://via.placeholder.com/180x60/252D59/FF8000?text=Mo-Eats" alt="Mo-Eats Logo">
+            </a>
+        </div>
+
+        <div class="col-8">
+            <div class="row">
+                <div class="col">
+                    <ul class="nav justify-content-end align-items-center">
+                        <li class="nav-item">
+                            <a class="nav-link" href='${ sessionScope.isLogin ? "logout.jsp" : "loginForm.jsp" }'>
+                                <i class="bi bi-power"></i> ${ sessionScope.isLogin ? "로그아웃" : "로그인" }
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <c:if test="${ not sessionScope.isLogin }">
+                                <a class="nav-link" href="#">회원가입</a>
+                            </c:if> 
+                            <c:if test="${ sessionScope.isLogin }">
+                                <a class="nav-link" href="#">내 정보수정</a>
+                            </c:if>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="main.jsp">게시글</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">주문/배송</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">고객센터</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row mt-1">
+                <div class="col text-end">
+                    <c:if test="${ sessionScope.isLogin }">
+                        <span class="user-greeting">
+                            <i class="bi bi-person-circle me-1"></i>안녕하세요, <strong>${ sessionScope.id }</strong>님!
+                        </span>
+                    </c:if>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
 
 </body>
 </html>
