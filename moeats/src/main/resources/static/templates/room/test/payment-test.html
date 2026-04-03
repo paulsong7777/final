@@ -7,7 +7,7 @@
 <head th:replace="~{fragments/header :: headMeta('결제 진행')}"></head>
 
 payment.html
-individual / representitive 분리 (6시이후 클로드 리젠)
+individual / representitive 분리 (매일1회? 클로드 리젠)
 결제모드 분리는 room-dtail에서는 할 필요 없고, 결제모드로 진입하면 그때 나누면 된다
 payment-representative.html 모아결제창 생성
 payment-individual.html 개인결제창 생성 
@@ -279,10 +279,29 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
 
 <!--
 실전: 아래 hidden input들은 Thymeleaf가 서버 값으로 채워서 JS에 전달
-<input type="hidden" id="orderIdx"        th:value="${order.orderIdx}">
-<input type="hidden" id="paymentMode"     th:value="${order.paymentMode}">
+roomCode 추가: payment.js 가 읽어 GET /rooms/code/{roomCode}/sse 에 연결
+               → SSEService.join(roomIdx) 호출 → 결제 현황 실시간 수신
+
+SSE 연결 흐름:
+    payment.js → EventSource('/rooms/code/' + roomCode + '/sse')
+    → SSEService.join(roomIdx) 등록
+    → 누군가 결제 완료 시 서버가 SSEService.send(roomIdx, "paymentUpdate") 브로드캐스트
+    → payment.js의 addEventListener('paymentUpdate') 가 결제 현황 테이블 DOM 갱신
+    → 전원 완료 시 SSEService.send(roomIdx, "paymentCompleted") → /orders/{orderIdx}/complete 이동
+    → 타임아웃/취소 시 SSEService.send(roomIdx, "paymentCancelled") → 방으로 복귀
+
+수신 이벤트 (이벤트명 오타 주의: "connnect" n 3개, 서버 SSEService 원본과 동일하게):
+    "connect"         - 연결 확인
+    "paymentUpdate"    - 결제 현황 변경
+    "paymentCompleted" - 전원 결제 완료
+    "paymentCancelled" - 타임아웃 또는 취소
+
+<input type="hidden" id="orderIdx"         th:value="${order.orderIdx}">
+<input type="hidden" id="paymentMode"      th:value="${order.paymentMode}">
 <input type="hidden" id="paymentStartedAt" th:value="${order.paymentStartedAt}">
+<input type="hidden" id="roomCode"         th:value="${order.roomCode}">
 -->
+
 <!-- [더미] JS에 값을 전달하는 hidden input -->
 <input type="hidden" id="orderIdx"         value="1">
 <input type="hidden" id="paymentMode"      value="INDIVIDUAL">

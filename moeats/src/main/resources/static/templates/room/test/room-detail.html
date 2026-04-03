@@ -407,12 +407,21 @@
 <!--
 실전: Thymeleaf가 서버 값으로 채워서 JS에 전달
 roomCode 추가 (방 나가기/checkout URL에 사용)
+SSE 연결: room-detail.js 가 roomCode 를 읽어 GET /rooms/code/{roomCode}/sse 에 연결
+          → SSEService.join(roomIdx) 호출 → roomMap 에 등록됨
+          → 이후 참여자 현황 변경 시 서버가 SSEService.send() 로 이벤트 브로드캐스트
+
+수신 이벤트 (SSEService.send 가 전송, room-detail.js 가 addEventListener 로 처리):
+    "connect"          - 연결 확인 (백엔드에 보고하여 오타 수정 완료)
+    "participantUpdate" - 참여자 현황 변경 시 → 테이블 DOM 갱신
+    "roomStatusChange"  - 방 상태 변경 시 → 페이지 처리
 
 <input type="hidden" id="roomIdx"    th:value="${orderRoom.roomIdx}">
 <input type="hidden" id="roomCode"   th:value="${orderRoom.roomCode}">
 <input type="hidden" id="myRole"     th:value="${myRole}">
 <input type="hidden" id="roomStatus" th:value="${orderRoom.roomStatus}">
 -->
+
 <!-- [더미] JS에 값을 전달하는 hidden input -->
 <input type="hidden" id="roomIdx"    value="1">
 <input type="hidden" id="roomCode"   value="135797">
