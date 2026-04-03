@@ -146,26 +146,6 @@ public class RoomController {
 			ra.addFlashAttribute("error", "사용자를 강퇴하는 중 오류가 발생했습니다");
 		return "redirect:/rooms/code/"+roomCode;
 	}
-	@PostMapping("/rooms/code/{room_code}/select")
-	public String selectRoom(
-			RedirectAttributes ra,
-			@PathVariable("room_code") String roomCode,
-			@RequestAttribute("orderRoom") OrderRoom orderRoom,
-			@SessionAttribute("member") Member member) {
-		if( orderRoom.isJoinLocked() || orderRoomService.setSelect(member.getMemberIdx())==0 )
-			ra.addFlashAttribute("error", "주문을 확정하는 중 오류가 발생했습니다");
-		return "redirect:/rooms/code/"+roomCode;
-	}
-	@PostMapping("/rooms/code/{room_code}/unselect")
-	public String unselectRoom(
-			RedirectAttributes ra,
-			@PathVariable("room_code") String roomCode,
-			@RequestAttribute("orderRoom") OrderRoom orderRoom,
-			@SessionAttribute("member") Member member) {
-		if( orderRoom.isJoinLocked() || orderRoomService.unselect(member.getMemberIdx())==0 )
-			ra.addFlashAttribute("error", "주문을 확정을 취소하는 중 오류가 발생했습니다");
-		return "redirect:/rooms/code/"+roomCode;
-	}
 	@PostMapping("/rooms/code/{room_code}/cancel")
 	public String cancelRoom(
 			RedirectAttributes ra,
