@@ -1,5 +1,6 @@
 package com.moeats.services;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +31,14 @@ public class PaymentService {
 	public PaymentShare findShareByIdx(int paymentShareIdx) {
 		return paymentShareMapper.findByIdx(paymentShareIdx);
 	}
+	public PaymentShare findPaymentMember(int paymentIdx,int memberIdx) {
+		return paymentShareMapper.findPaymentMember(paymentIdx,memberIdx);
+	}
 	public List<PaymentShare> findByPayment(int paymentIdx) {
 		return paymentShareMapper.findByPayment(paymentIdx);
+	}
+	public List<PaymentShare> findPaymentPending(int paymentIdx) {
+		return paymentShareMapper.findPaymentPending(paymentIdx);
 	}
 	public List<PaymentShare> findPaymentPaidSelf(int paymentIdx) {
 		return paymentShareMapper.findPaymentPaidSelf(paymentIdx);
@@ -41,6 +48,9 @@ public class PaymentService {
 	}
 	public int paySelf(int paymentShareIdx) {
 		return paymentShareMapper.paySelf(paymentShareIdx);
+	}
+	public int paidByRepresentative(int paymentIdx,Timestamp paidAt) {
+		return paymentShareMapper.paidByRepresentative(paymentIdx,paidAt);
 	}
 	
 	public int cancel(int paymentIdx) {

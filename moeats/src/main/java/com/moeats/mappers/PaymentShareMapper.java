@@ -14,7 +14,7 @@ public interface PaymentShareMapper {
 	PaymentShare findByIdx(int paymentShareIdx);
 	List<PaymentShare> findByPayment(int paymentIdx);
 	List<PaymentShare> findByMember(int memberIdx);
-	PaymentShare findByPaymentMember(
+	PaymentShare findPaymentMember(
 		@Param("paymentIdx") int paymentIdx,
 		@Param("memberIdx") int memberIdx);
 	// 결제하지 않은 사람을 찾는 메서드	- 사실상 결제 완료되었는지 판단하기 위한 메서드
@@ -23,7 +23,7 @@ public interface PaymentShareMapper {
 	List<PaymentShare> findPaymentPaidSelf(int paymentIdx);
 	int insert(PaymentShare paymentShare);
 	int paidByRepresentative(
-		@Param("paymentShareIdx") int paymentShareIdx,
+		@Param("paymentIdx") int paymentIdx,
 		@Param("paidAt") Timestamp paidAt);
 	int paySelf(int paymentShareIdx);
 	// 취소된다면 방 전체가 취소된다	- 따라서 paymentIdx를 받는다

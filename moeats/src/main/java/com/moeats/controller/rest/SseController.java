@@ -10,11 +10,15 @@ import com.moeats.domain.OrderRoom;
 import com.moeats.services.sse.SSEService;
 
 @RestController
-public class RoomRestController {
+public class SseController {
 	@Autowired
 	SSEService sseService;
 	@GetMapping("/rooms/code/{room_code}/subscribe")
 	public SseEmitter subscribeRoom(@RequestAttribute("orderRoom") OrderRoom orderRoom) {
+		return sseService.joinRoom(orderRoom.getRoomIdx());
+	}
+	@GetMapping("/orders/{order_idx}/subscribe")
+	public SseEmitter subscribeOrder(@RequestAttribute("orderRoom") OrderRoom orderRoom) {
 		return sseService.joinRoom(orderRoom.getRoomIdx());
 	}
 }

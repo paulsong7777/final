@@ -27,15 +27,24 @@ public class GroupOrderService {
 	@Autowired
 	OrderDeliveryMapper orderDeliveryMapper;
 	
-//	public GroupOrder findByRoom(int roomIdx) {
-//		return groupOrderMapper.findByRoom(roomIdx);
-//	}
+	public GroupOrder findByIdx(int orderIdx) {
+		return groupOrderMapper.findByIdx(orderIdx);
+	}
+	public GroupOrder findByRoom(int roomIdx) {
+		return groupOrderMapper.findByRoom(roomIdx);
+	}
 	public int insert(GroupOrder groupOrder) {
 		return groupOrderMapper.insert(groupOrder);
 	}
 	
+	public List<GroupOrderItem> findByOrder(int orderIdx){
+		return groupOrderItemMapper.findByOrder(orderIdx);
+	}
 	public List<GroupOrderItem> findOrderMemberAmount(int orderIdx){
 		return groupOrderItemMapper.findOrderMemberAmount(orderIdx);
+	}
+	public List<GroupOrderItem> findOrderItemAmount(int orderIdx){
+		return groupOrderItemMapper.findOrderItemAmount(orderIdx);
 	}
 	public List<GroupOrderItem> findRoomMemberAmount(int roomIdx){
 		GroupOrder groupOrder = groupOrderMapper.findByRoom(roomIdx);

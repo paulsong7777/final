@@ -16,6 +16,7 @@ public interface GroupOrderItemMapper {
 		@Param("orderIdx") int orderIdx,
 		@Param("memberIdx") int memberIdx);
 	List<GroupOrderItem> findOrderMemberAmount(int orderIdx);
+	List<GroupOrderItem> findOrderItemAmount(int orderIdx);
 	int insert(GroupOrderItem groupOrderItem);
 	int delete(int orderIdx);
 }
