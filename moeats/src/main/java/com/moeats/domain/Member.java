@@ -19,7 +19,7 @@ public class Member {
 	String memberNickname;				// 닉네임
 	String memberPhone;					// 전화번호
 	String memberRoleType;				// 회원타입(일반,가게)
-	String defaultDeliveryAddressIdx;	// 기본 배송지
+	int defaultDeliveryAddressIdx;	// 기본 배송지
 	String memberStatus;				// 회원상태
 	Timestamp createdAt;				// 가입날짜
 	Timestamp updatedAt;				// 수정날짜

@@ -1,12 +1,19 @@
 package com.moeats.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.moeats.domain.Store;
+import com.moeats.dto.StoreSearchCond;
 
 @Mapper
 public interface StoreMapper {
+	
+	// 고객 가게 조회
+	public List<Store> storeList(StoreSearchCond cond);
+	
 	
 	public Store findByStoreIdxAndOwner(@Param("storeIdx") int storeIdx,
 								@Param("ownerMemberIdx") int ownerMemberIdx);

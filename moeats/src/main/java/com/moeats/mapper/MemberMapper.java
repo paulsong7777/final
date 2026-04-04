@@ -7,6 +7,8 @@ import com.moeats.domain.Member;
 @Mapper
 public interface MemberMapper {
 	
+	// 기본 배송지 가져옴
+	public Integer getDefaultAddressIdx(int memberIdx);
 	
 	// 회원정보 수정
 	public void updateMember(Member member);
