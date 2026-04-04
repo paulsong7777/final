@@ -8,6 +8,11 @@
 	<select id="findByIdx" resultType="StoreMenu">
 		SELECT * FROM store_menu WHERE menu_idx = #{menuIdx}
 	</select>
+	<select id="findByIdxs" resultType="StoreMenu">
+		SELECT * FROM store_menu WHERE menu_idx IN (
+			<foreach item="menuIdx" collection="menuIdxs" separator=",">#{menuIdx}</foreach>
+		)
+	</select>
 	<select id="findByStore" resultType="StoreMenu">
 		SELECT * FROM store_menu WHERE store_idx = #{storeIdx}
 	</select>

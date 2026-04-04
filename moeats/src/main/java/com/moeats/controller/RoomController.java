@@ -21,8 +21,10 @@ import com.moeats.domain.GroupOrder;
 import com.moeats.domain.Member;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.RoomParticipant;
+import com.moeats.domain.StoreMenu;
 import com.moeats.services.GroupCartItemService;
 import com.moeats.services.MemberService;
+import com.moeats.services.MenuService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.TransactionService;
 import com.moeats.services.sse.SSEService;
@@ -36,6 +38,8 @@ public class RoomController {
 	OrderRoomService orderRoomService;
 	@Autowired
 	GroupCartItemService groupCartItemService;
+	@Autowired
+	MenuService menuService;
 	@Autowired
 	TransactionService transactionService;
 	@Autowired
@@ -78,7 +82,7 @@ public class RoomController {
 			@PathVariable("room_code") String roomCode,
 			@SessionAttribute("member") Member member) {
 		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
-		if( orderRoom==null) {
+		if( orderRoom==null ) {
 			ra.addFlashAttribute("error","해당하는 방을 찾을 수 없습니다");
 			return "redirect:/rooms/join";
 		}
@@ -170,22 +174,30 @@ public class RoomController {
 			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
 		
-		final record MemberItems(RoomParticipant roomParticipant,Member member,List<GroupCartItem> items) {}
+		record CartItem(GroupCartItem groupCartItem,StoreMenu storeMenu) {}
+		record MemberItem(RoomParticipant roomParticipant,Member member,List<CartItem> items) {}
 		
-		Map<Integer,List<GroupCartItem>> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx())
-				.stream().collect(Collectors.groupingBy(GroupCartItem::getMemberIdx));
+		List<GroupCartItem> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx());
+		Map<Integer,StoreMenu> storeMenuMap = menuService.findByIdxs(
+					groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()
+				).stream().collect(Collectors.toMap(StoreMenu::getMenuIdx, storeMenu -> storeMenu));
+		Map<Integer,List<CartItem>> cartItemMap = groupCartItems
+				.stream().collect(
+						Collectors.groupingBy(GroupCartItem::getMemberIdx,
+								Collectors.mapping(groupCartItem -> new CartItem(groupCartItem, storeMenuMap.get(groupCartItem.getMenuIdx())),
+										Collectors.toList())));
 		Map<Integer,RoomParticipant> roomParticipantMap = orderRoomService.findByRoom(orderRoom.getRoomIdx())
 				.stream().collect(Collectors.toMap(RoomParticipant::getMemberIdx, roomParticipant -> roomParticipant));
 		
 		RoomParticipant myState = roomParticipantMap.remove(member.getMemberIdx());
-		List<GroupCartItem> myCartItems = groupCartItems.getOrDefault(member.getMemberIdx(),List.of());
+		List<CartItem> myCartItems = cartItemMap.getOrDefault(member.getMemberIdx(),List.of());
 		
-		List<MemberItems> otherCartItems = memberService.findByIdxs(roomParticipantMap.keySet())
-				.stream().map(roomMember->new MemberItems(
+		List<MemberItem> otherCartItems = memberService.findByIdxs(roomParticipantMap.keySet())
+				.stream().map(roomMember->new MemberItem(
 						roomParticipantMap.get(roomMember.getMemberIdx()),
 						roomMember,
-						groupCartItems.getOrDefault(roomMember.getMemberIdx(), List.of())
-				)).toList();
+						cartItemMap.getOrDefault(roomMember.getMemberIdx(), List.of()))
+				).toList();
 		
 		model.addAttribute("orderRoom",orderRoom);
 		model.addAttribute("myState",myState);
@@ -220,7 +232,9 @@ public class RoomController {
 			ra.addFlashAttribute("error","해당 장바구니 항목을 찾을 수 없거나 잘못된 접근입니다");
 			return String.format("redirect:/rooms/code/%s/cart",roomCode);
 		}
+		StoreMenu storeMenu = menuService.findByIdx(groupCartItem.getMenuIdx());
 		model.addAttribute("groupCartItem", groupCartItem);
+		model.addAttribute("storeMenu",storeMenu);
 		return "cart-item-edit";
 	}
 	@PostMapping("/rooms/code/{room_code}/cart/items/{cart_item_idx}/edit")

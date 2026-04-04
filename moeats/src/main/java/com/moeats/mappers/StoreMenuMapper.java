@@ -1,6 +1,7 @@
 package com.moeats.mappers;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -11,6 +12,7 @@ import com.moeats.domain.StoreMenu;
 public interface StoreMenuMapper {
 	List<StoreMenu> findAll();
 	StoreMenu findByIdx(int menuIdx);
+	List<StoreMenu> findByIdxs(Set<Integer> menuIdxs);
 	List<StoreMenu> findByStore(int storeIdx);
 	List<StoreMenu> findByName(String menuName);
 	List<StoreMenu> findByNameStore(
