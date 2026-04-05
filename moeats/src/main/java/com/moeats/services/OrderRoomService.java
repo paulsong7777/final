@@ -21,8 +21,7 @@ public class OrderRoomService {
 	OrderRoomMapper orderRoomMapper;
 	@Autowired
 	RoomParticipantMapper roomParticipantMapper;
-	@Autowired
-	Random random;
+	private final Random random = new Random();
 	
 	// 겹치지 않는 6자리 숫자와 알파벳으로 이루어진 코드 생성
 	public String createCode() {
