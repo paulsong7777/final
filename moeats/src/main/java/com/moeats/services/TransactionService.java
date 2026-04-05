@@ -72,15 +72,21 @@ public class TransactionService {
 		map.put("orderDelivery",orderDelivery);
 		return map;
 	}
-	@Transactional(rollbackFor=Exception.class)
-	public int revertToSelect(OrderRoom orderRoom) {
-		// 결제한 사람이 없을때만 가능
-		Payment payment = paymentService.findByOrder(orderRoom.getRoomIdx());
-		if(		orderRoom==null	||!orderRoom.getRoomStatus().equals("PAYMENT_PENDING")||
-				payment==null	||!paymentService.findPaymentPaidSelf(payment.getPaymentIdx()).isEmpty())
-			return 0;
-		paymentService.delete(payment.getPaymentIdx());
-		groupOrderService.delete(orderRoom.getRoomIdx());
-		return orderRoomService.revertToSelect(orderRoom.getRoomIdx());
-	}
+@Transactional(rollbackFor=Exception.class)
+public int revertToSelect(OrderRoom orderRoom) {
+        if (orderRoom == null || !"PAYMENT_PENDING".equals(orderRoom.getRoomStatus()))
+                return 0;
+
+        GroupOrder groupOrder = groupOrderService.findByRoom(orderRoom.getRoomIdx());
+        if (groupOrder == null)
+                return 0;
+
+        Payment payment = paymentService.findByOrder(groupOrder.getOrderIdx());
+        if (payment == null || !paymentService.findPaymentPaidSelf(payment.getPaymentIdx()).isEmpty())
+                return 0;
+
+        paymentService.delete(payment.getPaymentIdx());
+        groupOrderService.delete(groupOrder.getOrderIdx());
+        return orderRoomService.revertToSelect(orderRoom.getRoomIdx());
+}
 }

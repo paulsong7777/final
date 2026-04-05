@@ -136,20 +136,29 @@ public class RoomController {
 		return "redirect:/rooms/code/"+roomCode;
 	}
 	@PostMapping("/rooms/code/{room_code}/kick")
-	public String kickRoom(
-			RedirectAttributes ra,
-			@RequestParam(defaultValue = "0") int kickMemberIdx,
-			@PathVariable("room_code") String roomCode,
-			@RequestAttribute("orderRoom") OrderRoom orderRoom,
-			@SessionAttribute("member") Member member) {
-		if( orderRoom.getLeaderMemberIdx()!=member.getMemberIdx() ) {
-			ra.addFlashAttribute("error", "잘못된 접근입니다");
-			return "redirect:/main";
-		}
-		if( orderRoom.isJoinLocked() || kickMemberIdx==orderRoom.getLeaderMemberIdx() || orderRoomService.leave(kickMemberIdx)==0 )
-			ra.addFlashAttribute("error", "사용자를 강퇴하는 중 오류가 발생했습니다");
-		return "redirect:/rooms/code/"+roomCode;
-	}
+public String kickRoom(
+        RedirectAttributes ra,
+        @RequestParam(defaultValue = "0") int kickMemberIdx,
+        @PathVariable("room_code") String roomCode,
+        @RequestAttribute("orderRoom") OrderRoom orderRoom,
+        @SessionAttribute("member") Member member) {
+
+    if (orderRoom.getLeaderMemberIdx() != member.getMemberIdx()) {
+        ra.addFlashAttribute("error", "잘못된 접근입니다");
+        return "redirect:/main";
+    }
+
+    RoomParticipant targetParticipant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), kickMemberIdx);
+
+    if (orderRoom.isJoinLocked()
+            || kickMemberIdx == orderRoom.getLeaderMemberIdx()
+            || targetParticipant == null
+            || orderRoomService.leave(targetParticipant.getRoomParticipantIdx()) == 0) {
+        ra.addFlashAttribute("error", "사용자를 강퇴하는 중 오류가 발생했습니다");
+    }
+
+    return "redirect:/rooms/code/" + roomCode;
+}
 	@PostMapping("/rooms/code/{room_code}/cancel")
 	public String cancelRoom(
 			RedirectAttributes ra,

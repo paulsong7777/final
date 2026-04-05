@@ -54,7 +54,7 @@ public class OrderMemberIntercepter implements HandlerInterceptor {
 				FlashMapManager flashMapManager = RequestContextUtils.getFlashMapManager(request);
 				flashMap.put("error", "잘못된 접근입니다");
 				flashMapManager.saveOutputFlashMap(flashMap, request, response);
-				response.sendRedirect(String.format("/home"));
+				response.sendRedirect("/main");
 				return false;
 			}
 		}

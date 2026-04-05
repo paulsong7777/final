@@ -82,7 +82,7 @@ public class OrderController {
 		if( paymentShare==null ) {
 			// 존재해서는 안 되는 오류
 			ra.addFlashAttribute("error", "오류가 발생했습니다 관리자에게 연락해주십시오");
-			return "redirect:/home";
+			return "redirect:/main";
 		}
 		if( payment.getPaymentStatus().equals("PAID"))
 			return String.format("redirect:/orders/%d/status",orderIdx);
@@ -146,7 +146,7 @@ public class OrderController {
  		if( payment.getPaymentMode().equals("REPRESENTATIVE") ) {
  			if( member.getMemberIdx()!=groupOrder.getLeaderMemberIdx() ) {
  				ra.addFlashAttribute("error", "잘못된 접근입니다");
- 				return "redirect:/home";
+ 				return "redirect:/main";
  			}
  			paymentShare = paymentService.findShareByIdx(paymentShareIdx);
  			paymentService.paidByRepresentative(orderIdx,paymentShare.getPaidAt());
@@ -154,12 +154,11 @@ public class OrderController {
  			sseService.completeOrder(orderIdx);
  			return String.format("redirect:/orders/%d/status",orderIdx);
  		}
- 		if( paymentService.findPaymentPending(orderIdx).isEmpty() ){
- 			orderRoomTimer.stop(orderIdx);
- 			sseService.completeOrder(orderIdx);
- 			return String.format("redirect:/orders/%d/status",orderIdx);
- 		}
- 		
- 		return String.format("redirect:/orders/%d/wait",orderIdx);
+if( paymentService.findPaymentPending(payment.getPaymentIdx()).isEmpty() ){
+    orderRoomTimer.stop(orderIdx);
+    sseService.completeOrder(orderIdx);
+    return String.format("redirect:/orders/%d/status",orderIdx);
+}
+return String.format("redirect:/orders/%d/payment/wait",orderIdx);
 	}
 }
