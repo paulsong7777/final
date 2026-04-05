@@ -13,22 +13,19 @@ import jakarta.servlet.http.HttpSession;
 public class OwnerCheckInterceptor implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(HttpServletRequest request,
-                             HttpServletResponse response,
-                             Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        HttpSession session = request.getSession();
-        Member member = (Member) session.getAttribute("member");
+        HttpSession session = request.getSession(false);
 
-        // 1. 로그인 안된 경우
-        if (member == null) {
+        if (session == null || session.getAttribute("member") == null) {
             response.sendRedirect("/login");
             return false;
         }
 
-        // 2. OWNER가 아닌 경우
-        if (!"OWNER".equals(member.getMemberRoleType())) {
-            response.sendRedirect("/main");
+        Member member = (Member) session.getAttribute("member");
+
+        if (member.getMemberRoleType() == null || !member.getMemberRoleType().equals("OWNER")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return false;
         }
 
