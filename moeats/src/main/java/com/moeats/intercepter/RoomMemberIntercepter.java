@@ -20,27 +20,46 @@ import jakarta.servlet.http.HttpSession;
 
 @Component
 public class RoomMemberIntercepter implements HandlerInterceptor {
-	@Autowired
-	OrderRoomService orderRoomService;
-	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-			throws Exception {
-		Map<String, String> pathParams = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-        HttpSession session = request.getSession();
-        Member member = (Member) session.getAttribute("member");
-		if(pathParams!=null) {
-			String roomCode = pathParams.get("room_code");
-			OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
-			if( orderRoom==null || orderRoomService.findRoomMember(orderRoom.getRoomIdx(),member.getMemberIdx())==null ) {
-				FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
-				FlashMapManager flashMapManager = RequestContextUtils.getFlashMapManager(request);
-				flashMap.put("error", "잘못된 접근입니다");
-				flashMapManager.saveOutputFlashMap(flashMap, request, response);
-				response.sendRedirect(String.format("/rooms/join?roomCode=%s",roomCode));
-				return false;
-			}
-			request.setAttribute("orderRoom", orderRoom);
-		}
-		return true;
-	}
+
+    @Autowired
+    private OrderRoomService orderRoomService;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        Map<String, String> pathParams =
+                (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+
+        HttpSession session = request.getSession(false);
+        Member member = session != null ? (Member) session.getAttribute("member") : null;
+
+        if (member == null) {
+            response.sendRedirect("/login");
+            return false;
+        }
+
+        if (pathParams == null) {
+            response.sendRedirect("/main");
+            return false;
+        }
+
+        String roomCode = pathParams.get("room_code");
+        if (roomCode == null || roomCode.isBlank()) {
+            response.sendRedirect("/main");
+            return false;
+        }
+
+        OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
+        if (orderRoom == null || orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
+            FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
+            FlashMapManager flashMapManager = RequestContextUtils.getFlashMapManager(request);
+            flashMap.put("error", "잘못된 접근입니다");
+            flashMapManager.saveOutputFlashMap(flashMap, request, response);
+            response.sendRedirect("/rooms/join?roomCode=" + roomCode);
+            return false;
+        }
+
+        request.setAttribute("orderRoom", orderRoom);
+        return true;
+    }
 }
