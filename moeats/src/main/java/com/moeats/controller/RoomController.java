@@ -300,6 +300,6 @@ public String kickRoom(
 		GroupOrder groupOrder = (GroupOrder) res.get("groupOrder");
 		orderRoomTimer.start(groupOrder.getOrderIdx(),orderRoom.getExpiresAt());
 		sseService.beginOrder(orderRoom.getRoomIdx());
-		return String.format("redirect:/orders/%s/payment",groupOrder.getOrderIdx());
+		return String.format("redirect:/orders/%d/payment",groupOrder.getOrderIdx());
 	}
 }

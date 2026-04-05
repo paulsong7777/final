@@ -101,7 +101,7 @@ public class OrderController {
 			@RequestAttribute("paymentShare") PaymentShare paymentShare,
 			@SessionAttribute("member") Member member) {
 		if( member.getMemberIdx()!=groupOrder.getLeaderMemberIdx() )
-			return String.format("redirect:/orders/%s/payment/wait",orderIdx);
+			return String.format("redirect:/orders/%d/payment/wait",orderIdx);
 		else if( paymentShare.getShareStatus().equals("PAID_SELF") )
 			return String.format("redirect:/orders/%d/status",orderIdx);
 		return "payment-representative";
@@ -111,7 +111,7 @@ public class OrderController {
 			@PathVariable("order_idx") int orderIdx,
 			@RequestAttribute("paymentShare") PaymentShare paymentShare) {
 		if( paymentShare.getShareStatus().equals("PAID_SELF") )
-			return String.format("redirect:/orders/%s/payment/wait",orderIdx);
+			return String.format("redirect:/orders/%d/payment/wait",orderIdx);
 		return "payment-individual";
 	}
 	@GetMapping("/orders/{order_idx}/payment/wait")

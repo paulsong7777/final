@@ -65,7 +65,6 @@ public class TransactionService {
 		orderRoomService.paymentPend(orderRoom.getRoomIdx(), expiresAt);
 		orderRoom.setExpiresAt(expiresAt);
 		
-		assert groupOrder!=null && payment!=null && paymentShares!=null && orderDelivery!=null;
 		map.put("groupOrder",groupOrder);
 		map.put("payment",payment);
 		map.put("paymentShares",paymentShares);

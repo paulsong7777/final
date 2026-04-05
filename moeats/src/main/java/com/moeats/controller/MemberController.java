@@ -51,7 +51,7 @@ public class MemberController {
 		if(!isPassCheck) {
 			model.addAttribute("error", "비밀번호를 확인해주세요.");
 			model.addAttribute("member", member);
-			return "views/member-profile-edit";
+			return "views/members/member-profile-edit";
 		}
 		
 		member.setMemberIdx(loginUser.getMemberIdx());
@@ -127,7 +127,7 @@ public class MemberController {
 
 	    // 사업자 회원이면 사업자 대시보드로 리다이렉트
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	        return "redirect:/member/dashboard";
+	        return "redirect:/members/dashboard";
 	    }
 	    
 		// 만약 가려던 주소가 없었다면(그냥 로그인 버튼 누르고 들어온 경우) 메인으로 보냅니다.
