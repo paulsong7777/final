@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
+
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -57,10 +57,10 @@ public class RoomController {
 		return "room-create";
 	}
 	@PostMapping("/rooms")
-	public String roomCreate(
-			RedirectAttributes ra,
-			@RequestBody OrderRoom orderRoom,
-			@SessionAttribute("member") Member member) {
+public String roomCreate(
+     RedirectAttributes ra,
+      OrderRoom orderRoom,
+      @SessionAttribute("member") Member member) {
 		orderRoom.setLeaderMemberIdx(member.getMemberIdx());
 		String code = null;
 		int res = 0;
@@ -223,10 +223,12 @@ public String kickRoom(
 			@SessionAttribute("member") Member member) {
 		groupCartItem.setMemberIdx(member.getMemberIdx());
 		groupCartItem.setRoomIdx(orderRoom.getRoomIdx());
-		if( orderRoom.isJoinLocked() || groupCartItemService.insert(groupCartItem)==0 )
-			ra.addFlashAttribute("error", "메뉴를 추가하는 중 오류가 발생했습니다");
-		// GET으로 다시 오게 만든다
-		return String.format("redirect:/rooms/code/%s/cart",roomCode);
+if( orderRoom.isJoinLocked() || groupCartItemService.insert(groupCartItem)==0 )
+        ra.addFlashAttribute("error", "메뉴를 추가하는 중 오류가 발생했습니다");
+else
+        revertSelectionIfNeeded(orderRoom, member);
+
+return String.format("redirect:/rooms/code/%s/cart",roomCode);
 	}
 	@GetMapping("/rooms/code/{room_code}/cart/items/{cart_item_idx}/edit")
 	public String cartItemEditForm(
@@ -259,8 +261,11 @@ public String kickRoom(
 		groupCartItem.setRoomIdx(orderRoom.getRoomIdx());
 		groupCartItem.setMemberIdx(member.getMemberIdx());
 		if( orderRoom.isJoinLocked() || preExist==null || preExist.getRoomIdx()!=orderRoom.getRoomIdx() || preExist.getMemberIdx()!=member.getMemberIdx() || groupCartItemService.update(groupCartItem)==0 )
-			ra.addFlashAttribute("error","해당 장바구니 항목을 수정하는 중 오류가 발생했습니다");
-		return String.format("redirect:/rooms/code/%s/cart",roomCode);
+        ra.addFlashAttribute("error","해당 장바구니 항목을 수정하는 중 오류가 발생했습니다");
+else
+        revertSelectionIfNeeded(orderRoom, member);
+
+return String.format("redirect:/rooms/code/%s/cart",roomCode);
 	}
 	@PostMapping("/rooms/code/{room_code}/cart/items/{cart_item_idx}/delete")
 	public String cartItemDelete(
@@ -271,8 +276,11 @@ public String kickRoom(
 			@SessionAttribute("member") Member member) {
 		GroupCartItem groupCartItem = groupCartItemService.findByIdx(cartItemIdx);
 		if( orderRoom.isJoinLocked() || groupCartItem==null || groupCartItem.getRoomIdx()!=orderRoom.getRoomIdx() || groupCartItem.getMemberIdx()!=member.getMemberIdx() || groupCartItemService.remove(cartItemIdx)==0 )
-			ra.addFlashAttribute("error","해당 장바구니 항목을 제거하는 중 오류가 발생했습니다");
-		return String.format("redirect:/rooms/code/%s/cart",roomCode);
+        ra.addFlashAttribute("error","해당 장바구니 항목을 제거하는 중 오류가 발생했습니다");
+else
+        revertSelectionIfNeeded(orderRoom, member);
+
+return String.format("redirect:/rooms/code/%s/cart",roomCode);
 	}
 	@PostMapping("/rooms/code/{room_code}/checkout")
 	public String checkout(
@@ -302,4 +310,11 @@ public String kickRoom(
 		sseService.beginOrder(orderRoom.getRoomIdx());
 		return String.format("redirect:/orders/%d/payment",groupOrder.getOrderIdx());
 	}
+private void revertSelectionIfNeeded(OrderRoom orderRoom, Member member) {
+        RoomParticipant roomParticipant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
+        if (roomParticipant != null) {
+                orderRoomService.unselect(roomParticipant.getRoomParticipantIdx());
+        }
 }
+}
+
