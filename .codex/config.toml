@@ -1,7 +1,0 @@
-# Example Codex config for Mo-Eats
-project_doc_fallback_filenames = ["TEAM_GUIDE.md", ".agents.md"]
-project_doc_max_bytes = 65536
-
-[[skills.config]]
-path = ".agents/skills/moeats-backend-integration-debug/SKILL.md"
-enabled = true
