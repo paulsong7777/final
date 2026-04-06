@@ -29,7 +29,7 @@ public class TransactionService {
 	@Autowired
 	GroupCartItemService groupCartItemService;
 	@Autowired
-	MemberService memberService;
+	OrderMemberQueryService memberService;
 	
 	@Autowired
 	SSEService sseService;

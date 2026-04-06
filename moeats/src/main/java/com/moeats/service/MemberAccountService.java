@@ -8,7 +8,7 @@ import com.moeats.domain.Member;
 import com.moeats.mapper.MemberMapper;
 
 @Service
-public class MemberService {
+public class MemberAccountService {
 
         @Autowired
         private MemberMapper memberMapper;
