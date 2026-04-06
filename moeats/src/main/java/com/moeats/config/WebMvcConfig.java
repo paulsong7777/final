@@ -7,9 +7,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.moeats.interceptor.LoginCheckInterceptor;
 import com.moeats.interceptor.OwnerCheckInterceptor;
-import com.moeats.intercepter.OrderMemberIntercepter;
-import com.moeats.intercepter.PaymentIntercepter;
-import com.moeats.intercepter.RoomMemberIntercepter;
+import com.moeats.interceptor.OrderMemberInterceptor;
+import com.moeats.interceptor.PaymentInterceptor;
+import com.moeats.interceptor.RoomMemberInterceptor;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -21,13 +21,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private OwnerCheckInterceptor ownerCheckInterceptor;
 
     @Autowired
-    private RoomMemberIntercepter roomMemberIntercepter;
+    private RoomMemberInterceptor roomMemberInterceptor;
 
     @Autowired
-    private OrderMemberIntercepter orderMemberIntercepter;
+    private OrderMemberInterceptor orderMemberInterceptor;
 
     @Autowired
-    private PaymentIntercepter paymentIntercepter;
+    private PaymentInterceptor paymentInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -61,7 +61,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(ownerCheckInterceptor)
                 .addPathPatterns("/owners/**");
 
-        registry.addInterceptor(roomMemberIntercepter)
+        registry.addInterceptor(roomMemberInterceptor)
                 .addPathPatterns(
                         "/rooms/code/*/leave",
                         "/rooms/code/*/kick",
@@ -71,14 +71,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/rooms/code/*/checkout"
                 );
 
-        registry.addInterceptor(orderMemberIntercepter)
+        registry.addInterceptor(orderMemberInterceptor)
                 .addPathPatterns(
                         "/orders/*",
                         "/orders/*/payment",
                         "/orders/*/payment/**"
                 );
 
-        registry.addInterceptor(paymentIntercepter)
+        registry.addInterceptor(paymentInterceptor)
                 .addPathPatterns(
                         "/orders/*/payment/**"
                 );

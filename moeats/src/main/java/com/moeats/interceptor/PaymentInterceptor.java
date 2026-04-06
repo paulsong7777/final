@@ -1,4 +1,4 @@
-package com.moeats.intercepter;
+package com.moeats.interceptor;
 
 import java.util.Map;
 
@@ -11,55 +11,49 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import com.moeats.domain.Member;
-import com.moeats.domain.OrderRoom;
-import com.moeats.services.OrderRoomService;
+import com.moeats.domain.Payment;
+import com.moeats.domain.PaymentShare;
+import com.moeats.services.PaymentService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @Component
-public class RoomMemberIntercepter implements HandlerInterceptor {
+public class PaymentInterceptor implements HandlerInterceptor {
 
     @Autowired
-    private OrderRoomService orderRoomService;
+    private PaymentService paymentService;
 
     @Override
     @SuppressWarnings("unchecked")
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        Map<String, String> pathParams =
-                (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+        Payment payment = (Payment) request.getAttribute("payment");
 
         HttpSession session = request.getSession(false);
         Member member = session != null ? (Member) session.getAttribute("member") : null;
 
-        if (member == null) {
+        if (payment == null || member == null) {
             response.sendRedirect("/login");
             return false;
         }
 
-        if (pathParams == null) {
-            response.sendRedirect("/main");
-            return false;
-        }
+        PaymentShare paymentShare = paymentService.findPaymentMember(payment.getPaymentIdx(), member.getMemberIdx());
+        if (paymentShare == null) {
+            Map<String, String> pathParams =
+                    (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
-        String roomCode = pathParams.get("room_code");
-        if (roomCode == null || roomCode.isBlank()) {
-            response.sendRedirect("/main");
-            return false;
-        }
-
-        OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
-        if (orderRoom == null || orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
             FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
             FlashMapManager flashMapManager = RequestContextUtils.getFlashMapManager(request);
-            flashMap.put("error", "잘못된 접근입니다");
+            flashMap.put("error", "?섎せ???묎렐?낅땲??);
             flashMapManager.saveOutputFlashMap(flashMap, request, response);
-            response.sendRedirect("/rooms/join?roomCode=" + roomCode);
+
+            String orderIdx = pathParams != null ? pathParams.get("order_idx") : null;
+            response.sendRedirect(orderIdx != null ? "/orders/" + orderIdx : "/main");
             return false;
         }
 
-        request.setAttribute("orderRoom", orderRoom);
+        request.setAttribute("paymentShare", paymentShare);
         return true;
     }
 }
