@@ -160,6 +160,6 @@ public class OrderController {
  			return String.format("redirect:/orders/%d/status",orderIdx);
  		}
  		
- 		return String.format("redirect:/orders/%d/wait",orderIdx);
+ 		return String.format("redirect:/orders/%d/payment/wait",orderIdx);
 	}
 }
