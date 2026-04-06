@@ -37,6 +37,12 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
     <h2>대표 결제 (모아결제)</h2>
     <p>방장님, 팀원들의 전체 주문 금액을 한 번에 결제해 주세요.</p>
 
+	<div id="timerContainer" style="background: #fff3f3; padding: 10px; border-radius: 8px; margin-bottom: 20px;">
+        <p style="margin: 0; color: #e74c3c; font-weight: bold;">
+            ⏱️ 결제 제한 시간: <span id="countdown">05:00</span>
+        </p>
+    </div>
+
     <section id="dummyPaymentSection">
         <h3>결제 정보 (더미)</h3>
         <table border="1" style="width:100%; text-align:left;">
@@ -54,6 +60,25 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
             <label><input type="radio" name="dummyMethod" value="KAKAOPAY"> 카카오페이</label><br>
             <label><input type="radio" name="dummyMethod" value="TOSS"> 토스페이</label>
         </div>
+
+<!-- 
+결제자 발생 시 "메뉴 다시 고르기" 버튼 실시간 비활성화
+revertToSelect 로직상 누군가 결제하면 버튼이 작동하지 않습니다. 
+사용자 경험을 위해 누군가 결제하는 순간 UI에서도 버튼을 막아주어야 합니다
+-> 모아결제의 경우 paidMembers는 반드시 empty 일수밖에 업음(방장뺴고)
+-> 그리고 리더가 아니면 어차피 결제가 안 됨
+
+<div th:if="${myRole == 'LEADER'}">
+    <form th:action="@{/rooms/code/{code}/revert(code=${roomCode})}" method="post">
+        <button type="submit" 
+		        th:disabled="${!#lists.isEmpty(paidMembers)}"
+		        th:classappend="${!#lists.isEmpty(paidMembers)} ? 'opacity-50 cursor-not-allowed' : ''">
+		    메뉴 다시 고르기
+		</button>
+    </form>
+</div>
+
+ -->
 
         <button type="button" id="btnTestSubmitPayment" style="padding: 10px 20px; font-weight: bold; cursor: pointer;">
             총 40,000원 결제하기 (더미)

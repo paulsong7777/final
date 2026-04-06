@@ -23,6 +23,8 @@ order-list 전체주문내역 생성 혹은 complete 페이지에 삽입
 api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로 
 경고문만 띄우고 room-detail.html로 보내면 될 것 같다. 이때 파라미터 분석은 별도로 기재한다
 
+* 각자결제 기준 타임아웃 여부를 표시하는 테스트 기능 추가 필요. 타이머 기능 자체는 js파일에 주석으로 있다
+
 -->
 <meta charset="UTF-8">
 
@@ -60,29 +62,40 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
             - item.subtotal   : 소계
 
     <section id="orderSummary">
-        <table border="1">
-            <tr><th>가게명</th>   <td th:text="${order.storeName}">가게 이름</td></tr>
-            <tr><th>배송지</th>   <td th:text="${order.deliveryAddress}">주소</td></tr>
-            <tr><th>결제 방식</th><td th:text="${order.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">각자결제</td></tr>
-        </table>
-        <table border="1">
-            <thead><tr><th>참여자</th><th>메뉴명</th><th>수량</th><th>금액</th></tr></thead>
-            <tbody>
-                <tr th:each="item : ${orderItems}">
-                    <td th:text="${item.memberName}">홍길동</td>
-                    <td th:text="${item.menuName}">메뉴명</td>
-                    <td th:text="${item.quantity}">1</td>
-                    <td th:text="${#numbers.formatInteger(item.subtotal, 1, 'COMMA')} + '원'">0원</td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3"><strong>최종 합계</strong></td>
-                    <td><strong th:text="${#numbers.formatInteger(order.grandTotal ?: 0, 1, 'COMMA')} + '원'">0원</strong></td>
-                </tr>
-            </tfoot>
-        </table>
+    	<div th:unless="${groupOrder.paymentMode == 'REPRESENTATIVE'}">
+	        <table border="1">
+	            <tr><th>가게명</th>   <td th:text="${order.storeName}">가게 이름</td></tr>
+	            <tr><th>배송지</th>   <td th:text="${order.deliveryAddress}">주소</td></tr>
+	            <tr><th>결제 방식</th><td th:text="${order.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">각자결제</td></tr>
+	        </table>
+	        <table border="1">
+	            <thead><tr><th>참여자</th><th>메뉴명</th><th>수량</th><th>금액</th></tr></thead>
+	            <tbody>
+	                <tr th:each="item : ${orderItems}">
+	                    <td th:text="${item.memberName}">홍길동</td>
+	                    <td th:text="${item.menuName}">메뉴명</td>
+	                    <td th:text="${item.quantity}">1</td>
+	                    <td th:text="${#numbers.formatInteger(item.subtotal, 1, 'COMMA')} + '원'">0원</td>
+	                </tr>
+	            </tbody>
+	            <tfoot>
+	                <tr>
+	                    <td colspan="3"><strong>최종 합계</strong></td>
+	                    <td><strong th:text="${#numbers.formatInteger(order.grandTotal ?: 0, 1, 'COMMA')} + '원'">0원</strong></td>
+	                </tr>
+	            </tfoot>
+	        </table>
+        </div>
+        
+        
+        <div th:if="${groupOrder.paymentMode == 'REPRESENTATIVE'}">
+		    <div th:if="${myRole != 'LEADER'}" class="bg-blue-50 text-blue-700 p-4 rounded-lg text-center font-bold mt-4">
+		        💸 방장님이 대표로 결제합니다. (내 결제 예정 금액: 0원)
+		    </div>
+		</div>        
+        
     </section>
+    
     ================================ -->
 
     <!-- [더미] 주문 요약 -->
@@ -186,11 +199,25 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
     method  : GET (취소 확인 화면으로 이동)
     action  : /rooms/{roomIdx}/cancelled
 
-    <section id="cancelSection">
-        <form th:action="@{/rooms/{rIdx}/cancelled(rIdx=${order.roomIdx})}" method="get">
-            <button type="submit" onclick="return confirm('결제를 취소하시겠습니까?')">결제 취소</button>
-        </form>
-    </section>
+    <form th:action="@{/rooms/{rIdx}/cancelled(rIdx=${groupOrder.roomIdx})}" method="get" id="formCancelPayment">
+	    <button type="submit" 
+	            onclick="return confirm('결제를 취소하시겠습니까? 주문방으로 돌아가며 모든 팀원의 결제 대기도 취소됩니다.');"
+	            class="w-full py-3 bg-white text-red-500 border border-red-500 rounded-lg font-bold mt-2">
+	        결제 취소하고 주문방으로 돌아가기
+	    </button>
+	</form>
+    
+     혹은
+     
+     <div th:if="${myRole == 'LEADER'}">
+	    <form th:action="@{/rooms/code/{code}/revert(code=${roomCode})}" method="post">
+	        <button type="submit" id="btnRevertToSelect" 
+	        		onclick="return confirm('결제를 중단하고 메뉴를 다시 고르시겠습니까?');">
+	            결제 중단 및 메뉴 다시 고르기
+	        </button>
+	    </form>
+	</div>
+		
     ================================ -->
 
     <!-- [더미] 결제 취소 -->

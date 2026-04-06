@@ -4,18 +4,10 @@
 실전: th:replace로 공통 head 삽입
 <head th:replace="~{fragments/header :: headMeta('결제 진행')}"></head>
 
-payment.html
-individual / representitive 분리 (매일1회? 클로드 리젠)
-결제모드 분리는 room-dtail에서는 할 필요 없고, 결제모드로 진입하면 그때 나누면 된다
-payment-representative.html 모아결제창 생성
-payment-individual.html 개인결제창 생성 
-payment-wait.html 결제완료자 대기석 생성
-
 order-status.html을 어디에서 이을지 논의
 html대신에 db가 가지고 있을지? 별도의 폼을 보여줄지?
 요구사항정의서에 의하면 "order_status 전이 규칙과 사용자·점주 공통 조회 API 구현" 이라 하므로 별도 폼 필요
 
-order-complete.html 주문완료페이지 생성
 order-list 전체주문내역 생성 혹은 complete 페이지에 삽입
 
 api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로 
@@ -144,12 +136,25 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
     목적    : 결제 취소 요청 → 주문 전체 취소 처리
     method  : GET (취소 확인 화면으로 이동)
     action  : /rooms/{roomIdx}/cancelled
+    
+    각자결제는 메뉴 다 안 고르면 못 넘어가고 어차피 돌아가는 기능은 안 만들거지만 혹시나 해서 여기다가 적어놓음 
 
     <section id="cancelSection">
         <form th:action="@{/rooms/{rIdx}/cancelled(rIdx=${order.roomIdx})}" method="get">
             <button type="submit" onclick="return confirm('결제를 취소하시겠습니까?')">결제 취소</button>
         </form>
     </section>
+    
+    혹은 아래와 같이 메뉴다시고르기에 결제완료시 복귀불가 방어요소를 넣는다
+    
+    <button type="submit" 
+        th:disabled="${!#lists.isEmpty(paidMembers)}"
+        th:classappend="${!#lists.isEmpty(paidMembers)} ? 'opacity-50 cursor-not-allowed' : ''">
+	    메뉴 다시 고르기
+	</button>
+	<p th:if="${!#lists.isEmpty(paidMembers)}" class="text-xs text-gray-500">
+	    이미 결제를 완료한 인원이 있어 메뉴를 수정할 수 없습니다.
+	</p>
     ================================ -->
 
     <!-- [더미] 결제 취소 -->
@@ -164,8 +169,8 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
 
     <section id="testNav">
         <p><strong>[테스트] 화면 이동 확인용</strong></p>
-        <button type="button" id="btnTestGoWait">
-            → 결제 완료 후 대기실(Wait) 이동
+        <button type="button" id="btnTestGoComp">
+            → 결제 완료창 이동
         </button>
         <button type="button" id="btnTestGoBack">
             ← 주문방 상세로 돌아가기

@@ -27,5 +27,33 @@ $(function () {
     $('#btnTestGoDetail').on('click', function () {
         location.href = "room-detail.html";
     });
+	
+	// 3. 5분 타이머 (더미: paymentStartedAt이 비어있으면 지금 시각 기준으로 시작)
+    // 실전: order.paymentStartedAt 값을 hidden input에서 읽어 서버 기준 시각 사용
+    var paymentMode = $('#paymentMode').val();
+    if (paymentMode === 'INDIVIDUAL') {
+        var startedAtStr = $('#paymentStartedAt').val();
+        var startedAt = startedAtStr ? new Date(startedAtStr).getTime() : Date.now();
+        startCountdown(startedAt);
+    }
+
+    function startCountdown(startedAt) {
+        var LIMIT_MS = 5 * 60 * 1000;
+        var timer = setInterval(function () {
+            var remaining = LIMIT_MS - (Date.now() - startedAt);
+            if (remaining <= 0) {
+                clearInterval(timer);
+                $('#countdown').text('00:00').css('color', 'red');
+                alert('[더미] 타임아웃! 실전: group_order CANCELLED 처리 후 취소 화면으로 이동');
+                location.href = 'room-detail.html';
+                return;
+            }
+            var m = Math.floor(remaining / 60000);
+            var s = Math.floor((remaining % 60000) / 1000);
+            var display = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            $('#countdown').text(display);
+            if (remaining <= 60000) $('#countdown').css('color', 'red');
+        }, 1000);
+    }
 
 });

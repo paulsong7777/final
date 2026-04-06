@@ -298,6 +298,26 @@
 
     <!-- ================================
     ③ [실전] 전체 합계    
+    
+    <div class="price-summary">
+	    <div class="flex justify-between">
+	        <span>메뉴 합계</span>
+	        <span th:text="${#numbers.formatInteger(totalItemAmount, 0, 'COMMA')} + '원'"></span>
+	    </div>
+	    <div class="flex justify-between text-blue-600">
+	        <span>배달비</span>
+	        <span th:text="'+ ' + ${#numbers.formatInteger(deliveryFee, 0, 'COMMA')} + '원'"></span>
+	    </div>
+	    <hr>
+	    <div class="flex justify-between font-bold text-xl">
+	        <span>최종 결제 금액</span>
+	        <span th:text="${#numbers.formatInteger(payment.paymentRequestAmount, 0, 'COMMA')} + '원'"></span>
+	    </div>
+	    <div class="flex justify-between text-blue-600">
+	    	<span>최소 주문 금액</span>
+	    </div>
+	</div>
+    
     ================================ -->
 
     <!-- [더미] 전체 합계 -->

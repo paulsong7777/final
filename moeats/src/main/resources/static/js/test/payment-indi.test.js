@@ -23,9 +23,9 @@ $(function() {
         location.href = 'room-detail.html';
     });
 
-    // 3. [네비게이션] 대기실로 강제 이동
-    $('#btnTestGoWait').on('click', function() {
-        location.href = "payment-wait.html";
+    // 3. [네비게이션] 결제완료창으로 강제 이동
+    $('#btnTestGoComp').on('click', function() {
+        location.href = "payment-comp.html";
     });
 
     // 4. [네비게이션] 뒤로 가기
