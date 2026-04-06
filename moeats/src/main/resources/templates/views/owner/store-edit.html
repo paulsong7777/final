@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/owner-layout}"> <head>
+    <title>매장 정보 수정 - MoEats</title>
+    <style>
+        /* [규칙] 디자인팀을 위해 최소한의 구조 스타일만 유지 */
+        .text-navy { color: #001f3f !important; }
+        .text-orange { color: #ff6b00 !important; }
+        .btn-orange-action { background-color: #ff6b00; border-color: #ff6b00; color: white; }
+        .store-image-dropzone { min-height: 200px; border: 2px dashed #dee2e6; cursor: pointer; transition: 0.3s; }
+        .store-img-fit { width: 100%; max-height: 250px; object-fit: cover; border-radius: 12px; }
+    </style>
+</head>
+
+<body>
+<main layout:fragment="content" class="store-setting-page py-4">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 800px;">
+        <div class="card-body p-4 p-md-5">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3">
+                <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-shop me-2 text-orange"></i>매장 정보 수정</h2>
+                <a th:href="@{/owner/dashboard}" class="text-decoration-none text-secondary small fw-bold">
+                    <i class="bi bi-arrow-left me-1"></i>대시보드 돌아가기
+                </a>
+            </div>
+
+            <form id="storeSettingForm" th:action="@{/owner/store/update}" method="post" enctype="multipart/form-data">
+                
+                <input type="hidden" name="storeIdx" th:value="${storeVo['storeIdx'] ?: 0}">
+
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">대표 사진</label>
+                    <div class="col-md-9">
+                        <div id="dropZone" class="bg-light rounded-3 p-4 text-center position-relative store-image-dropzone" 
+                             onclick="document.getElementById('storeImg').click()">
+                            <input type="file" name="storeImg" id="storeImg" accept="image/*" class="d-none" onchange="previewImage(this)">
+                            
+                            <div id="uploadContent" th:classappend="${storeVo['storeImg'] != null} ? 'd-none' : ''">
+                                <i class="bi bi-cloud-arrow-up text-muted fs-1"></i>
+                                <p class="mt-2 mb-0 fw-bold text-navy">클릭하거나 사진을 업로드하세요</p>
+                            </div>
+                            
+                            <div id="imagePreview" th:classappend="${storeVo['storeImg'] == null} ? 'd-none' : ''">
+                                <img id="previewImg" th:src="${storeVo['storeImg']}" alt="미리보기" class="store-img-fit shadow-sm">
+                                <p class="small text-orange fw-bold mt-2 mb-0">사진 변경하기</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">매장명</label>
+                    <div class="col-md-9">
+                        <input type="text" name="storeName" th:value="${storeVo['storeName'] ?: ''}" 
+                               class="form-control py-3 fw-bold text-navy rounded-3 border-2" required>
+                    </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">영업 상태</label>
+                    <div class="col-md-9">
+                        <select name="storeStatus" class="form-select py-3 fw-bold text-navy rounded-3 border-2">
+                            <option value="OPEN" th:selected="${storeVo['storeStatus'] == 'OPEN'}">영업 중</option>
+                            <option value="CLOSED" th:selected="${storeVo['storeStatus'] == 'CLOSED'}">영업 종료</option>
+                            <option value="BREAK" th:selected="${storeVo['storeStatus'] == 'BREAK'}">브레이크 타임</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase">연락처</label>
+                    <div class="col-md-9">
+                        <input type="text" name="storePhone" th:value="${storeVo['storePhone'] ?: ''}" 
+                               class="form-control py-3 fw-bold text-navy rounded-3 border-2" placeholder="010-0000-0000">
+                    </div>
+                </div>
+
+                <div class="mb-4 row">
+                    <label class="col-md-3 fw-bold small text-secondary text-uppercase pt-2">매장 소개</label>
+                    <div class="col-md-9">
+                        <textarea name="storeDescription" rows="5" class="form-control py-3 fw-bold rounded-3 border-2" 
+                                  th:text="${storeVo['storeDescription'] ?: ''}" placeholder="매장 소개글을 입력하세요"></textarea>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5 pt-3 border-top">
+                    <button type="submit" class="btn btn-orange-action text-white fw-bold w-100 py-3 rounded-pill fs-5 shadow-sm">
+                        설정 저장하기
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('uploadContent').classList.add('d-none');
+                    document.getElementById('imagePreview').classList.remove('d-none');
+                    document.getElementById('previewImg').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        /*]]>*/
+    </script>
+</th:block>
+</html>

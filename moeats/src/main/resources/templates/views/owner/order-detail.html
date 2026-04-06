@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layouts/owner-layout}">
+<head>
+    <title>주문 상세 관리 - MoEats</title>
+    <style>
+        .order-step-container { position: relative; padding: 20px 0; }
+        .order-step-line { position: absolute; top: 40px; left: 12.5%; width: 75%; height: 2px; background-color: #eee; z-index: 0; }
+        .order-step-circle { width: 50px; height: 50px; position: relative; z-index: 1; transition: 0.3s; border: 2px solid #eee; background-color: white; }
+        .state-pending { background-color: #f8f9fa; color: #dee2e6; }
+        .state-active-accepted { background-color: #ff6b00; color: white; border-color: #ff6b00; box-shadow: 0 0 10px rgba(255,107,0,0.3); }
+        .state-active-cooking { background-color: #82d13d; color: white; border-color: #82d13d; box-shadow: 0 0 10px rgba(130,209,61,0.3); }
+        .state-active-delivering { background-color: #0d6efd; color: white; border-color: #0d6efd; box-shadow: 0 0 10px rgba(13,110,253,0.3); }
+        .state-active-completed { background-color: #212529; color: white; border-color: #212529; box-shadow: 0 0 10px rgba(33,37,41,0.3); }
+        .text-orange { color: #ff6b00 !important; }
+        .text-navy { color: #001f3f !important; }
+    </style>
+</head>
+
+<body>
+<main layout:fragment="content" class="order-detail-page" th:with="safeOrder=${order ?: {}}">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h4 class="fw-bold mb-0 text-navy">
+                <i class="bi bi-receipt me-2 text-orange"></i>주문 상세 관리
+            </h4>
+        </div>
+        
+        <div class="card-body p-4 p-md-5">
+            <div class="row text-center order-step-container mb-5">
+                <div class="order-step-line"></div>
+                <div class="col-3 order-step-item" th:each="status : ${ {'ACCEPTED', 'COOKING', 'DELIVERING', 'COMPLETED'} }">
+                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center order-step-circle"
+                         th:classappend="${safeOrder['roomStatus'] == status ? 
+                            (status == 'ACCEPTED' ? 'state-active-accepted' : 
+                            (status == 'COOKING' ? 'state-active-cooking' : 
+                            (status == 'DELIVERING' ? 'state-active-delivering' : 'state-active-completed'))) : 'state-pending'}">
+                        <i class="bi fs-4" th:classappend="${status == 'ACCEPTED' ? 'bi-check-lg' : (status == 'COOKING' ? 'bi-fire' : (status == 'DELIVERING' ? 'bi-truck' : 'bi-flag-fill'))}"></i>
+                    </div>
+                    <div class="small fw-bold" th:text="${status == 'ACCEPTED' ? '수락완료' : (status == 'COOKING' ? '조리중' : (status == 'DELIVERING' ? '배달중' : '배달완료'))}">상태</div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4 p-4 bg-light rounded-4 mx-0 border">
+                <div class="col-md-6 text-start">
+                    <p class="text-muted small mb-1">주문 코드: <span class="fw-bold" th:text="${safeOrder['orderCode'] ?: 'N/A'}">ORD-001</span></p>
+                    <h5 class="fw-bold mb-0 text-navy" th:text="${safeOrder['menuName'] ?: '정보 없음'}">메뉴 이름</h5>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted small mb-1">총 결제금액</p>
+                    <h4 class="text-orange fw-bold mb-0" th:text="|${#numbers.formatInteger(safeOrder['totalPrice'] ?: 0, 0, 'COMMA')}원|">0원</h4>
+                </div>
+            </div>
+
+            <div class="d-grid gap-3 pt-2">
+                <button th:if="${(safeOrder['roomStatus'] ?: 'ACCEPTED') == 'ACCEPTED'}" 
+                        class="btn btn-success btn-lg fw-bold py-3 shadow-sm rounded-pill"
+                        th:onclick="handleStatusUpdate(event, [[${safeOrder['roomIdx'] ?: 0}]], 'COOKING')">
+                    조리 시작
+                </button>
+                
+                <button th:if="${safeOrder['roomStatus'] == 'COOKING'}" 
+                        class="btn btn-primary btn-lg fw-bold py-3 shadow-sm rounded-pill"
+                        th:onclick="handleStatusUpdate(event, [[${safeOrder['roomIdx'] ?: 0}]], 'DELIVERING')">
+                    배달 시작
+                </button>
+                
+                <button th:if="${safeOrder['roomStatus'] == 'DELIVERING'}" 
+                        class="btn btn-dark btn-lg fw-bold py-3 shadow-sm rounded-pill"
+                        th:onclick="handleStatusUpdate(event, [[${safeOrder['roomIdx'] ?: 0}]], 'COMPLETED')">
+                    배달 완료
+                </button>
+                
+                <div class="text-center mt-3">
+                    <a th:href="@{/owner/dashboard}" class="btn btn-link text-decoration-none text-secondary fw-medium">
+                        <i class="bi bi-arrow-left me-1"></i> 대시보드로 돌아가기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        /**
+         * [표준 준수] moeatsFetch + showToast 기반 상태 업데이트
+         */
+        async function handleStatusUpdate(event, roomIdx, nextStatus) {
+            if(!roomIdx || roomIdx == 0) {
+                if(typeof showToast === "function") showToast("데이터 번호 인식 오류", "danger");
+                return;
+            }
+
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리중';
+
+            try {
+                // AJAX: 레이아웃 공통 moeatsFetch 사용
+                const result = await moeatsFetch('/owner/status_update', { 
+                    "roomIdx": Number(roomIdx), 
+                    "roomStatus": nextStatus 
+                });
+
+                if(result && result.success) {
+                    // 알러트 대신 토스트 알림 사용
+                    if(typeof showToast === "function") showToast("상태가 업데이트되었습니다.", "success");
+                    
+                    // 테스트를 위해 리로드하여 가상데이터 리셋
+                    setTimeout(() => {
+                        if(nextStatus === 'COMPLETED') location.href = '/owner/dashboard';
+                        else location.reload();
+                    }, 800);
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            } catch(e) {
+                if(typeof showToast === "function") showToast("통신 에러가 발생했습니다.", "danger");
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+        /*]]>*/
+    </script>
+</th:block>
+</html>

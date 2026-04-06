@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/owner-layout}">
+<head>
+    <title>대시보드 - MoEats</title>
+    <style>
+        .moeats-map-wrapper { width: 100%; height: 750px; border-radius: 1rem; border: 2px solid #82d13d; overflow: hidden; }
+        .order-status-scroll { max-height: 750px; overflow-y: auto; background-color: #fcfcfc; scrollbar-width: thin; }
+        .order-entry-card { transition: transform 0.2s ease; border: 1.5px solid #eee !important; cursor: pointer; position: relative; }
+        .order-entry-card:hover { border-color: #ff6b00 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .status-pending { color: #dc3545 !important; font-weight: bold; }
+        .status-accepted { color: #ff6b00 !important; font-weight: bold; }
+        .status-ongoing { color: #82d13d !important; font-weight: bold; }
+    </style>
+</head>
+
+<body>
+<main layout:fragment="content" class="container-fluid">
+    <div id="coord-storage" class="d-none"
+         th:attr="data-lat=${storeVo['latitude'] ?: 35.8714},
+                 data-lng=${storeVo['longitude'] ?: 128.6014}"></div>
+
+    <div th:if="${storeVo != null}" class="row g-3">
+        <div class="col-lg-4 col-xl-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">실시간 주문</h5>
+                    <span class="badge bg-light text-dark border" th:text="${#lists.size(orderList ?: {})} + '건'">0건</span>
+                </div>
+                <div class="card-body p-2 order-status-scroll">
+                    
+                    <th:block th:if="${orderList != null and !#lists.isEmpty(orderList)}">
+                        <div th:each="order : ${orderList}" 
+                             class="card mb-3 shadow-sm order-entry-card" 
+                             th:data-idx="${order['roomIdx']}"
+                             onclick="handleCardClick(event, this)">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-dark" th:text="${order['orderCode'] ?: 'N/A'}">코드</span>
+                                    <div th:switch="${order['roomStatus']}">
+                                        <span th:case="'PENDING'" class="status-pending small">선택중</span>
+                                        <span th:case="'ACCEPTED'" class="status-accepted small">결제완료</span>
+                                        <span th:case="'COOKING'" class="status-ongoing small">조리중</span>
+                                        <span th:case="'DELIVERING'" class="status-ongoing small">배달중</span>
+                                        <span th:case="*" class="text-muted small">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="fw-bold mb-1 fs-6 text-dark text-truncate" th:text="${order['menuName']}">메뉴명</div>
+                                <div class="small text-secondary mb-3 text-truncate" th:text="${order['deliveryAddress1']}">주소</div>
+
+                                <div class="d-grid gap-2 border-top pt-2">
+                                    <button type="button"
+                                            class="btn btn-warning btn-sm fw-bold text-white" 
+                                            th:onclick="handleStatusUpdate(event, [[${order['roomIdx']}]], 'COOKING')">조리 시작 테스트</button>
+                                    
+                                    <button type="button"
+                                            class="btn btn-primary btn-sm fw-bold" 
+                                            th:onclick="handleStatusUpdate(event, [[${order['roomIdx']}]], 'DELIVERING')">배달 시작 테스트</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 col-xl-9">
+            <div id="moeats-map" class="moeats-map-wrapper"></div>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3355be34fede739dcf93c2a5f3ec84f1&libraries=services&autoload=false"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function handleCardClick(event, el) {
+            if (event.target.closest('button')) return;
+            const roomIdx = el.getAttribute('data-idx');
+            if (roomIdx) location.href = '/owner/order/detail?roomIdx=' + roomIdx;
+        }
+
+        function handleStatusUpdate(event, roomIdx, nextStatus) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            if(!roomIdx) return;
+
+            const btn = event.currentTarget;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            fetch('/owner/status_update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(header && { [header]: token })
+                },
+                body: JSON.stringify({ 
+                    "roomIdx": Number(roomIdx), 
+                    "roomStatus": String(nextStatus) 
+                })
+            })
+            .then(() => {
+                // [변경 핵심] 대시보드 새로고침 대신 상세 페이지로 리다이렉트
+                // 조리 시작 테스트 버튼을 누르면 해당 주문의 상세 페이지로 넘어감
+                location.href = '/owner/order/detail?roomIdx=' + roomIdx;
+            })
+            .catch(err => {
+                console.error("Fetch Error:", err);
+                location.reload(); 
+            });
+        }
+
+        function initMap() {
+            const container = document.getElementById('moeats-map');
+            const dataEl = document.getElementById('coord-storage');
+            if(!container || !dataEl) return;
+            const lat = parseFloat(dataEl.getAttribute('data-lat')) || 35.8714;
+            const lng = parseFloat(dataEl.getAttribute('data-lng')) || 128.6014;
+            const map = new kakao.maps.Map(container, { center: new kakao.maps.LatLng(lat, lng), level: 3 });
+            new kakao.maps.Marker({ position: new kakao.maps.LatLng(lat, lng), map: map });
+            window.addEventListener('resize', () => map.relayout());
+        }
+
+        window.addEventListener('load', () => { if(window.kakao) kakao.maps.load(initMap); });
+        /*]]>*/
+    </script>
+</th:block>
+</html>

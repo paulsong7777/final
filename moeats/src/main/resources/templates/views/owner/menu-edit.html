@@ -2,25 +2,36 @@
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main-layout}">
-
-<head>
+      layout:decorate="~{layouts/owner-layout}"> <head>
     <title>메뉴 정보 수정 - MoEats</title>
-    </head>
+    <style>
+        .menu-edit-card { max-width: 700px; }
+        .menu-upload-box { height: 250px; border: 2px dashed #dee2e6; transition: 0.3s; cursor: pointer; }
+        .menu-upload-box:hover { border-color: #FF8000; }
+        .menu-preview-img { width: 100%; height: 100%; object-fit: cover; }
+        .menu-upload-overlay { opacity: 0; transition: 0.3s; }
+        .menu-upload-box:hover .menu-upload-overlay { opacity: 1; }
+        .no-resize-area { resize: none; }
+        .btn-orange-action { background-color: #FF8000 !important; border-color: #FF8000 !important; color: white !important; transition: 0.3s; }
+        .btn-orange-action:hover { background-color: #E67300 !important; transform: translateY(-2px); }
+        .icon-orange { color: #FF8000; }
+        .text-navy { color: #001f3f !important; }
+    </style>
+</head>
 
 <body>
-<main layout:fragment="content" class="edit-page-wrapper">
+<main layout:fragment="content" class="edit-page-wrapper py-4">
     <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white menu-edit-card">
         <div class="card-body p-4 p-md-5">
             
-            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3 edit-header-line">
+            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3">
                 <a th:href="@{/owner/menu/management}" class="text-navy text-decoration-none fw-bold me-3">
-                    <i class="bi bi-arrow-left"></i> 뒤로가기
+                    <i class="bi bi-arrow-left"></i> 목록으로
                 </a>
                 <h3 class="fw-bold mb-0 text-navy">메뉴 정보 수정</h3>
             </div>
 
-            <form id="menuEditForm" enctype="multipart/form-data" onsubmit="return false;" novalidate>
+            <form id="menuEditForm" enctype="multipart/form-data" onsubmit="return false;">
                 
                 <input type="hidden" name="menuIdx" th:value="${menuVo['menuIdx'] ?: 0}">
 
@@ -28,28 +39,27 @@
                     <label class="form-label d-block small fw-bold text-secondary text-uppercase text-start">메뉴 사진</label>
                     <input type="file" id="menuFile" name="menuFile" accept="image/*" class="d-none" onchange="previewImage(this)">
                     
-                    <div id="uploadArea" class="cursor-pointer bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden menu-upload-box" 
+                    <div id="uploadArea" class="bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden menu-upload-box" 
                          onclick="document.getElementById('menuFile').click()">
                         
                         <img id="imagePreview" 
-                             th:src="${menuVo['menuImg'] != null and menuVo['menuImg'] != '' ? menuVo['menuImg'] : 'https://via.placeholder.com/500/FF8000/FFFFFF?text=No+Image'}" 
+                             th:src="${menuVo['menuImg'] ?: 'https://via.placeholder.com/500/FF8000/FFFFFF?text=No+Image'}" 
                              class="menu-preview-img" alt="메뉴 미리보기">
                         
-                        <div id="uploadOverlay" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 menu-upload-overlay">
+                        <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 menu-upload-overlay">
                             <span class="fw-bold small text-white text-center">
                                 <i class="bi bi-camera-fill d-block fs-3 mb-1"></i>
                                 이미지를 변경하려면 클릭하세요
                             </span>
                         </div>
                     </div>
-                    <div class="form-text mt-2 small text-muted text-start">이미지를 클릭하면 사진을 변경할 수 있습니다.</div>
                 </div>
 
-                <div class="mb-4" th:with="safeCats=${categoryList ?: {}}">
+                <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">카테고리 선택</label>
-                    <select name="categoryIdx" class="form-select py-3 rounded-3 fw-bold text-navy custom-edit-input">
+                    <select name="categoryIdx" class="form-select py-3 rounded-3 fw-bold text-navy border-2 shadow-none">
                         <option value="">카테고리를 선택하세요</option>
-                        <option th:each="cat : ${safeCats}" 
+                        <option th:each="cat : ${categoryList ?: {}}" 
                                 th:value="${cat['categoryIdx'] ?: 0}" 
                                 th:text="${cat['categoryName'] ?: '미분류'}"
                                 th:selected="${cat['categoryIdx'] == menuVo['categoryIdx']}">카테고리</option>
@@ -58,22 +68,22 @@
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 이름</label>
-                    <input type="text" name="menuName" class="form-control py-3 rounded-3 fw-bold custom-edit-input" 
+                    <input type="text" name="menuName" class="form-control py-3 rounded-3 fw-bold border-2 shadow-none" 
                            th:value="${menuVo['menuName'] ?: ''}" placeholder="메뉴 이름을 입력하세요">
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">판매 가격</label>
                     <div class="input-group">
-                        <input type="number" name="menuPrice" class="form-control py-3 text-end fw-bold custom-edit-input" 
+                        <input type="number" name="menuPrice" class="form-control py-3 text-end fw-bold border-2 shadow-none" 
                                th:value="${menuVo['menuPrice'] ?: 0}">
-                        <span class="input-group-text border-0 bg-light text-navy fw-bold rounded-end-3">원</span>
+                        <span class="input-group-text border-2 bg-light text-navy fw-bold rounded-end-3">원</span>
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 상세 설명</label>
-                    <textarea name="menuDescription" class="form-control py-3 rounded-3 custom-edit-input no-resize-area" 
+                    <textarea name="menuDescription" class="form-control py-3 rounded-3 border-2 no-resize-area shadow-none" 
                               rows="4" th:text="${menuVo['menuDescription'] ?: ''}" 
                               placeholder="메뉴에 대한 설명을 입력하세요"></textarea>
                 </div>
@@ -120,49 +130,57 @@
         let editModal;
 
         document.addEventListener("DOMContentLoaded", () => {
-            editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            const modalEl = document.getElementById('editModal');
+            if(modalEl) editModal = new bootstrap.Modal(modalEl);
         });
 
+        /**
+         * [AJAX] 메뉴 수정 실행 (Fetch API)
+         * [Rule] FormData 사용 시 Content-Type 명시 금지 (브라우저 자동 설정)
+         */
         async function handleEditSubmit() {
             const form = document.getElementById('menuEditForm');
             const submitBtn = document.getElementById('submitBtn');
             const formData = new FormData(form);
+            
+            // Security: CSRF 토큰 (레이아웃 표준)
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
             
-            editModal.hide();
+            if(editModal) editModal.hide();
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
             try {
                 const response = await fetch('/owner/menu/edit_proc', {
                     method: 'POST',
-                    headers: { ...(header && { [header]: token }) },
+                    headers: { 
+                        ...(header && { [header]: token }) 
+                    },
                     body: formData
                 });
 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast("메뉴 정보가 성공적으로 수정되었습니다.", "success");
-                    setTimeout(() => location.href = '/owner/menu/management', 1000);
+                    alert("메뉴 정보가 성공적으로 수정되었습니다.");
+                    location.href = '/owner/menu/management';
                 } else {
-                    showToast(result.message || "수정 실패", "danger");
+                    alert(result.message || "수정 실패");
                     resetSubmitBtn(submitBtn);
                 }
             } catch (error) {
-                showToast("통신 오류가 발생했습니다.", "danger");
+                alert("통신 오류가 발생했습니다.");
                 resetSubmitBtn(submitBtn);
             }
         }
 
         function showEditConfirm() {
             const form = document.getElementById('menuEditForm');
-            if(!form.categoryIdx.value) { showToast("카테고리를 선택해 주세요.", "danger"); return; }
-            if(!form.menuName.value.trim()) { showToast("이름을 입력해 주세요.", "danger"); return; }
-            if(!form.menuPrice.value) { showToast("가격을 입력해 주세요.", "danger"); return; }
-            editModal.show();
+            if(!form.categoryIdx.value) { alert("카테고리를 선택해 주세요."); return; }
+            if(!form.menuName.value.trim()) { alert("이름을 입력해 주세요."); return; }
+            if(!form.menuPrice.value) { alert("가격을 입력해 주세요."); return; }
+            if(editModal) editModal.show();
         }
 
         function resetSubmitBtn(btn) {
