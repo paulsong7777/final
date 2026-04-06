@@ -30,6 +30,39 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
 
 -->
 
+<!-- ================================
+    ② [실전] 결제 현황 (각자결제 전용)
+    노출 조건: order.paymentMode == 'INDIVIDUAL'
+    서버 제공 model 변수:
+        - paymentShares (List)
+            - share.memberName : 참여자 이름
+            - share.amount     : 해당 참여자 결제 금액
+            - share.status     : PAID | PENDING
+        - paidCount  : 결제 완료 인원 수
+        - totalCount : 전체 참여 인원 수
+
+    타이머:
+        - id="countdown" 엘리먼트에 JS로 카운트다운 표시
+        - order.paymentStartedAt 기준으로 남은 5분 계산
+
+    <section id="paymentStatus" th:if="${order.paymentMode == 'INDIVIDUAL'}">
+        <div id="timerSection">
+            <p>남은 시간: <strong id="countdown">05:00</strong></p>
+        </div>
+        <table border="1">
+            <tr th:each="share : ${paymentShares}">
+                <td th:text="${share.memberName}">홍길동</td>
+                <td th:text="${#numbers.formatInteger(share.amount, 1, 'COMMA')} + '원'">0원</td>
+                <td>
+                    <span th:if="${share.status == 'PAID'}">[완료]</span>
+                    <span th:unless="${share.status == 'PAID'}">[미결제]</span>
+                </td>
+            </tr>
+        </table>
+        <p>완료: <span th:text="${paidCount ?: 0}">0</span>명 / 전체: <span th:text="${totalCount ?: 0}">0</span>명</p>
+    </section>
+    ================================ -->
+
 <html> <!-- 임시용 -->
 
 <!-- <div layout:fragment="content"> -->
@@ -54,6 +87,45 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
             </p>
         </div>
 
+<!-- ================================
+    ③ [실전] 결제 실행
+
+    [각자결제 - 본인 미결제 시]
+    노출 조건: order.paymentMode == 'INDIVIDUAL' AND myPaymentStatus != 'PAID'
+    서버 제공 model 변수: myPaymentStatus(String), myPaymentAmount(int)
+    목적    : 본인 금액만 결제 요청
+    method  : POST
+    action  : /orders/{orderIdx}/payment/complete
+    전송 파라미터:
+        - paymentMode   = INDIVIDUAL
+        - paymentMethod = CARD | TRANSFER | DEMO
+
+    성공 리다이렉트 (두 경우 모두): /orders/{orderIdx}/complete
+
+    <section id="paymentAction">
+        <div th:if="${order.paymentMode == 'REPRESENTATIVE' and myRole == 'LEADER'}">
+            <form th:action="@{/orders/{oIdx}/payment/complete(oIdx=${order.orderIdx})}" method="post" id="formPayLeader">
+                <input type="hidden" name="paymentMode" value="REPRESENTATIVE">
+                <select name="paymentMethod">...</select>
+                <button type="submit" id="btnPayLeader">전체 결제하기</button>
+            </form>
+        </div>
+        <div th:if="${order.paymentMode == 'REPRESENTATIVE' and myRole != 'LEADER'}">
+            <p>방장이 결제를 진행 중입니다.</p>
+        </div>
+        <div th:if="${order.paymentMode == 'INDIVIDUAL' and myPaymentStatus != 'PAID'}">
+            <form th:action="@{/orders/{oIdx}/payment/complete(oIdx=${order.orderIdx})}" method="post" id="formPayIndividual">
+                <input type="hidden" name="paymentMode" value="INDIVIDUAL">
+                <select name="paymentMethod">...</select>
+                <button type="submit" id="btnPayIndividual">내 금액 결제하기</button>
+            </form>
+        </div>
+        <div th:if="${order.paymentMode == 'INDIVIDUAL' and myPaymentStatus == 'PAID'}">
+            <p>결제 완료. 다른 참여자 대기 중.</p>
+        </div>
+    </section>
+    ================================ -->
+
         <h3>결제 수단 선택</h3>
         <div style="margin-bottom: 20px;">
             <label><input type="radio" name="dummyMethod" value="CARD" checked> 신용/체크카드</label><br>
@@ -63,6 +135,29 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
         <button type="button" id="btnTestSubmitIndividual" style="width: 100%; padding: 15px; background: #964900; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
             21,000원 결제하기 (테스트)
         </button>
+    </section>
+    
+    <hr>
+
+    <!-- ================================
+    ④ [실전] 결제 취소
+    목적    : 결제 취소 요청 → 주문 전체 취소 처리
+    method  : GET (취소 확인 화면으로 이동)
+    action  : /rooms/{roomIdx}/cancelled
+
+    <section id="cancelSection">
+        <form th:action="@{/rooms/{rIdx}/cancelled(rIdx=${order.roomIdx})}" method="get">
+            <button type="submit" onclick="return confirm('결제를 취소하시겠습니까?')">결제 취소</button>
+        </form>
+    </section>
+    ================================ -->
+
+    <!-- [더미] 결제 취소 -->
+    <section id="cancelSection">
+        <button type="button" id="btnTestCancel">
+            결제 취소 (더미)
+        </button>
+        <!-- 실전: GET /rooms/{roomIdx}/cancelled -->
     </section>
 
     <hr>
@@ -80,6 +175,12 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
 <footer>
     <hr><p>[더미 푸터] Mo-Eats 테스트</p>
 </footer>
+
+<!-- [더미] JS에 값을 전달하는 hidden input -->
+<input type="hidden" id="orderIdx"         value="1">
+<input type="hidden" id="paymentMode"      value="INDIVIDUAL">
+<input type="hidden" id="paymentStartedAt" value="">
+<!-- paymentStartedAt 비워두면 test.js에서 Date.now()로 대체 -->
 
 <!--
 실전: 아래 hidden input들은 Thymeleaf가 서버 값으로 채워서 JS에 전달

@@ -41,12 +41,6 @@ $(function () {
         location.href = '/orders/test-order/complete';
     });
 
-    // 결제 취소 (더미)
-    // 실전: GET /rooms/{roomIdx}/cancelled
-    $('#btnTestCancel').on('click', function () {
-        if (!confirm('결제를 취소하시겠습니까? 주문 전체가 취소될 수 있습니다.')) return;
-        location.href = '/rooms/test-room/cancelled';
-    });
 
     // 테스트 이동 버튼
     $('#btnTestGoComplete').on('click', function () {
@@ -60,6 +54,9 @@ $(function () {
     });
 	$('#btnTestGoPayRepr').on('click', function () {
         location.href = "payment-repr-test.html";
+    });
+	$('#btnTestGoPayIndi').on('click', function () {
+        location.href = "payment-indi-test.html";
     });
 
 });

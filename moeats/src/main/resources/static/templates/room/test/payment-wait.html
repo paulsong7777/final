@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 
 <head>
 <!--
-실전: th:replace로 공통 head 삽입
-<head th:replace="~{fragments/header :: headMeta('결제 진행')}"></head>
+실전: 단독파일이 아니라 컨텐츠 fragments일 수 있으므로 기재해둠
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/main_layout}"]
+      
+      <div layout:fragment="content"></div>
 
-payment.html
-individual / representitive 분리 (매일1회? 클로드 리젠)
-결제모드 분리는 room-dtail에서는 할 필요 없고, 결제모드로 진입하면 그때 나누면 된다
-payment-representative.html 모아결제창 생성
-payment-individual.html 개인결제창 생성 
-payment-wait.html 결제완료자 대기석 생성
+payment-wait.html
 
-order-status.html을 어디에서 이을지 논의
-html대신에 db가 가지고 있을지? 별도의 폼을 보여줄지?
-요구사항정의서에 의하면 "order_status 전이 규칙과 사용자·점주 공통 조회 API 구현" 이라 하므로 별도 폼 필요
+결제창 -> payment_complete -> order_wait 이 구조로 간다
+
+payment_complete 페이지 생성
+order_wait 페이지 생성
 
 order-complete.html 주문완료페이지 생성
 order-list 전체주문내역 생성 혹은 complete 페이지에 삽입
@@ -25,7 +25,7 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
 
 -->
 <meta charset="UTF-8">
-<title>결제 진행 | Mo-Eats (테스트)</title>
+
 </head>
 
 <body>
@@ -40,10 +40,11 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
 </header>
 
 <main>
-    <h2>결제 진행</h2>
+    <h2>결제 대기실</h2>
+    <p>나의 결제가 완료되었습니다. 다른 팀원들의 결제를 기다리고 있습니다.</p>
 
     <!-- ================================
-    ① [실전] 주문 요약
+    ① [실전] 결제 대기실 및 결제 진행 현황
     서버 제공 model 변수:
         - order.storeName       : 가게명
         - order.deliveryAddress : 배송지 주소
@@ -85,80 +86,47 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
     ================================ -->
 
     <!-- [더미] 주문 요약 -->
-    <section id="orderSummary">
-        <h3>주문 내역 확인 (더미)</h3>
-        <table border="1">
-            <tr><th>가게명</th>   <td>테스트 가게</td></tr>
-            <tr><th>배송지</th>   <td>서울시 강남구 테헤란로 1</td></tr>
-            <tr><th>결제 방식</th><td>각자결제</td></tr>
-        </table>
-        <h4>주문 항목 (확정, 더미)</h4>
-        <table border="1">
-            <thead><tr><th>참여자</th><th>메뉴명</th><th>수량</th><th>금액</th></tr></thead>
-            <tbody>
-                <tr><td>김방장</td><td>순대국밥</td><td>1</td><td>8,000원</td></tr>
-                <tr><td>김방장</td><td>공기밥</td>  <td>2</td><td>2,000원</td></tr>
-                <tr><td>이참여</td><td>해장국</td>  <td>1</td><td>9,000원</td></tr>
-                <tr><td>박참여</td><td>순대국밥</td><td>1</td><td>8,000원</td></tr>
+     <section id="dummyWaitSection">
+        <h3>결제 진행 현황 (더미)</h3>
+        <p>결제 완료 인원: <span id="dummyPaidCount">2</span> / <span id="dummyTotalCount">4</span></p>
+        <table border="1" style="width:100%; text-align:center; margin-bottom: 10px;">
+            <thead>
+                <tr>
+                    <th>참여자</th>
+                    <th>금액</th>
+                    <th>상태</th>
+                </tr>
+            </thead>
+            <tbody id="dummyStatusTable">
+                <tr>
+                    <td>김방장</td>
+                    <td>10,000원</td>
+                    <td style="color: blue; font-weight: bold;">[완료]</td>
+                </tr>
+                <tr>
+                    <td>나(본인)</td>
+                    <td>21,000원</td>
+                    <td style="color: blue; font-weight: bold;">[완료]</td>
+                </tr>
+                <tr class="pending-row">
+                    <td>이팀원</td>
+                    <td>5,000원</td>
+                    <td style="color: red;">[미결제]</td>
+                </tr>
+                <tr class="pending-row">
+                    <td>박신입</td>
+                    <td>4,000원</td>
+                    <td style="color: red;">[미결제]</td>
+                </tr>
             </tbody>
-            <tfoot>
-                <tr><td colspan="3"><strong>최종 합계</strong></td><td><strong>27,000원</strong></td></tr>
-            </tfoot>
         </table>
+        
+        <button type="button" id="btnTestSimulatePay" style="padding: 8px 12px; cursor: pointer; background: #eee; border: 1px solid #ccc; border-radius: 4px;">
+            🔄 [테스트] 다른 팀원 1명 결제 완료 시뮬레이션
+        </button>
     </section>
 
     <hr>
-
-    <!-- ================================
-    ② [실전] 결제 현황 (각자결제 전용)
-    노출 조건: order.paymentMode == 'INDIVIDUAL'
-    서버 제공 model 변수:
-        - paymentShares (List)
-            - share.memberName : 참여자 이름
-            - share.amount     : 해당 참여자 결제 금액
-            - share.status     : PAID | PENDING
-        - paidCount  : 결제 완료 인원 수
-        - totalCount : 전체 참여 인원 수
-
-    타이머:
-        - id="countdown" 엘리먼트에 JS로 카운트다운 표시
-        - order.paymentStartedAt 기준으로 남은 5분 계산
-
-    <section id="paymentStatus" th:if="${order.paymentMode == 'INDIVIDUAL'}">
-        <div id="timerSection">
-            <p>남은 시간: <strong id="countdown">05:00</strong></p>
-        </div>
-        <table border="1">
-            <tr th:each="share : ${paymentShares}">
-                <td th:text="${share.memberName}">홍길동</td>
-                <td th:text="${#numbers.formatInteger(share.amount, 1, 'COMMA')} + '원'">0원</td>
-                <td>
-                    <span th:if="${share.status == 'PAID'}">[완료]</span>
-                    <span th:unless="${share.status == 'PAID'}">[미결제]</span>
-                </td>
-            </tr>
-        </table>
-        <p>완료: <span th:text="${paidCount ?: 0}">0</span>명 / 전체: <span th:text="${totalCount ?: 0}">0</span>명</p>
-    </section>
-    ================================ -->
-
-    <!-- [더미] 결제 현황 (각자결제 시나리오) -->
-    <section id="paymentStatus">
-        <h3>결제 현황 (더미 - 각자결제)</h3>
-        <div id="timerSection">
-            <p>남은 시간: <strong id="countdown">05:00</strong></p>
-            <p>5분 내 모든 참여자가 결제를 완료해야 합니다. 미완료 시 자동 취소됩니다.</p>
-        </div>
-        <table border="1">
-            <thead><tr><th>참여자</th><th>결제 금액</th><th>결제 상태</th></tr></thead>
-            <tbody>
-                <tr><td>김방장</td><td>10,000원</td><td>[완료]</td></tr>
-                <tr><td>이참여</td><td>9,000원</td> <td>[미결제]</td></tr>
-                <tr><td>박참여</td><td>8,000원</td> <td>[미결제]</td></tr>
-            </tbody>
-        </table>
-        <p>완료: <span>1</span>명 / 전체: <span>3</span>명</p>
-    </section>
 
     <hr>
 
@@ -209,22 +177,6 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
     </section>
     ================================ -->
 
-    <!-- [더미] 결제 실행 (각자결제 미결제 시나리오) -->
-    <section id="paymentAction">
-        <h3>결제하기 (더미 - 각자결제, 미결제 상태)</h3>
-        <p>내 결제 금액: <strong>9,000원</strong></p>
-        <label for="payMethodIndividual_dummy">결제 수단 (데모)</label>
-        <select id="payMethodIndividual_dummy">
-            <option value="CARD">신용카드</option>
-            <option value="TRANSFER">계좌이체</option>
-            <option value="DEMO">데모 결제</option>
-        </select>
-        <br>
-        <button type="button" id="btnTestPayIndividual">
-            내 금액 결제하기 (더미)
-        </button>
-        <!-- 실전: POST /orders/{orderIdx}/payment/complete (paymentMode=INDIVIDUAL, paymentMethod=선택값) -->
-    </section>
 
     <hr>
 
@@ -266,7 +218,10 @@ api명세서상 expire하면 redirect:/orders/{order_idx}/status 이므로
             ← 주문방 협업화면으로 돌아가기
         </button>
         <button type="button" id="btnTestGoPayRepr">
-            ← 모아결제 화면(임시)으로 이동
+            ← 모아결제 화면(임시)으로 복귀
+        </button>
+        <button type="button" id="btnTestGoPayIndi">
+            ← 각자결제 화면(임시)으로 복귀
         </button>
     </section>
 
@@ -315,7 +270,7 @@ SSE 연결 흐름:
 <!--
 실전용: <script th:src="@{/js/payment.js}"></script>
 -->
-<script src="/js/test/payment.test.js"></script>
+<script src="/js/test/payment-wait.js"></script>
 
 </body>
 </html>
