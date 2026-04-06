@@ -19,8 +19,8 @@ $(function () {
 
     // 2. [네비게이션] 테스트 이동 버튼
 	// 2-1. [네비게이션] 대기실로 강제 이동	
-	$('#btnTestGoWait').on('click', function() {
-        location.href = "payment-wait.html";
+	$('#btnTestGoComp').on('click', function() {
+        location.href = "payment-comp.html";
     });
 	
 	// 2-2. [네비게이션] 뒤로 가기

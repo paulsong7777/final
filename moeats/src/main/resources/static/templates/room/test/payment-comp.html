@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- 
+
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layouts/main_layout}">
+
+<div layout:fragment="content">
+
+ -->
+
+<head>
+	<meta charset="UTF-8">
+	<title>Insert title here</title>
+	<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let timeLeft = 10; // 10초 카운트다운
+            const countdownEl = document.getElementById('countdownText');
+            const btnGoWait = document.getElementById('btnGoWait');
+            
+            // 이동할 타겟 URL (히든 인풋에서 가져오거나 기본값 사용)
+            const targetUrl = document.getElementById('redirectUrl').value || 'payment-wait.html';
+
+            // 1. 버튼 클릭 시 즉시 이동
+            btnGoWait.addEventListener('click', function() {
+                window.location.href = targetUrl;
+            });
+
+            // 2. 1초마다 카운트다운 감소 및 자동 이동
+            const timerId = setInterval(function () {
+                timeLeft--;
+                
+                if (countdownEl) {
+                    countdownEl.textContent = timeLeft;
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerId); // 타이머 정지
+                    window.location.href = targetUrl; // 자동 리다이렉트
+                }
+            }, 1000);
+        });
+    </script>
+</head>
+<body>
+
+	<section class="text-center py-10">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background-color: #d1fae5; color: #10b981; border-radius: 50%; margin-bottom: 20px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" style="width: 40px; height: 40px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+
+        <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 10px;">결제가 완료되었습니다!</h2>
+        
+        <p style="color: #6b7280; margin-bottom: 30px; line-height: 1.6;">
+            <span th:if="${paymentMode == 'INDIVIDUAL'}">팀원들의 결제 완료를 기다려주세요.</span>
+            <span th:if="${paymentMode == 'REPRESENTATIVE'}">대표 결제가 완료되어 곧 주문이 접수됩니다.</span>
+            <span th:unless="${paymentMode}">주문이 성공적으로 처리되었습니다.</span>
+            <br>
+            잠시 후 대기실로 이동합니다... (<strong id="countdownText" style="color: #ef4444;">10</strong>초)
+        </p>
+
+        <button type="button" id="btnGoWait" 
+                style="width: 100%; max-width: 300px; padding: 15px; background-color: #252D59; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;">
+            대기실로 바로 이동하기
+        </button>
+    </section>
+
+    <input type="hidden" id="redirectUrl" value="payment-wait.html">
+
+</body>
+</html>

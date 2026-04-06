@@ -1,6 +1,6 @@
 // payment.test.js
-// 목적: 백엔드 없이 payment.html 화면 이동 및 타이머 테스트
-// 실전 전환 시 이 파일 대신 payment.js를 로드
+// 목적: 백엔드 없이 payment-wait.html 화면 이동 및 타이머 테스트
+// 실전 전환 시 이 파일 대신 payment-wait.js를 로드
 
 $(function() {
     console.log("🛠️ [테스트 모드] 개인 결제 기능 활성화");
@@ -50,7 +50,7 @@ $(function() {
                 clearInterval(timer);
                 $('#countdown').text('00:00').css('color', 'red');
                 alert('[더미] 타임아웃! 실전: group_order CANCELLED 처리 후 취소 화면으로 이동');
-                location.href = "payment-wait.html";
+                location.href = 'room-detail.html';
                 return;
             }
             var m = Math.floor(remaining / 60000);
