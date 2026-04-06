@@ -37,10 +37,13 @@ public class TransactionService {
 	@Transactional(rollbackFor=Exception.class)
 	public Map<String,Object> beginPayment(OrderRoom orderRoom) throws Exception {
 		boolean isRepresentative = orderRoom.getPaymentMode().equals("REPRESENTATIVE");
-		DeliveryAddress deliveryAddress = memberService.findAddressByIdx(orderRoom.getSelectedDeliveryAddressIdx());
-		if(	deliveryAddress==null || deliveryAddress.getMemberIdx() != orderRoom.getLeaderMemberIdx() )
-			// representativeMemberIdx = orderRoom.getLeaderMemberIdx();
-			throw new Exception();
+		DeliveryAddress deliveryAddress = null;
+		if(orderRoom.getOrderMode().equals("DELIVERY")) {
+			deliveryAddress = memberService.findAddressByIdx(orderRoom.getSelectedDeliveryAddressIdx());
+			if(	deliveryAddress==null || deliveryAddress.getMemberIdx() != orderRoom.getLeaderMemberIdx() )
+				// representativeMemberIdx = orderRoom.getLeaderMemberIdx();
+				throw new Exception();
+		}
 		Map<String,Object> map = new HashMap<>();
 		GroupOrder groupOrder = GroupOrder.from(orderRoom);
 		groupOrder.setOrderTotalAmount(groupCartItemService.findRoomAmount(orderRoom.getRoomIdx()));
@@ -58,8 +61,11 @@ public class TransactionService {
 		if(!isRepresentative)
 			paymentShares.stream().filter(paymentShare->paymentShare.getShareAmount()==0)
 				.forEach(paymentShare->paymentService.paySelf(paymentShare.getPaymentShareIdx()));
-		OrderDelivery orderDelivery = OrderDelivery.from(groupOrder.getOrderIdx(),deliveryAddress);
-		groupOrderService.insertDelivery(orderDelivery);
+		OrderDelivery orderDelivery = null;
+		if(deliveryAddress != null) {
+			orderDelivery = OrderDelivery.from(groupOrder.getOrderIdx(),deliveryAddress);
+			groupOrderService.insertDelivery(orderDelivery);
+		}
 		
 		Timestamp expiresAt = payment.getPaymentExpiresAt();
 		orderRoomService.paymentPend(orderRoom.getRoomIdx(), expiresAt);

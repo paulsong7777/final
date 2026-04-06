@@ -9,7 +9,7 @@ public class OrderRoom {
 	int roomIdx;
 	int leaderMemberIdx;
 	int storeIdx;
-	int	selectedDeliveryAddressIdx;
+	Integer	selectedDeliveryAddressIdx;
 	String roomCode;
 	String orderMode;
 	String paymentMode;

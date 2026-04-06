@@ -44,16 +44,19 @@
 			order_status		= 'ACCEPTED',
 			store_confirmed_at	= CURRENT_TIMESTAMP
 		WHERE order_idx			= #{orderIdx}
+			AND order_status	= 'PAID'
 	</update>
 	<update id="prepare" parameterType="int">
 		UPDATE group_order SET
 			order_status		= 'PREPARING'
 		WHERE order_idx			= #{orderIdx}
+			AND order_status	= 'ACCEPTED'
 	</update>
 	<update id="ready" parameterType="int">
 		UPDATE group_order SET
 			order_status	= 'READY'
 		WHERE order_idx		= #{orderIdx}
+			AND order_status	= 'PREPARING'
 	</update>
 	<update id="deliver" parameterType="int">
 		UPDATE group_order SET
@@ -65,6 +68,7 @@
 			order_status	= 'COMPLETED',
 			completed_at	= CURRENT_TIMESTAMP
 		WHERE order_idx		= #{orderIdx}
+			AND order_status	= 'READY'
 	</update>
 	<update id="cancel" parameterType="int">
 		UPDATE group_order SET
