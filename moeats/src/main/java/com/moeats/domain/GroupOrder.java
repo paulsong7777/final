@@ -22,4 +22,17 @@ public class GroupOrder {
 	Timestamp cancelledAt;
 	Timestamp createdAt;
 	Timestamp updatedAt;
+<<<<<<< HEAD
+=======
+	
+	public static GroupOrder from(OrderRoom orderRoom) {
+		GroupOrder groupOrder = new GroupOrder(); 
+		groupOrder.setRoomIdx(orderRoom.getRoomIdx());
+		groupOrder.setStoreIdx(orderRoom.getStoreIdx());
+		groupOrder.setLeaderMemberIdx(orderRoom.getLeaderMemberIdx());
+		groupOrder.setOrderMode(orderRoom.getOrderMode());
+		groupOrder.setPaymentMode(orderRoom.getPaymentMode());
+		return groupOrder;
+	}
+>>>>>>> origin/integration
 }
