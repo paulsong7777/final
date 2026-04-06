@@ -1,0 +1,14 @@
+interface:
+  display_name: "Mo-Eats Backend Integration Debug"
+  short_description: "Mo-Eats Tier 1 backend integration checks and safe debug workflow"
+  brand_color: "#FF8000"
+  default_prompt: "Analyze the cloned debug branch against the Mo-Eats standards first, report confirmed facts and conflicts, then apply the smallest safe patch only if requested."
+policy:
+  allow_implicit_invocation: false
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "openaiDeveloperDocs"
+      description: "OpenAI Docs MCP server"
+      transport: "streamable_http"
+      url: "https://developers.openai.com/mcp"

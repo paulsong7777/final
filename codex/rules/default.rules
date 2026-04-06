@@ -1,0 +1,30 @@
+# Prompt before GitHub CLI or network-heavy commands outside the sandbox.
+prefix_rule(
+    pattern = ["gh"],
+    decision = "prompt",
+    justification = "GitHub CLI commands outside the sandbox must be reviewed first."
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "prompt",
+    justification = "Never push from Codex without explicit approval."
+)
+
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "prompt",
+    justification = "Require explicit approval before creating commits outside the sandbox."
+)
+
+prefix_rule(
+    pattern = ["curl"],
+    decision = "deny",
+    justification = "Direct network calls outside the sandbox are blocked by default."
+)
+
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "deny",
+    justification = "Dangerous destructive commands are forbidden."
+)
