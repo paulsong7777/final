@@ -14,7 +14,7 @@ import com.moeats.mappers.OrderDeliveryAddressMapper;
 import com.moeats.mappers.OrderMemberMapper;
 
 @Service("orderMemberService")
-public class MemberService {
+public class OrderMemberQueryService {
 	@Autowired
 	OrderMemberMapper memberMapper;
 	@Autowired

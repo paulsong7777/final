@@ -23,7 +23,7 @@ import com.moeats.domain.OrderRoom;
 import com.moeats.domain.RoomParticipant;
 import com.moeats.domain.StoreMenu;
 import com.moeats.services.GroupCartItemService;
-import com.moeats.services.MemberService;
+import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.MenuService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.TransactionService;
@@ -33,7 +33,7 @@ import com.moeats.timer.OrderRoomTimer;
 @Controller
 public class RoomController {
 
-    private final MemberService memberService;
+    private final OrderMemberQueryService memberService;
 	@Autowired
 	OrderRoomService orderRoomService;
 	@Autowired
@@ -48,7 +48,7 @@ public class RoomController {
 	@Autowired
 	OrderRoomTimer orderRoomTimer;
 
-    RoomController(MemberService memberService) {
+    RoomController(OrderMemberQueryService memberService) {
         this.memberService = memberService;
     }
 	

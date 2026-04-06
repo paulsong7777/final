@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.Member;
-import com.moeats.service.MemberService;
+import com.moeats.service.MemberAccountService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpSession;
 public class MemberController {
 	
 	@Autowired
-	private MemberService memberService;
+	private MemberAccountService memberService;
 	
 	// ===== 상수 정의 ======
 	private static final String ROLE_OWNER = "OWNER";

@@ -21,7 +21,7 @@ import com.moeats.domain.Payment;
 import com.moeats.domain.PaymentShare;
 import com.moeats.domain.RoomParticipant;
 import com.moeats.services.GroupOrderService;
-import com.moeats.services.MemberService;
+import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.PaymentService;
 import com.moeats.services.sse.SSEService;
@@ -37,7 +37,7 @@ public class OrderController {
 	@Autowired
 	PaymentService paymentService;
 	@Autowired
-	MemberService memberService;
+	OrderMemberQueryService memberService;
 	
 	@Autowired
 	SSEService sseService;
