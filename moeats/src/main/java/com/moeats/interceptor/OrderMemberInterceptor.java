@@ -1,4 +1,4 @@
-package com.moeats.intercepter;
+package com.moeats.interceptor;
 
 import java.util.Map;
 
@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @Component
-public class OrderMemberIntercepter implements HandlerInterceptor {
+public class OrderMemberInterceptor implements HandlerInterceptor {
 
     @Autowired
     private GroupOrderService groupOrderService;
