@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -143,7 +143,7 @@
 
 <div class="container">
     <div class="search-info">
-        <div class="result-count">'<span>피자</span>'에 대한 검색 결과입니다. (총 12건)</div>
+        <div class="result-count"> </div>
         <div class="toggle-bar">
             <div class="toggle-item active">전체 화면</div>
             <div class="toggle-item">진행 중인 파티</div>
@@ -210,5 +210,168 @@
     <button class="btn btn-create">+ 원하는 파티가 없나요? 직접 파티 만들기</button>
 </div>
 
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        :root {
+            --point-orange: #FF8000; /* 서윤님 확정 컬러 */
+            --main-navy: #252D59;    /* 서윤님 확정 컬러 */
+            --bg-gray: #F2F2F2;      /* 서윤님 확정 배경색 */
+            --white: #FFFFFF;
+        }
+
+        body { background-color: var(--bg-gray); font-family: 'Pretendard', sans-serif; margin: 0; }
+
+        /* 1. 검색바 영역 (첫 번째 코드의 기능을 두 번째 스타일로) */
+        .search-container {
+            background-color: var(--main-navy);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            border: none;
+        }
+        .btn-search {
+            background-color: var(--point-orange);
+            color: white;
+            padding: 0 30px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+        }
+
+        /* 2. 결과 리스트 그리드 (반응형 적용) */
+        .card-grid {
+            display: grid;
+            gap: 20px;
+            padding: 20px;
+            /* PC: 3열 / Tablet: 2열 / Mobile: 1열 (브레이크포인트) */
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        @media (max-width: 1199px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 767px) { 
+            .card-grid { grid-template-columns: 1fr; }
+            .sticky-mobile-btn { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 100; }
+        }
+
+        /* 3. 단일 CTA 버튼 스타일 */
+        .btn-primary-cta {
+            background-color: var(--point-orange);
+            color: white;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header style="background-color: var(--main-navy); color: white; padding: 15px 20px;">Mo-Eats</header>
+    <div class="search-container">
+       <form name="searchForm" id="searchForm" action="menuList" method="get" class="row justify-content-end my-3">
+    <div class="col-4">
+        <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="검색어를 입력하세요"/>
+    </div>
+    <div class="col-auto">
+        <input type="submit" value="검색" class="btn btn-primary" style="background-color: var(--point-orange); border: none;">
+    </div>
+</form>
+
+<th:block th:if="${not #strings.isEmpty(keyword)}">
+    
+    <div class="alert alert-light mt-3">
+        <div class="col text-start alert alert-info" style="background-color: var(--main-navy); color: white; border: none;">
+            "<strong>[[${keyword}]]</strong>" 에 대한 검색 결과입니다.<br>
+            총 <strong>[[${totalCount}]]</strong>건의 결과가 발견되었습니다.
+            <a th:href="@{menuList}" class="btn btn-sm btn-outline-secondary ms-2">전체메뉴</a>
+        </div>
+    </div>
+    
+    <div>
+    	<th:block th:if="${not #list.isEmpty(mList)}">
+    		<div th:each="menu : ${mList}" class="card mb-3">
+    			<div class="card-body">
+    				<h5 th:text="${menu.name}">메뉴명</h5>
+    				<p th:text="${menu.price}">가격</h5>
+    				<a th:href="@{menuDetail(id=${menu.id}, keyword=${keyword})}" class="btn btn-sm btn-link">상세보기</a>
+    		</div>
+    		</div>
+    	</th:block>
+    
+    <th:block th:if="${#lists.isEmpty(mList)}">
+    	<div class="text-center py-5">
+    		<p class="text-muted">찾으시는 메뉴가 없습니다.</p>
+    	</div>
+    
+    </th:block>
+    </div>
+
+	<nav th:if="${not #lists.isEmpty(mList)}">
+		<ul class="pagination">
+			<li	th:each="num : ${#numbers.sequence(startPage, endPage)}"
+				th:classappend="${#num == currentPage}? 'active'" class="page-item">
+			<a class="page-link"
+				th:href="@{|?pageNum=${num}${keyword != null?'&keyword=' + keyword : ''}|}"
+				th:text="${num}">1			
+			</a>
+			
+			</li>
+		
+		</ul>
+		</nav>
+    <nav id="navbar-example" class="navbar sticky-top navbar-light bg-light px-3 mb-3 shadow-sm rounded">
+        <a class="navbar-brand" href="#" style="color: var(--main-navy); font-weight: bold;">Mo-Eats Search</a>
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a class="nav-link" href="#scroll-section2">진행중인 파티</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scroll-section3">식당 목록</a></li>
+        </ul>
+    </nav>
+
+    <div data-bs-spy="scroll" data-bs-target="#navbar-example" data-bs-offset="100" class="scroll-container" tabindex="0">
+        <section id="scroll-section2">...</section>
+        <section id="scroll-section3">...</section>
+    </div>
+
+</th:block>
+
+<th:block th:unless="${not #strings.isEmpty(keyword)}">
+    <div class="text-center py-5">
+        <h4 class="text-muted">찾으시는 가게나 메뉴를 검색해보세요!</h4>
+        <p>예: 도미노피자, 치킨, 강남역 등</p>
+    </div>
+</th:block>
+    </div>
+
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <h3 style="color: var(--main-navy);">[피자] 검색 결과 (12건)</h3>
+        
+        <div class="card-grid">
+            <div class="card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <span style="color: var(--point-orange); font-weight: bold;">진행중인 파티</span>
+                <h4 style="margin: 10px 0;">도미노피자 같이 먹어요</h4>
+                <p style="color: #666; font-size: 0.9rem;">최소주문금액까지 5,000원 남음</p>
+                <button class="btn-primary-cta">참여하기</button>
+            </div>
+            </div>
+    </div>
+
+    <div class="sticky-mobile-btn d-md-none" style="padding: 10px; background: white;">
+        <button class="btn-primary-cta" style="box-shadow: 0 -4px 10px rgba(0,0,0,0.1);">+ 직접 파티 만들기</button>
+    </div>
 </body>
 </html>
