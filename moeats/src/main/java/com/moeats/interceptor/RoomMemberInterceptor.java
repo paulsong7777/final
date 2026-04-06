@@ -53,7 +53,7 @@ public class RoomMemberInterceptor implements HandlerInterceptor {
         if (orderRoom == null || orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
             FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
             FlashMapManager flashMapManager = RequestContextUtils.getFlashMapManager(request);
-            flashMap.put("error", "?섎せ???묎렐?낅땲??);
+            flashMap.put("error", "방 접근 권한이 없습니다.");
             flashMapManager.saveOutputFlashMap(flashMap, request, response);
             response.sendRedirect("/rooms/join?roomCode=" + roomCode);
             return false;

@@ -45,7 +45,7 @@ public class PaymentInterceptor implements HandlerInterceptor {
 
             FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
             FlashMapManager flashMapManager = RequestContextUtils.getFlashMapManager(request);
-            flashMap.put("error", "?섎せ???묎렐?낅땲??);
+            flashMap.put("error", "결제 접근 권한이 없습니다.");
             flashMapManager.saveOutputFlashMap(flashMap, request, response);
 
             String orderIdx = pathParams != null ? pathParams.get("order_idx") : null;
