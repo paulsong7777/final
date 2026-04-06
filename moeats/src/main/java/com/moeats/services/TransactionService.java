@@ -16,7 +16,7 @@ import com.moeats.domain.OrderDelivery;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.Payment;
 import com.moeats.domain.PaymentShare;
-import com.moeats.timer.OrderRoomTimer;
+import com.moeats.services.sse.SSEService;
 
 @Service
 public class TransactionService {
@@ -32,7 +32,7 @@ public class TransactionService {
 	MemberService memberService;
 	
 	@Autowired
-	OrderRoomTimer orderRoomTimer;
+	SSEService sseService;
 	
 	@Transactional(rollbackFor=Exception.class)
 	public Map<String,Object> beginPayment(OrderRoom orderRoom) throws Exception {
@@ -94,4 +94,22 @@ public int revertToSelect(OrderRoom orderRoom) {
         groupOrderService.delete(groupOrder.getOrderIdx());
         return orderRoomService.revertToSelect(orderRoom.getRoomIdx());
 }
+
+	@Transactional(rollbackFor=Exception.class)
+	public int expirePayment(int orderIdx) {
+		GroupOrder groupOrder = groupOrderService.findByIdx(orderIdx);
+		if(groupOrder == null)
+			return 0;
+		
+		Payment payment = paymentService.findByOrder(orderIdx);
+		if(payment == null)
+			return 0;
+		
+		int result = 0;
+		result += paymentService.cancel(payment.getPaymentIdx());
+		result += groupOrderService.cancel(orderIdx);
+		result += orderRoomService.expire(groupOrder.getRoomIdx());
+		sseService.expireOrder(orderIdx);
+		return result;
+	}
 }

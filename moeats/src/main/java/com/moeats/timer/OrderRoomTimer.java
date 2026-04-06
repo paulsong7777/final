@@ -8,9 +8,8 @@ import java.util.concurrent.ScheduledFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.moeats.services.sse.SSEService;
+import com.moeats.services.TransactionService;
 
 @Component
 public class OrderRoomTimer {
@@ -18,7 +17,7 @@ public class OrderRoomTimer {
 	ThreadPoolTaskScheduler scheduler;
 	
 	@Autowired
-	SSEService sseService;
+	TransactionService transactionService;
 	
 	public OrderRoomTimer() {
 		scheduler = new ThreadPoolTaskScheduler();
@@ -28,7 +27,7 @@ public class OrderRoomTimer {
 	public void start(int orderIdx,Timestamp expire) {
 		stop(orderIdx);
 		ScheduledFuture<?> timer = scheduler.schedule(() -> {
-			sseService.expireOrder(orderIdx);
+			transactionService.expirePayment(orderIdx);
 		}, expire.toInstant());
 		timers.put(orderIdx, timer);
 	}

@@ -62,6 +62,10 @@ public class GroupOrderService {
 	public int insertDelivery(OrderDelivery orderDelivery) {
 		return orderDeliveryMapper.insert(orderDelivery);
 	}
+
+	public int cancel(int orderIdx) {
+		return groupOrderMapper.cancel(orderIdx);
+	}
 	
 	public int delete(int orderIdx) {
 		int res = orderDeliveryMapper.delete(orderIdx);
