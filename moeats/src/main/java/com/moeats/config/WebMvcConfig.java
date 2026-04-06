@@ -7,6 +7,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.moeats.interceptor.LoginCheckInterceptor;
 
+import com.moeats.interceptor.OrderMemberInterceptor;
+import com.moeats.interceptor.OwnerCheckInterceptor;
+import com.moeats.interceptor.PaymentInterceptor;
+import com.moeats.interceptor.RoomMemberInterceptor;
+
+
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
