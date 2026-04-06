@@ -2,22 +2,6 @@ package com.moeats.domain;
 
 import java.sql.Timestamp;
 
-<<<<<<< HEAD
-import lombok.Data;
-
-@Data
-public class Member {
-	int memberIdx;
-	String memberEmail;
-	String memberPassword;
-    String memberNickname;
-	String memberPhone;
-	String memberRoleType;
-    int defaultDeliveryAddressIdx;
-	String memberStatus;
-	Timestamp createdAt;
-	Timestamp updatedAt;
-=======
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,5 +22,4 @@ public class Member {
         String memberStatus;
         Timestamp createdAt;
         Timestamp updatedAt;
->>>>>>> origin/integration
 }

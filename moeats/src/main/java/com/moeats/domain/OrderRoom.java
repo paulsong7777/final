@@ -9,11 +9,7 @@ public class OrderRoom {
 	int roomIdx;
 	int leaderMemberIdx;
 	int storeIdx;
-<<<<<<< HEAD
-	int	selectedDeliveryAddressIdx;
-=======
 	Integer	selectedDeliveryAddressIdx;
->>>>>>> origin/integration
 	String roomCode;
 	String orderMode;
 	String paymentMode;

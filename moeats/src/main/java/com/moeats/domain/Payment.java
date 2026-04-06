@@ -18,8 +18,6 @@ public class Payment {
 	Timestamp cancelledAt;
 	Timestamp createdAt;
 	Timestamp updatedAt;
-<<<<<<< HEAD
-=======
 	
 	public static Payment from(GroupOrder groupOrder) {
 		Payment payment = new Payment();
@@ -28,5 +26,4 @@ public class Payment {
 		payment.setPaymentRequestAmount(groupOrder.getOrderTotalAmount());
 		return payment;
 	}
->>>>>>> origin/integration
 }

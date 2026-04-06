@@ -17,8 +17,6 @@ public class OrderDelivery {
 	String deliveryRequest;
 	Timestamp createdAt;
 	Timestamp updatedAt;
-<<<<<<< HEAD
-=======
 	
 	public static OrderDelivery from(int orderIdx,DeliveryAddress deliveryAddress) {
 		OrderDelivery orderDelivery = new OrderDelivery();
@@ -32,5 +30,4 @@ public class OrderDelivery {
 		orderDelivery.setDeliveryRequest(deliveryAddress.getDeliveryRequest());
 		return orderDelivery;
 	}
->>>>>>> origin/integration
 }

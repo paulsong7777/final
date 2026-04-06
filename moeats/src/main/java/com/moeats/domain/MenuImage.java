@@ -2,18 +2,6 @@ package com.moeats.domain;
 
 import java.sql.Timestamp;
 
-<<<<<<< HEAD
-import lombok.Data;
-
-@Data
-public class MenuImage {
-	int menuImageIdx;
-	int menuIdx;
-	String imageUrl;
-	boolean isPrimary;
-	int displayOrder;
-	Timestamp createdAt;
-=======
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,5 +19,4 @@ public class MenuImage {
 	int displayOrder;		// 노출 순서 정렬순서
 	Timestamp createdAt;	// 생성일시
 
->>>>>>> origin/integration
 }

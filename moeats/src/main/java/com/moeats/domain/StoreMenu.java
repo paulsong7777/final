@@ -1,22 +1,6 @@
 package com.moeats.domain;
 
 import java.sql.Timestamp;
-
-<<<<<<< HEAD
-import lombok.Data;
-
-@Data
-public class StoreMenu {
-	int menuIdx;
-	int storeIdx;
-	String menuName;
-	String menuDescription;
-	int menuPrice;
-	String menuStatus;
-	int displayOrder;
-	Timestamp createdAt;
-	Timestamp updatedAt;
-=======
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,5 +20,4 @@ public class StoreMenu {
 	int displayOrder;					// 정렬순서
 	Timestamp createdAt;			// 생성시각
 	Timestamp updatedAt;			// 수정시각
->>>>>>> origin/integration
 }
