@@ -26,7 +26,7 @@ public class RoomRestController {
 			@PathVariable("room_code") String roomCode,
 			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		if( orderRoom.isJoinLocked() || orderRoomService.setSelect(member.getMemberIdx())==0 )
+		if( orderRoom.isJoinLocked() || orderRoomService.setSelect(orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()).getRoomParticipantIdx())==0 )
 			return Map.of("result","failed");
 		return Map.of("result","success");
 	}
@@ -36,7 +36,7 @@ public class RoomRestController {
 			@PathVariable("room_code") String roomCode,
 			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		if( orderRoom.isJoinLocked() || orderRoomService.unselect(member.getMemberIdx())==0 )
+		if( orderRoom.isJoinLocked() || orderRoomService.unselect(orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()).getRoomParticipantIdx())==0 )
 			return Map.of("result","failed");
 		return Map.of("result","success");
 	}

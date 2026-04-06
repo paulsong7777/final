@@ -149,7 +149,7 @@ public class OrderController {
  				return "redirect:/main";
  			}
  			paymentShare = paymentService.findShareByIdx(paymentShareIdx);
- 			paymentService.paidByRepresentative(orderIdx,paymentShare.getPaidAt());
+ 			paymentService.paidByRepresentative(payment.getPaymentIdx(),paymentShare.getPaidAt());
  			orderRoomTimer.stop(orderIdx);
  			sseService.completeOrder(orderIdx);
  			return String.format("redirect:/orders/%d/status",orderIdx);

@@ -21,7 +21,7 @@
 		SELECT * FROM payment_share WHERE payment_idx = #{paymentIdx} AND share_status = 'PENDING'
 	</select>
 	<select id="findPaymentPaidSelf" resultType="PaymentShare">
-		SELECT * FROM payment_share WHERE payment_idx = #{paymentIdx} AND share_status = 'PAID_SELF' AND NOT share_amout = 0
+		SELECT * FROM payment_share WHERE payment_idx = #{paymentIdx} AND share_status = 'PAID_SELF' AND NOT share_amount = 0
 	</select>
 	<insert id="insert" parameterType="PaymentShare">
 		INSERT INTO payment_share(
@@ -46,7 +46,7 @@
 		UPDATE payment_share SET
 			share_status			= 'PAID_BY_REPRESENTATIVE',
 			paid_at					= #{paidAt}
-		WHERE payment_share_idx		= #{paymentIdx} AND share_status = 'PENDING'
+		WHERE payment_idx			= #{paymentIdx} AND share_status = 'PENDING'
 	</update>
 	<update id="paySelf" parameterType="int">
 		UPDATE payment_share SET

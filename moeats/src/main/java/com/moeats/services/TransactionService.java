@@ -57,7 +57,7 @@ public class TransactionService {
 		paymentShares.forEach(paymentShare->paymentService.insert(paymentShare));
 		if(!isRepresentative)
 			paymentShares.stream().filter(paymentShare->paymentShare.getShareAmount()==0)
-				.forEach(paymentShare->paymentService.findPaymentPaidSelf(paymentShare.getPaymentShareIdx()));
+				.forEach(paymentShare->paymentService.paySelf(paymentShare.getPaymentShareIdx()));
 		OrderDelivery orderDelivery = OrderDelivery.from(groupOrder.getOrderIdx(),deliveryAddress);
 		groupOrderService.insertDelivery(orderDelivery);
 		
