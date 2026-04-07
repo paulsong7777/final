@@ -13,7 +13,7 @@
         <div class="card-body p-4 p-md-5">
             
             <div class="d-flex align-items-center mb-4 border-bottom pb-3">
-                <a th:href="@{/owners/menu}" class="text-dark text-decoration-none fw-bold me-3">
+                <a th:href="@{/owner/menu/management}" class="text-dark text-decoration-none fw-bold me-3">
                     <i class="bi bi-arrow-left"></i> 목록으로
                 </a>
                 <h3 class="fw-bold mb-0 text-navy">신규 메뉴 등록</h3>
@@ -23,12 +23,18 @@
                 
                 <div class="mb-4">
                     <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
-                    <select name="menuCategoryIdx" class="form-select py-3 rounded-3 fw-bold text-navy border-2 shadow-none" required>
-                        <option value="">카테고리를 선택하세요</option>
-                        <option th:each="cat : ${categoryList}" 
-                                th:value="${cat.menuCategoryIdx}" 
-                                th:text="${cat.menuCategoryName}"></option>
-                    </select>
+                    <div class="input-group">
+                        <select id="categorySelect" name="menuCategoryIdx" class="form-select py-3 rounded-start-3 fw-bold text-navy border-2 shadow-none" required>
+                            <option value="">카테고리를 선택하세요</option>
+                            <option th:each="cat : ${categoryList}" 
+                                    th:value="${cat.menuCategoryIdx}" 
+                                    th:text="${cat.menuCategoryName}"></option>
+                        </select>
+                        <button class="btn btn-outline-success border-2 fw-bold px-3 rounded-end-3" type="button" 
+                                data-bs-toggle="modal" data-bs-target="#categoryQuickModal">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="mb-4">
@@ -72,6 +78,23 @@
             </form>
         </div>
     </div>
+
+    <div class="modal fade" id="categoryQuickModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold mb-0">새 카테고리</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <input type="text" id="newCategoryName" class="form-control py-3 rounded-3 fw-bold border-2 shadow-none" placeholder="카테고리 명칭 (예: 치킨)">
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-success w-100 py-3 rounded-pill fw-bold" onclick="handleCategoryQuickAdd()">즉시 등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 
 <th:block layout:fragment="script">
@@ -79,14 +102,55 @@
         /*<![CDATA[*/
 
         /**
-         * [Rule 2] AJAX: Fetch API 비동기 처리
-         * [Rule 6] 변경은 POST 고정
+         * [Quick Add] 카테고리 비동기 등록
+         */
+        async function handleCategoryQuickAdd() {
+            const catNameInput = document.getElementById('newCategoryName');
+            const catName = catNameInput.value.trim();
+            if(!catName) { alert("이름을 입력하세요."); return; }
+
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            try {
+                // 컨트롤러의 /category/register_proc API 호출
+                const response = await fetch('/owner/category/register_proc', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        ...(header && { [header]: token }) 
+                    },
+                    body: JSON.stringify({ "menuCategoryName": catName })
+                });
+
+                if(response.ok) {
+                    const data = await response.json();
+                    if(data.success) {
+                        // Select 박스에 즉시 추가
+                        const select = document.getElementById('categorySelect');
+                        const newOption = new Option(catName, data.newIdx || Date.now()); // 서버에서 준 idx 사용
+                        select.add(newOption);
+                        newOption.selected = true; // 새로 추가한 걸로 자동 선택
+
+                        // 모달 닫기 및 입력값 초기화
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('categoryQuickModal'));
+                        modal.hide();
+                        catNameInput.value = "";
+                        alert("카테고리가 추가되었습니다.");
+                    }
+                }
+            } catch(e) {
+                alert("카테고리 등록 중 에러 발생");
+            }
+        }
+
+        /**
+         * 메뉴 등록 로직
          */
         async function handleMenuRegister() {
             const form = document.getElementById('menuRegisterForm');
             const submitBtn = document.getElementById('submitBtn');
             
-            // 프론트엔드 유효성 검사
             if (!form.menuCategoryIdx.value) { alert("카테고리를 선택해 주세요."); return; }
             if (!form.menuName.value.trim()) { alert("메뉴 이름을 입력해 주세요."); return; }
             if (!form.menuPrice.value) { alert("가격을 입력해 주세요."); return; }
@@ -96,45 +160,33 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>등록 중...';
 
-            // [Rule 4] Security: 레이아웃 표준 CSRF 토큰 추출
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
             
             const formData = new FormData(form);
 
             try {
-                // [교정] 백엔드 StoreMenuController.insertMenu 매핑 주소(/owners/menu)와 연동
-                const response = await fetch('/owners/menu', {
+                const response = await fetch('/owner/menu/register', { // 경로 수정
                     method: 'POST',
-                    headers: { 
-                        ...(header && { [header]: token }) 
-                    },
-                    body: formData // 파일 데이터를 포함한 FormData 전송
+                    headers: { ...(header && { [header]: token }) },
+                    body: formData
                 });
 
-                if (response.ok || response.redirected) {
+                if (response.ok) {
                     alert("성공적으로 등록되었습니다.");
-                    // [Rule 6] 등록 완료 후 리스트 페이지로 이동
-                    location.href = '/owners/menu'; 
+                    location.href = '/owner/menu/management'; 
                 } else {
-                    alert("등록에 실패했습니다. (에러 코드: " + response.status + ")");
-                    resetBtn(submitBtn);
+                    alert("등록 실패");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "등록 완료";
                 }
             } catch (error) {
-                console.error("Fetch Error:", error);
-                alert("등록 중 오류가 발생했습니다.");
-                resetBtn(submitBtn);
+                alert("통신 에러");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "등록 완료";
             }
         }
 
-        function resetBtn(btn) {
-            btn.disabled = false;
-            btn.innerText = "등록 완료";
-        }
-
-        /**
-         * 이미지 미리보기 로직
-         */
         function previewImage(input) {
             const preview = document.getElementById('preview');
             const guideMsg = document.getElementById('guideMsg');

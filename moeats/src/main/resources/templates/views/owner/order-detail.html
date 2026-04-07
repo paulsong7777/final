@@ -6,133 +6,67 @@
 <head>
     <title>주문 상세 관리 - MoEats</title>
 </head>
-
 <body>
 <main layout:fragment="content" class="py-4" th:with="safeOrder=${orderRoom ?: (order ?: {}) }">
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden edit-card-limit">
-        <div class="card-header bg-white py-3 border-bottom">
-            <h4 class="fw-bold mb-0 text-navy text-center">
-                <i class="bi bi-receipt me-2 text-orange"></i>주문 상세 관리
-            </h4>
+    <div class="card shadow-sm border-0 mx-auto" style="max-width: 800px;">
+        <div class="card-header bg-white py-3 border-bottom text-center">
+            <h4 class="fw-bold mb-0 text-navy">주문 상세 관리</h4>
         </div>
         
-        <div class="card-body p-4 p-md-5">
-            <div class="row text-center order-step-container mb-5 position-relative">
-                <div class="order-step-line"></div>
-                <div class="col-3 position-relative" th:each="status : ${ {'ACCEPTED', 'COOKING', 'DELIVERING', 'COMPLETED'} }">
-                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center order-step-circle"
-                         th:classappend="${safeOrder.roomStatus == status ? 
-                            (status == 'ACCEPTED' ? 'state-active-accepted' : 
-                            (status == 'COOKING' ? 'state-active-cooking' : 
-                            (status == 'DELIVERING' ? 'state-active-delivering' : 'state-active-completed'))) : 'state-pending'}">
-                        <i class="bi fs-4" th:classappend="${status == 'ACCEPTED' ? 'bi-check-lg' : (status == 'COOKING' ? 'bi-fire' : (status == 'DELIVERING' ? 'bi-truck' : 'bi-flag-fill'))}"></i>
+        <div class="card-body p-4">
+            <div class="row text-center mb-4">
+                <div class="col-3" th:each="status : ${ {'ACCEPTED', 'COOKING', 'DELIVERING', 'COMPLETED'} }">
+                    <div th:classappend="${safeOrder.roomStatus == status} ? 'text-orange fw-bold' : 'text-muted'" 
+                         style="border-bottom: 3px solid; border-color: inherit;">
+                        <span th:text="${status == 'ACCEPTED' ? '접수완료' : (status == 'COOKING' ? '조리중' : (status == 'DELIVERING' ? '배달중' : '배달완료'))}"></span>
                     </div>
-                    <div class="small fw-bold text-navy" th:text="${status == 'ACCEPTED' ? '접수완료' : (status == 'COOKING' ? '조리중' : (status == 'DELIVERING' ? '배달중' : '배달완료'))}">상태</div>
                 </div>
             </div>
 
-            <div class="row g-3 mb-4 p-4 bg-light rounded-4 mx-0 border">
-                <div class="col-md-6 text-start">
-                    <p class="text-muted small mb-1">주문 번호: <span class="fw-bold" th:text="${safeOrder.roomIdx ?: 'N/A'}">0</span></p>
-                    <h5 class="fw-bold mb-0 text-navy" th:text="${safeOrder.storeName ?: '매장 정보 없음'}">매장 이름</h5>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="text-muted small mb-1">방 상태</p>
-                    <h4 class="text-orange fw-bold mb-0" th:text="${safeOrder.roomStatus}">WAITING</h4>
-                </div>
+            <div class="p-3 bg-light rounded mb-4">
+                <p>주문 번호: <span class="fw-bold" th:text="${safeOrder.roomIdx}">0</span></p>
+                <p>매장 이름: <span class="fw-bold" th:text="${safeOrder.storeName}">매장명</span></p>
             </div>
 
-            <div class="d-grid gap-3 pt-2">
-                <button th:if="${safeOrder.roomStatus == 'ACCEPTED'}" 
-                        class="btn btn-success btn-lg fw-bold py-3 shadow-sm rounded-pill"
-                        th:onclick="handleStatusUpdate(event, [[${safeOrder.roomIdx}]], 'COOKING')">
-                    조리 시작
-                </button>
+            <div class="d-grid gap-2">
+                <button th:if="${safeOrder.roomStatus == 'ACCEPTED'}" class="btn btn-success btn-lg py-3"
+                        th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COOKING')">조리 시작</button>
                 
-                <button th:if="${safeOrder.roomStatus == 'COOKING'}" 
-                        class="btn btn-primary btn-lg fw-bold py-3 shadow-sm rounded-pill"
-                        th:onclick="handleStatusUpdate(event, [[${safeOrder.roomIdx}]], 'DELIVERING')">
-                    배달 시작
-                </button>
+                <button th:if="${safeOrder.roomStatus == 'COOKING'}" class="btn btn-primary btn-lg py-3"
+                        th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'DELIVERING')">배달 시작</button>
                 
-                <button th:if="${safeOrder.roomStatus == 'DELIVERING'}" 
-                        class="btn btn-dark btn-lg fw-bold py-3 shadow-sm rounded-pill"
-                        th:onclick="handleStatusUpdate(event, [[${safeOrder.roomIdx}]], 'COMPLETED')">
-                    배달 완료
-                </button>
+                <button th:if="${safeOrder.roomStatus == 'DELIVERING'}" class="btn btn-dark btn-lg py-3"
+                        th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">배달 완료</button>
                 
+                <div th:if="${safeOrder.roomStatus == 'COMPLETED'}" class="alert alert-secondary text-center">배달 완료된 주문</div>
+
                 <div class="text-center mt-3">
-                    <a th:href="@{/members/dashboard}" class="btn btn-link text-decoration-none text-secondary fw-medium">
-                        <i class="bi bi-arrow-left me-1"></i> 대시보드로 돌아가기
-                    </a>
+                    <a th:href="@{/owner/dashboard}" class="text-muted text-decoration-none small">대시보드로 돌아가기</a>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="statusToast" class="toast align-items-center text-white bg-dark border-0" role="alert">
+            <div class="d-flex"><div class="toast-body fw-bold">상태를 변경합니다...</div></div>
         </div>
     </div>
 </main>
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
-        /*<![CDATA[*/
-        /**
-         * [Rule 2] AJAX: 상태 변경은 Fetch API 비동기 처리
-         * [Rule 6] 식별자 roomIdx, 상태 roomStatus, 변경 POST 고정
-         */
-        async function handleStatusUpdate(event, roomIdx, nextStatus) {
-            if(!roomIdx) {
-                alert("주문 식별 번호가 존재하지 않습니다.");
-                return;
-            }
+        function moveStatus(roomIdx, nextStatus) {
+            // 토스트 보여주기
+            const toastEl = document.getElementById('statusToast');
+            const bsToast = new bootstrap.Toast(toastEl);
+            bsToast.show();
 
-            if(!confirm(`주문 상태를 '${nextStatus}'(으)로 변경하시겠습니까?`)) return;
-
-            const btn = event.currentTarget;
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리중';
-
-            // [Rule 4] Security: CSRF 토큰 (레이아웃 표준)
-            const token = document.querySelector('meta[name="_csrf"]')?.content;
-            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
-
-            try {
-                // [교정] 백엔드 OrderController 또는 관련 API 매핑 주소와 연동
-                // 프로젝트 규칙에 따라 /owners/order/status_update 경로 사용
-                const response = await fetch('/owners/order/status_update', { 
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(header && { [header]: token })
-                    },
-                    body: JSON.stringify({
-                        "roomIdx": Number(roomIdx), 
-                        "roomStatus": nextStatus 
-                    })
-                });
-
-                if(response.ok) {
-                    alert("상태가 성공적으로 업데이트되었습니다.");
-                    
-                    // [Rule 2] 새로고침 없이 부드러운 페이지 이동
-                    if(nextStatus === 'COMPLETED') {
-                        location.href = '/members/dashboard';
-                    } else {
-                        // 현재 페이지를 새로운 상태값과 함께 다시 로드하여 UI 갱신
-                        location.reload();
-                    }
-                } else {
-                    alert("업데이트 실패 (코드: " + response.status + ")");
-                    btn.disabled = false;
-                    btn.innerHTML = originalHtml;
-                }
-            } catch(e) {
-                console.error(e);
-                alert("통신 에러가 발생했습니다.");
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            }
+            // 0.8초 후 경로 이동 (AJAX 대신 URL 이동 방식)
+            setTimeout(() => {
+                location.href = `/owner/order/status_move?roomIdx=${roomIdx}&nextStatus=${nextStatus}`;
+            }, 800);
         }
-        /*]]>*/
     </script>
 </th:block>
 </body>

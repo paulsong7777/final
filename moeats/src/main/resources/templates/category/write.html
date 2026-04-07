@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/owner-layout}">
-<head><title>새 카테고리 등록 - MoEats</title></head>
+<head>
+    <meta charset="UTF-8">
+    <title>새 카테고리 등록 - MoEats</title>
+</head>
 <body>
 <main layout:fragment="content" class="py-4">
     <div class="mb-4 pb-3 border-bottom border-2">
@@ -18,7 +21,7 @@
             </div>
             
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-orange btn-lg w-100 fw-bold" onclick="submitCategory()">
+                <button type="button" class="btn btn-warning text-white btn-lg w-100 fw-bold" onclick="submitCategory()">
                     <i class="bi bi-check-lg me-2"></i>등록 완료
                 </button>
                 <a th:href="@{/owners/store-menu-category}" class="btn btn-light btn-lg w-100 fw-bold">취소</a>
@@ -40,34 +43,40 @@
             return;
         }
 
-        // [핵심] 백엔드가 POST로 받을 수 있게 파라미터 구성
+        // 1. 보안 토큰 추출 (레이아웃 meta 태그 기준)
+        const token = document.querySelector('meta[name="_csrf"]')?.content;
+        const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        // 2. 데이터 구성 (URLSearchParams 방식)
         const params = new URLSearchParams();
         params.append('categoryName', categoryName);
 
+        // 3. [핵심] 타임리프가 서버 경로를 직접 주입 (Context Path 대응)
+        const postUrl = /*[[@{/owners/store-menu-category/write}]]*/ '/owners/store-menu-category/write';
+        const listUrl = /*[[@{/owners/store-menu-category}]]*/ '/owners/store-menu-category';
+
         try {
-            const response = await fetch('/owners/store-menu-category/write', {
+            // 4. fetch 요청
+            const response = await fetch(postUrl, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.content 
+                    [header]: token 
                 },
                 body: params
             });
 
             if (response.ok) {
                 alert("성공적으로 등록되었습니다.");
-                location.href = "/owners/store-menu-category";
+                location.href = listUrl;
             } else {
-                const status = response.status;
-                if (status === 405) {
-                    alert("에러 405: 백엔드에서 POST를 허용하지 않습니다. 컨트롤러 확인이 필요합니다.");
-                } else {
-                    alert("에러 발생: " + status);
-                }
+                // 응답은 왔으나 에러인 경우 (403, 404, 500 등)
+                alert("등록 실패 (상태 코드: " + response.status + ")");
             }
         } catch (error) {
-            console.error('Network Error:', error);
-            alert("서버 연결에 실패했습니다. (콘솔 확인)");
+            // [범인] 브라우저가 서버 주소 자체를 못 찾을 때 (네트워크 에러)
+            console.error('연결 실패 상세:', error);
+            alert("서버 연결에 실패했습니다. \n(서버 콘솔에 로그가 찍히는지 확인하세요!)");
         }
     }
 /*]]>*/
