@@ -1,91 +1,142 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!--	
-	마이바티스 참고 사이트
-	  - http://blog.mybatis.org/
-	  - http://www.mybatis.org/mybatis-3/ko/index.html
-	  
-	@Mapper 애노테이션이 적용된 인터페이스와 맵퍼 XML파일은
-	namespace 속성으로 연결되기 때문에 맵퍼 XML의 namespace를
-	지정할 때 @Mapper 애노테이션이 적용된 맵퍼 인터페이스의
-	완전한 클래스 이름(패키지를 포함한 이름)을 지정하면 된다.   
--->
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moeats.mapper.StoreMapper">
-	
-	
-	<select id="findByStoreIdxAndOwner" resultType="Store">
-	    select * from store
-	    where store_idx = #{storeIdx} and owner_member_idx = #{ownerMemberIdx}
-	</select>
-	
-	<!-- 가게 삭제 soft - updateStatus로 대체 예정 -->
-	<delete id="deleteStore">
-		delete from store
-			where store_idx = #{storeIdx} and owner_member_idx = #{ownerMemberIdx}
-	</delete>
-	
-	<!-- ACTIVE, INACTIVE, PAUSED -->
-	<update id="updateStatus">
-	    update store
-	    set store_status = #{storeStatus}
-	    where store_idx = #{storeIdx}
-	      and owner_member_idx = #{ownerMemberIdx}
-	</update>
-	
-	<!-- 가게 수정 -->
-	<update id="updateStore">
-		update store set
-			store_name = #{storeName},
-			store_description = #{storeDescription},
-			store_phone = #{storePhone},
-			minimum_order_amount = #{minimumOrderAmount},
-			store_address1 = #{storeAddress1},
-			store_address2 = #{storeAddress2},
-			supports_delivery = #{supportsDelivery},
-			supports_onsite = #{supportsOnsite},
-			store_status = #{storeStatus},
-			longitude = #{longitude},
-			latitude = #{latitude}
-		where store_idx = #{storeIdx} and owner_member_idx = #{ownerMemberIdx}
-	</update>
-	
-	<!-- 점주 가게 등록 -->
-	<insert id="insertStore" useGeneratedKeys="true" keyProperty="storeIdx">
-		insert into store (owner_member_idx,
-						store_name,
-						store_description,
-						store_phone,
-						minimum_order_amount,
-						store_address1,
-						store_address2,
-						supports_delivery,
-						supports_onsite,
-						store_status,
-						longitude,
-				        latitude)
-				values(
-				#{ownerMemberIdx},
-				#{storeName},
-				#{storeDescription},
-				#{storePhone},
-				#{minimumOrderAmount},
-				#{storeAddress1},
-				#{storeAddress2},
-				#{supportsDelivery},
-				#{supportsOnsite},
-				#{storeStatus},
-		        #{longitude},
-        		#{latitude})
-	</insert>
-	
-	<!-- 점주 가게 조회 -->
-	<select id="myStore" resultType="Store">
-		select * from store
-			where owner_member_idx = #{ownerMemberIdx}
-	</select>
-	
+
+    <select id="storeList" resultType="Store">
+        SELECT *
+        FROM (
+            SELECT
+                s.*,
+                (
+                    6371 * ACOS(
+                        COS(RADIANS(#{userLat})) * COS(RADIANS(s.latitude)) *
+                        COS(RADIANS(s.longitude) - RADIANS(#{userLng})) +
+                        SIN(RADIANS(#{userLat})) * SIN(RADIANS(s.latitude))
+                    )
+                ) AS distance
+            FROM store s
+            <where>
+                AND s.store_status = 'ACTIVE'
+
+                <if test="userLat != null and userLng != null">
+                    AND s.supports_delivery = TRUE
+                    AND s.latitude IS NOT NULL
+                    AND s.longitude IS NOT NULL
+                    AND s.latitude BETWEEN (#{userLat} - 0.05) AND (#{userLat} + 0.05)
+                    AND s.longitude BETWEEN (#{userLng} - 0.05) AND (#{userLng} + 0.05)
+                </if>
+
+                <if test="category != null and category != ''">
+                    AND s.store_category = #{category}
+                </if>
+
+                <if test="keyword != null and keyword != ''">
+                    AND (
+                        s.store_name LIKE CONCAT('%', #{keyword}, '%')
+                        OR EXISTS (
+                            SELECT 1
+                            FROM store_menu m
+                            WHERE m.store_idx = s.store_idx
+                              AND m.menu_name LIKE CONCAT('%', #{keyword}, '%')
+                        )
+                    )
+                </if>
+            </where>
+        ) t
+
+        <choose>
+            <when test="userLat != null and userLng != null">
+                WHERE t.distance <![CDATA[<=]]> (t.delivery_radius_m / 1000.0)
+                ORDER BY t.distance ASC, t.created_at DESC
+            </when>
+            <otherwise>
+                ORDER BY t.created_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 가게 번호와 점주 번호가 일치하는 가게 찾기 -->
+    <select id="findByStoreIdxAndOwner" resultType="Store">
+        SELECT *
+        FROM store
+        WHERE store_idx = #{storeIdx}
+          AND owner_member_idx = #{ownerMemberIdx}
+    </select>
+
+    <!-- 가게 삭제 soft - updateStatus로 대체 예정 -->
+    <delete id="deleteStore">
+        DELETE FROM store
+        WHERE store_idx = #{storeIdx}
+          AND owner_member_idx = #{ownerMemberIdx}
+    </delete>
+
+    <!-- ACTIVE, INACTIVE, PAUSED -->
+    <update id="updateStatus">
+        UPDATE store
+        SET store_status = #{storeStatus}
+        WHERE store_idx = #{storeIdx}
+          AND owner_member_idx = #{ownerMemberIdx}
+    </update>
+
+    <!-- 가게 수정 -->
+    <update id="updateStore">
+        UPDATE store
+        SET store_name = #{storeName},
+            store_category = #{storeCategory},
+            store_description = #{storeDescription},
+            store_phone = #{storePhone},
+            minimum_order_amount = #{minimumOrderAmount},
+            store_address1 = #{storeAddress1},
+            store_address2 = #{storeAddress2},
+            supports_delivery = #{supportsDelivery},
+            supports_onsite = #{supportsOnsite},
+            store_status = #{storeStatus},
+            longitude = #{longitude},
+            latitude = #{latitude}
+        WHERE store_idx = #{storeIdx}
+          AND owner_member_idx = #{ownerMemberIdx}
+    </update>
+
+    <!-- 점주 가게 등록 -->
+    <insert id="insertStore" useGeneratedKeys="true" keyProperty="storeIdx">
+        INSERT INTO store (
+            owner_member_idx,
+            store_name,
+            store_category,
+            store_description,
+            store_phone,
+            minimum_order_amount,
+            store_address1,
+            store_address2,
+            supports_delivery,
+            supports_onsite,
+            store_status,
+            longitude,
+            latitude
+        )
+        VALUES (
+            #{ownerMemberIdx},
+            #{storeName},
+            #{storeCategory},
+            #{storeDescription},
+            #{storePhone},
+            #{minimumOrderAmount},
+            #{storeAddress1},
+            #{storeAddress2},
+            #{supportsDelivery},
+            #{supportsOnsite},
+            #{storeStatus},
+            #{longitude},
+            #{latitude}
+        )
+    </insert>
+
+    <!-- 점주 가게 조회 -->
+    <select id="myStore" resultType="Store">
+        SELECT *
+        FROM store
+        WHERE owner_member_idx = #{ownerMemberIdx}
+    </select>
+
 </mapper>
-
-
-

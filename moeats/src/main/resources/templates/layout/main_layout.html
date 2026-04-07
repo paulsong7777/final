@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<<<<<<< HEAD
+
 <!--/* Thymeleaf와 Thymeleaf Layout을 사용하기 위한 NameSpace 정의 */-->
 <html xmlns:th="http://www.thymeleaf.org"
 		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>BoardService</title>      
+    <title>mo-eats</title>      
     <link th:href="@{bootstrap/bootstrap.min.css}" rel="stylesheet" >
     <script th:src="@{js/jquery-3.7.1.min.js}"></script>
     <script th:src="@{js/formcheck.js}"></script>
@@ -57,12 +57,8 @@
 		</div>
 	</div>	
   </body>
-=======
-<!-- /* Thymeleaf와 Thymeleaf Layout을 사용하기 위한 NameSpace 정의 */ -->
-<html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://ultraq.net.nz/thymeleaf/layout">
-<head>
-<meta charset="UTF-8">
+
+
 <!-- 여기는  -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Insert title here</title>
@@ -74,24 +70,7 @@
 <body>
  <div class="container">
  <!-- /* header */ -->
- <!-- /*
- 	~{} 표현식은 화면의 조각인 프래그먼트를 지정하는 표현식으로 
- 	th:replace 속성에 지정했기 때문에 div 요소의 내용을 대체한다.
- 	프래그먼트는 ~{경로/파일명::프래그먼트 이름} 형식으로 지정한다.
- 	경로는 templates 폴더를 기준으로 상대 경로 방식으로 지정하면 된다.
- 	<div class="container-sm">100% wide until small breakpoint</div>
-<div class="container-md">100% wide until medium breakpoint</div>
-<div class="container-lg">100% wide until large breakpoint</div>
-<div class="container-xl">100% wide until extra large breakpoint</div>
-<div class="container-xxl">100% wide until extra extra large breakpoint</div>
- */ 
- 
- 사용자 지정 색상 모드 
-색상 모드의 주요 사용 사례는 라이트/다크 모드이지만 사용자 정의 색상 모드도 가능합니다. 사용자 정의 값을 색상 모드의 이름으로 사용하여 나만의 data-bs-theme 선택기를 만든 다음 필요에 따라 Sass 및 CSS 변수를 수정합니다. 저희는 Bootstrap의 다크 모드 전용 Sass 변수를 저장하기 위해 별도의 _variables-dark.scss 스타일시트를 만들기로 선택했지만, 반드시 필요한 것은 아닙니다.
 
-예를 들어 data-bs-theme="blue" 선택기를 사용하여 "파란색 테마"를 만들 수 있습니다. 사용자 정의 Sass 또는 CSS 파일에서 새 선택기를 추가하고 필요에 따라 전역 또는 컴포넌트 CSS 변수를 재정의합니다. Sass를 사용하는 경우 CSS 변수 오버라이드 내에서 Sass의 함수를 사용할 수도 있습니다.
- 
- -->
  <div th:replace="{fragments/header::header}"></div>
  <!-- /* content : 요청 마다 변경되는 부분 */ -->
  <div layout:fragment="content"></div>
@@ -100,5 +79,5 @@
  </div>
  	<script th:src="@{bootstrap/bootstrap.bundle.min.js}"></script>
 </body>
->>>>>>> a241daed0341297332c508edf883a682b80f8ba0
+
 </html>

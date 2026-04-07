@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mappers.OrderMemberMapper">
+	<select id="findAll" resultType="Member">
+		SELECT * FROM member
+	</select>
+	<select id="findByIdx" resultType="Member">
+		SELECT * FROM member WHERE member_idx = #{memberIdx}
+	</select>
+	<select id="findByIdxs" resultType="Member">
+		SELECT * FROM member WHERE member_idx IN (
+			<foreach item="memberIdx" collection="memberIdxs" separator=",">#{memberIdx}</foreach>
+		)
+	</select>
+	<select id="findActive" resultType="Member">
+		SELECT * FROM member WHERE member_status = 'ACTIVE'
+	</select>
+	<insert id="insert" parameterType="Member">
+		INSERT INTO member(
+			member_email,
+			member_password,
+			member_nickname,
+			member_phone,
+			member_role_type,
+			default_delivery_address_idx,
+			member_status
+		) VALUES (
+			#{memberEmail},
+			#{memberPassword},
+			#{memberNickname},
+			#{memberPhone},
+			#{memberRoleType},
+			NULL,
+			'ACTIVE'
+		)
+	</insert>
+	<update id="update" parameterType="Member">
+		UPDATE member SET
+			member_email		= #{memberEmail},
+			member_password		= #{memberPassword},
+			member_nickname		= #{memberNickname},
+			member_phone		= #{memberPhone},
+			member_role_type	= #{memberRoleType}
+		WHERE member_idx		= #{memberIdx}
+	</update>
+	<update id="setAddress">
+		UPDATE member SET
+			default_delivery_address_idx = #{defaultDeliveryAddressIdx}
+		WHERE member_idx	= #{memberIdx}
+	</update>
+	<update id="inactivate" parameterType="int">
+		UPDATE member SET
+			member_status	= 'INACTIVE'
+		WHERE member_idx	= #{memberIdx}
+	</update>
+	<update id="suspend" parameterType="int">
+		UPDATE member SET
+			member_status	= 'SUSPENDED'
+		WHERE member_idx	= #{memberIdx}
+	</update>
+</mapper>

@@ -13,6 +13,13 @@
 -->
 <mapper namespace="com.moeats.mapper.MemberMapper" >
 	
+	<!-- 기본 배송지 가져옴 -->
+	<select id="getDefaultAddressIdx" resultType="int">
+	    SELECT default_delivery_address_idx
+	    FROM member
+	    WHERE member_idx = #{memberIdx}
+	</select>
+	
 	
 	<!-- 회원 탈퇴 soft delete -->
 	<update id="deleteMember">
