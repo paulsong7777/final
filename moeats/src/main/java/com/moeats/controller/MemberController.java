@@ -112,7 +112,6 @@ public class MemberController {
 		
 		// --- ✅ 로그인 성공 처리 ---
 		model.addAttribute("member", member);
-		session.setAttribute("memberIdx", member.getMemberIdx());
 		
 		// 💡 핵심 추가 로직: 인터셉터가 세션에 남겨둔 '원래 가려던 주소'를 꺼내옵니다.
 		String redirectURI = (String) session.getAttribute("redirectURI");

@@ -6,13 +6,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.moeats.domain.Member;
+import com.moeats.domain.Store;
 import com.moeats.domain.StoreMenu;
 import com.moeats.service.StoreMenuService;
+import com.moeats.service.StoreService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -21,6 +27,8 @@ public class StoreMenuController {
 
     @Autowired
     private StoreMenuService storeMenuService;
+    @Autowired
+    private StoreService storeService;
 
 
     /**
@@ -44,9 +52,9 @@ public class StoreMenuController {
     // 메뉴 검색
     @GetMapping("/stores/{storeIdx}/menu/search")
     public String searchMenuForUser(
+            Model model,
             @PathVariable int storeIdx,
-            @RequestParam String keyword,
-            Model model) {
+            @RequestParam String keyword) {
 
         List<StoreMenu> menuList = storeMenuService.searchMenuForUser(storeIdx, keyword);
 
@@ -65,11 +73,17 @@ public class StoreMenuController {
 
     // 메뉴 관리 화면
     @GetMapping("/owners/menu")
-    public String menuListForOwner(HttpSession session, Model model) {
+    public String menuListForOwner(
+    		RedirectAttributes ra,
+    		Model model,
+    		@SessionAttribute("member") Member member) {
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	if(store==null) {
+    		ra.addFlashAttribute("error", "가게가 없습니다");
+    		return "redirect:/home";
+    	}
 
-        int storeIdx = (int) session.getAttribute("storeIdx"); // 로그인 기반
-
-        List<StoreMenu> menuList = storeMenuService.menuList(storeIdx);
+        List<StoreMenu> menuList = storeMenuService.menuList(store.getStoreIdx());
 
         model.addAttribute("menuList", menuList);
 
@@ -79,12 +93,17 @@ public class StoreMenuController {
 
     // 메뉴 등록
     @PostMapping("/owners/menu")
-    public String insertMenu(StoreMenu storeMenu, HttpSession session) {
-
-        int storeIdx = (int) session.getAttribute("storeIdx");
-
-        storeMenu.setStoreIdx(storeIdx); // 강제 세팅 (보안)
-
+    public String insertMenu(
+    		RedirectAttributes ra,
+    		@ModelAttribute StoreMenu storeMenu,
+    		@SessionAttribute("member") Member member) {
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	if(store==null) {
+    		ra.addFlashAttribute("error", "가게가 없습니다");
+    		return "redirect:/home";
+    	}
+    	
+        storeMenu.setStoreIdx(store.getStoreIdx()); // 강제 세팅 (보안)
         storeMenuService.insertMenu(storeMenu);
 
         return "redirect:/owners/menu";
@@ -93,12 +112,21 @@ public class StoreMenuController {
 
     // 메뉴 수정
     @PostMapping("/owners/menu/edit")
-    public String updateMenu(StoreMenu storeMenu, HttpSession session) {
-
-        int storeIdx = (int) session.getAttribute("storeIdx");
-
-        storeMenu.setStoreIdx(storeIdx); // 강제 세팅
-
+    public String updateMenu(
+    		RedirectAttributes ra,
+    		@ModelAttribute StoreMenu storeMenu,
+    		@SessionAttribute("member") Member member) {
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	if(store==null) {
+    		ra.addFlashAttribute("error", "잘못된 접근입니다");
+    		return "redirect:/home";
+    	}
+    	
+    	StoreMenu pre = storeMenuService.getMenu(store.getStoreIdx(),storeMenu.getMenuIdx());
+		if(pre.getStoreIdx()!=store.getStoreIdx()) {
+			ra.addFlashAttribute("error", "잘못된 접근입니다");
+			return "redirect:/home";
+		}
         storeMenuService.updateMenu(storeMenu);
 
         return "redirect:/owners/menu";
@@ -111,11 +139,13 @@ public class StoreMenuController {
     public String updateStatus(
             @RequestParam int menuIdx,
             @RequestParam String menuStatus,
-            HttpSession session) {
+            @SessionAttribute("member") Member member) {
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	if(store==null) {
+    		return "Fail";
+    	}
 
-        int storeIdx = (int) session.getAttribute("storeIdx");
-
-        storeMenuService.updateStatus(storeIdx, menuIdx, menuStatus);
+        storeMenuService.updateStatus(store.getStoreIdx(), menuIdx, menuStatus);
 
         return "OK";
     }

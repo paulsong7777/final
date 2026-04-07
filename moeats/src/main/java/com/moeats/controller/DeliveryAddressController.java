@@ -11,26 +11,31 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.DeliveryAddress;
+import com.moeats.domain.Member;
 import com.moeats.service.DeliveryAddressService;
 
 import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class DeliveryAddressController {
-	
 	@Autowired
 	private DeliveryAddressService deliveryAddressService;
 	
-
-	
 	// 삭제
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/delete")
-	public String deleteAddress( @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
-	        @SessionAttribute("memberIdx") int memberIdx) {
-
-		deliveryAddressService.deleteAddress(memberIdx, deliveryAddressIdx);
+	public String deleteAddress(
+			RedirectAttributes ra,
+			@PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
+	        @SessionAttribute("member") Member member) {
+		DeliveryAddress deliveryAddress = deliveryAddressService.addressByIdx(member.getMemberIdx(),deliveryAddressIdx);
+		if(deliveryAddress==null) {
+			ra.addFlashAttribute("error", "잘못된 접근입니다");
+			return "redirect:/home";
+		}
+		deliveryAddressService.deleteAddress(member.getMemberIdx(), deliveryAddressIdx);
 		
 		return "redirect:/members/me/addresses";
 	}
@@ -39,10 +44,14 @@ public class DeliveryAddressController {
 	// 수정
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/edit")
 	public String updateAddress(
+			RedirectAttributes ra,
 	        @ModelAttribute DeliveryAddress deliveryAddress,
-	        @SessionAttribute("memberIdx") int memberIdx) {
-
-	    deliveryAddress.setMemberIdx(memberIdx);
+	        @SessionAttribute("member") Member member) {
+		DeliveryAddress pre = deliveryAddressService.addressByIdx(member.getMemberIdx(),deliveryAddress.getDeliveryAddressIdx());
+		if(pre==null) {
+			ra.addFlashAttribute("error", "잘못된 접근입니다");
+			return "redirect:/home";
+		}
 
 	    deliveryAddressService.updateAddress(deliveryAddress);
 
@@ -52,12 +61,11 @@ public class DeliveryAddressController {
 	// 주소 수정 폼 띄우기
 	@GetMapping("/members/me/addresses/{deliveryAddressIdx}/edit")
 	public String updateAddressForm(
+	        Model model,
 	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
-	        @SessionAttribute("memberIdx") int memberIdx,
-	        Model model) {
+	        @SessionAttribute("member") Member member) {
 
-	    DeliveryAddress address =
-	            deliveryAddressService.addressByIdx(memberIdx, deliveryAddressIdx);
+	    DeliveryAddress address = deliveryAddressService.addressByIdx(member.getMemberIdx(), deliveryAddressIdx);
 
 	    model.addAttribute("address", address);
 
@@ -67,10 +75,11 @@ public class DeliveryAddressController {
 	
 	// 등록
 	@PostMapping("/members/me/addresses")
-	public String insertAddress(@ModelAttribute DeliveryAddress deliveryAddress,
-	        @SessionAttribute("memberIdx") int memberIdx) {
+	public String insertAddress(
+			@ModelAttribute DeliveryAddress deliveryAddress,
+	        @SessionAttribute("member") Member member) {
 		
-	    deliveryAddress.setMemberIdx(memberIdx);
+	    deliveryAddress.setMemberIdx(member.getMemberIdx());
 
 	    deliveryAddressService.insertAddress(deliveryAddress);
 	    
@@ -89,9 +98,9 @@ public class DeliveryAddressController {
 	@ResponseBody
 	public String changeDefaultAddress(
 	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
-	        @SessionAttribute("memberIdx") int memberIdx) {
+	        @SessionAttribute("member") Member member) {
 
-	    deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
+	    deliveryAddressService.changeDefaultAddress(member.getMemberIdx(), deliveryAddressIdx);
 
 	    return "ok";
 	}
@@ -101,7 +110,7 @@ public class DeliveryAddressController {
 	@ResponseBody
 	public String selectAddress(
 	        @PathVariable int deliveryAddressIdx,
-	        @SessionAttribute("memberIdx") int memberIdx,
+	        @SessionAttribute("member") Member member,
 	        HttpSession session) {
 
 	    // 선택한 주소를 세션에 저장 (예시)
@@ -112,13 +121,14 @@ public class DeliveryAddressController {
 	
 	// 주소 리스트 폼 띄우기
 	@GetMapping("/members/me/addresses")
-	public String addressList(Model model,
-	        @SessionAttribute("memberIdx") int memberIdx) {
-
-	    List<DeliveryAddress> addressList = deliveryAddressService.getAddress(memberIdx);
-
+	public String addressList(
+			Model model,
+	        @SessionAttribute("member") Member member) {
+		
+	    List<DeliveryAddress> addressList = deliveryAddressService.getAddress(member.getMemberIdx());
+	    
 	    model.addAttribute("addressList", addressList);
-
+	    
 	    return "views/address-list";
 	}
 	
