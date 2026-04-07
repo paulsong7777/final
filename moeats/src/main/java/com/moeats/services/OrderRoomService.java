@@ -8,8 +8,10 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.moeats.domain.GroupCartItem;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.RoomParticipant;
+import com.moeats.mappers.GroupCartItemMapper;
 import com.moeats.mappers.OrderRoomMapper;
 import com.moeats.mappers.RoomParticipantMapper;
 
@@ -19,6 +21,8 @@ public class OrderRoomService {
 	 */
 	@Autowired
 	OrderRoomMapper orderRoomMapper;
+	@Autowired
+	GroupCartItemMapper groupCartItemMapper;
 	@Autowired
 	RoomParticipantMapper roomParticipantMapper;
 	private final Random random = new Random();
@@ -152,9 +156,16 @@ public class OrderRoomService {
 		return roomParticipantMapper.pay(roomParticipantIdx);
 	}
 	public int leave(int roomParticipantIdx) {
-		OrderRoom orderRoom = findByIdx(findParticipantByIdx(roomParticipantIdx).getRoomIdx());
+		RoomParticipant roomParticipant = findParticipantByIdx(roomParticipantIdx);
+		OrderRoom orderRoom = findByIdx(roomParticipant.getRoomIdx());
 		if(orderRoom.isJoinLocked())
 			return 0;
-		return roomParticipantMapper.leave(roomParticipantIdx);
+		int res = roomParticipantMapper.leave(roomParticipantIdx);
+		if(res==1){
+			List<GroupCartItem> groupCartItems = groupCartItemMapper.findRoomMember(orderRoom.getRoomIdx(), roomParticipant.getMemberIdx());
+			if( !groupCartItems.isEmpty() )
+				res += groupCartItemMapper.removes(groupCartItems.stream().map(GroupCartItem::getCartItemIdx).toList());
+		}
+		return res;
 	}
 }

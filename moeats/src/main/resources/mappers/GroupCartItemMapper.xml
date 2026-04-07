@@ -74,4 +74,11 @@
 			item_status		= 'REMOVED'
 		WHERE cart_item_idx = #{cartItemIdx}
 	</update>
+	<update id="removes">
+		UPDATE group_cart_item SET
+			item_status		= 'REMOVED'
+		WHERE cart_item_idx IN (
+			<foreach item="cartItemIdx" collection="cartItemIdxs" separator=",">#{cartItemIdx}</foreach>
+		)
+	</update>
 </mapper>

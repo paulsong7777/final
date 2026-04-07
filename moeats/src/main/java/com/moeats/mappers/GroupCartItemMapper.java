@@ -25,4 +25,5 @@ public interface GroupCartItemMapper {
 	int insert(GroupCartItem groupCartItem);
 	int update(GroupCartItem groupCartItem);
 	int remove(int cartItemIdx);
+	int removes(List<Integer> cartItemIdx);
 }
