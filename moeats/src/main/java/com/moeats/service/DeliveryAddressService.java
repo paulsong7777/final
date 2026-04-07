@@ -20,6 +20,11 @@ public class DeliveryAddressService {
 	@Autowired
 	private GeoService geoService;
 	
+	// 사용자 마이페이지 기본주소 조회
+	public DeliveryAddress getDefaultAddress(int memberIdx) {
+		return deliveryAddressMapper.findDefaultAddress(memberIdx);
+	}
+	
 	
 	// 기본 주소 ↔ 선택 주소 변경
     @Transactional

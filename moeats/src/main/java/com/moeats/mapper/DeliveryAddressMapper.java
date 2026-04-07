@@ -10,6 +10,8 @@ import com.moeats.domain.DeliveryAddress;
 @Mapper
 public interface DeliveryAddressMapper {
 	
+	// 기본 주소 찾기
+	public DeliveryAddress findDefaultAddress(int memberIdx);
 	
 	// 기본 주소 off
 	public void resetDefaultAddress(int memberIdx);

@@ -1,22 +1,89 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/main_layout}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Member Profile</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
+    <title>Mo-Eats 마이페이지</title>
 </head>
-<body>
-  <div class="wrap">
-    <h1>Member Profile</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: views/members/member-profile</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
-</body>
+	
+	<div class="row">
+		<div class="col">
+			
+			<div class="row">
+				<div class="col">
+					<h2>프로필 관리</h2>
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col">
+					<div class="row">
+						<div class="col">
+							이메일
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<input type="text" th:value="${session.member.memberEmail}" readonly>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col">
+					<div class="row">
+						<div class="col">
+							닉네임
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<input type="text" th:value="${session.member.memberNickname}" readonly>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col">
+					<div class="row">
+						<div class="col">
+							배달 주소 관리
+						</div>
+						<div class="col">
+							<input type="button" th:onclick="@{location.href='/members/me/addresses'}" value="추가">
+							<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/edit'}" value="수정">
+							<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/delete'}" value="삭제">
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<input type="text" name="deliveryAddress"
+							       th:value="${deliveryAddress != null 
+							           ? deliveryAddress.deliveryAddress1 
+							             + (deliveryAddress.deliveryAddress2 != null ? ' ' + deliveryAddress.deliveryAddress2 : '') 
+							           : '등록된 기본 주소 없음'}"
+							       readonly>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<input type="button" th:onclick="@{location.href='/members/me/edit'}" value="회원정보수정">
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col">
+					<a href="#">회원탈퇴</a>&nbsp;·&nbsp;
+					<a href="/logout">로그아웃</a>
+				</div>
+			</div>
+			
+			
+		</div>
+	</div>
+	
 </html>
