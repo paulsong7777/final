@@ -49,6 +49,10 @@ public class RoomController {
 	@Autowired
 	OrderRoomTimer orderRoomTimer;
 
+	public record MemberParticipant(RoomParticipant roomParticipant, Member member) {}
+	public record CartItem(GroupCartItem groupCartItem, StoreMenu storeMenu) {}
+	public record MemberItem(RoomParticipant roomParticipant, Member member, List<CartItem> items) {}
+
 	@GetMapping("/rooms/new")
 	public String roomCreateForm() {
 		return "room-create";
@@ -103,7 +107,6 @@ public class RoomController {
 			}
 		}
 
-		final record MemberParticipant(RoomParticipant roomParticipant, Member member) {}
 
 		Map<Integer, RoomParticipant> roomParticipantMap = orderRoomService.findByRoom(orderRoom.getRoomIdx()).stream()
 				.collect(Collectors.toMap(RoomParticipant::getMemberIdx, roomParticipant -> roomParticipant));
@@ -117,8 +120,7 @@ public class RoomController {
 	}
 
 	@GetMapping("/rooms/join")
-	public String joinRoom(Model model, String roomCode) {
-		model.addAttribute("roomCode",roomCode);
+	public String joinRoom() {
 		return "room-join";
 	}
 
@@ -192,10 +194,6 @@ public class RoomController {
 			RedirectAttributes ra, Model model,
 			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-
-		record CartItem(GroupCartItem groupCartItem, StoreMenu storeMenu) {}
-		record MemberItem(RoomParticipant roomParticipant, Member member, List<CartItem> items) {}
-
 		List<GroupCartItem> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx());
 		Map<Integer, StoreMenu> storeMenuMap = storeMenuService
 				.menuListForUser(orderRoom.getStoreIdx()).stream()
