@@ -25,6 +25,11 @@ public class DeliveryAddressService {
 		return deliveryAddressMapper.findDefaultAddress(memberIdx);
 	}
 	
+	// 기본 주소 조회
+	public DeliveryAddress findDefaultAddress(int memberIdx) {
+	    return deliveryAddressMapper.findDefaultAddress(memberIdx);
+	}
+	
 	
 	// 기본 주소 ↔ 선택 주소 변경
     @Transactional
