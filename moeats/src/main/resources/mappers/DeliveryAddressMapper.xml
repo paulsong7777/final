@@ -15,11 +15,11 @@
 	
 	<!-- 기본배송지 찾기 -->
 	<select id="findDefaultAddress" resultType="DeliveryAddress">
-	    SELECT d.*
-	    FROM member m
-	    JOIN delivery_address d
-	        ON m.default_delivery_address_idx = d.delivery_address_idx
-	    WHERE m.member_idx = #{memberIdx}
+	    SELECT *
+	    FROM delivery_address
+	    WHERE member_idx = #{memberIdx}
+	      AND is_active = TRUE
+	    LIMIT 1
 	</select>
 	
 	<!-- 주소 삭제 -->
@@ -38,7 +38,8 @@
 	
 	<!-- 선택한 주소를 기본 주소로 -->
 	<update id="setDefaultAddress">
-	    update delivery_address set
+	    update delivery_address
+	    set is_active = TRUE
 	    where delivery_address_idx = #{deliveryAddressIdx}
 	    	and member_idx = #{memberIdx}
 	</update>
