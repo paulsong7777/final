@@ -15,7 +15,7 @@ public class MemberAccountService {
 
         @Autowired
         private PasswordEncoder passwordEncoder;
-
+        
         public void updateMember(Member member) {
                 if (member.getMemberPassword() != null && !member.getMemberPassword().isEmpty()) {
                         String encoded = passwordEncoder.encode(member.getMemberPassword());
@@ -53,7 +53,7 @@ public class MemberAccountService {
                 }
 
                 if (member.getMemberPassword() == null ||
-                        !member.getMemberPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,20}$")) {
+                        !member.getMemberPassword().matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[\\W_]).{8,20}$")) {
                         throw new IllegalArgumentException("비밀번호 형식이 올바르지 않습니다.");
                 }
 
