@@ -23,8 +23,8 @@ import com.moeats.domain.OrderRoom;
 import com.moeats.domain.RoomParticipant;
 import com.moeats.domain.StoreMenu;
 import com.moeats.service.MemberService;
+import com.moeats.service.StoreMenuService;
 import com.moeats.services.GroupCartItemService;
-import com.moeats.services.MenuService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.TransactionService;
 import com.moeats.services.sse.SSEService;
@@ -40,7 +40,7 @@ public class RoomController {
 	@Autowired
 	GroupCartItemService groupCartItemService;
 	@Autowired
-	MenuService menuService;
+	StoreMenuService storeMenuService;
 	@Autowired
 	TransactionService transactionService;
 	@Autowired
@@ -197,8 +197,8 @@ public class RoomController {
 		record MemberItem(RoomParticipant roomParticipant, Member member, List<CartItem> items) {}
 
 		List<GroupCartItem> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx());
-		Map<Integer, StoreMenu> storeMenuMap = menuService
-				.findByIdxs(groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()).stream()
+		Map<Integer, StoreMenu> storeMenuMap = storeMenuService
+				.menuListForUser(orderRoom.getStoreIdx()).stream()
 				.collect(Collectors.toMap(StoreMenu::getMenuIdx, storeMenu -> storeMenu));
 		Map<Integer, List<CartItem>> cartItemMap = groupCartItems.stream()
 				.collect(Collectors.groupingBy(GroupCartItem::getMemberIdx, Collectors.mapping(
@@ -256,7 +256,7 @@ public class RoomController {
 			ra.addFlashAttribute("error","해당 장바구니 항목을 찾을 수 없거나 잘못된 접근입니다");
 			return String.format("redirect:/rooms/code/%s/cart",roomCode);
 		}
-		StoreMenu storeMenu = menuService.findByIdx(groupCartItem.getMenuIdx());
+		StoreMenu storeMenu = storeMenuService.getMenu(orderRoom.getStoreIdx(),groupCartItem.getMenuIdx());
 		model.addAttribute("groupCartItem",groupCartItem);
 		model.addAttribute("storeMenu",storeMenu);
 		return "cart-item-edit";

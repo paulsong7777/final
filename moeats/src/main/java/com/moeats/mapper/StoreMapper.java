@@ -14,9 +14,7 @@ public interface StoreMapper {
 	// 고객 가게 조회
 	public List<Store> storeList(StoreSearchCond cond);
 	
-	
-	public Store findByStoreIdxAndOwner(@Param("storeIdx") int storeIdx,
-								@Param("ownerMemberIdx") int ownerMemberIdx);
+	public Store findByStoreIdx(int storeIdx);
 	
 	// 가게 상태 수정
 	public void updateStatus(@Param("storeIdx") int storeIdx, 
@@ -30,5 +28,5 @@ public interface StoreMapper {
 	public void insertStore(Store store);
 	
 	// 가게 조회
-	public Store myStore(@Param("ownerMemberIdx") int ownerMemberIdx);
+	public Store myStore(int ownerMemberIdx);
 }

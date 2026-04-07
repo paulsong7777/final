@@ -69,7 +69,7 @@ public class StoreService {
             throw new IllegalArgumentException("유효하지 않은 가게 상태값입니다: " + storeStatus);
         }
 
-        Store existing = storeMapper.findByStoreIdxAndOwner(storeIdx, ownerMemberIdx);
+        Store existing = storeMapper.findByStoreIdx(storeIdx);
 
         if (existing == null) {
             throw new RuntimeException("등록된 가게 없음");
@@ -82,10 +82,7 @@ public class StoreService {
     @Transactional
     public void updateStore(Store store) {
 
-        Store existing = storeMapper.findByStoreIdxAndOwner(
-            store.getStoreIdx(),
-            store.getOwnerMemberIdx()
-        );
+        Store existing = storeMapper.findByStoreIdx(store.getStoreIdx());
 
         if (existing == null) {
             throw new RuntimeException("등록된 가게 없음");
@@ -121,5 +118,10 @@ public class StoreService {
     // 내 가게 조회
     public Store myStore(int ownerMemberIdx) {
         return storeMapper.myStore(ownerMemberIdx);
+    }
+    
+
+    public Store findByStoreIdx(int storeIdx) {
+        return storeMapper.findByStoreIdx(storeIdx);
     }
 }

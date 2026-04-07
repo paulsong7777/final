@@ -8,17 +8,17 @@ import org.springframework.stereotype.Service;
 import com.moeats.domain.GroupCartItem;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.StoreMenu;
+import com.moeats.mapper.StoreMenuMapper;
 import com.moeats.mappers.GroupCartItemMapper;
 import com.moeats.mappers.GroupOrderMapper;
 import com.moeats.mappers.OrderRoomMapper;
-import com.moeats.mappers.OrderStoreMenuMapper;
 
 @Service
 public class GroupCartItemService {
 	@Autowired
 	GroupCartItemMapper groupCartItemMapper;
 	@Autowired
-	OrderStoreMenuMapper storeMenuMapper;
+	StoreMenuMapper storeMenuMapper;
 	@Autowired
 	GroupOrderMapper groupOrderMapper;
 	@Autowired
@@ -47,7 +47,7 @@ public class GroupCartItemService {
 	}
 	public int insert(GroupCartItem groupCartItem) {
 		OrderRoom orderRoom = orderRoomMapper.findByIdx(groupCartItem.getRoomIdx());
-		StoreMenu storeMenu = storeMenuMapper.findByIdx(groupCartItem.getMenuIdx());
+		StoreMenu storeMenu = storeMenuMapper.findByMenuIdx(orderRoom.getStoreIdx(),groupCartItem.getMenuIdx());
 		if( orderRoom==null || storeMenu==null || orderRoom.getStoreIdx()!=storeMenu.getStoreIdx() )
 			return 0;
 		return groupCartItemMapper.insert(groupCartItem);

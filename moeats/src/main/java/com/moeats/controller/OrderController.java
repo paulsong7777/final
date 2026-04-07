@@ -154,11 +154,11 @@ public class OrderController {
  			sseService.completeOrder(orderIdx);
  			return String.format("redirect:/orders/%d/status",orderIdx);
  		}
-if( paymentService.findPaymentPending(payment.getPaymentIdx()).isEmpty() ){
-    orderRoomTimer.stop(orderIdx);
-    sseService.completeOrder(orderIdx);
-    return String.format("redirect:/orders/%d/status",orderIdx);
-}
-return String.format("redirect:/orders/%d/payment/wait",orderIdx);
+		if( paymentService.findPaymentPending(payment.getPaymentIdx()).isEmpty() ){
+		    orderRoomTimer.stop(orderIdx);
+		    sseService.completeOrder(orderIdx);
+		    return String.format("redirect:/orders/%d/status",orderIdx);
+		}
+		return String.format("redirect:/orders/%d/payment/wait",orderIdx);
 	}
 }
