@@ -80,7 +80,7 @@ public class MemberController {
 	}
 	
 	// 로그아웃 처리
-	@PostMapping("/logout")
+	@GetMapping("/logout")
 	public String logout(HttpSession session) {
 		session.invalidate();
 		return "redirect:/main";
