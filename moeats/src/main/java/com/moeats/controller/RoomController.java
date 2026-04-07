@@ -52,6 +52,10 @@ public class RoomController {
         this.memberService = memberService;
     }
 	
+	public record MemberParticipant(RoomParticipant roomParticipant, Member member) {}
+	public record CartItem(GroupCartItem groupCartItem, StoreMenu storeMenu) {}
+	public record MemberItem(RoomParticipant roomParticipant, Member member, List<CartItem> items) {}
+
 	@GetMapping("/rooms/new")
 	public String roomCreateForm() {
 		return "room-create";
@@ -97,9 +101,6 @@ public String roomCreate(
 				return "redirect:/rooms/join";
 			}
 		}
-		
-		final record MemberParticipant(RoomParticipant roomParticipant,Member member) {}
-		
 		Map<Integer,RoomParticipant> roomParticipantMap = orderRoomService.findByRoom(orderRoom.getRoomIdx())
 				.stream().collect(Collectors.toMap(RoomParticipant::getMemberIdx, roomParticipant -> roomParticipant));
 		List<MemberParticipant> roomParticipants = memberService.findByIdxs(roomParticipantMap.keySet())
@@ -110,8 +111,7 @@ public String roomCreate(
 		return "room-detail";
 	}
 	@GetMapping("/rooms/join")
-	public String joinRoom(Model model,String roomCode) {
-		model.addAttribute("roomCode",roomCode);
+	public String joinRoom() {
 		return "room-join";
 	}
 	
@@ -182,10 +182,6 @@ public String kickRoom(
 			Model model,
 			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
-		
-		record CartItem(GroupCartItem groupCartItem,StoreMenu storeMenu) {}
-		record MemberItem(RoomParticipant roomParticipant,Member member,List<CartItem> items) {}
-		
 		List<GroupCartItem> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx());
 		Map<Integer,StoreMenu> storeMenuMap = menuService.findByIdxs(
 					groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()
