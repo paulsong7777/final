@@ -1,6 +1,10 @@
 package com.moeats.mapper;
 
+import java.util.List;
+import java.util.Set;
+
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.moeats.domain.Member;
 
@@ -25,4 +29,5 @@ public interface MemberMapper {
 	// 회원 조회
 	public Member getMember(int memberIdx);
 	
+	public List<Member> getMembers(@Param("memberIdxes") Set<Integer> memberIdxes);
 }

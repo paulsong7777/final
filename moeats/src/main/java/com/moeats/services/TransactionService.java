@@ -16,6 +16,8 @@ import com.moeats.domain.OrderDelivery;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.Payment;
 import com.moeats.domain.PaymentShare;
+import com.moeats.service.DeliveryAddressService;
+import com.moeats.service.MemberService;
 import com.moeats.services.sse.SSEService;
 
 @Service
@@ -29,7 +31,9 @@ public class TransactionService {
 	@Autowired
 	GroupCartItemService groupCartItemService;
 	@Autowired
-	OrderMemberQueryService memberService;
+	MemberService memberService;
+	@Autowired
+	DeliveryAddressService deliveryAddressService;
 	
 	@Autowired
 	SSEService sseService;
@@ -39,9 +43,8 @@ public class TransactionService {
 		boolean isRepresentative = orderRoom.getPaymentMode().equals("REPRESENTATIVE");
 		DeliveryAddress deliveryAddress = null;
 		if(orderRoom.getOrderMode().equals("DELIVERY")) {
-			deliveryAddress = memberService.findAddressByIdx(orderRoom.getSelectedDeliveryAddressIdx());
+			deliveryAddress = deliveryAddressService.addressByIdx(orderRoom.getLeaderMemberIdx(),orderRoom.getSelectedDeliveryAddressIdx());
 			if(	deliveryAddress==null || deliveryAddress.getMemberIdx() != orderRoom.getLeaderMemberIdx() )
-				// representativeMemberIdx = orderRoom.getLeaderMemberIdx();
 				throw new Exception();
 		}
 		Map<String,Object> map = new HashMap<>();
@@ -77,8 +80,8 @@ public class TransactionService {
 		map.put("orderDelivery",orderDelivery);
 		return map;
 	}
-@Transactional(rollbackFor=Exception.class)
-public int revertToSelect(OrderRoom orderRoom) {
+	@Transactional(rollbackFor=Exception.class)
+	public int revertToSelect(OrderRoom orderRoom) {
         if (orderRoom == null || !"PAYMENT_PENDING".equals(orderRoom.getRoomStatus()))
                 return 0;
 
@@ -93,8 +96,7 @@ public int revertToSelect(OrderRoom orderRoom) {
         paymentService.delete(payment.getPaymentIdx());
         groupOrderService.delete(groupOrder.getOrderIdx());
         return orderRoomService.revertToSelect(orderRoom.getRoomIdx());
-}
-
+	}
 	@Transactional(rollbackFor=Exception.class)
 	public int expirePayment(int orderIdx) {
 		GroupOrder groupOrder = groupOrderService.findByIdx(orderIdx);

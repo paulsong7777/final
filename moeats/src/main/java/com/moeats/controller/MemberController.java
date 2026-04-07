@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.Member;
-import com.moeats.service.MemberAccountService;
+import com.moeats.service.MemberService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpSession;
 public class MemberController {
 	
 	@Autowired
-	private MemberAccountService memberService;
+	private MemberService memberService;
 	
 	// ===== 상수 정의 ======
 	private static final String ROLE_OWNER = "OWNER";
@@ -157,7 +157,10 @@ public class MemberController {
 	
 	// 통합 대시보드 분기(역할분기 일반/사업자)
 	@GetMapping("/members/dashboard")
-	public String dashboard(@SessionAttribute("member") Member member) {
+	public String dashboard(
+			RedirectAttributes ra,
+			Model model,
+			@SessionAttribute("member") Member member) {
 
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
 	        return "views/owner/dashboard";

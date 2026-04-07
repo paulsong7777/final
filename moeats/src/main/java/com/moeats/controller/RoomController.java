@@ -22,9 +22,9 @@ import com.moeats.domain.Member;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.RoomParticipant;
 import com.moeats.domain.StoreMenu;
+import com.moeats.service.MemberService;
 import com.moeats.services.GroupCartItemService;
 import com.moeats.services.MenuService;
-import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.TransactionService;
 import com.moeats.services.sse.SSEService;
@@ -33,7 +33,8 @@ import com.moeats.timer.OrderRoomTimer;
 @Controller
 public class RoomController {
 
-	private final OrderMemberQueryService memberService;
+	@Autowired
+	MemberService memberService;
 	@Autowired
 	OrderRoomService orderRoomService;
 	@Autowired
@@ -47,10 +48,6 @@ public class RoomController {
 
 	@Autowired
 	OrderRoomTimer orderRoomTimer;
-
-	RoomController(OrderMemberQueryService memberService) {
-		this.memberService = memberService;
-	}
 
 	@GetMapping("/rooms/new")
 	public String roomCreateForm() {
@@ -110,7 +107,7 @@ public class RoomController {
 
 		Map<Integer, RoomParticipant> roomParticipantMap = orderRoomService.findByRoom(orderRoom.getRoomIdx()).stream()
 				.collect(Collectors.toMap(RoomParticipant::getMemberIdx, roomParticipant -> roomParticipant));
-		List<MemberParticipant> roomParticipants = memberService.findByIdxs(roomParticipantMap.keySet()).stream().map(
+		List<MemberParticipant> roomParticipants = memberService.getMembers(roomParticipantMap.keySet()).stream().map(
 				roomMember -> (new MemberParticipant(roomParticipantMap.get(roomMember.getMemberIdx()), roomMember)))
 				.toList();
 
@@ -213,7 +210,7 @@ public class RoomController {
 		RoomParticipant myState = roomParticipantMap.remove(member.getMemberIdx());
 		List<CartItem> myCartItems = cartItemMap.getOrDefault(member.getMemberIdx(), List.of());
 
-		List<MemberItem> otherCartItems = memberService.findByIdxs(roomParticipantMap.keySet()).stream()
+		List<MemberItem> otherCartItems = memberService.getMembers(roomParticipantMap.keySet()).stream()
 				.map(roomMember -> new MemberItem(roomParticipantMap.get(roomMember.getMemberIdx()), roomMember,
 						cartItemMap.getOrDefault(roomMember.getMemberIdx(), List.of())))
 				.toList();

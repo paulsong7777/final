@@ -72,6 +72,11 @@
 			where member_idx = #{memberIdx}
 	</select>
 	
+	<select id="getMembers" resultType="Member">
+		SELECT * FROM member WHERE member_idx IN (
+			<foreach item="memberIdx" collection="memberIdxes" separator=",">#{memberIdx}</foreach>
+		)
+	</select>
 </mapper>
 
 

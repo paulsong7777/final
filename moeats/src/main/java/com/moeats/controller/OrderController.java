@@ -20,8 +20,8 @@ import com.moeats.domain.Member;
 import com.moeats.domain.Payment;
 import com.moeats.domain.PaymentShare;
 import com.moeats.domain.RoomParticipant;
+import com.moeats.service.MemberService;
 import com.moeats.services.GroupOrderService;
-import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.PaymentService;
 import com.moeats.services.sse.SSEService;
@@ -37,7 +37,7 @@ public class OrderController {
 	@Autowired
 	PaymentService paymentService;
 	@Autowired
-	OrderMemberQueryService memberService;
+	MemberService memberService;
 	
 	@Autowired
 	SSEService sseService;
@@ -56,7 +56,7 @@ public class OrderController {
 		Map<Integer,RoomParticipant> roomParticipantMap = orderRoomService.findByRoom(groupOrder.getRoomIdx())
 				.stream().collect(Collectors.toMap(RoomParticipant::getMemberIdx, roomParticipant -> roomParticipant));
 		
-		List<MemberItems> memberItems = memberService.findByIdxs(roomParticipantMap.keySet())
+		List<MemberItems> memberItems = memberService.getMembers(roomParticipantMap.keySet())
 				.stream().map(roomMember->new MemberItems(
 						roomParticipantMap.get(roomMember.getMemberIdx()),
 						roomMember,
