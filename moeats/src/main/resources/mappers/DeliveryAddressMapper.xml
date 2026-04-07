@@ -3,6 +3,15 @@
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moeats.mapper.DeliveryAddressMapper" >
 	
+	<!-- 기본배송지 찾기 -->
+	<select id="findDefaultAddress" resultType="DeliveryAddress">
+	    SELECT *
+	    FROM delivery_address
+	    WHERE member_idx = #{memberIdx}
+	      AND is_active = TRUE
+	    LIMIT 1
+	</select>
+	
 	<!-- 주소 삭제 -->
 	<delete id="deleteAddress">
 		delete from delivery_address
