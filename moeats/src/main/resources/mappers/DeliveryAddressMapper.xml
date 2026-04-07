@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mapper.DeliveryAddressMapper" >
+	
+	<!-- 주소 삭제 -->
+	<delete id="deleteAddress">
+		delete from delivery_address
+		where delivery_address_idx = #{deliveryAddressIdx}
+	    	and member_idx = #{memberIdx} 
+	</delete>
+	
+	<!-- 기존 기본 주소 off -->
+	<update id="resetDefaultAddress">
+	    update delivery_address
+	    set is_active = FALSE
+	    where member_idx = #{memberIdx}
+	</update>
+	
+	<!-- 선택한 주소를 기본 주소로 -->
+	<update id="setDefaultAddress">
+	    update delivery_address
+	    set is_active = TRUE
+	    where delivery_address_idx = #{deliveryAddressIdx}
+	    	and member_idx = #{memberIdx}
+	</update>
+	
+	<!-- 주소 수정 -->
+	<update id="updateAddress">
+		update delivery_address
+		set 
+	        delivery_label = #{deliveryLabel},
+	        recipient_name = #{recipientName},
+	        recipient_phone = #{recipientPhone},
+	        zip_code = #{zipCode},
+	        delivery_address1 = #{deliveryAddress1},
+	        delivery_address2 = #{deliveryAddress2},
+	        delivery_request = #{deliveryRequest},
+   	       	longitude = #{longitude},		
+			latitude	=  #{latitude}
+	     where delivery_address_idx = #{deliveryAddressIdx}
+	     	and member_idx = #{memberIdx}
+	</update>
+	
+	<!-- 주소 등록 -->
+	<insert id="insertAddress" useGeneratedKeys="true"
+        keyProperty="deliveryAddressIdx">
+	    insert into delivery_address(
+	        member_idx,
+	        delivery_label,
+	        recipient_name,
+	        recipient_phone,
+	        zip_code,
+	        delivery_address1,
+	        delivery_address2,
+	        delivery_request,
+	        longitude,		
+			latitude		
+	    ) values (
+	        #{memberIdx},
+	        #{deliveryLabel},
+	        #{recipientName},
+	        #{recipientPhone},
+	        #{zipCode},
+	        #{deliveryAddress1},
+	        #{deliveryAddress2},
+	        #{deliveryRequest},
+	        #{longitude},
+	        #{latitude}
+	    )
+	</insert>
+	
+	<!-- 하나만 조회 -->
+	<select id="addressByIdx" resultType="DeliveryAddress">
+		select * from delivery_address
+			where delivery_address_idx = #{deliveryAddressIdx}
+			 and member_idx = #{memberIdx}
+	</select>
+	
+	<!-- 전체 조회 -->
+	<select id="addressList" parameterType="int" resultType="DeliveryAddress">
+		select * from delivery_address
+			where member_idx = #{memberIdx}
+			order by is_active desc, created_at desc
+	</select>
+	
+</mapper>
