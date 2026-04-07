@@ -1,149 +1,66 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="_csrf" th:content="${_csrf?.token}">
     <meta name="_csrf_header" th:content="${_csrf?.headerName}">
     <title layout:title-pattern="$CONTENT_TITLE - MoEats Owner">MoEats 점주 서비스</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
     <style>
-        :root { 
-            --moeats-warm-orange: #FF8000; 
-            --moeats-deep-orange: #E67300; 
-            --moeats-lime-green: #32CD32;
-            --header-height: 65px; 
-        }
-        body { background-color: #f8f9fa; padding-top: var(--header-height); font-family: 'Noto Sans KR', sans-serif; }
-        .navbar { background-color: var(--moeats-warm-orange) !important; border-bottom: 3px solid var(--moeats-deep-orange); height: var(--header-height); }
-        .offcanvas { border-right: 3px solid var(--moeats-lime-green); width: 280px !important; }
-        .nav-capsule { 
-            display: flex; align-items: center; padding: 12px 20px; margin: 0 15px 5px;
-            border-radius: 10px; text-decoration: none; color: #333 !important; font-weight: 600; transition: 0.2s;
-        }
-        .nav-capsule i { color: var(--moeats-warm-orange); margin-right: 12px; font-size: 1.2rem; }
-        .nav-capsule:hover { background-color: rgba(50, 205, 50, 0.1); border-left: 4px solid var(--moeats-lime-green); }
-        .nav-capsule.active { background: linear-gradient(135deg, var(--moeats-warm-orange), var(--moeats-deep-orange)) !important; color: white !important; }
+        :root { --moeats-orange: #FF8000; --moeats-green: #32CD32; --header-h: 70px; }
+        body { background-color: #f4f7f6; padding-top: var(--header-h); font-family: 'Noto Sans KR', sans-serif; }
+        .navbar { background-color: var(--moeats-orange) !important; height: var(--header-h); border-bottom: 4px solid #E67300; }
+        .offcanvas { border-right: 4px solid var(--moeats-green); width: 280px !important; }
+        .nav-capsule { display: flex; align-items: center; padding: 10px 20px; margin: 2px 15px; border-radius: 12px; text-decoration: none; color: #555 !important; font-weight: 600; transition: 0.2s; font-size: 0.92rem; }
+        .nav-capsule i { color: var(--moeats-orange); margin-right: 12px; font-size: 1.1rem; width: 24px; text-align: center; }
+        .nav-capsule:hover { background-color: rgba(50, 205, 50, 0.08); color: var(--moeats-orange) !important; }
+        .nav-capsule.active { background: linear-gradient(135deg, var(--moeats-orange), #E67300) !important; color: white !important; }
         .nav-capsule.active i { color: white !important; }
-        .sidebar-divider { border-top: 1px solid #eee; margin: 15px 20px; }
-        
-        /* 안내 메뉴 전용 스타일 */
-        .nav-guide { background-color: #fff9f0; border: 1px dashed var(--moeats-warm-orange); margin-top: 5px; }
-        .nav-guide:hover { background-color: #fff0db; }
+        .sidebar-heading { font-size: 0.75rem; color: #bbb; padding: 12px 25px 5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
     </style>
-    <th:block layout:fragment="css"></th:block>
 </head>
 <body>
-
-<nav class="navbar navbar-dark fixed-top shadow-sm">
+<nav class="navbar navbar-dark fixed-top shadow">
     <div class="container-fluid">
-        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#ownerSidebar">
-            <i class="bi bi-list fs-2 text-white"></i>
-        </button>
-        <a class="navbar-brand ms-3 fw-bold" th:href="@{/owner/dashboard}">Mo-Eats 사장님</a>
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#ownerSidebar"><i class="bi bi-list fs-2 text-white"></i></button>
+        <a class="navbar-brand ms-2 fw-bold fs-4" th:href="@{/owner/dashboard}">MOEATS OWNER</a>
         <div class="ms-auto d-flex align-items-center">
-            <span class="text-white small fw-bold me-2" 
-                  th:text="${storeVo != null ? storeVo['storeName'] : '사장님'} + '님'"></span>
-            <form th:action="@{/logout}" method="post" class="m-0">
-                <button type="submit" class="btn btn-sm btn-outline-light rounded-pill px-3">로그아웃</button>
-            </form>
+            <span class="text-white me-3 fw-bold" th:text="${(session.member?.memberNickname ?: '사장님') + '님'}"></span>
+            <form th:action="@{/logout}" method="post" class="m-0"><button type="submit" class="btn btn-sm bg-white text-orange rounded-pill px-3 fw-bold">로그아웃</button></form>
         </div>
     </div>
 </nav>
 
-<div class="offcanvas offcanvas-start" id="ownerSidebar" tabindex="-1">
-    <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title fw-bold text-orange">STORE ADMIN</h5>
-        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body p-0 pt-3">
-        <a th:href="@{/owner/dashboard}" class="nav-capsule" th:classappend="${menu == 'dash'} ? 'active'">
-            <i class="bi bi-speedometer2"></i> 대시보드
-        </a>
-        <a th:href="@{/owner/order/list}" class="nav-capsule" th:classappend="${menu == 'order'} ? 'active'">
-            <i class="bi bi-clock-history"></i> 주문 내역 조회
-        </a>
-        <div class="sidebar-divider"></div>
-        <a th:href="@{/owner/menu/management}" class="nav-capsule" th:classappend="${menu == 'menu'} ? 'active'">
-            <i class="bi bi-journal-text"></i> 메뉴 관리
-        </a>
-        <a th:href="@{/owner/category/setting}" class="nav-capsule" th:classappend="${menu == 'category'} ? 'active'">
-            <i class="bi bi-collection"></i> 카테고리 관리
-        </a>
-        <div class="sidebar-divider"></div>
-        <a th:href="@{/owner/store/setting}" class="nav-capsule" th:classappend="${menu == 'store'} ? 'active'">
-            <i class="bi bi-shop"></i> 매장 정보 수정
-        </a>
-        <a th:href="@{/owner/sales/report}" class="nav-capsule" th:classappend="${menu == 'report'} ? 'active'">
-            <i class="bi bi-bar-chart-line"></i> 영업 리포트
-        </a>
-        <div class="sidebar-divider"></div>
-        <a th:href="@{/owner/review/management}" class="nav-capsule" th:classappend="${menu == 'review'} ? 'active'">
-            <i class="bi bi-chat-right-text"></i> 리뷰 답변 관리
-        </a>
+<div class="offcanvas offcanvas-start shadow" id="ownerSidebar" tabindex="-1">
+    <div class="offcanvas-header border-bottom"><h5 class="offcanvas-title fw-bold text-success">점주 핵심 관리</h5><button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button></div>
+    <div class="offcanvas-body p-0 pt-2">
+        
+        <div class="sidebar-heading">Main</div>
+        <a th:href="@{/owner/dashboard}" class="nav-capsule" th:classappend="${menu == 'dash'} ? 'active'"><i class="bi bi-speedometer2"></i> 대시보드 홈</a>
+        
+        <div class="sidebar-heading">Orders</div>
+        <a th:href="@{/owner/order/list}" class="nav-capsule" th:classappend="${menu == 'order-list'} ? 'active'"><i class="bi bi-receipt"></i> 실시간 주문 확인</a>
+        <a th:href="@{/owner/order/detail}" class="nav-capsule" th:classappend="${menu == 'order-detail'} ? 'active'"><i class="bi bi-search"></i> 주문 상세 조회</a>
 
-        <div th:if="${storeVo == null or #lists.isEmpty(menuList)}" class="sidebar-divider"></div>
+        <div class="sidebar-heading">Menus</div>
+        <a th:href="@{/owner/menu/management}" class="nav-capsule" th:classappend="${menu == 'menu-mgmt'} ? 'active'"><i class="bi bi-journal-text"></i> 메뉴 조회/수정</a>
+        <a th:href="@{/owner/menu/register}" class="nav-capsule" th:classappend="${menu == 'menu-reg'} ? 'active'"><i class="bi bi-plus-square"></i> 신규 메뉴 등록</a>
+        <a th:href="@{/owner/menu/image/manage}" class="nav-capsule" th:classappend="${menu == 'menu-img'} ? 'active'"><i class="bi bi-images"></i> 메뉴 이미지 관리</a>
 
-        <a th:if="${storeVo == null}" th:href="@{/owner/dashboard}" class="nav-capsule nav-guide text-danger">
-            <i class="bi bi-patch-exclamation-fill text-danger"></i> 매장 등록 안내
-        </a>
+        <div class="sidebar-heading">Store & Review</div>
+        <a th:href="@{/owner/store/setting}" class="nav-capsule" th:classappend="${menu == 'store'} ? 'active'"><i class="bi bi-pencil-square"></i> 매장 정보 수정</a>
+        <a th:href="@{/owner/review/management}" class="nav-capsule" th:classappend="${menu == 'review'} ? 'active'"><i class="bi bi-chat-right-text"></i> 리뷰 답변 관리</a>
 
-        <a th:if="${#lists.isEmpty(menuList)}" th:href="@{/owner/menu/management}" class="nav-capsule nav-guide text-warning">
-            <i class="bi bi-plus-square-fill text-warning"></i> 메뉴 등록 안내
-        </a>
+        <div class="sidebar-heading">Reports & Gallery</div>
+        <a th:href="@{/owner/sales/report}" class="nav-capsule" th:classappend="${menu == 'report'} ? 'active'"><i class="bi bi-bar-chart-line"></i> 영업 리포트</a>
+        <a th:href="@{/owner/all-image-list}" class="nav-capsule" th:classappend="${menu == 'all-img'} ? 'active'"><i class="bi bi-card-image"></i> 이미지 보관함</a>
     </div>
 </div>
 
 <main layout:fragment="content" class="container-fluid px-4 pb-5 mt-4"></main>
 
-<div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3">
-    <div id="moeatsToast" class="toast align-items-center text-white border-0 shadow" role="alert">
-        <div class="d-flex">
-            <div class="toast-body fw-bold" id="toastMessage"></div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script th:inline="javascript">
-/*<![CDATA[*/
-    async function moeatsFetch(url, data) {
-        const token  = document.querySelector('meta[name="_csrf"]')?.content;
-        const header = document.querySelector('meta[name="_csrf_header"]')?.content;
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    ...(header && { [header]: token }) 
-                },
-                body: JSON.stringify(data)
-            });
-            if (!response.ok) throw new Error("서버 응답 에러");
-            return await response.json();
-        } catch (e) { 
-            console.error(e);
-            return { success: false, message: "통신 오류가 발생했습니다." }; 
-        }
-    }
-
-    function showToast(message, type = 'success') {
-        const toastEl  = document.getElementById('moeatsToast');
-        const toastMsg = document.getElementById('toastMessage');
-        if (!toastEl || !toastMsg) return;
-        toastMsg.innerText = message;
-        toastEl.className  = `toast align-items-center text-white border-0 shadow bg-${type}`;
-        new bootstrap.Toast(toastEl, { delay: 2000 }).show();
-    }
-/*]]>*/
-</script>
 <th:block layout:fragment="script"></th:block>
 </body>
 </html>

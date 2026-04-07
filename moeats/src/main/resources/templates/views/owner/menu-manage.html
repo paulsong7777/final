@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<<<<<<< HEAD
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -7,21 +6,6 @@
 
 <head>
     <title>메뉴 목록 관리 - MoEats</title>
-    <style>
-        .text-navy { color: #001f3f !important; }
-        .text-orange { color: #FF8000 !important; }
-        .btn-orange { background-color: #FF8000 !important; color: white !important; }
-        .soldout-overlay {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 1.5rem; font-weight: bold;
-            z-index: 10;
-        }
-        .grayscale-blur { filter: grayscale(100%) blur(2px); }
-        .menu-img { height: 200px; object-fit: cover; }
-    </style>
 </head>
 
 <body>
@@ -34,47 +18,48 @@
             </h3>
             <p class="text-secondary small mb-0 mt-1">등록된 메뉴의 판매 상태와 정보를 관리합니다.</p>
         </div>
-        <a th:href="@{/owner/menu/register}" class="btn btn-orange text-white fw-bold px-4 rounded-pill shadow-sm">
+        <a th:href="@{/owners/menu/write}" class="btn btn-moeats px-4 rounded-pill shadow-sm">
             <i class="bi bi-plus-lg me-1"></i> 신규 메뉴 등록
         </a>
     </div>
 
     <div class="row g-4">
         <th:block th:if="${not #lists.isEmpty(menuList)}">
-            <div th:each="menu : ${menuList}" class="col-md-6 col-lg-4" th:id="|menu-wrapper-${menu['menuIdx']}|">
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+            <div th:each="menu : ${menuList}" class="col-md-6 col-lg-4" th:id="|menu-wrapper-${menu.menuIdx}|">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
                     
                     <div class="position-relative">
-                        <img th:id="|menu-img-${menu['menuIdx']}|"
-                             th:src="${menu['menuImg'] ?: 'https://via.placeholder.com/300/FF8000/FFFFFF?text=No+Image'}"
-                             class="card-img-top menu-img" 
-                             th:classappend="${menu['menuStatus'] == 'SOLDOUT'} ? 'grayscale-blur' : ''">
+                        <img th:id="|menu-img-${menu.menuIdx}|"
+                             th:src="${menu.menuImg ?: 'https://via.placeholder.com/300/FF8000/FFFFFF?text=No+Image'}"
+                             class="card-img-top preview-img" 
+                             style="height: 200px; object-fit: cover;"
+                             th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? 'grayscale-blur' : ''">
                         
-                        <div th:id="|soldout-overlay-${menu['menuIdx']}|"
+                        <div th:id="|soldout-overlay-${menu.menuIdx}|"
                              class="soldout-overlay"
-                             th:style="${menu['menuStatus'] == 'SOLDOUT'} ? 'display:flex;' : 'display:none;'">
+                             th:style="${menu.menuStatus == 'SOLD_OUT'} ? 'display:flex;' : 'display:none;'">
                             품절중
                         </div>
                     </div>
 
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="fw-bold text-navy mb-0" th:text="${menu['menuName'] ?: '이름 없는 메뉴'}">메뉴명</h5>
-                            <span class="badge bg-light text-dark border" th:text="${menu['categoryName'] ?: '미분류'}">카테고리</span>
+                            <h5 class="fw-bold text-navy mb-0" th:text="${menu.menuName ?: '이름 없는 메뉴'}">메뉴명</h5>
+                            <span class="badge bg-light text-dark border small" th:text="${menu.menuCategoryName ?: '미분류'}">카테고리</span>
                         </div>
                         
                         <h5 class="fw-bold text-orange mb-4" 
-                            th:text="|${#numbers.formatInteger(menu['menuPrice'] ?: 0, 0, 'COMMA')}원|">0원</h5>
+                            th:text="|${#numbers.formatInteger(menu.menuPrice ?: 0, 0, 'COMMA')}원|">0원</h5>
 
                         <div class="d-flex gap-2">
                             <button type="button" 
                                     class="btn btn-outline-secondary w-100 rounded-pill fw-bold"
-                                    th:id="|status-btn-${menu['menuIdx']}|"
-                                    th:text="${menu['menuStatus'] == 'SOLDOUT'} ? '판매 활성화' : '품절 처리'"
-                                    th:onclick="toggleMenuStatus([[${menu['menuIdx']}]])">
+                                    th:id="|status-btn-${menu.menuIdx}|"
+                                    th:text="${menu.menuStatus == 'SOLD_OUT'} ? '판매 활성화' : '품절 처리'"
+                                    th:onclick="toggleMenuStatus([[${menu.menuIdx}]])">
                                 상태변경
                             </button>
-                            <a th:href="@{/owner/menu/edit(menuIdx=${menu['menuIdx']})}"
+                            <a th:href="@{/owners/menu/{idx}/edit(idx=${menu.menuIdx})}"
                                class="btn btn-light w-100 rounded-pill fw-bold border">정보 수정</a>
                         </div>
                     </div>
@@ -83,7 +68,8 @@
         </th:block>
 
         <div th:if="${#lists.isEmpty(menuList)}" class="col-12 text-center py-5">
-            <p class="text-muted fw-bold">등록된 메뉴가 없습니다.</p>
+            <div class="text-muted mb-3 opacity-25"><i class="bi bi-egg-fried display-1"></i></div>
+            <p class="text-secondary fw-bold">등록된 메뉴가 없습니다.<br>새로운 맛을 추가해 보세요!</p>
         </div>
     </div>
 
@@ -94,8 +80,8 @@
 /*<![CDATA[*/
 
 /**
- * 메뉴 상태 비동기 변경 (Fetch API)
- * 규칙: 상태변경은 POST 고정, 새로고침 금지
+ * [Rule 2] AJAX: 상태 변경은 Fetch API 비동기 처리
+ * [Rule 6] 변경은 POST 고정, 새로고침 금지
  */
 async function toggleMenuStatus(menuIdx) {
     if (!menuIdx) return;
@@ -104,39 +90,40 @@ async function toggleMenuStatus(menuIdx) {
     const overlay = document.getElementById(`soldout-overlay-${menuIdx}`);
     const img = document.getElementById(`menu-img-${menuIdx}`);
     
-    // 현재 UI 상태를 기반으로 다음 상태 결정
+    // 백엔드 StoreMenuService 상태값 규격: AVAILABLE, SOLD_OUT
     const isCurrentlySoldOut = btn.textContent.trim() === '판매 활성화';
-    const nextStatus = isCurrentlySoldOut ? 'ON_SALE' : 'SOLDOUT';
+    const nextStatus = isCurrentlySoldOut ? 'AVAILABLE' : 'SOLD_OUT';
 
     try {
-        const response = await fetch('/owner/menu/status', {
+        // [교정] 백엔드 StoreMenuController.updateStatus 매핑 주소(/owners/menu/status)와 연동
+        const response = await fetch('/owners/menu/status', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                // Security: CSRF 토큰 필수
+                'Content-Type': 'application/x-www-form-urlencoded',
+                // [Rule 4] Security: CSRF 필수 (레이아웃 표준)
                 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.content
             },
-            body: JSON.stringify({
+            body: new URLSearchParams({
                 menuIdx: menuIdx,
                 menuStatus: nextStatus
             })
         });
 
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            // 규칙: 새로고침 없이 상태 UI 즉시 변경
-            if (nextStatus === 'SOLDOUT') {
+        if (response.ok) {
+            // [Rule 2] 새로고침 없이 DOM 즉시 조작
+            if (nextStatus === 'SOLD_OUT') {
                 btn.textContent = '판매 활성화';
+                btn.classList.replace('btn-outline-secondary', 'btn-warning');
                 overlay.style.display = 'flex';
                 img.classList.add('grayscale-blur');
             } else {
                 btn.textContent = '품절 처리';
+                btn.classList.replace('btn-warning', 'btn-outline-secondary');
                 overlay.style.display = 'none';
                 img.classList.remove('grayscale-blur');
             }
         } else {
-            alert(result.message || '상태 변경에 실패했습니다.');
+            alert('상태 변경에 실패했습니다. (코드: ' + response.status + ')');
         }
     } catch (error) {
         console.error('Fetch Error:', error);
@@ -149,26 +136,3 @@ async function toggleMenuStatus(menuIdx) {
 </th:block>
 </body>
 </html>
-=======
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Owner Menu Manage</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <h1>Owner Menu Manage</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: views/owner/menu-manage</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
-</body>
-</html>
->>>>>>> origin/integration

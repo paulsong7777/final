@@ -10,9 +10,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
+import com.moeats.domain.Member;
+import com.moeats.domain.Store;
 import com.moeats.domain.StoreMenu;
 import com.moeats.service.StoreMenuService;
+import com.moeats.service.StoreService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -22,6 +26,8 @@ public class StoreMenuController {
     @Autowired
     private StoreMenuService storeMenuService;
 
+    @Autowired
+    private StoreService storeService;
 
     /**
      * =========================
@@ -65,10 +71,10 @@ public class StoreMenuController {
 
     // 메뉴 관리 화면
     @GetMapping("/owners/menu")
-    public String menuListForOwner(HttpSession session, Model model) {
+    public String menuListForOwner(HttpSession session, Model model,@SessionAttribute("member") Member member) {
 
-        int storeIdx = (int) session.getAttribute("storeIdx"); // 로그인 기반
-
+        Store store = storeService.myStore(member.getMemberIdx()); // 로그인 기반
+        int storeIdx = store.getStoreIdx();
         List<StoreMenu> menuList = storeMenuService.menuList(storeIdx);
 
         model.addAttribute("menuList", menuList);

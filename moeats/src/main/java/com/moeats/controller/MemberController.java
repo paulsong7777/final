@@ -1,5 +1,10 @@
 package com.moeats.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,9 +21,11 @@ import com.moeats.service.MemberAccountService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @SessionAttributes("member")	// model에 담긴 member를 session에도 자동으로 저장
+@Slf4j
 public class MemberController {
 	
 	@Autowired
@@ -157,9 +164,28 @@ public class MemberController {
 	
 	// 통합 대시보드 분기(역할분기 일반/사업자)
 	@GetMapping("/members/dashboard")
-	public String dashboard(@SessionAttribute("member") Member member) {
-
+	public String dashboard(Model model,@SessionAttribute("member") Member member) {
+		
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
+		        model.addAttribute("menu", "dash");
+
+		        // 실시간 주문 가상 데이터 생성
+		        List<Map<String, Object>> list = new ArrayList<>();
+		        Map<String, Object> o = new HashMap<>();
+		        o.put("roomIdx", 20260406001L);
+		        o.put("roomStatus", "WAITING");
+		        o.put("orderMenu", "스테이크 비빔밥 외 1건");
+		        o.put("totalPrice", 24000);
+		        o.put("orderTime", "18:50");
+		        list.add(o);
+
+		        // HTML에서 어떤 이름을 쓰든 걸리도록 다 넣어줍니다.
+		        model.addAttribute("activeOrders", list);
+		        model.addAttribute("orders", list);
+		        model.addAttribute("orderList", list);
+		        //System.out.println(member);
+		        log.info("/members/dashboard: {}", member);
+		        
 	        return "views/owner/dashboard";
 	    }
 

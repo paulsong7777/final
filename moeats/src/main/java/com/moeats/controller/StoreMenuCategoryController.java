@@ -15,6 +15,8 @@ import com.moeats.domain.StoreMenuCategory;
 import com.moeats.service.StoreMenuCategoryService;
 import com.moeats.service.StoreService;
 
+import groovy.util.logging.Slf4j;
+
 @Controller
 @RequestMapping("/owners/store-menu-category")
 public class StoreMenuCategoryController {
@@ -53,7 +55,7 @@ public class StoreMenuCategoryController {
 	@PostMapping("/write")
 	public String create(StoreMenuCategory category,
 						 @SessionAttribute("member") Member member) {
-
+		System.out.println(category);
 		int storeIdx = getStoreIdx(member);
 
 		category.setStoreIdx(storeIdx);

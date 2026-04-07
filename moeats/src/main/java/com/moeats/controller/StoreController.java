@@ -87,4 +87,8 @@ public class StoreController {
 
         return "views/owner/store-manage";
     }
+    @GetMapping("/owners/order-list")
+    public String orderList() {
+        return "views/owner/order-list"; 
+    }
 }

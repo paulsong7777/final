@@ -22,7 +22,6 @@ public class GroupOrder {
 	Timestamp cancelledAt;
 	Timestamp createdAt;
 	Timestamp updatedAt;
-
 	
 	public static GroupOrder from(OrderRoom orderRoom) {
 		GroupOrder groupOrder = new GroupOrder(); 
@@ -33,5 +32,4 @@ public class GroupOrder {
 		groupOrder.setPaymentMode(orderRoom.getPaymentMode());
 		return groupOrder;
 	}
-
 }

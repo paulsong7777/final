@@ -1,22 +1,84 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layouts/owner-layout}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>All Image List</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
+    <title>통합 이미지 보관함 - MoEats</title>
 </head>
 <body>
-  <div class="wrap">
-    <h1>All Image List</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: views/owner/all-image-list</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
+<main layout:fragment="content" class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2">
+        <div>
+            <h3 class="fw-bold mb-0 text-navy"><i class="bi bi-images me-2 text-orange"></i>이미지 보관함</h3>
+            <p class="text-secondary small mb-0 mt-1">우리 매장에서 사용 중인 모든 이미지 자산입니다.</p>
+        </div>
+        <a th:href="@{/owners/menus/0/images/new}" class="btn btn-moeats px-4 rounded-pill shadow-sm">
+            <i class="bi bi-cloud-upload me-1"></i> 새 이미지 업로드
+        </a>
+    </div>
+
+    <div class="row g-3">
+        <th:block th:if="${not #lists.isEmpty(allImages)}">
+            <div th:each="img : ${allImages}" class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative group">
+                    <img th:src="${img.imagePath}" class="preview-img" style="height: 150px; object-fit: cover;" th:alt="${img.imageName}">
+                    <div class="card-body p-2 text-center">
+                        <p class="small text-truncate mb-0 fw-bold" th:text="${img.imageName}">이미지명</p>
+                    </div>
+                    
+                    <div class="upload-overlay d-flex gap-2">
+                        <a th:href="@{/owners/menus/0/images/{idx}/edit(idx=${img.menuImageIdx})}" class="btn btn-sm btn-light rounded-circle">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <button class="btn btn-sm btn-danger rounded-circle" th:onclick="deleteImage([[${img.menuImageIdx}]])">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+        
+        <div th:if="${#lists.isEmpty(allImages)}" class="col-12 text-center py-5">
+            <div class="text-muted mb-3 opacity-25"><i class="bi bi-image display-1"></i></div>
+            <p class="text-secondary fw-bold">보관된 이미지가 없습니다.<br>매장을 돋보이게 할 사진을 등록해 보세요!</p>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /**
+         * [Rule 2] AJAX: Fetch API 비동기 처리
+         * [Rule 6] 변경은 POST 고정, 새로고침 금지
+         */
+        async function deleteImage(imgIdx) {
+            if(!confirm("정말로 이 이미지를 삭제하시겠습니까?")) return;
+
+            // [Rule 4] Security: CSRF 토큰 필수
+            const token = document.querySelector('meta[name=\"_csrf\"]')?.content;
+            const header = document.querySelector('meta[name=\"_csrf_header\"]')?.content;
+
+            try {
+                // [교정] 백엔드 deleteImage 메서드 매핑 주소와 연동 (/owners/menus/{menuIdx}/images/{menuImageIdx}/delete)
+                const response = await fetch(`/owners/menus/0/images/${imgIdx}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        ...(header && { [header]: token })
+                    }
+                });
+
+                if (response.ok) {
+                    alert("이미지가 삭제되었습니다.");
+                    location.reload(); // 보관함 특성상 전체 리스트 갱신을 위해 reload 사용
+                } else {
+                    alert("삭제 실패 (에러 코드: " + response.status + ")");
+                }
+            } catch (error) {
+                alert("통신 중 오류가 발생했습니다.");
+            }
+        }
+    </script>
+</th:block>
 </body>
 </html>
