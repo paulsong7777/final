@@ -18,22 +18,6 @@
         .nav-capsule.active { background: linear-gradient(135deg, var(--moeats-orange), #E67300) !important; color: white !important; }
         .nav-capsule.active i { color: white !important; }
         .sidebar-heading { font-size: 0.75rem; color: #bbb; padding: 12px 25px 5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        /* ✅ 신규 점주 강조 스타일 (더 눈에 띄게 수정) */
-        .new-owner-section { 
-            background: linear-gradient(to bottom, #fff9f0, #fff); 
-            border-radius: 15px; 
-            margin: 20px 15px; 
-            padding-bottom: 15px; 
-            border: 2px dashed #FF8000;
-            box-shadow: 0 4px 10px rgba(255, 128, 0, 0.1);
-        }
-        .pulse-icon { animation: pulse-orange 2s infinite; }
-        @keyframes pulse-orange {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
     </style>
 </head>
 <body>
@@ -42,7 +26,7 @@
         <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#ownerSidebar">
             <i class="bi bi-list fs-2 text-white"></i>
         </button>
-        <a class="navbar-brand ms-2 fw-bold fs-4" th:href="@{/owner/dashboard}">MOEATS OWNER</a>
+        <a class="navbar-brand ms-2 fw-bold fs-4" th:href="@{/members/dashboard}">MOEATS OWNER</a>
         <div class="ms-auto d-flex align-items-center">
             <span class="text-white me-3 fw-bold" th:text="${(session.member?.memberNickname ?: '사장님') + '님'}"></span>
             <form th:action="@{/logout}" method="post" class="m-0"><button type="submit" class="btn btn-sm bg-white text-orange rounded-pill px-3 fw-bold">로그아웃</button></form>
@@ -58,40 +42,40 @@
     <div class="offcanvas-body p-0 pt-2">
         
         <div class="sidebar-heading">Main & Orders</div>
-        <a th:href="@{/owner/dashboard}" class="nav-capsule" th:classappend="${menu == 'dash'} ? 'active'"><i class="bi bi-speedometer2"></i> 대시보드 홈</a>
+        <a th:href="@{/members/dashboard}" class="nav-capsule" th:classappend="${menu == 'dash'} ? 'active'"><i class="bi bi-speedometer2"></i> 대시보드(신규)</a>
+        
+        <a th:href="@{/owners/dashboard-map}" class="nav-capsule" th:classappend="${menu == 'dash-map'} ? 'active'"><i class="bi bi-map"></i> 대시보드(지도)</a>
+        
         <a th:href="@{/owner/order/detail}" class="nav-capsule" th:classappend="${menu == 'order-detail'} ? 'active'"><i class="bi bi-search"></i> 주문 상세 조회</a>
         <a th:href="@{/owner/order/list}" class="nav-capsule" th:classappend="${menu == 'order-list'} ? 'active'"><i class="bi bi-receipt"></i> 현재 주문 내역</a>
 
         <div class="sidebar-heading">Store Management</div>
-        <a th:href="@{/owners/store/new}" class="nav-capsule" th:classappend="${menu == 'store-new'} ? 'active'"><i class="bi bi-shop"></i> 신규 매장 등록</a>
+        <a th:href="@{/owner/store/new}" class="nav-capsule" th:classappend="${menu == 'store-new'} ? 'active'"><i class="bi bi-shop"></i> 신규 매장 등록</a>
         <a th:href="@{/owner/store/setting}" class="nav-capsule" th:classappend="${menu == 'store'} ? 'active'"><i class="bi bi-pencil-square"></i> 매장 정보 수정</a>
 
         <div class="sidebar-heading">Menus & Reviews</div>
+        
+        <a th:href="@{/owners/all-image}" class="nav-capsule" th:classappend="${menu == 'all-img'} ? 'active'"><i class="bi bi-images"></i> 통합 이미지 보관함</a>
+        
         <a th:href="@{/owner/menu/register}" class="nav-capsule" th:classappend="${menu == 'menu-reg'} ? 'active'"><i class="bi bi-plus-square"></i> 신규 메뉴 등록</a>
+
         <a th:href="@{/owner/menu/edit}" class="nav-capsule" th:classappend="${menu == 'menu-edit'} ? 'active'"><i class="bi bi-pencil-fill"></i> 메뉴 수정</a>
+        
+        <a th:href="@{/owner/menu/management}" class="nav-capsule" th:classappend="${menu == 'menu-mgmt'} ? 'active'"><i class="bi bi-toggle-on"></i> 메뉴 품절 관리</a>
+        
         <a th:href="@{/owners/store-menu-category}" class="nav-capsule" th:classappend="${menu == 'category'} ? 'active'"><i class="bi bi-tags"></i> 카테고리 설정</a>
+        
         <a th:href="@{/owners/store-menu-category/write}" class="nav-capsule" th:classappend="${menu == 'category-reg'} ? 'active'"><i class="bi bi-plus-circle-dotted"></i> 신규 카테고리 등록</a>
+        
         <a th:href="@{/owner/review/management}" class="nav-capsule" th:classappend="${menu == 'review'} ? 'active'"><i class="bi bi-chat-right-text"></i> 리뷰 답변 관리</a>
 
         <div class="sidebar-heading">Reports</div>
         <a th:href="@{/owner/sales/report}" class="nav-capsule" th:classappend="${menu == 'report'} ? 'active'"><i class="bi bi-bar-chart-line"></i> 영업 리포트</a>
 
-        <div th:if="${storeVo == null or storeVo.isEmpty()}" class="new-owner-section">
-            <div class="sidebar-heading text-orange fw-bolder">
-                <i class="bi bi-info-circle-fill me-1"></i> First Steps
-            </div>
-            <a th:href="@{/owner/dashboard}" class="nav-capsule active shadow-sm mb-2">
-                <i class="bi bi-stars pulse-icon"></i> <strong>매장 등록 가이드</strong>
-            </a>
-            <div class="px-4 small text-secondary">
-                모이츠 사장님이 되신 것을 환영합니다! 대시보드에서 첫 매장을 등록해 보세요.
-            </div>
-        </div>
     </div>
 </div>
 
 <main layout:fragment="content" class="container-fluid px-4 pb-5 mt-4"></main>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <th:block layout:fragment="script"></th:block>
 </body>

@@ -1,131 +1,45 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/owner-layout}">
-<head>
-    <title>메뉴 이미지 수정 - MoEats</title>
-</head>
-
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/owner-layout}">
+<head><title>이미지 수정 - MoEats</title></head>
 <body>
 <main layout:fragment="content" class="py-4">
-    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white edit-card-limit">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 600px;">
         <div class="card-body p-4 p-md-5">
-            
-            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3">
-                <a th:href="@{/owners/menus/{mIdx}/images(mIdx=${menuIdx ?: 0})}" class="text-navy text-decoration-none fw-bold me-3">
-                    <i class="bi bi-arrow-left"></i> 관리 목록으로
-                </a>
-                <h3 class="fw-bold mb-0 text-navy">메뉴 이미지 수정</h3>
+            <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                <a href="javascript:history.back()" class="text-navy text-decoration-none fw-bold me-3"><i class="bi bi-arrow-left"></i> 뒤로가기</a>
+                <h3 class="fw-bold mb-0 text-navy">이미지 교체</h3>
             </div>
 
-            <form id="menuImageEditForm" enctype="multipart/form-data">
-                <input type="hidden" name="menuImageIdx" th:value="${menuImageIdx ?: 0}">
-                <input type="hidden" name="menuIdx" th:value="${menuIdx ?: 0}">
-
-                <div class="mb-4 text-center">
-                    <label class="form-label d-block small fw-bold text-secondary text-uppercase text-start">이미지 파일</label>
-                    <input type="file" id="imageFile" name="file" accept="image/*" class="d-none" onchange="previewImage(this)">
-                    
-                    <div class="rounded-4 upload-box" onclick="document.getElementById('imageFile').click()" style="cursor: pointer;">
-                        <img id="imagePreview" 
-                             th:src="${imgPath ?: 'https://via.placeholder.com/500/FF8000/FFFFFF?text=No+Image'}" 
-                             class="preview-img" alt="이미지 미리보기" style="max-width: 100%; border-radius: 12px;">
-                        
-                        <div class="upload-overlay">
-                            <span class="fw-bold small text-white text-center">
-                                <i class="bi bi-camera-fill d-block fs-3 mb-1"></i>
-                                이미지 교체하기
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
+            <form th:action="@{/owners/menus/{mIdx}/images/{iIdx}/edit(mIdx=${menuIdx}, iIdx=${menuImageIdx})}" method="post" enctype="multipart/form-data">
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase text-start d-block">이미지 이름</label>
-                    <input type="text" name="imageName" class="form-control py-3 rounded-3 fw-bold text-navy border-2 shadow-none" 
-                           th:value="${imageName ?: ''}" placeholder="이미지 이름을 입력하세요">
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase text-start d-block">사용 용도</label>
-                    <select name="imageType" class="form-select py-3 rounded-3 fw-bold text-navy border-2 shadow-none">
-                        <option value="MENU" th:selected="${imageType == 'MENU'}">메뉴 사진</option>
-                        <option value="STORE" th:selected="${imageType == 'STORE'}">매장 사진</option>
-                        <option value="BANNER" th:selected="${imageType == 'BANNER'}">홍보 배너</option>
-                    </select>
-                </div>
-
-                <div class="row g-2 pt-3">
-                    <div class="col-4">
-                        <button type="button" class="btn btn-outline-secondary w-100 py-3 rounded-pill fw-bold" 
-                                onclick="history.back()">취소</button>
+                    <label class="form-label fw-bold">기존 사진 교체하기</label>
+                    <input type="file" name="file" class="form-control form-control-lg rounded-3" required onchange="readURL(this);">
+                    <div class="mt-3 text-center">
+                        <img id="preview" class="w-100 rounded-3 border d-none">
                     </div>
-                    <div class="col-8">
-                        <button type="button" class="btn btn-moeats w-100 py-3 rounded-pill fs-5 shadow-sm"
-                                th:onclick="handleImageUpdate([[${menuIdx ?: 0}]], [[${menuImageIdx ?: 0}]])">
-                            수정 완료
-                        </button>
-                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-orange text-white py-3 rounded-pill fw-bold">수정 완료</button>
+                    <button type="button" class="btn btn-light border py-3 rounded-pill fw-bold" onclick="history.back()">취소</button>
                 </div>
             </form>
         </div>
     </div>
 </main>
-
 <th:block layout:fragment="script">
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        
-        /**
-         * [Rule 2] AJAX: 이미지 수정 처리 (Fetch API)
-         * [Rule 6] 변경은 POST 고정, 새로고침 금지
-         */
-        async function handleImageUpdate(menuIdx, imgIdx) {
-            const form = document.getElementById('menuImageEditForm');
-            const formData = new FormData(form);
-            
-            // [Rule 4] Security: CSRF 토큰 설정 (레이아웃 표준)
-            const token = document.querySelector('meta[name="_csrf"]')?.content;
-            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
-
-            if(!confirm("이미지 정보를 수정하시겠습니까?")) return;
-
-            try {
-                // [교정] 백엔드 MenuImageController.updateImage 매핑 주소(/owners/menus/{menuIdx}/images/{menuImageIdx}/edit)와 연동
-                const response = await fetch(`/owners/menus/${menuIdx}/images/${imgIdx}/edit`, {
-                    method: 'POST',
-                    headers: { 
-                        ...(header && { [header]: token }) 
-                    },
-                    body: formData // 파일 데이터를 포함한 FormData 전송
-                });
-
-                if (response.ok || response.redirected) {
-                    alert("이미지가 성공적으로 수정되었습니다.");
-                    // 수정 완료 후 해당 메뉴의 이미지 관리 목록으로 이동
-                    location.href = `/owners/menus/${menuIdx}/images`;
-                } else {
-                    alert("수정에 실패했습니다. (에러 코드: " + response.status + ")");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("통신 중 오류가 발생했습니다.");
-            }
-        }
-
-        /**
-         * 이미지 미리보기 로직
-         */
-        function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
+    <script>
+        function readURL(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = e => { preview.src = e.target.result; };
+                reader.onload = e => {
+                    const img = document.getElementById('preview');
+                    img.src = e.target.result;
+                    img.classList.remove('d-none');
+                };
                 reader.readAsDataURL(input.files[0]);
             }
         }
-        /*]]>*/
     </script>
 </th:block>
 </body>

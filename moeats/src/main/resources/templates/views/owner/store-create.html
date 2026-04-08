@@ -4,6 +4,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/owner-layout}">
 <head>
+    <meta charset="UTF-8">
     <title>신규 매장 등록 - MoEats</title>
     <style>
         .upload-box {
@@ -24,12 +25,10 @@
             padding: 8px 18px; border: 2px solid #eee; border-radius: 50px;
             cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.85rem; color: #777;
         }
-        /* 일반 요일 체크 시 주황색 */
         .holiday-chip:checked + .holiday-label {
             background-color: var(--moeats-orange); border-color: var(--moeats-orange); color: white;
         }
         
-        /* ✅ 연중무휴 전용 스타일 (차별화된 보라색) */
         .all-year-label {
             padding: 8px 20px; border: 2px solid #eee; border-radius: 50px;
             cursor: pointer; font-weight: 800; transition: 0.2s; font-size: 0.85rem; color: #6610f2;
@@ -52,8 +51,8 @@
                 </a>
             </div>
 
-            <form id="storeCreateForm" th:action="@{/owners/store/new}" method="post" enctype="multipart/form-data">
-                
+            <form id="storeCreateForm" th:action="@{/owner/store/new}" method="post" enctype="multipart/form-data">
+
                 <div class="mb-5">
                     <label class="fw-bold small text-secondary text-uppercase d-block mb-2">매장 대표 사진 (드래그 가능)</label>
                     <div id="dropZone" class="rounded-4 upload-box shadow-sm" onclick="document.getElementById('storeImg').click()">
@@ -131,7 +130,6 @@
 <th:block layout:fragment="script">
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // 연중무휴 선택 시 다른 요일 해제 로직
         function toggleAllYear(checkbox) {
             const dayCheckboxes = document.querySelectorAll('.day-checkbox');
             const customInput = document.getElementById('customHoliday');
@@ -148,7 +146,6 @@
             }
         }
 
-        // 이미지 미리보기 및 드래그 앤 드롭
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('storeImg');
 

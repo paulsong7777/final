@@ -87,8 +87,30 @@ public class StoreController {
 
         return "views/owner/store-manage";
     }
+
     @GetMapping("/owners/order-list")
     public String orderList() {
         return "views/owner/order-list"; 
+    }
+
+    /**
+     * ✅ [신규 추가]: 기존 회원 전용 지도 대시보드 페이지 연동
+     * [추가 사유]: ViewOwnerController의 대시보드가 주석 처리되어 있으므로, 
+     * DB에서 실시간 매장 데이터(storeVo)를 조회하여 지도를 띄우기 위한 별도의 매핑 생성.
+     * 접속 주소: /owners/dashboard-map
+     */
+    @GetMapping("/owners/dashboard-map")
+    public String dashboardMap(@SessionAttribute("member") Member member, Model model) {
+        // 1. 세션의 회원 번호로 DB에서 매장 정보 조회
+        Store store = storeService.myStore(member.getMemberIdx());
+        
+        // 2. 매장 정보가 존재할 때만 storeVo를 모델에 담아 지도 화면 활성화
+        if (store != null) {
+            model.addAttribute("storeVo", store);
+            model.addAttribute("menu", "dash"); // 사이드바 활성화 태그
+        }
+        
+        // 3. 지도가 포함된 대시보드 뷰 호출
+        return "views/owner/dashboard";
     }
 }

@@ -9,100 +9,105 @@
 
 <body>
 <main layout:fragment="content" class="py-4">
-    <div class="card shadow-sm border-0 rounded-4 bg-white edit-card-limit">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 600px;">
         <div class="card-body p-4 p-md-5">
             
-            <div class="d-flex align-items-center mb-4 border-bottom border-2 pb-3">
-                <a th:href="@{/owners/menu}" class="text-navy text-decoration-none fw-bold me-3">
+            <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                <a th:href="@{/owner/menu/management}" class="text-dark text-decoration-none fw-bold me-3">
                     <i class="bi bi-arrow-left"></i> 목록으로
                 </a>
                 <h3 class="fw-bold mb-0 text-navy">메뉴 정보 수정</h3>
             </div>
 
             <form id="menuEditForm" enctype="multipart/form-data">
-                <input type="hidden" name="menuIdx" th:value="${storeMenu != null ? storeMenu.menuIdx : 0}">
+                <input type="hidden" name="menuIdx" th:value="${menuVo != null ? menuVo['menuIdx'] : 0}">
 
-                <div class="mb-4 text-center">
-                    <label class="form-label d-block small fw-bold text-secondary text-uppercase text-start">메뉴 사진</label>
-                    <input type="file" id="menuFile" name="menuFile" accept="image/*" class="d-none" onchange="previewImage(this)">
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
+                    <div class="input-group">
+                        <select id="categorySelect" name="menuCategoryIdx" class="form-select py-3 rounded-start-3 fw-bold text-navy border-2 shadow-none" required>
+                            <option value="">카테고리를 선택하세요</option>
+                            <option th:each="cat : ${categoryList}" 
+                                    th:value="${cat['menuCategoryIdx']}" 
+                                    th:text="${cat['menuCategoryName']}"
+                                    th:selected="${menuVo != null and cat['menuCategoryIdx'] == menuVo['menuCategoryIdx']}"></option>
+                        </select>
+                        <button class="btn btn-outline-success border-2 fw-bold px-3 rounded-end-3" type="button" 
+                                data-bs-toggle="modal" data-bs-target="#categoryQuickModal">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Image</label>
+                    <input type="file" id="imageFile" name="menuFile" class="d-none" accept="image/*" onchange="previewImage(this)">
                     
-                    <div id="uploadArea" class="rounded-4 upload-box" onclick="document.getElementById('menuFile').click()">
-                        <img id="imagePreview" 
-                             th:src="${(storeMenu != null and storeMenu.menuImg != null) ? storeMenu.menuImg : 'https://via.placeholder.com/500/FF8000/FFFFFF?text=No+Image'}" 
-                             class="preview-img" alt="메뉴 미리보기">
+                    <div id="imageContainer" class="bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden" 
+                         style="height: 220px; border: 2px dashed #dee2e6; cursor: pointer;"
+                         onclick="document.getElementById('imageFile').click()">
                         
-                        <div class="upload-overlay">
-                            <span class="fw-bold small text-white text-center">
-                                <i class="bi bi-camera-fill d-block fs-3 mb-1"></i>
-                                이미지를 변경하려면 클릭하세요
-                            </span>
+                        <div id="guideMsg" th:classappend="${menuVo != null and menuVo['menuImg'] != null} ? 'd-none' : ''" class="text-center text-secondary">
+                            <i class="bi bi-camera fs-1 d-block mb-2"></i>
+                            <span class="fw-bold small d-block">클릭하여 사진 교체</span>
+                        </div>
+                        
+                        <img id="preview" th:src="${menuVo != null ? menuVo['menuImg'] : ''}" 
+                             th:classappend="${menuVo == null or menuVo['menuImg'] == null} ? 'd-none' : ''"
+                             class="w-100 h-100" style="object-fit: cover;" alt="미리보기">
+                        
+                        <div class="position-absolute bottom-0 end-0 m-2 bg-dark bg-opacity-50 text-white px-2 py-1 rounded small">
+                            <i class="bi bi-pencil-fill me-1"></i>변경
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">카테고리 선택</label>
-                    <select name="menuCategoryIdx" class="form-select py-3 rounded-3 fw-bold text-navy border-2 shadow-none">
-                        <option value="">카테고리를 선택하세요</option>
-                        <option th:each="cat : ${categoryList}" 
-                                th:value="${cat.menuCategoryIdx}" 
-                                th:text="${cat.menuCategoryName}"
-                                th:selected="${storeMenu != null and cat.menuCategoryIdx == storeMenu.menuCategoryIdx}">카테고리</option>
-                    </select>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Name</label>
+                    <input type="text" name="menuName" th:value="${menuVo != null ? menuVo['menuName'] : ''}" 
+                           class="form-control py-3 rounded-3 fw-bold border-2 shadow-none" placeholder="메뉴 이름을 입력하세요" required>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 이름</label>
-                    <input type="text" name="menuName" class="form-control py-3 rounded-3 fw-bold border-2 shadow-none" 
-                           th:value="${storeMenu != null ? storeMenu.menuName : ''}" placeholder="메뉴 이름을 입력하세요">
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">판매 가격</label>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Price</label>
                     <div class="input-group">
-                        <input type="number" name="menuPrice" class="form-control py-3 text-end fw-bold border-2 shadow-none" 
-                               th:value="${storeMenu != null ? storeMenu.menuPrice : 0}">
-                        <span class="input-group-text border-2 bg-light text-navy fw-bold rounded-end-3">원</span>
+                        <input type="number" name="menuPrice" th:value="${menuVo != null ? menuVo['menuPrice'] : 0}" 
+                               class="form-control py-3 text-end fw-bold border-2 shadow-none" placeholder="0" required>
+                        <span class="input-group-text bg-light fw-bold border-2">원</span>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-secondary text-uppercase">메뉴 상세 설명</label>
-                    <textarea name="menuDescription" class="form-control py-3 rounded-3 border-2 no-resize shadow-none" 
-                              rows="4" th:text="${storeMenu != null ? storeMenu.menuDescription : ''}" 
-                              placeholder="메뉴에 대한 설명을 입력하세요"></textarea>
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Description</label>
+                    <textarea name="menuDescription" class="form-control py-3 rounded-3 border-2 shadow-none no-resize" 
+                              rows="3" th:text="${menuVo != null ? menuVo['menuDescription'] : ''}" placeholder="메뉴 설명을 입력하세요"></textarea>
                 </div>
 
-                <div class="row g-2 pt-3">
+                <div class="row g-2 mt-5">
                     <div class="col-4">
-                        <button type="button" class="btn btn-outline-secondary w-100 py-3 rounded-pill fw-bold" 
-                                onclick="location.href='/owners/menu'">취소</button>
+                        <button type="button" class="btn btn-light border py-3 fw-bold rounded-pill" onclick="history.back()">취소</button>
                     </div>
                     <div class="col-8">
-                        <button type="button" class="btn btn-moeats w-100 py-3 rounded-pill fs-5 shadow-sm"
-                                onclick="showEditConfirm()">
-                            수정 완료
-                        </button>
+                        <button type="button" id="submitBtn" class="btn btn-warning text-white fw-bold py-3 fs-5 rounded-pill shadow-sm w-100" 
+                                onclick="handleMenuUpdate()">수정 완료</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="categoryQuickModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content border-0 shadow rounded-4">
-                <div class="modal-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-pencil-square fs-1 text-orange"></i>
-                    </div>
-                    <h5 class="fw-bold mb-2 text-navy">정보 수정</h5>
-                    <p class="text-muted small mb-4">입력하신 정보로 메뉴를<br>수정하시겠습니까?</p>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-light w-50 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">취소</button>
-                        <button type="button" id="submitBtn" class="btn btn-moeats w-50 py-2 rounded-3 fw-bold" 
-                                onclick="handleEditSubmit()">확인</button>
-                    </div>
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold mb-0">새 카테고리</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <input type="text" id="newCategoryName" class="form-control py-3 rounded-3 fw-bold border-2 shadow-none" placeholder="카테고리 명칭">
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-success w-100 py-3 rounded-pill fw-bold" onclick="handleCategoryQuickAdd()">즉시 등록</button>
                 </div>
             </div>
         </div>
@@ -112,71 +117,96 @@
 <th:block layout:fragment="script">
     <script th:inline="javascript">
         /*<![CDATA[*/
-        let editModal;
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const modalEl = document.getElementById('editModal');
-            if(modalEl) editModal = new bootstrap.Modal(modalEl);
-        });
+        // 카테고리 퀵 등록 (AJAX)
+        async function handleCategoryQuickAdd() {
+            const catNameInput = document.getElementById('newCategoryName');
+            const catName = catNameInput.value.trim();
+            if(!catName) { alert("이름을 입력하세요."); return; }
+
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            try {
+                const response = await fetch('/owner/category/register_proc', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        ...(header && { [header]: token }) 
+                    },
+                    body: JSON.stringify({ "menuCategoryName": catName })
+                });
+
+                if(response.ok) {
+                    const data = await response.json();
+                    if(data.success) {
+                        const select = document.getElementById('categorySelect');
+                        const newOption = new Option(catName, data.newIdx || Date.now());
+                        select.add(newOption);
+                        newOption.selected = true;
+                        bootstrap.Modal.getInstance(document.getElementById('categoryQuickModal')).hide();
+                        catNameInput.value = "";
+                        alert("카테고리가 추가되었습니다.");
+                    }
+                }
+            } catch(e) { alert("카테고리 등록 중 에러 발생"); }
+        }
 
         /**
-         * [Rule 2] AJAX: Fetch API 비동기 처리
+         * [Rule 2] AJAX: 메뉴 수정 비동기 처리
          * [Rule 6] 변경은 POST 고정
          */
-        async function handleEditSubmit() {
+        async function handleMenuUpdate() {
             const form = document.getElementById('menuEditForm');
             const submitBtn = document.getElementById('submitBtn');
-            const formData = new FormData(form);
             
-            // [Rule 4] Security: CSRF 토큰 적용
+            if (!form.menuCategoryIdx.value) { alert("카테고리를 선택해 주세요."); return; }
+            if (!form.menuName.value.trim()) { alert("메뉴 이름을 입력해 주세요."); return; }
+            if (!form.menuPrice.value) { alert("가격을 입력해 주세요."); return; }
+
+            if(!confirm("메뉴 정보를 수정하시겠습니까?")) return;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>수정 중...';
+
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
             
-            if(editModal) editModal.hide();
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            const formData = new FormData(form);
 
             try {
-                // [교정] 백엔드 StoreMenuController updateMenu 매핑 주소(/owners/menu/edit)와 연동
-                const response = await fetch('/owners/menu/edit', {
+                // 백엔드 컨트롤러의 /owner/menu/update 와 연동
+                const response = await fetch('/owner/menu/update', {
                     method: 'POST',
-                    headers: { 
-                        ...(header && { [header]: token }) 
-                    },
+                    headers: { ...(header && { [header]: token }) },
                     body: formData
                 });
 
                 if (response.ok || response.redirected) {
-                    alert("메뉴 정보가 성공적으로 수정되었습니다.");
-                    location.href = '/owners/menu';
+                    alert("성공적으로 수정되었습니다.");
+                    location.href = '/owner/menu/management'; 
                 } else {
-                    alert("수정에 실패했습니다. (에러 코드: " + response.status + ")");
-                    resetSubmitBtn(submitBtn);
+                    alert("수정 실패 (에러 코드: " + response.status + ")");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "수정 완료";
                 }
             } catch (error) {
-                alert("통신 오류가 발생했습니다.");
-                resetSubmitBtn(submitBtn);
+                alert("통신 에러가 발생했습니다.");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "수정 완료";
             }
         }
 
-        function showEditConfirm() {
-            const form = document.getElementById('menuEditForm');
-            if(!form.menuCategoryIdx.value) { alert("카테고리를 선택해 주세요."); return; }
-            if(!form.menuName.value.trim()) { alert("이름을 입력해 주세요."); return; }
-            if(!form.menuPrice.value) { alert("가격을 입력해 주세요."); return; }
-            if(editModal) editModal.show();
-        }
-
-        function resetSubmitBtn(btn) {
-            btn.disabled = false;
-            btn.innerText = "확인";
-        }
-
         function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
+            const preview = document.getElementById('preview');
+            const guideMsg = document.getElementById('guideMsg');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = e => { preview.src = e.target.result; };
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                    if(guideMsg) guideMsg.classList.add('d-none');
+                };
                 reader.readAsDataURL(input.files[0]);
             }
         }

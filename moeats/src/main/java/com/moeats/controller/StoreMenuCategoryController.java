@@ -32,15 +32,18 @@ public class StoreMenuCategoryController {
         return store.getStoreIdx();
     }
 
-    // 1. 목록 (기존 유지)
+    // 1. 목록 (기존 유지 + 사이드바 연동)
     @GetMapping
-    public String list() {
+    public String list(Model model) {
+        model.addAttribute("menu", "category");
         return "category/list";
     }
 
-    // 2. 등록 폼 (기존 유지)
+    // 2. 등록 폼 (기존 유지 + 사이드바 연동)
+    // 접속 주소: /owners/store-menu-category/write
     @GetMapping("/write")
-    public String writeForm() {
+    public String writeForm(Model model) {
+        model.addAttribute("menu", "category-reg");
         return "category/write";
     }
 
@@ -53,6 +56,8 @@ public class StoreMenuCategoryController {
     public ResponseEntity<Map<String, Object>> create(StoreMenuCategory category,
                          @SessionAttribute("member") Member member) {
         Map<String, Object> result = new HashMap<>();
+        
+        // [사장님 요청]: 기존 SQL 이슈로 인한 주석 로직 그대로 보존
 //        System.out.println(category);
 //            int storeIdx = getStoreIdx(member);
 //            category.setStoreIdx(storeIdx);
@@ -67,6 +72,7 @@ public class StoreMenuCategoryController {
     public String detail(@PathVariable int menuCategoryIdx,
                          Model model,
                          @SessionAttribute("member") Member member) {
+        model.addAttribute("menu", "category");
         int storeIdx = getStoreIdx(member);
         StoreMenuCategory category = storeMenuCategoryService.getCategory(menuCategoryIdx, storeIdx);
         model.addAttribute("category", category);
@@ -78,6 +84,7 @@ public class StoreMenuCategoryController {
     public String editForm(@PathVariable int menuCategoryIdx,
                            Model model,
                            @SessionAttribute("member") Member member) {
+        model.addAttribute("menu", "category");
         int storeIdx = getStoreIdx(member);
         StoreMenuCategory category = storeMenuCategoryService.getCategory(menuCategoryIdx, storeIdx);
         model.addAttribute("category", category);

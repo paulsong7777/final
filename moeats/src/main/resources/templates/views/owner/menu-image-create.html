@@ -1,82 +1,46 @@
 <!DOCTYPE html>
-<html lang="ko" 
-      xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
-      layout:decorate="~{layouts/owner-layout}">
-<head>
-    <title>새 이미지 등록 - MoEats</title>
-</head>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/owner-layout}">
+<head><title>이미지 등록 - MoEats</title></head>
 <body>
 <main layout:fragment="content" class="py-4">
-    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white edit-card-limit">
-        <div class="card-body p-4 p-md-5 text-center">
-            
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 600px;">
+        <div class="card-body p-4 p-md-5">
             <div class="d-flex align-items-center mb-4 border-bottom pb-3">
-                <a href="javascript:history.back()" class="text-navy text-decoration-none fw-bold me-3">
-                    <i class="bi bi-arrow-left"></i> 뒤로가기
-                </a>
-                <h3 class="fw-bold mb-0 text-navy">새 메뉴 이미지 등록</h3>
+                <a href="javascript:history.back()" class="text-navy text-decoration-none fw-bold me-3"><i class="bi bi-arrow-left"></i> 뒤로가기</a>
+                <h3 class="fw-bold mb-0 text-navy">이미지 업로드</h3>
             </div>
             
-            <form id="imageUploadForm" th:action="@{/owners/menus/{idx}/images(idx=${menuIdx ?: 0})}" 
-                  method="post" enctype="multipart/form-data">
-                
-                <div class="upload-box mb-4" onclick="document.getElementById('newImg').click()" style="cursor: pointer;">
-                    <div id="guide">
-                        <i class="bi bi-plus-circle fs-1 text-orange"></i>
-                        <p class="fw-bold mt-2">사진을 업로드하거나 클릭하세요</p>
+            <form th:action="@{/owners/menus/{idx}/images(idx=${menuIdx})}" method="post" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label class="form-label fw-bold">사진 선택</label>
+                    <div class="upload-box text-center p-5 border border-2 border-dashed rounded-4" style="cursor:pointer;" onclick="document.getElementById('file').click()">
+                        <i class="bi bi-cloud-arrow-up display-4 text-orange"></i>
+                        <p class="mt-2 text-muted mb-0">컴퓨터에서 사진을 선택하세요.</p>
+                        <img id="preview" class="d-none w-100 rounded-3 mt-3 shadow-sm">
                     </div>
-                    <img id="preview" class="preview-img d-none" style="max-width: 100%; border-radius: 12px;">
-                    <input type="file" id="newImg" name="file" class="d-none" accept="image/*" onchange="previewImage(this)">
+                    <input type="file" name="file" id="file" class="d-none" onchange="readURL(this);" required>
                 </div>
-
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-moeats py-3 rounded-pill fw-bold fs-5 shadow-sm">
-                        서버에 저장하기
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary py-3 rounded-pill fw-bold" onclick="alert('준비 중인 기능입니다.')">
-                        AI 이미지 생성하기 (Beta)
-                    </button>
-                </div>
+                
+                <button type="submit" class="btn btn-warning text-white w-100 py-3 rounded-pill fw-bold shadow-sm">
+                    이미지 저장하기
+                </button>
             </form>
         </div>
     </div>
 </main>
-
 <th:block layout:fragment="script">
-    <script th:inline="javascript">
-        /**
-         * 이미지 미리보기 로직
-         */
-        function previewImage(input) {
+    <script>
+        function readURL(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = e => {
-                    const preview = document.getElementById('preview');
-                    const guide = document.getElementById('guide');
-                    preview.src = e.target.result;
-                    preview.classList.remove('d-none');
-                    guide.classList.add('d-none');
+                    const img = document.getElementById('preview');
+                    img.src = e.target.result;
+                    img.classList.remove('d-none');
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
-
-        /**
-         * [Rule 4] Security: CSRF 토큰 및 전송 검증
-         */
-        document.getElementById('imageUploadForm').addEventListener('submit', function(e) {
-            const fileInput = document.getElementById('newImg');
-            if (!fileInput.files || fileInput.files.length === 0) {
-                e.preventDefault();
-                alert("등록할 이미지를 선택해 주세요.");
-                return;
-            }
-            
-            if(!confirm("이미지를 등록하시겠습니까?")) {
-                e.preventDefault();
-            }
-        });
     </script>
 </th:block>
 </body>
