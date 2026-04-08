@@ -229,4 +229,9 @@ public class DeliveryAddressService {
 		
 		return deliveryAddressMapper.addressList(memberIdx);
 	}
+	
+	public Integer getDefaultAddressIdx(int memberIdx) {
+	    return memberMapper.getDefaultAddressIdx(memberIdx);
+	}
+	
 }

@@ -110,12 +110,22 @@ public class DeliveryAddressController {
 	
 	// 기본 배송지 변경
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/default")
-	
 	public String changeDefaultAddress(
 	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
-	        @SessionAttribute("memberIdx") int memberIdx) {
+	        @SessionAttribute("memberIdx") int memberIdx,
+	        HttpSession session,
+	        RedirectAttributes ra) {
 
-	    deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
+	    try {
+	        deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
+
+	        // 헤더에서 쓰는 현재 선택 배송지도 같이 동기화
+	        session.setAttribute("selected_address_idx", deliveryAddressIdx);
+
+	        ra.addFlashAttribute("message", "기본 배송지가 변경되었습니다.");
+	    } catch (RuntimeException e) {
+	        ra.addFlashAttribute("error", e.getMessage());
+	    }
 
 	    return "redirect:/members/me/addresses";
 	}
@@ -135,13 +145,16 @@ public class DeliveryAddressController {
 	}
 	
 	// 주소 리스트 폼 띄우기
+	// 헤더 반영 위해서 수정 -영훈
 	@GetMapping("/members/me/addresses")
 	public String addressList(Model model,
 	        @SessionAttribute("memberIdx") int memberIdx) {
 
 	    List<DeliveryAddress> addressList = deliveryAddressService.getAddress(memberIdx);
+	    Integer defaultAddressIdx = deliveryAddressService.getDefaultAddressIdx(memberIdx);
 
 	    model.addAttribute("addressList", addressList);
+	    model.addAttribute("defaultAddressIdx", defaultAddressIdx);
 
 	    return "views/address-list";
 	}
@@ -149,19 +162,23 @@ public class DeliveryAddressController {
 	// 헤더에서 배송지 선택
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/select-from-header")
 	public String selectAddressFromHeader(
-			@PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
+	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
 	        @SessionAttribute("memberIdx") int memberIdx,
 	        HttpSession session,
-	        jakarta.servlet.http.HttpServletRequest request) {
+	        jakarta.servlet.http.HttpServletRequest request,
+	        RedirectAttributes ra) {
 
-	    DeliveryAddress selectedAddress =
-	            deliveryAddressService.addressByIdx(memberIdx, deliveryAddressIdx);
+	    try {
+	        // 실제 기본 배송지 DB 변경
+	        deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
 
-	    if (selectedAddress == null) {
-	        throw new RuntimeException("주소가 존재하지 않거나 권한 없음");
+	        // 헤더 현재 선택도 즉시 동기화
+	        session.setAttribute("selected_address_idx", deliveryAddressIdx);
+
+	        ra.addFlashAttribute("message", "기본 배송지가 변경되었습니다.");
+	    } catch (RuntimeException e) {
+	        ra.addFlashAttribute("error", e.getMessage());
 	    }
-
-	    session.setAttribute("selected_address_idx", deliveryAddressIdx);
 
 	    String referer = request.getHeader("Referer");
 	    if (referer == null || referer.isBlank()) {
