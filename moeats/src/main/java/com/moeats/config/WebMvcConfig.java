@@ -33,6 +33,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
     	// TODO 이 URI로 오는 링크는 나중에 forward되는 링크로 수정해주세요
+        registry.addViewController("/members/dashboard")
+        		.setViewName("forward:/owners/dashboard");
+        registry.addViewController("/owners")
+        		.setViewName("forward:/owners/dashboard");
+        
         registry.addViewController("/owner/menu/management")
         		.setViewName("forward:/owners/menu");
         registry.addViewController("/owner/menu/register")
@@ -47,25 +52,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginCheckInterceptor)
                 .addPathPatterns(
                         "/members/me/**",
-                        "/members/dashboard",
                         "/rooms/**",
-                        "/orders/**"
-                )
-                .excludePathPatterns(
-                        "/login",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**"
-                );
-
-        // 점주 전용 경로 - 먼저 로그인 체크
-        registry.addInterceptor(loginCheckInterceptor)
-                .addPathPatterns("/owners/**")
-                .excludePathPatterns(
-                        "/login",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**"
+                        "/orders/**",
+                        "/owners/**"
                 );
 
         // 점주 전용 경로 - OWNER 권한 체크
@@ -74,19 +63,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(roomMemberInterceptor)
                 .addPathPatterns(
-                        "/rooms/code/*/leave",
-                        "/rooms/code/*/kick",
-                        "/rooms/code/*/cancel",
-                        "/rooms/code/*/cart",
-                        "/rooms/code/*/cart/**",
-                        "/rooms/code/*/checkout"
+                        "/rooms/code/*/**"
+                )
+                .excludePathPatterns(
+                		"/rooms/code/*"
                 );
 
         registry.addInterceptor(orderMemberInterceptor)
                 .addPathPatterns(
-                        "/orders/*",
-                        "/orders/*/payment",
-                        "/orders/*/payment/**"
+                        "/orders/**"
                 );
 
         registry.addInterceptor(paymentInterceptor)

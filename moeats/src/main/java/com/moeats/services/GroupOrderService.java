@@ -57,6 +57,39 @@ public class GroupOrderService {
 	public int insert(GroupOrder groupOrder) {
 		return groupOrderMapper.insert(groupOrder);
 	}
+	public int proceed(GroupOrder groupOrder) {
+		if(groupOrder==null)
+			return 0;
+		switch(groupOrder.getOrderStatus()) {
+		case "PAID":
+			return accept(groupOrder.getOrderIdx());
+		case "ACCEPTED":
+			return prepare(groupOrder.getOrderIdx());
+		case "PREPARING":
+			return deliver(groupOrder.getOrderIdx());
+		case "READY":
+			return ready(groupOrder.getOrderIdx());
+		case "DELIVERING":
+			return complete(groupOrder.getOrderIdx());
+		}
+		return 0;
+	}
+	
+	public int accept(int orderIdx) {
+		return groupOrderMapper.accept(orderIdx);
+	}
+	public int prepare(int orderIdx){
+		return groupOrderMapper.prepare(orderIdx);
+	}
+	public int deliver(int orderIdx){
+		return groupOrderMapper.deliver(orderIdx);
+	}
+	public int ready(int orderIdx){
+		return groupOrderMapper.ready(orderIdx);
+	}
+	public int complete(int orderIdx) {
+		return groupOrderMapper.complete(orderIdx);
+	}
 	
 	public List<GroupOrderItem> findByOrder(int orderIdx){
 		return groupOrderItemMapper.findByOrder(orderIdx);

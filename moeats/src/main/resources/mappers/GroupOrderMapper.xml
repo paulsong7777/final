@@ -65,13 +65,14 @@
 		UPDATE group_order SET
 			order_status	= 'DELIVERING'
 		WHERE order_idx		= #{orderIdx}
+			AND order_status	= 'READY'
 	</update>
 	<update id="complete" parameterType="int">
 		UPDATE group_order SET
 			order_status	= 'COMPLETED',
 			completed_at	= CURRENT_TIMESTAMP
 		WHERE order_idx		= #{orderIdx}
-			AND order_status	= 'READY'
+			AND order_status	IN ('READY', 'DELIVERING')
 	</update>
 	<update id="cancel" parameterType="int">
 		UPDATE group_order SET
