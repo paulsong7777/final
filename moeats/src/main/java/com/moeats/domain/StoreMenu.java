@@ -14,6 +14,7 @@ import lombok.Setter;
 public class StoreMenu {
 	int menuIdx;						// 가게 메뉴 번호
 	int storeIdx;						// 가게 번호
+	int menuCategoryIdx;			// 카테고리 번호
 	String menuName;				// 메뉴이름
 	String menuDescription;		// 메뉴소개
 	int menuPrice;						// 메뉴가격

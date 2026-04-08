@@ -42,6 +42,7 @@
 		useGeneratedKeys="true" keyProperty="menuIdx">
 		insert into Store_Menu(
 					store_idx,
+					menu_category_idx
 					menu_name,
 					menu_description,
 					menu_price,
@@ -50,6 +51,7 @@
 					)
 		values(
 			#{storeIdx},
+			#{menuCategoryIdx},
 			#{menuName},
 			#{menuDescription},
 			#{menuPrice},
@@ -60,16 +62,7 @@
 	
 	<!-- “이 메뉴가 내 가게 것 맞냐?” 확인하는 필수 메서드 -->
 	<select id="findByMenuIdx" resultType="StoreMenu">
-	    select 
-	        menu_idx,
-	        store_idx,
-	        menu_name,
-	        menu_description,
-	        menu_price,
-	        menu_status,
-	        display_order,
-	        created_at,
-	        updated_at
+	    select *
 	    from Store_Menu
 	    where store_idx = #{storeIdx}
 	      and menu_idx = #{menuIdx}
@@ -79,16 +72,7 @@
 	"특정 가게에서 '치킨' 같은 키워드로 메뉴 여러 개 검색"
 	-->
 	<select id="searchMenu" resultType="StoreMenu">
-	    select
-   	        menu_idx,
-		    store_idx,
-		    menu_name,
-		    menu_description,
-		    menu_price,
-		    menu_status,
-		    display_order,
-		    created_at,
-		    updated_at
+	    select *
 	    from Store_Menu
 	    where store_idx = #{storeIdx}
 	      and menu_name like CONCAT('%', #{keyword}, '%')
@@ -96,16 +80,7 @@
 	
 	<!-- 메뉴 검색 사용자용 -->
 	<select id="searchMenuForUser" resultType="StoreMenu">
-	    select
-	        menu_idx,
-	        store_idx,
-	        menu_name,
-	        menu_description,
-	        menu_price,
-	        menu_status,
-	        display_order,
-	        created_at,
-	        updated_at
+	    select *
 	    from Store_Menu
 	    where store_idx = #{storeIdx}
 	      and menu_status != 'HIDDEN'
@@ -114,37 +89,19 @@
 	
 	<!-- 점주 - 메뉴 조회(리스트) 메인 사이드 음료 등으로 정렬-->
 	<select id="menuList" resultType="StoreMenu">
-	    select 
-	        menu_idx,
-		    store_idx,
-		    menu_name,
-		    menu_description,
-		    menu_price,
-		    menu_status,
-		    display_order,
-		    created_at,
-		    updated_at
+	    select *
 	    from Store_Menu
 	    where store_idx = #{storeIdx}
-	    order by display_order asc, menu_idx asc
+	    order by display_order, menu_idx
 	</select>
 	
 	<!-- 사용자 - 메뉴 조회, 숨김메뉴 표시 안함-->
 	<select id="menuListForUser" resultType="StoreMenu">
-	    select 
-	        menu_idx,
-	        store_idx,
-	        menu_name,
-	        menu_description,
-	        menu_price,
-	        menu_status,
-	        display_order,
-	        created_at,
-	        updated_at
+	    select *
 	    from Store_Menu
 	    where store_idx = #{storeIdx}
 	      and menu_status != 'HIDDEN'
-	    order by display_order asc, menu_idx asc
+	    order by display_order, menu_idx
 	</select>
 	
 </mapper>
