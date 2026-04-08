@@ -35,7 +35,7 @@ public class GeoService {
 
             // 3. 헤더 설정 (카카오 인증)
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", KAKAO_API_KEY);
+            headers.set("Authorization", "KakaoAK " + KAKAO_API_KEY);
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
 

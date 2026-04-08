@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
@@ -86,14 +87,14 @@ public class DeliveryAddressController {
 	
 	// 기본 배송지 변경
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/default")
-	@ResponseBody
 	public String changeDefaultAddress(
 	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
-	        @SessionAttribute("memberIdx") int memberIdx) {
+	        @SessionAttribute("memberIdx") int memberIdx,
+	        @RequestParam(name = "redirectUrl", required = false, defaultValue = "/members/me") String redirectUrl) {
 
 	    deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
-
-	    return "ok";
+	    
+	    return "redirect:" + redirectUrl;
 	}
 	
 	// 배송지 선택 (주문 시)

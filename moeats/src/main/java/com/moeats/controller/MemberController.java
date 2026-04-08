@@ -1,5 +1,7 @@
 package com.moeats.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -94,6 +96,11 @@ public class MemberController {
 	    if("USER".equals(member.getMemberRoleType())) {
 	        DeliveryAddress deliveryAddress = deliveryAddressService.getDefaultAddress(member.getMemberIdx());
 	        model.addAttribute("deliveryAddress", deliveryAddress);
+	        
+	        // 전체 주소 리스트 추가
+	        List<DeliveryAddress> addressList =
+	                deliveryAddressService.getAddress(member.getMemberIdx());
+	        model.addAttribute("addressList", addressList);
 	    }
 
 	    // OWNER용 가게 정보
@@ -101,7 +108,7 @@ public class MemberController {
 	        Store store = storeService.myStore(member.getMemberIdx());
 	        model.addAttribute("store", store);
 	    }
-		
+	    
 		return "views/members/member-profile";
 	}
 	
