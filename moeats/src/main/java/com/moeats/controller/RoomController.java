@@ -199,10 +199,10 @@ public class RoomController {
 		if (	orderRoom.isJoinLocked()
 				|| roomParticipant == null
 				|| orderRoomService.unselect(roomParticipant.getRoomParticipantIdx()) == 0) {
-				ra.addFlashAttribute("error", "선택을 확정하는 중 오류가 발생했습니다");
-			return String.format("redirect:/rooms/code/%s/confirm",roomCode);
+				ra.addFlashAttribute("error", "선택을 취소하는 중 오류가 발생했습니다");
+			return String.format("redirect:/rooms/code/%s",roomCode);
 		}
-		return String.format("redirect:/rooms/code/%s",roomCode);
+		return String.format("redirect:/rooms/code/%s/confirm",roomCode);
 	}
 	
 	@PostMapping("/rooms/code/{room_code}/leave")
