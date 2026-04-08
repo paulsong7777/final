@@ -6,87 +6,184 @@
 <head>
     <title>대시보드 - MoEats</title>
     <style>
-        .moeats-map-wrapper { width: 100%; height: 750px; border-radius: 1rem; border: 2px solid #82d13d; background-color: #f1f1f1; position: relative; }
+        /* 지도 및 카드 레이아웃 스타일 */
+        .moeats-map-wrapper { width: 100%; height: 750px; border-radius: 1rem; border: 2px solid #82d13d; overflow: hidden; background-color: #f1f1f1; position: relative; }
         #moeats-map { width: 100%; height: 100%; min-height: 750px; }
-        .order-status-scroll { max-height: 750px; overflow-y: auto; }
-        .order-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: white; }
+        .order-status-scroll { max-height: 750px; overflow-y: auto; background-color: #fcfcfc; scrollbar-width: thin; padding: 10px; }
+        
+        /* 주문 카드 디자인 */
+        .order-entry-card { transition: transform 0.2s ease; border: 1.5px solid #eee !important; cursor: pointer; border-radius: 12px; background: white; margin-bottom: 12px; }
+        .order-entry-card:hover { transform: translateY(-3px); border-color: #ff6b00 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        
+        .status-pending { color: #dc3545 !important; font-weight: bold; }
+        .status-accepted { color: #ff6b00 !important; font-weight: bold; }
+        .status-ongoing { color: #82d13d !important; font-weight: bold; }
+        .text-navy { color: #001f3f; }
+        .text-orange { color: #FF8000 !important; }
     </style>
 </head>
+
 <body>
 <main layout:fragment="content" class="container-fluid">
-    <input type="hidden" id="store-lat" th:value="${storeVo != null ? storeVo['latitude'] : 35.8714}">
-    <input type="hidden" id="store-lng" th:value="${storeVo != null ? storeVo['longitude'] : 128.6014}">
+    
+    <div th:if="${storeVo != null}" class="row g-3">
+        <input type="hidden" id="store-lat" th:value="${storeVo['latitude'] ?: 35.8714}">
+        <input type="hidden" id="store-lng" th:value="${storeVo['longitude'] ?: 128.6014}">
 
-    <div class="row g-3">
         <div class="col-lg-4 col-xl-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3">
-                    <h5 class="fw-bold mb-0">주문 현황</h5>
+            <div class="card shadow-sm border-0 h-100 rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-navy">실시간 주문 현황</h5>
+                    <span class="badge bg-success rounded-pill" th:text="${(orderList != null ? #lists.size(orderList) : 0) + '건'}">0건</span>
                 </div>
-                <div class="card-body order-status-scroll">
-                    <div th:each="order : ${orderList}" class="order-card">
-                        <div class="fw-bold" th:text="${order['menuName'] ?: '신규 주문'}">주문</div>
-                        <div class="small text-muted" th:text="${order['deliveryAddress1'] ?: '주소 없음'}">주소</div>
+                <div class="card-body p-2 order-status-scroll">
+                    
+                    <th:block th:if="${orderList != null and !#lists.isEmpty(orderList)}">
+                        <div th:each="order : ${orderList}" 
+                             class="card order-entry-card" 
+                             th:data-idx="${order['roomIdx']}"
+                             onclick="handleCardClick(event, this)">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-dark" th:text="${order['orderCode'] ?: 'ROOM-' + order['roomIdx']}">코드</span>
+                                    <div th:switch="${order['roomStatus']}">
+                                        <span th:case="'WAITING'" class="status-pending small">대기중</span>
+                                        <span th:case="'ACCEPTED'" class="status-accepted small">접수완료</span>
+                                        <span th:case="'COOKING'" class="status-ongoing small">조리중</span>
+                                        <span th:case="'DELIVERING'" class="status-ongoing small">배달중</span>
+                                        <span th:case="*" class="text-muted small">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="fw-bold mb-1 fs-5 text-navy text-truncate" th:text="${order['orderMenu'] ?: '신규 주문'}">메뉴명</div>
+                                <div class="small text-secondary mb-3 text-truncate">
+                                    <i class="bi bi-geo-alt-fill text-orange"></i> [[${order['deliveryAddress1'] ?: '주소 정보 없음'}]]
+                                </div>
+
+                                <div class="d-grid gap-2 border-top pt-2">
+                                    <button type="button" class="btn btn-outline-warning btn-sm rounded-pill fw-bold" 
+                                            th:onclick="handleStatusUpdate(event, [[${order['roomIdx']}]], 'ACCEPTED')">
+                                        주문 접수하기
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                    
+                    <div th:if="${orderList == null or #lists.isEmpty(orderList)}" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox display-4 d-block mb-3 opacity-25"></i>
+                        <p class="fw-bold">현재 접수된 주문이 없습니다.</p>
                     </div>
-                    <div th:if="${orderList == null or #lists.isEmpty(orderList)}" class="text-center py-5 text-muted">주문 없음</div>
                 </div>
             </div>
         </div>
+
         <div class="col-lg-8 col-xl-9">
-            <div class="moeats-map-wrapper">
+            <div class="moeats-map-wrapper shadow-sm">
                 <div id="moeats-map"></div>
+            </div>
+        </div>
+    </div>
+
+    <div th:unless="${storeVo != null}" class="py-5">
+        <div class="card shadow-sm border-0 p-5 text-center rounded-4 mx-auto" style="max-width: 600px;">
+            <div class="mb-4">
+                <i class="bi bi-shop-window text-orange" style="font-size: 5rem;"></i>
+            </div>
+            <h2 class="fw-bold text-navy">환영합니다, 사장님!</h2>
+            <p class="text-secondary fs-5 mb-4">
+                아직 등록된 매장이 없습니다.<br>
+                모이츠 서비스를 시작하기 위해 매장 정보를 먼저 등록해 주세요.
+            </p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a th:href="@{/owners/store/new}" class="btn btn-warning btn-lg px-5 py-3 rounded-pill text-white fw-bold shadow">
+                    내 매장 등록하기
+                </a>
             </div>
         </div>
     </div>
 </main>
 
 <th:block layout:fragment="script">
-    <script type="text/javascript" src="http://dapi.kakao.com/v2/maps/sdk.js?appkey=3355be34fede739dcf93c2a5f3ec84f1&libraries=services&autoload=false"></script>
-    
-    <script>
-        function forceLoadMap() {
-            console.log("지도 로딩 시작...");
-            
-            // 🚩 진단 1: API 로드 여부 확인
-            if (typeof kakao === 'undefined') {
-                alert("카카오 지도 API 스크립트 자체가 로드되지 않았습니다. 인터넷 연결이나 AppKey를 확인하세요.");
-                return;
-            }
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3355be34fede739dcf93c2a5f3ec84f1&libraries=services&autoload=false"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        
+        // 카드 클릭 시 상세 페이지 이동 (동적 파라미터 전달)
+        function handleCardClick(event, el) {
+            if (event.target.closest('button')) return;
+            const roomIdx = el.getAttribute('data-idx');
+            if (roomIdx) location.href = '/owner/order/detail?roomIdx=' + roomIdx;
+        }
 
-            var lat = parseFloat(document.getElementById('store-lat').value) || 35.8714;
-            var lng = parseFloat(document.getElementById('store-lng').value) || 128.6014;
-            var container = document.getElementById('moeats-map');
+        // AJAX: 상태 변경 처리 (POST 고정 및 새로고침 금지 원칙 준수)
+        async function handleStatusUpdate(event, roomIdx, nextStatus) {
+            event.preventDefault();
+            event.stopPropagation();
+            if(!roomIdx || !confirm("주문을 접수하시겠습니까?")) return;
+
+            const btn = event.currentTarget;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            // Security: CSRF 토큰 필수
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            try {
+                const response = await fetch('/owner/status_update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(header && { [header]: token })
+                    },
+                    body: JSON.stringify({ 
+                        "roomIdx": Number(roomIdx), 
+                        "roomStatus": String(nextStatus) 
+                    })
+                });
+
+                if(response.ok) {
+                    // 성공 시 상세 페이지로 이동
+                    location.href = '/owner/order/detail?roomIdx=' + roomIdx;
+                } else {
+                    alert("처리 중 오류가 발생했습니다.");
+                    location.reload();
+                }
+            } catch(err) {
+                console.error("Fetch Error:", err);
+                location.reload(); 
+            }
+        }
+
+        // 지도 초기화 및 relayout() 호출 표준화
+        function initDashboardMap() {
+            const latEl = document.getElementById('store-lat');
+            if(!latEl) return; 
+
+            const lat = parseFloat(latEl.value);
+            const lng = parseFloat(document.getElementById('store-lng').value);
+            const container = document.getElementById('moeats-map');
 
             kakao.maps.load(function() {
-                console.log("카카오 API 콜백 성공. 객체 생성을 시작합니다.");
                 try {
-                    var options = {
+                    const map = new kakao.maps.Map(container, {
                         center: new kakao.maps.LatLng(lat, lng),
                         level: 3
-                    };
-                    var map = new kakao.maps.Map(container, options);
-                    var marker = new kakao.maps.Marker({
-                        position: new kakao.maps.LatLng(lat, lng),
-                        map: map
                     });
-
-                    // 🚩 해결 2: 레이아웃 렌더링 후 지도가 깨지는 현상 방지
-                    setTimeout(function() {
-                        map.relayout();
-                        map.setCenter(new kakao.maps.LatLng(lat, lng));
-                    }, 500);
-
-                    console.log("지도 생성 완료");
-                } catch (e) {
-                    console.error("지도 생성 중 오류 발생:", e);
-                    alert("지도 생성 오류: " + e.message);
-                }
+                    new kakao.maps.Marker({ position: new kakao.maps.LatLng(lat, lng), map: map });
+                    
+                    // 리사이즈 대응
+                    window.addEventListener('resize', () => map.relayout());
+                    
+                    // 렌더링 후 relayout() 호출
+                    setTimeout(() => map.relayout(), 300);
+                } catch (e) { console.error("Map Error:", e); }
             });
         }
 
-        // 페이지 로드 후 실행
-        window.onload = forceLoadMap;
+        window.onload = initDashboardMap;
+        /*]]>*/
     </script>
 </th:block>
-</body>
 </html>

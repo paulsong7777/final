@@ -23,16 +23,18 @@
 
     <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="orderTable">
-                <thead class="bg-light text-secondary small fw-bold text-center">
-                    <tr>
-                        <th class="py-3 ps-4 text-start" style="width: 80px;">번호</th>
-                        <th style="width: 120px;">주문일시</th>
-                        <th style="width: 150px;">주문코드(ID)</th>
+            <table class="table table-hover align-middle mb-0" id="orderTable" style="table-layout: fixed;">
+                <colgroup>
+                    <col style="width: 80px;">  <col style="width: 120px;"> <col style="width: 160px;"> <col style="width: auto;">  <col style="width: 120px;"> <col style="width: 130px;"> <col style="width: 100px;"> </colgroup>
+                <thead class="bg-light text-secondary small fw-bold text-center align-middle">
+                    <tr style="height: 50px;">
+                        <th class="ps-4 text-start">번호</th>
+                        <th>주문일시</th>
+                        <th>주문코드(ID)</th>
                         <th class="text-start">매장명</th>
-                        <th class="text-end" style="width: 150px;">현재 상태</th>
-                        <th style="width: 130px;">진행상태</th>
-                        <th class="pe-4" style="width: 100px;">상세</th>
+                        <th class="text-end">현재 상태</th>
+                        <th>진행상태</th>
+                        <th class="pe-4">상세</th>
                     </tr>
                 </thead>
                 <tbody class="text-center border-top-0" id="orderTableBody">
@@ -44,10 +46,10 @@
                                 <span class="fw-bold px-2 py-1 rounded border bg-light text-dark small" 
                                       th:text="${'ROOM-' + (order.roomIdx ?: 0)}">ORD-001</span>
                             </td>
-                            <td class="text-start fw-bold text-navy" th:text="${order.storeName ?: 'MoEats 매장'}">매장명</td>
+                            <td class="text-start fw-bold text-navy text-truncate" th:text="${order.storeName ?: 'MoEats 매장'}">매장명</td>
                             <td class="text-end fw-bold text-orange" th:text="${order.roomStatus}">WAITING</td>
                             <td class="status-cell">
-                                <div th:switch="${order.roomStatus}" class="status-badge-wrapper">
+                                <div th:switch="${order.roomStatus}">
                                     <span th:case="'WAITING'" class="badge bg-danger-subtle text-danger px-3 rounded-pill">대기중</span>
                                     <span th:case="'ACCEPTED'" class="badge bg-warning-subtle text-warning px-3 rounded-pill">접수완료</span>
                                     <span th:case="'COOKING'" class="badge bg-info-subtle text-info px-3 rounded-pill">조리중</span>
@@ -78,13 +80,14 @@
 <th:block layout:fragment="script">
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // 원본 비동기 스크립트 그대로 유지
+        // 10초마다 상태 동기화
         document.addEventListener('DOMContentLoaded', function() {
-            setInterval(syncOrderStatuses, 30000); 
+            setInterval(syncOrderStatuses, 10000); 
         });
 
         async function syncOrderStatuses() {
             try {
+                // 식별자는 roomIdx 고정 표준 준수
                 const response = await fetch('/owners/order/api/list'); 
                 if (!response.ok) return;
                 const latestOrders = await response.json(); 
@@ -105,6 +108,9 @@
                     const newBadge = getStatusBadgeHtml(order.roomStatus);
                     if (statusCell.innerHTML.trim() !== newBadge.trim()) {
                         statusCell.innerHTML = newBadge;
+                        // 상태 변경 시 시각적 효과 (반짝임)
+                        existingRow.style.backgroundColor = '#fff3cd';
+                        setTimeout(() => { existingRow.style.backgroundColor = ''; }, 2000);
                     }
                 } else {
                     if (emptyRow) emptyRow.remove();
@@ -122,7 +128,7 @@
                 <td class="ps-4 text-start text-muted small row-num">-</td>
                 <td class="small text-secondary">방금 전</td>
                 <td><span class="fw-bold px-2 py-1 rounded border bg-light text-dark small">ROOM-${order.roomIdx}</span></td>
-                <td class="text-start fw-bold text-navy">${order.storeName || 'MoEats'}</td>
+                <td class="text-start fw-bold text-navy text-truncate">${order.storeName || 'MoEats'}</td>
                 <td class="text-end fw-bold text-orange">${order.roomStatus}</td>
                 <td class="status-cell">${getStatusBadgeHtml(order.roomStatus)}</td>
                 <td class="pe-4">

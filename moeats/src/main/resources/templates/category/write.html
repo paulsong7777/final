@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/owner-layout}">
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layouts/owner-layout}">
 <head>
     <meta charset="UTF-8">
     <title>새 카테고리 등록 - MoEats</title>
@@ -43,39 +46,42 @@
             return;
         }
 
-        // 1. 보안 토큰 추출 (레이아웃 meta 태그 기준)
-        const token = document.querySelector('meta[name="_csrf"]')?.content;
-        const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+        // 1. [보안 강화] 레이아웃에 선언된 meta 태그에서 토큰 추출
+        const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
 
-        // 2. 데이터 구성 (URLSearchParams 방식)
+        // 2. 데이터 구성 (객체가 아닌 URLSearchParams 표준 방식 사용)
         const params = new URLSearchParams();
         params.append('categoryName', categoryName);
 
-        // 3. [핵심] 타임리프가 서버 경로를 직접 주입 (Context Path 대응)
+        // 3. [경로 고정] 백엔드 StoreMenuCategoryController의 주소와 100% 일치
         const postUrl = /*[[@{/owners/store-menu-category/write}]]*/ '/owners/store-menu-category/write';
         const listUrl = /*[[@{/owners/store-menu-category}]]*/ '/owners/store-menu-category';
+
         try {
-            // 4. fetch 요청
+            // 4. fetch 요청 (네트워크 에러 방지용 설정 포함)
             const response = await fetch(postUrl, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    header: token 
+                    [header]: token // 보안 토큰 헤더 주입
                 },
                 body: params
             });
 
+            // 5. 서버 응답 처리
             if (response.ok) {
+                // 성공 시 서버에서 응답을 성공적으로 받았으므로 리다이렉트
                 alert("성공적으로 등록되었습니다.");
                 location.href = listUrl;
             } else {
-                // 응답은 왔으나 에러인 경우 (403, 404, 500 등)
-                alert("등록 실패 (상태 코드: " + response.status + ")");
+                // 403(보안거부), 404(주소오류), 500(서버내부오류) 처리
+                alert("등록 실패 (오류 코드: " + response.status + ")");
             }
         } catch (error) {
-            // [범인] 브라우저가 서버 주소 자체를 못 찾을 때 (네트워크 에러)
+            // 통신 자체가 차단되었을 때 (CORS나 잘못된 포트 등)
             console.error('연결 실패 상세:', error);
-            alert("서버 연결에 실패했습니다. \n(서버 콘솔에 로그가 찍히는지 확인하세요!)");
+            alert("서버 연결에 실패했습니다. 페이지를 새로고침(F5) 후 다시 시도해 주세요.");
         }
     }
 /*]]>*/

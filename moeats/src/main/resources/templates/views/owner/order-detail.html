@@ -5,40 +5,66 @@
       layout:decorate="~{layouts/owner-layout}">
 <head>
     <title>주문 상세 관리 - MoEats</title>
+    <style>
+        /* [디자인] 사장님이 선호하시는 상태바 스타일 */
+        .order-step-container { position: relative; padding: 30px 0; }
+        .order-step-line { position: absolute; top: 55px; left: 12.5%; width: 75%; height: 3px; background-color: #eee; z-index: 0; }
+        .order-step-circle { width: 55px; height: 55px; position: relative; z-index: 1; transition: 0.4s; border: 3px solid #eee; background-color: white; font-size: 1.25rem; }
+        
+        /* 상태별 활성화 색상 */
+        .state-pending { background-color: #f8f9fa; color: #dee2e6; }
+        .state-active-accepted { background-color: #ff6b00; color: white; border-color: #ff6b00; box-shadow: 0 0 15px rgba(255,107,0,0.4); }
+        .state-active-cooking { background-color: #32CD32; color: white; border-color: #32CD32; box-shadow: 0 0 15px rgba(50,205,50,0.4); }
+        .state-active-delivering { background-color: #0d6efd; color: white; border-color: #0d6efd; box-shadow: 0 0 15px rgba(13,110,253,0.4); }
+        .state-active-completed { background-color: #212529; color: white; border-color: #212529; box-shadow: 0 0 15px rgba(33,37,41,0.4); }
+        
+        .text-navy { color: #001f3f !important; }
+        .text-orange { color: #FF8000 !important; }
+    </style>
 </head>
+
 <body>
-<main layout:fragment="content" class="py-4" th:with="safeOrder=${orderRoom ?: (order ?: {}) }">
-    <div class="card shadow-sm border-0 mx-auto" style="max-width: 800px;">
+<main layout:fragment="content" class="order-detail-page py-4" th:with="safeOrder=${orderRoom ?: (order ?: {}) }">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mx-auto" style="max-width: 850px;">
         <div class="card-header bg-white py-3 border-bottom text-center">
             <h4 class="fw-bold mb-0 text-navy">주문 상세 관리</h4>
         </div>
         
-        <div class="card-body p-4">
-            <div class="row text-center mb-4">
-                <div class="col-3" th:each="status : ${ {'ACCEPTED', 'COOKING', 'DELIVERING', 'COMPLETED'} }">
-                    <div th:classappend="${safeOrder.roomStatus == status} ? 'text-orange fw-bold' : 'text-muted'" 
-                         style="border-bottom: 3px solid; border-color: inherit;">
-                        <span th:text="${status == 'ACCEPTED' ? '접수완료' : (status == 'COOKING' ? '조리중' : (status == 'DELIVERING' ? '배달중' : '배달완료'))}"></span>
+        <div class="card-body p-4 p-md-5">
+            <div class="row text-center order-step-container mb-5">
+                <div class="order-step-line"></div>
+                
+                <div class="col-3 order-step-item" th:each="status : ${ {'ACCEPTED', 'COOKING', 'DELIVERING', 'COMPLETED'} }">
+                    <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center order-step-circle"
+                         th:classappend="${safeOrder.roomStatus == status ? 
+                            (status == 'ACCEPTED' ? 'state-active-accepted' : 
+                            (status == 'COOKING' ? 'state-active-cooking' : 
+                            (status == 'DELIVERING' ? 'state-active-delivering' : 'state-active-completed'))) : 'state-pending'}">
+                        <i class="bi" th:classappend="${status == 'ACCEPTED' ? 'bi-check-lg' : (status == 'COOKING' ? 'bi-fire' : (status == 'DELIVERING' ? 'bi-truck' : 'bi-flag-fill'))}"></i>
                     </div>
+                    <div class="small fw-bold" th:classappend="${safeOrder.roomStatus == status ? 'text-navy' : 'text-muted'}"
+                         th:text="${status == 'ACCEPTED' ? '접수완료' : (status == 'COOKING' ? '조리중' : (status == 'DELIVERING' ? '배달중' : '배달완료'))}">상태</div>
                 </div>
             </div>
 
             <div class="p-3 bg-light rounded mb-4">
-                <p>주문 번호: <span class="fw-bold" th:text="${safeOrder.roomIdx}">0</span></p>
-                <p>매장 이름: <span class="fw-bold" th:text="${safeOrder.storeName}">매장명</span></p>
+                <p class="mb-2">주문 번호: <span class="fw-bold" th:text="${safeOrder.roomIdx}">0</span></p>
+                <p class="mb-0">매장 이름: <span class="fw-bold" th:text="${safeOrder.storeName}">매장명</span></p>
             </div>
 
             <div class="d-grid gap-2">
-                <button th:if="${safeOrder.roomStatus == 'ACCEPTED'}" class="btn btn-success btn-lg py-3"
+                <button th:if="${safeOrder.roomStatus == 'ACCEPTED'}" class="btn btn-success btn-lg py-3 rounded-pill fw-bold"
                         th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COOKING')">조리 시작</button>
                 
-                <button th:if="${safeOrder.roomStatus == 'COOKING'}" class="btn btn-primary btn-lg py-3"
+                <button th:if="${safeOrder.roomStatus == 'COOKING'}" class="btn btn-primary btn-lg py-3 rounded-pill fw-bold"
                         th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'DELIVERING')">배달 시작</button>
                 
-                <button th:if="${safeOrder.roomStatus == 'DELIVERING'}" class="btn btn-dark btn-lg py-3"
+                <button th:if="${safeOrder.roomStatus == 'DELIVERING'}" class="btn btn-dark btn-lg py-3 rounded-pill fw-bold"
                         th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">배달 완료</button>
                 
-                <div th:if="${safeOrder.roomStatus == 'COMPLETED'}" class="alert alert-secondary text-center">배달 완료된 주문</div>
+                <div th:if="${safeOrder.roomStatus == 'COMPLETED'}" class="alert alert-secondary text-center rounded-4 py-3 fw-bold">
+                    배달 완료된 주문입니다.
+                </div>
 
                 <div class="text-center mt-3">
                     <a th:href="@{/owner/dashboard}" class="text-muted text-decoration-none small">대시보드로 돌아가기</a>
@@ -48,25 +74,34 @@
     </div>
 
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="statusToast" class="toast align-items-center text-white bg-dark border-0" role="alert">
-            <div class="d-flex"><div class="toast-body fw-bold">상태를 변경합니다...</div></div>
+        <div id="statusToast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-bold">
+                    <span class="spinner-border spinner-border-sm me-2"></span>상태를 변경합니다...
+                </div>
+            </div>
         </div>
     </div>
 </main>
 
 <th:block layout:fragment="script">
     <script th:inline="javascript">
+        /*<![CDATA[*/
+        // [로직] 기존에 잘 작동하던 URL 이동 방식
         function moveStatus(roomIdx, nextStatus) {
             // 토스트 보여주기
             const toastEl = document.getElementById('statusToast');
-            const bsToast = new bootstrap.Toast(toastEl);
-            bsToast.show();
+            if (toastEl) {
+                const bsToast = new bootstrap.Toast(toastEl);
+                bsToast.show();
+            }
 
-            // 0.8초 후 경로 이동 (AJAX 대신 URL 이동 방식)
+            // 0.5초 후 경로 이동 (컨트롤러의 status_move 호출)
             setTimeout(() => {
                 location.href = `/owner/order/status_move?roomIdx=${roomIdx}&nextStatus=${nextStatus}`;
-            }, 800);
+            }, 500);
         }
+        /*]]>*/
     </script>
 </th:block>
 </body>

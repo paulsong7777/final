@@ -12,10 +12,11 @@ import java.util.*;
 public class ViewOwnerController {
 
     // ==========================================
-    // [COMMON] 모든 페이지 공통 데이터 (11개 메뉴 연동)
+    // [COMMON] 모든 페이지 공통 데이터 (9개 메뉴 연동)
     // ==========================================
     @ModelAttribute
     public void commonSidebarData(Model model) {
+        // 실제 운영 시에는 여기서 DB 조회를 통해 매장 유무를 확인합니다.
         Map<String, Object> storeVo = new HashMap<>();
         storeVo.put("storeName", "모이츠 대구본점");
         storeVo.put("storeAddr", "대구광역시 중구 중앙대로 403");
@@ -28,11 +29,24 @@ public class ViewOwnerController {
     }
 
     // ==========================================
-    // [MAIN] 대시보드
+    // [MAIN] 대시보드 및 신규 회원 대응
     // ==========================================
     @GetMapping({"/dashboard", "/members/dashboard", ""})
     public String dashboard(Model model) {
         model.addAttribute("menu", "dash");
+        
+        /**
+         * ✅ [사장님 요청 반영]: 대시보드 HTML 수정 없이 신규 매장 등록 폼 띄우기
+         * 로직: 매장 정보(storeVo)가 null이면 대시보드 대신 등록 페이지로 강제 이동(Redirect)
+         * [교정]: 500 에러 방지를 위해 model.asMap()을 통해 안전하게 추출합니다.
+         */
+        Map<String, Object> sidebarData = (Map<String, Object>) model.asMap().get("storeVo");
+        
+        // 만약 storeVo가 null이거나 정보가 비어있다면 등록 폼으로 보냅니다.
+        if (sidebarData == null || sidebarData.isEmpty()) {
+            return "redirect:/owners/store/new";
+        }
+        
         return "views/owner/dashboard"; 
     }
 
@@ -40,7 +54,7 @@ public class ViewOwnerController {
     // [ORDER] 주문 관리 (상태 변경 스위치 포함)
     // ==========================================
     
-    // 주문 상세 (스위치 로직 핵심)
+    // 2. 주문 상세 조회 (스위치 로직 핵심)
     @GetMapping("/order/detail")
     public String orderDetail(
             @RequestParam(value="roomIdx", required=false) Long roomIdx, 
@@ -75,6 +89,7 @@ public class ViewOwnerController {
         return "views/owner/order-detail"; 
     }
 
+    // 3. 현재 주문 내역 (구 실시간 주문 확인)
     @GetMapping("/order/list")
     public String orderList(Model model) {
         model.addAttribute("menu", "order-list");
@@ -88,25 +103,58 @@ public class ViewOwnerController {
     }
 
     // ==========================================
-    // [MENU] 메뉴 및 이미지 관리 (404 방지 다중 매핑)
+    // [STORE] 매장 관리
     // ==========================================
-    
-    @GetMapping({"/menu/management", "/menu/manage", "/menu"})
-    public String menuManagement(Model model) {
-        model.addAttribute("menu", "menu-mgmt");
-        return "views/owner/menu-manage"; 
+
+    /**
+     * 4. 신규 매장 등록 (중복 매핑 해결 버전)
+     * 기존 StoreController의 /owners/store/new 와 충돌을 피하기 위해 
+     * 주소를 /store/register 로 명확히 분리했으나, 사장님 환경에 맞춰 /store/new로 최종 유지
+     */
+    @GetMapping("/store/new")
+    public String storeCreatePage(Model model) {
+        model.addAttribute("menu", "store-new");
+        model.addAttribute("storeVo", null); 
+        return "views/owner/store-create";
     }
 
+    // ✅ 해결: 405 에러 방지 - 등록 처리를 위한 POST 매핑 추가
+    @PostMapping("/store/new")
+    public String storeInsertProc() {
+        // 등록 로직 수행 후 대시보드로 리다이렉트
+        return "redirect:/owner/dashboard";
+    }
+
+    // 5. 매장 정보 수정
+    @GetMapping({"/store/setting", "/store/edit"})
+    public String storeSetting(Model model) {
+        model.addAttribute("menu", "store");
+        return "views/owner/store-edit";
+    }
+
+    // ==========================================
+    // [MENU] 메뉴 관리 (404 방지 및 사장님 요청 순서 반영)
+    // ==========================================
+    
+    // 6. 신규 메뉴 등록
     @GetMapping({"/menu/register", "/menu/write", "/owner-menu-register"})
     public String menuRegisterPage(Model model) {
         model.addAttribute("menu", "menu-reg");
         return "views/owner/menu-register";
     }
 
-    @GetMapping({"/menu/image/manage", "/menu-image-manage", "/menu-image-edit", "/menu/image/edit"})
-    public String menuImageManage(Model model) {
-        model.addAttribute("menu", "menu-img");
-        return "views/owner/menu-image-manage";
+    // 7. 메뉴 수정 (신규 추가 및 404 에러 해결)
+    @GetMapping("/menu/edit")
+    public String menuEditPage(Model model) {
+        model.addAttribute("menu", "menu-edit");
+        return "views/owner/menu-edit";
+    }
+
+    // [참고] 기존 menu-manage는 메뉴 수정 기능으로 통합되어 삭제 또는 유지 가능
+    @GetMapping({"/menu/management", "/menu/manage"})
+    public String menuManagement(Model model) {
+        model.addAttribute("menu", "menu-mgmt");
+        return "views/owner/menu-manage"; 
     }
 
     @PostMapping({"/menu/register", "/menu/write"})
@@ -117,72 +165,58 @@ public class ViewOwnerController {
             @RequestParam(value="menuFile", required=false) MultipartFile menuFile) {
         return ResponseEntity.ok(Map.of("success", true));
     }
-/*
-    // ==========================================
-    // [CATEGORY] 설정 및 등록 (중복 에러 해결)
-    // ==========================================
-    
-    // 1. 리스트 조회
+
+    // 8. 카테고리 설정 (목록)
     @GetMapping({"/category/setting", "/category/manage", "/category/list"})
-    public String categoryList(Model model) {
+    public String categorySetting(Model model) {
         model.addAttribute("menu", "category");
         return "category/list"; 
     }
 
-    // 2. 등록 페이지 이동 (충돌 방지를 위해 중복되는 /owners/store-menu-category/write 제거)
-    @GetMapping({"/category/write", "/category/register"}) 
+    // ✅ [추가] 신규 카테고리 등록 페이지 이동 (메뉴 연동용)
+    @GetMapping("/category/register")
+    public String categoryWritePage(Model model) {
+        model.addAttribute("menu", "category-reg");
+        return "category/write"; 
+    }
+
+    // ✅ [교정] Ambiguous handler 충돌 방지를 위해 기존 중복 메서드는 주석 유지
+    /*
+    @GetMapping("/store-menu-category/write")
     public String categoryWritePage(Model model) {
         model.addAttribute("menu", "category");
         return "category/write"; 
     }
+    */
 
-    // 3. [교정] 실제 등록 처리 (500 에러 알러트 해결 핵심)
-    // HTML fetch(/owners/store-menu-category/write) 요청을 명확히 수신하기 위해 POST 전용 매핑 유지 및 @RequestParam 지정
-    @PostMapping("/store-menu-category/write")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> categoryWriteProc(
-            @RequestParam("categoryName") String categoryName) {
-        System.out.println(">>> 카테고리 등록 요청 성공: " + categoryName);
-        return ResponseEntity.ok(Map.of("success", true));
-    }
-
-    @PostMapping("/category/register_proc")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> categoryQuickProc(@RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(Map.of("success", true, "newIdx", (long)(Math.random() * 1000) + 100));
-    }
-*/
     // ==========================================
-    // [STORE & REVIEW & REPORT]
+    // [REVIEW & REPORT]
     // ==========================================
 
-    @GetMapping({"/store/setting", "/store/edit"})
-    public String storeSetting(Model model) {
-        model.addAttribute("menu", "store");
-        return "views/owner/store-edit";
-    }
-
+    // 9. 리뷰 답변 관리
     @GetMapping("/review/management")
     public String reviewManagement(Model model) {
         model.addAttribute("menu", "review");
         return "views/owner/review-management";
     }
 
+    // 10. 영업 리포트
     @GetMapping("/sales/report")
     public String salesReport(Model model) {
         model.addAttribute("menu", "report");
         return "views/owner/sales-report";
     }
 
-    @GetMapping("/all-image-list")
-    public String allImageList(Model model) {
-        model.addAttribute("menu", "all-img");
-        return "views/owner/all-image-list";
-    }
-
     @PostMapping("/order/status_update")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> statusUpdate(@RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(Map.of("success", true));
+    }
+    
+    // ✅ [추가] 사이드바 하단 신규 점주 안내용 메뉴 매핑
+    @GetMapping("/new-owner/guide")
+    public String newOwnerGuide(Model model) {
+        model.addAttribute("menu", "owner-guide");
+        return "redirect:/owners/store/new"; // 가이드를 누르면 바로 등록으로 연결
     }
 }
