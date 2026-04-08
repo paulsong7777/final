@@ -29,4 +29,7 @@ public class DeliveryAddress {
 	// 사용자의 주소 좌표
 	Double longitude;				// 경도
 	Double latitude;					// 위도
+	
+	// 주소 좌표 가져오기 위해서 임시 추가
+	private String jibunAddress;
 }
