@@ -32,50 +32,33 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
-        // 로그인만 필요한 경로
+        // 로그인이 필요한 경로
         registry.addInterceptor(loginCheckInterceptor)
                 .addPathPatterns(
                         "/members/me/**",
                         "/members/dashboard",
                         "/rooms/**",
-                        "/orders/**"
-                )
-                .excludePathPatterns(
-                        "/login",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**"
+                        "/orders/**",
+                        "/owners/**"
                 );
-
-        // 점주 전용 경로 - 먼저 로그인 체크
-        registry.addInterceptor(loginCheckInterceptor)
-                .addPathPatterns("/owners/**")
-                .excludePathPatterns(
-                        "/login",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**"
-                );
-
+        
         // 점주 전용 경로 - OWNER 권한 체크
         registry.addInterceptor(ownerCheckInterceptor)
-                .addPathPatterns("/owners/**");
+                .addPathPatterns(
+                		"/owners/**"
+                );
 
         registry.addInterceptor(roomMemberInterceptor)
                 .addPathPatterns(
-                        "/rooms/code/*/leave",
-                        "/rooms/code/*/kick",
-                        "/rooms/code/*/cancel",
-                        "/rooms/code/*/cart",
-                        "/rooms/code/*/cart/**",
-                        "/rooms/code/*/checkout"
-                );
+                        "/rooms/code/*/**"
+                )
+        		.excludePathPatterns(
+        				"/rooms/code/*"
+        		);
 
         registry.addInterceptor(orderMemberInterceptor)
                 .addPathPatterns(
-                        "/orders/*",
-                        "/orders/*/payment",
-                        "/orders/*/payment/**"
+                        "/orders/**"
                 );
 
         registry.addInterceptor(paymentInterceptor)

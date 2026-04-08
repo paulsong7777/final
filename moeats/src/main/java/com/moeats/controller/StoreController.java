@@ -33,10 +33,11 @@ public class StoreController {
     @PostMapping("/owners/store/status")
     public String updateStatus(@RequestParam("storeIdx") int storeIdx,
                                @RequestParam("storeStatus") String storeStatus,
+                               @RequestParam(value="redirectUrl", defaultValue="/owners/store") String redirectUrl,
                                @SessionAttribute("member") Member member) {
 
         storeService.updateStatus(storeIdx, member.getMemberIdx(), storeStatus);
-        return "redirect:/owners/store";
+        return "redirect:"+ redirectUrl;
     }
 
     // 가게 정보 수정
