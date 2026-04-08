@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+				xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+				layout:decorate="~{layouts/main_layout}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User Menu List"/stores/{storeIdx}/menu"</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
+    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
+    h1 { margin-top: 0; }
+    .path { color: #666; margin-top: 8px; }
+    
+
+        /* 1. 검색바 영역 (첫 번째 코드의 기능을 두 번째 스타일로) */
+        .search-container {
+            background-color: var(--main-navy);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            border: none;
+        }
+        .btn-search {
+            background-color: var(--point-orange);
+            color: white;
+            padding: 0 30px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+        }
+
+        /* 2. 결과 리스트 그리드 (반응형 적용) */
+        .card-grid {
+            display: grid;
+            gap: 20px;
+            padding: 20px;
+            /* PC: 3열 / Tablet: 2열 / Mobile: 1열 (브레이크포인트) */
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        @media (max-width: 1199px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 767px) { 
+            .card-grid { grid-template-columns: 1fr; }
+            .sticky-mobile-btn { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 100; }
+        }
+
+        /* 3. 단일 CTA 버튼 스타일 */
+        .btn-primary-cta {
+            background-color: var(--point-orange);
+            color: white;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>User Menu List</h1>
+    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
+    <p class="path">template: views/user/menu-list</p>
+    <p><a href="/main">메인으로</a></p>
+  </div>
+</body>
+</html>
+
+<header>Mo-Eats</header>
+
+<div class="container">
+    <div class="search-info">
+        <div class="result-count"> </div>
+        <div class="toggle-bar">
+            <div class="toggle-item active">전체 화면</div>
+            <div class="toggle-item">진행 중인 파티</div>
+            <div class="toggle-item">식당</div>
+        </div>
+    </div>
+
+    <div class="section-title">진행 중인 파티</div>
+    <div class="card-grid">
+        <div class="card party-card">
+            <div>
+                <div class="party-name">강남역 피자 파티🍕</div>
+                <div class="party-status">모집 현황 2/4</div>
+                <p class="party-desc">도미노 피자 같이 시켜드실 분! 배달비 아껴봐요.</p>
+            </div>
+            <button class="btn btn-join">참여하기</button>
+        </div>
+        <div class="card party-card">
+            <div>
+                <div class="party-name">반올림피자 1/N</div>
+                <div class="party-status">모집 현황 1/3</div>
+                <p class="party-desc">내포신도시쪽입니다. 최소주문금액 채우실 분?</p>
+            </div>
+            <button class="btn btn-join">참여하기</button>
+        </div>
+        <div class="card party-card">
+            <div>
+                <div class="party-name">피자스쿨 정복자</div>
+                <div class="party-status">모집 현황 3/4</div>
+                <p class="party-desc">오늘 점심은 피자입니다. 빨리 오세요!</p>
+            </div>
+            <button class="btn btn-join">참여하기</button>
+        </div>
+    </div>
+
+    <div class="section-title">식당</div>
+    <div class="card-grid">
+        <div class="card store-card">
+            <div class="store-info">
+                <div class="party-name">도미노피자 강남점</div>
+                <span class="rating">⭐ 4.8</span>
+                <p class="party-desc">세계 배달 피자 리더, 도미노피자입니다.</p>
+                <span>최소주문 15,000원 | 배달비 2,000원</span>
+            </div>
+        </div>
+        <div class="card store-card">
+            <div class="store-info">
+                <div class="party-name">피자헛 서초점</div>
+                <span class="rating">⭐ 4.5</span>
+                <p class="party-desc">함께 즐겨요 피자헛!</p>
+                <span>최소주문 18,000원 | 배달비 무료</span>
+            </div>
+        </div>
+        <div class="card store-card">
+            <div class="store-info">
+                <div class="party-name">파파존스 역삼점</div>
+                <span class="rating">⭐ 4.9</span>
+                <p class="party-desc">Better Ingredients, Better Pizza.</p>
+                <span>최소주문 20,000원 | 배달비 3,000원</span>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-create">+ 원하는 파티가 없나요? 직접 파티 만들기</button>
+</div>
+
+</body>
+</html>
+
+    <header style="background-color: var(--main-navy); color: white; padding: 15px 20px;">Mo-Eats</header>
+    <div class="search-container">
+       <form name="searchForm" id="searchForm" action="menuList" method="get" class="row justify-content-end my-3">
+    <div class="col-4">
+        <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="검색어를 입력하세요"/>
+    </div>
+    <div class="col-auto">
+        <input type="submit" value="검색" class="btn btn-primary" style="background-color: var(--point-orange); border: none;">
+    </div>
+</form>
+
+<th:block th:if="${not #strings.isEmpty(keyword)}">
+    
+    <div class="alert alert-light mt-3">
+        <div class="col text-start alert alert-info" style="background-color: var(--main-navy); color: white; border: none;">
+            "<strong>[[${keyword}]]</strong>" 에 대한 검색 결과입니다.<br>
+            총 <strong>[[${totalCount}]]</strong>건의 결과가 발견되었습니다.
+            <a th:href="@{menuList}" class="btn btn-sm btn-outline-secondary ms-2">전체메뉴</a>
+        </div>
+    </div>
+    
+    <div>
+    	<th:block th:if="${not #list.isEmpty(mList)}">
+    		<div th:each="menu : ${mList}" class="card mb-3">
+    			<div class="card-body">
+    				<h5 th:text="${menu.name}">메뉴명</h5>
+    				<p th:text="${menu.price}">가격</h5>
+    				<a th:href="@{menuDetail(id=${menu.id}, keyword=${keyword})}" class="btn btn-sm btn-link">상세보기</a>
+    		</div>
+    		</div>
+    	</th:block>
+    
+    <th:block th:if="${#lists.isEmpty(mList)}">
+    	<div class="text-center py-5">
+    		<p class="text-muted">찾으시는 메뉴가 없습니다.</p>
+    	</div>
+    
+    </th:block>
+    </div>
+
+	<nav th:if="${not #lists.isEmpty(mList)}">
+		<ul class="pagination">
+			<li	th:each="num : ${#numbers.sequence(startPage, endPage)}"
+				th:classappend="${#num == currentPage}? 'active'" class="page-item">
+			<a class="page-link"
+				th:href="@{|?pageNum=${num}${keyword != null?'&keyword=' + keyword : ''}|}"
+				th:text="${num}">1			
+			</a>
+			
+			</li>
+		
+		</ul>
+		</nav>
+    <nav id="navbar-example" class="navbar sticky-top navbar-light bg-light px-3 mb-3 shadow-sm rounded">
+        <a class="navbar-brand" href="#" style="color: var(--main-navy); font-weight: bold;">Mo-Eats Search</a>
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a class="nav-link" href="#scroll-section2">진행중인 파티</a></li>
+            <li class="nav-item"><a class="nav-link" href="#scroll-section3">식당 목록</a></li>
+        </ul>
+    </nav>
+
+    <div data-bs-spy="scroll" data-bs-target="#navbar-example" data-bs-offset="100" class="scroll-container" tabindex="0">
+        <section id="scroll-section2">...</section>
+        <section id="scroll-section3">...</section>
+    </div>
+
+</th:block>
+
+<th:block th:unless="${not #strings.isEmpty(keyword)}">
+    <div class="text-center py-5">
+        <h4 class="text-muted">찾으시는 가게나 메뉴를 검색해보세요!</h4>
+        <p>예: 도미노피자, 치킨, 강남역 등</p>
+    </div>
+</th:block>
+    </div>
+
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <h3 style="color: var(--main-navy);">[피자] 검색 결과 (12건)</h3>
+        
+        <div class="card-grid">
+            <div class="card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <span style="color: var(--point-orange); font-weight: bold;">진행중인 파티</span>
+                <h4 style="margin: 10px 0;">도미노피자 같이 먹어요</h4>
+                <p style="color: #666; font-size: 0.9rem;">최소주문금액까지 5,000원 남음</p>
+                <button class="btn-primary-cta">참여하기</button>
+            </div>
+            </div>
+    </div>
+
+    <div class="sticky-mobile-btn d-md-none" style="padding: 10px; background: white;">
+        <button class="btn-primary-cta" style="box-shadow: 0 -4px 10px rgba(0,0,0,0.1);">+ 직접 파티 만들기</button>
+    </div>
+</body>
+</html>

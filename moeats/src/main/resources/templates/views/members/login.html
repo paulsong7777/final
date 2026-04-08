@@ -1,10 +1,130 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>로그인 폼</title>
+    <meta charset="UTF-8">
+    <title>Mo-Eats Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
+        .wrap { max-width: 420px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
+        label { display: block; margin-top: 14px; }
+        input { width: 100%; padding: 10px; margin-top: 6px; box-sizing: border-box; }
+        button { margin-top: 18px; width: 100%; padding: 12px; }
+        .error { margin-top: 12px; color: #c62828; }
+    </style>
 </head>
 <body>
+<div class="wrap">
+    <h1>로그인</h1>
+    <form method="post" action="/login">
+        <label for="memberEmail">이메일</label>
+        <input type="email" id="memberEmail" name="memberEmail" required>
 
-</body>
+        <label for="memberPassword">비밀번호</label>
+        <input type="password" id="memberPassword" name="memberPassword" required>
+
+        <button type="submit">로그인</button>
+    </form>
+
+    <div class="error" th:if="${error}" th:text="${error}"></div>
+
+    <p style="margin-top:16px;">
+        <a href="/main">메인으로</a>
+    </p>
+    
+    <body>
+
+<div layout:fragment="content" class="row my-5" id="global-content">
+	<th:block>
+        <link th:href="@{/css/member.css}" rel="stylesheet" />
+    </th:block>
+
+    <div class="col-md-8 offset-md-2">
+        <form class="my-5 shadow p-5 bg-white rounded" id="joinForm"
+			th:action="@{/join}" method="post">
+            <h2 class="fw-bold text-center mb-4"
+				style="color: var(--main-navy);">Member Join</h2>
+            
+            <fieldset class="mb-4 p-3 border rounded">
+                <legend class="float-none w-auto px-2 fw-bold">기본 정보</legend>
+                
+                <div class="mb-3">
+                    <label for="userId" class="form-label">아이디</label>
+                    <input type="text" id="userId" name="userId"
+						class="form-control" maxlength="15" required />
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="userPass" class="form-label">비밀번호</label>
+                        <input type="password" id="userPass" name="pass"
+							class="form-control" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="pass_confirm" class="form-label">비밀번호 확인</label>
+                        <input type="password" id="pass_confirm"
+							name="pass_confirm" class="form-control" required />
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="mb-4 p-3 border rounded">
+                <legend class="float-none w-auto px-2 fw-bold">추가 정보</legend>
+                
+                <div class="mb-3">
+                    <label for="job" class="form-label">직업</label>
+                    <select name="job" id="job" class="form-select">
+                        <option value="">직업을 선택하세요</option>
+                        <option value="공무원">공무원</option>
+                        <option value="회사원">회사원</option>
+                        <option value="학생">학생</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <span class="me-3">결혼 여부 :</span>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio"
+							name="maritalStatus" id="m1" value="기혼">
+                        <label class="form-check-label" for="m1">기혼</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio"
+							name="maritalStatus" id="m2" value="미혼">
+                        <label class="form-check-label" for="m2">미혼</label>
+                    </div>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="mailReceive"
+						class="form-check-input" id="mail_receive">
+                    <label class="form-check-label" for="mail_receive">정보 메일 수신에 동의합니다.</label>
+                </div>
+
+                <div class="mb-3">
+                    <label for="memo" class="form-label">하고 싶은 말</label>
+                    <textarea class="form-control" name="memo" id="memo"
+						rows="3"></textarea>
+                </div>
+            </fieldset>
+
+            <div class="d-grid gap-2">
+                <input type="submit" value="가입하기" class="btn btn-lg"
+					style="background-color: var(--point-orange); color: white; font-weight: bold;" />
+                <input type="reset" value="다시 쓰기"
+					class="btn btn-outline-secondary" />
+            </div>
+
+            <div id="searchBtn" class="text-center mt-3">
+                <p>이미 계정이 있으신가요? <a th:href="@{/login}"
+						class="text-decoration-none" style="color: var(--main-navy);">로그인하기</a>
+				</p>
+            </div>
+        </form>
+    </div>
+</div>
 </html>
+    
+

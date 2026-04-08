@@ -1,10 +1,153 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signup User</title>
+<style type="text/css">
+body {
+	font-family: Arial, sans-serif;
+	margin: 40px;
+	background: #f7f7f7;
+}
+
+.wrap {
+	max-width: 720px;
+	margin: 0 auto;
+	background: #fff;
+	padding: 32px;
+	border-radius: 16px;
+}
+
+h1 {
+	margin-top: 0;
+}
+
+.path {
+	color: #666;
+	margin-top: 8px;
+}
+table {
+	border: 1px solid blue;
+	border-collapse: collapse;
+}
+
+td {
+	border: 1px solid blue;
+	height: 30px;
+}
+
+.title {
+	width: 100px;
+	padding-left: 5px;
+}
+
+.content {
+	width: 250px;
+	padding-left: 5px;
+	}
+</style>
 </head>
-<body>
+
+	<div class="wrap">
+		<h1>Signup User@GetMapping("/members/new-user")</h1>
+		<p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
+		<p class="path">template: views/members/auth-signup-user</p>
+		<p>
+			<a href="/main">메인으로</a>
+		</p>
+	</div>
+
+<div id="joinForm">
+    <table>
+        <tr>
+            <th>이름</th>
+            <td><input type="text" name="memberName" placeholder="이름을 입력하세요" ></td>
+        </tr>
+        
+   		<tr>
+            <th>아이디</th>
+            <td><input type="text" name="memberId" placeholder="아이디를 입력하세요" ></td>
+        </tr>
+		<tr>
+			<td class="title">비밀번호</td>
+			<td class="content">${ sessionScope.member.pass }</td>
+		</tr>
+		<tr>
+			<td class="title">전화번호</td>
+			<td class="content">${ sessionScope.member.phone }</td>
+		</tr>
+		<tr>
+			<td class="title">성 별</td>
+			<td class="content">${ sessionScope.member.gender == null ?
+				"입력않됨" : sessionScope.member.gender }</td>
+		</tr>
+		<tr>
+			<td class="title">나 이</td>
+			<td class="content">${ sessionScope.member.age }</td>
+		</tr>
+		<tr>
+			<td class="title">관심분야</td>
+			<td class="content">${ sessionScope.member.interest }</td>
+		</tr>
+		<tr>
+			<td rowspan="3" class="title">메일수신</td>
+			<td class="content">${sessionScope.member.noticeMail ? "공지메일 받음"
+				: "공지메일 받지 않음"}</td>
+		</tr>
+		<tr>
+			<td class="content">${ sessionScope.member.addMail ? "광고메일 받음" :
+				"광고메일 받지 않음" }</td>
+		</tr>
+		<tr>
+			<td class="content">${ sessionScope.member.infoMail ? "정보메일 받음"
+				: "정보메일 받지 않음" }</td>
+		</tr>
+		<tr>
+			<td class="title">직 업</td>
+			<td class="content">${ sessionScope.member.job }</td>
+		</tr>
+        </table>
+    <button onclick="showSuccess()">가입하기</button>
+</div>
+
+<div id="joinSuccess" style="display: none;">
+    <table class="table">
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <h3>회원 등록 완료</h3>
+                아래와 같이 등록되었습니다.
+            </td>
+        </tr>
+    </table>
+</div>
+		
+		<div class="modal fade" id="joinSuccessModal" tabindex="-1">
+<div class="container mt-5">
+    <table class="table table-bordered">
+        <tr>
+            <td colspan="2" style="text-align: center; height: 30px; line-height: 30px">
+                <h3>회원 등록 완료</h3> 
+                아래와 같이 회원 등록이 완료 되었습니다.<br />
+            </td>
+        </tr>
+        <tr>
+            <th scope="row" class="text-center">이름</th>
+            <td th:text="${userName}">유서윤</td>
+        </tr>
+    </table>
+    
+    <div class="text-center mt-3">
+        <a th:href="@{/}" class="btn btn-orange">메인으로 가기</a>
+    </div>
+</div>
+</div>
+		
+	</table>
+</body>
+</html>
 
 </body>
 </html>
+

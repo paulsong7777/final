@@ -8,10 +8,10 @@ public class MainController {
 
 
 
-	    @GetMapping("/")
-	    public String index() {
+	    @GetMapping({"/","/main"})
+	    public String main() {
 	        
-	        return ""; 
+	        return "member/main"; 
 	    }
 	
 }
