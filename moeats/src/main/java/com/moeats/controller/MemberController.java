@@ -13,8 +13,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.DeliveryAddress;
 import com.moeats.domain.Member;
+import com.moeats.domain.Store;
 import com.moeats.service.DeliveryAddressService;
 import com.moeats.service.MemberAccountService;
+import com.moeats.service.StoreService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -28,6 +30,10 @@ public class MemberController {
 	
 	@Autowired
 	private DeliveryAddressService deliveryAddressService;
+	
+	@Autowired
+	private StoreService storeService;
+	
 	
 	// ===== 상수 정의 ======
 	private static final String ROLE_OWNER = "OWNER";
@@ -84,10 +90,17 @@ public class MemberController {
 	public String myPage(@SessionAttribute(name="member", required=false) Member member,
 					Model model) {
 		
-		DeliveryAddress deliveryAddress = 
-				deliveryAddressService.getDefaultAddress(member.getMemberIdx());
-		
-		model.addAttribute("deliveryAddress", deliveryAddress);
+	    // USER용 기본 배송지
+	    if("USER".equals(member.getMemberRoleType())) {
+	        DeliveryAddress deliveryAddress = deliveryAddressService.getDefaultAddress(member.getMemberIdx());
+	        model.addAttribute("deliveryAddress", deliveryAddress);
+	    }
+
+	    // OWNER용 가게 정보
+	    if("OWNER".equals(member.getMemberRoleType())) {
+	        Store store = storeService.myStore(member.getMemberIdx());
+	        model.addAttribute("store", store);
+	    }
 		
 		return "views/members/member-profile";
 	}

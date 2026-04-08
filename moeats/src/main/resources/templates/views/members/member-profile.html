@@ -5,7 +5,7 @@
 <head>
     <title>Mo-Eats 마이페이지</title>
 </head>
-	
+	<th:block layout:fragment="content">
 	<div class="row">
 		<div class="col">
 			
@@ -30,6 +30,23 @@
 				</div>
 			</div>
 			
+			
+			<div class="row">
+				<div class="col">
+					<div class="row">
+						<div class="col">
+							전화번호
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<input type="text" th:value="${session.member.memberPhone}" readonly>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			
 			<div class="row">
 				<div class="col">
 					<div class="row">
@@ -45,30 +62,78 @@
 				</div>
 			</div>
 			
-			<div class="row">
-				<div class="col">
-					<div class="row">
-						<div class="col">
-							배달 주소 관리
+			<th:block th:if="${session.member.memberRoleType == 'USER'}">
+				<div class="row">
+					<div class="col">
+						<div class="row">
+							<div class="col">
+								배달 주소 관리
+							</div>
+							<div class="col">
+								<input type="button" th:onclick="@{location.href='/members/me/addresses'}" value="추가">
+							</div>
 						</div>
-						<div class="col">
-							<input type="button" th:onclick="@{location.href='/members/me/addresses'}" value="추가">
-							<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/edit'}" value="수정">
-							<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/delete'}" value="삭제">
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<input type="text" name="deliveryAddress"
-							       th:value="${deliveryAddress != null 
-							           ? deliveryAddress.deliveryAddress1 
-							             + (deliveryAddress.deliveryAddress2 != null ? ' ' + deliveryAddress.deliveryAddress2 : '') 
-							           : '등록된 기본 주소 없음'}"
-							       readonly>
+						<div class="row">
+							<div class="col">
+								<input type="text" name="deliveryAddress"
+								       th:value="${deliveryAddress != null 
+								           ? deliveryAddress.deliveryAddress1 
+								             + (deliveryAddress.deliveryAddress2 != null ? ' ' + deliveryAddress.deliveryAddress2 : '') 
+								           : '등록된 기본 주소 없음'}"
+								       readonly>
+									<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/edit'}" value="수정" style="display:inline">
+									<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/delete'}" value="삭제" style="display:inline">
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			</th:block>
+
+			<th:block th:if="${session.member.memberRoleType == 'OWNER'}">
+				<div class="row">
+					<div class="col">
+						<div class="row">
+							<div class="col">
+								가게 주소 관리
+								<input type="button" th:onclick="@{location.href='/owners/store/new'}" value="추가"  style="display:inline">
+							</div>
+							<div class="col">
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								<input type="text" name="store"
+								       th:value="${store != null 
+								           ? store.storeAddress1 
+								             + (store.storeAddress2!= null ? ' ' + store.storeAddress2 : '') 
+								           : '등록된 가게 없음'}"
+								       readonly>
+									<input type="button" th:onclick="@{location.href='/owners/store/edit'}" value="수정"  style="display:inline">
+									
+									<!-- 상태 변경 폼 -->
+									<th:block th:if="${store.storeStatus == 'INACTIVE'}">
+					                    <form th:action="@{/owners/store/status}" method="post" style="display:inline">
+					                        <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
+					                        <input type="hidden" name="storeStatus" value="ACTIVE" />
+					                        <input type="hidden" name="redirectUrl" value="/members/me" />
+					                        <button type="submit">활성화</button>
+					                    </form>
+				                    </th:block>
+				                    
+				                    <th:block th:if="${store.storeStatus == 'ACTIVE'}">
+					                    <form th:action="@{/owners/store/status}" method="post" style="display:inline">
+					                        <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
+					                        <input type="hidden" name="storeStatus" value="INACTIVE" />
+					                        <input type="hidden" name="redirectUrl" value="/members/me" />
+					                        <button type="submit">비활성화</button>
+					                    </form>
+				                    </th:block>
+							</div>
+						</div>
+					</div>
+				</div>
+			</th:block>
+			
 			<div class="row">
 				<div class="col">
 					<input type="button" th:onclick="@{location.href='/members/me/edit'}" value="회원정보수정">
@@ -77,6 +142,7 @@
 			
 			<div class="row">
 				<div class="col">
+					<input type="button" th:onclick="@{|location.href='/main'|}" value="메인으로" class="btn">
 					<a href="#">회원탈퇴</a>&nbsp;·&nbsp;
 					<a href="/logout">로그아웃</a>
 				</div>
@@ -85,5 +151,5 @@
 			
 		</div>
 	</div>
-	
+	</th:block>
 </html>
