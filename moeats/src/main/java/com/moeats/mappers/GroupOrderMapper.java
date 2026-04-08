@@ -12,6 +12,7 @@ public interface GroupOrderMapper {
 	List<GroupOrder> findAll();
 	GroupOrder findByIdx(int orderIdx);
 	GroupOrder findByRoom(int roomIdx);
+	List<GroupOrder> findByStore(int storeIdx);
 	List<GroupOrder> findActive();
 	int insert(GroupOrder groupOrder);
 	int pay(int orderIdx);

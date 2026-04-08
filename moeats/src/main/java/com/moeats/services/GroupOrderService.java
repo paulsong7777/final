@@ -2,6 +2,8 @@ package com.moeats.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,8 @@ import com.moeats.domain.GroupOrder;
 import com.moeats.domain.GroupOrderItem;
 import com.moeats.domain.OrderDelivery;
 import com.moeats.domain.OrderRoom;
+import com.moeats.domain.StoreMenu;
+import com.moeats.mapper.StoreMenuMapper;
 import com.moeats.mappers.GroupCartItemMapper;
 import com.moeats.mappers.GroupOrderItemMapper;
 import com.moeats.mappers.GroupOrderMapper;
@@ -27,11 +31,19 @@ public class GroupOrderService {
 	@Autowired
 	OrderDeliveryMapper orderDeliveryMapper;
 	
+	public record GroupOrderRecord(GroupOrder groupOrder,List<GroupOrderItem> groupOrderItems) {}
+	
 	public GroupOrder findByIdx(int orderIdx) {
 		return groupOrderMapper.findByIdx(orderIdx);
 	}
 	public GroupOrder findByRoom(int roomIdx) {
 		return groupOrderMapper.findByRoom(roomIdx);
+	}
+	public List<GroupOrderRecord> findByStore(int storeIdx) {
+		return groupOrderMapper.findByStore(storeIdx).stream()
+				.map(groupOrder->new GroupOrderRecord(
+						groupOrder,
+						groupOrderItemMapper.findOrderMemberAmount(groupOrder.getOrderIdx()))).toList();
 	}
 	public int insert(GroupOrder groupOrder) {
 		return groupOrderMapper.insert(groupOrder);

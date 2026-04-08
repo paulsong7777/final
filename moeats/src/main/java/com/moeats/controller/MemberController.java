@@ -140,7 +140,7 @@ public class MemberController {
 
 	    // 사업자 회원이면 사업자 대시보드로 리다이렉트
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	        return "redirect:/members/dashboard";
+	        return "redirect:/owners/dashboard";
 	    }
 	    
 		// 만약 가려던 주소가 없었다면(그냥 로그인 버튼 누르고 들어온 경우) 메인으로 보냅니다.
@@ -167,17 +167,6 @@ public class MemberController {
 	        ra.addFlashAttribute("error", e.getMessage());
 	        return "redirect:/members/createType";
 	    }
-	}
-	
-	// 통합 대시보드 분기(역할분기 일반/사업자)
-	@GetMapping("/members/dashboard")
-	public String dashboard(@SessionAttribute("member") Member member) {
-
-	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	        return "views/owner/dashboard";
-	    }
-
-	    return "redirect:/main";
 	}
 	
 	// 회원가입 폼 - 사업자
