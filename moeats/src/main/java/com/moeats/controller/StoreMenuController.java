@@ -31,7 +31,7 @@ public class StoreMenuController {
 
     // 메뉴 리스트 조회
     @GetMapping("/stores/{storeIdx}/menu")
-    public String menuListForUser(@PathVariable int storeIdx, Model model) {
+    public String menuListForUser(@PathVariable("storeIdx") int storeIdx, Model model) {
 
         List<StoreMenu> menuList = storeMenuService.menuListForUser(storeIdx);
 
