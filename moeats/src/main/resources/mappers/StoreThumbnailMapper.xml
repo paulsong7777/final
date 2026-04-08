@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.moeats.mapper.StoreThumbnailMapper">
+
+    <select id="findByStoreIdx"
+            parameterType="long"
+            resultType="com.moeats.dto.StoreThumbnailDto">
+        SELECT
+            s.store_idx AS storeIdx,
+            best_image.image_url AS storeThumbnailUrl
+        FROM store s
+        LEFT JOIN (
+            SELECT first_menu.store_idx,
+                   first_image.image_url
+            FROM (
+                SELECT ranked_menu.store_idx,
+                       ranked_menu.menu_idx
+                FROM (
+                    SELECT sm.store_idx,
+                           sm.menu_idx,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY sm.store_idx
+                               ORDER BY sm.display_order ASC, sm.menu_idx ASC
+                           ) AS rn
+                    FROM store_menu sm
+                    WHERE sm.menu_status = 'AVAILABLE'
+                ) ranked_menu
+                WHERE ranked_menu.rn = 1
+            ) first_menu
+            LEFT JOIN (
+                SELECT ranked_image.menu_idx,
+                       ranked_image.image_url
+                FROM (
+                    SELECT mi.menu_idx,
+                           mi.image_url,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY mi.menu_idx
+                               ORDER BY
+                                   CASE WHEN mi.is_primary = TRUE THEN 0 ELSE 1 END ASC,
+                                   mi.display_order ASC,
+                                   mi.menu_image_idx ASC
+                           ) AS rn
+                    FROM menu_image mi
+                ) ranked_image
+                WHERE ranked_image.rn = 1
+            ) first_image
+              ON first_image.menu_idx = first_menu.menu_idx
+        ) best_image
+          ON best_image.store_idx = s.store_idx
+        WHERE s.store_idx = #{storeIdx}
+    </select>
+
+    <select id="findByStoreIdxList"
+            resultType="com.moeats.dto.StoreThumbnailDto">
+        SELECT
+            s.store_idx AS storeIdx,
+            best_image.image_url AS storeThumbnailUrl
+        FROM store s
+        LEFT JOIN (
+            SELECT first_menu.store_idx,
+                   first_image.image_url
+            FROM (
+                SELECT ranked_menu.store_idx,
+                       ranked_menu.menu_idx
+                FROM (
+                    SELECT sm.store_idx,
+                           sm.menu_idx,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY sm.store_idx
+                               ORDER BY sm.display_order ASC, sm.menu_idx ASC
+                           ) AS rn
+                    FROM store_menu sm
+                    WHERE sm.menu_status = 'AVAILABLE'
+                ) ranked_menu
+                WHERE ranked_menu.rn = 1
+            ) first_menu
+            LEFT JOIN (
+                SELECT ranked_image.menu_idx,
+                       ranked_image.image_url
+                FROM (
+                    SELECT mi.menu_idx,
+                           mi.image_url,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY mi.menu_idx
+                               ORDER BY
+                                   CASE WHEN mi.is_primary = TRUE THEN 0 ELSE 1 END ASC,
+                                   mi.display_order ASC,
+                                   mi.menu_image_idx ASC
+                           ) AS rn
+                    FROM menu_image mi
+                ) ranked_image
+                WHERE ranked_image.rn = 1
+            ) first_image
+              ON first_image.menu_idx = first_menu.menu_idx
+        ) best_image
+          ON best_image.store_idx = s.store_idx
+        WHERE s.store_idx IN
+        <foreach collection="storeIdxList" item="storeIdx" open="(" separator="," close=")">
+            #{storeIdx}
+        </foreach>
+    </select>
+
+</mapper>

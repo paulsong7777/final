@@ -122,4 +122,31 @@ public class DeliveryAddressController {
 	    return "views/address-list";
 	}
 	
+	// 헤더에서 배송지 선택
+	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/select-from-header")
+	public String selectAddressFromHeader(
+			@PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
+	        @SessionAttribute("memberIdx") int memberIdx,
+	        HttpSession session,
+	        jakarta.servlet.http.HttpServletRequest request) {
+
+	    DeliveryAddress selectedAddress =
+	            deliveryAddressService.addressByIdx(memberIdx, deliveryAddressIdx);
+
+	    if (selectedAddress == null) {
+	        throw new RuntimeException("주소가 존재하지 않거나 권한 없음");
+	    }
+
+	    session.setAttribute("selected_address_idx", deliveryAddressIdx);
+
+	    String referer = request.getHeader("Referer");
+	    if (referer == null || referer.isBlank()) {
+	        return "redirect:/";
+	    }
+
+	    return "redirect:" + referer;
+	}
+	
+	
+	
 }
