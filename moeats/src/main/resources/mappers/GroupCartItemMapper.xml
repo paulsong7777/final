@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mappers.GroupCartItemMapper">
+	<select id="findAll" resultType="GroupCartItem">
+		SELECT * FROM group_cart_item
+	</select>
+	<select id="findByIdx" resultType="GroupCartItem">
+		SELECT * FROM group_cart_item WHERE cart_item_idx = #{cartItemIdx} AND item_status = 'ACTIVE'
+	</select>
+	<select id="findByRoom" resultType="GroupCartItem">
+		SELECT * FROM group_cart_item WHERE room_idx = #{roomIdx} AND item_status = 'ACTIVE'
+	</select>
+	<select id="findByMember" resultType="GroupCartItem">
+		SELECT * FROM group_cart_item WHERE member_idx = #{memberIdx} AND item_status = 'ACTIVE'
+	</select>
+	<select id="findRoomMember" resultType="GroupCartItem">
+		SELECT * FROM group_cart_item WHERE room_idx = #{roomIdx} AND member_idx = #{memberIdx} AND item_status = 'ACTIVE'
+	</select>
+	<select id="findRoomMemberAmount" resultType="GroupCartItem">
+		SELECT p.member_idx member_idx, COALESCE(SUM(c.item_total_amount),0) as item_total_amount
+		FROM room_participant p
+		LEFT JOIN group_cart_item c
+				ON c.member_idx = p.member_idx
+				AND c.room_idx = #{roomIdx}
+				AND item_status = 'ACTIVE'
+		WHERE p.room_idx = #{roomIdx}
+		GROUP BY member_idx
+	</select>
+	<select id="findRoomAmount" resultType="int">
+		SELECT SUM(item_total_amount) as item_total_amount
+		FROM group_cart_item WHERE room_idx = #{roomIdx} AND item_status = 'ACTIVE'
+	</select>
+	<select id="findRoomMenuAmount" resultType="GroupCartItem">
+		SELECT	menu_idx,
+				SUM(item_quantity) as item_quantity,
+				SUM(base_amount) as base_amount,
+				SUM(option_extra_amount) as option_extra_amount,
+				SUM(item_total_amount) as item_total_amount
+		FROM group_cart_item WHERE room_idx = #{roomIdx} AND item_status = 'ACTIVE'
+		GROUP BY menu_idx
+	</select>
+	<insert id="insert" parameterType="GroupCartItem">
+		INSERT INTO group_cart_item(
+			room_idx,
+			member_idx,
+			menu_idx,
+			item_quantity,
+			base_amount,
+			option_extra_amount,
+			item_total_amount,
+			item_status
+		) VALUES (
+			#{roomIdx},
+			#{memberIdx},
+			#{menuIdx},
+			#{itemQuantity},
+			#{baseAmount},
+			#{optionExtraAmount},
+			#{itemTotalAmount},
+			'ACTIVE'
+		)
+	</insert>
+	<update id="update" parameterType="GroupCartItem">
+		UPDATE group_cart_item SET
+			item_quantity		= #{itemQuantity},
+			base_amount			= #{baseAmount},
+			option_extra_amount	= #{optionExtraAmount},
+			item_total_amount	= #{itemTotalAmount}
+		WHERE cart_item_idx		= #{cartItemIdx}
+	</update>
+	<update id="remove" parameterType="int">
+		UPDATE group_cart_item SET
+			item_status		= 'REMOVED'
+		WHERE cart_item_idx = #{cartItemIdx}
+	</update>
+</mapper>

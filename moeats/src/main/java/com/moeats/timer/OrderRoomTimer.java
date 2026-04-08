@@ -1,0 +1,38 @@
+package com.moeats.timer;
+
+import java.sql.Timestamp;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.stereotype.Component;
+
+import com.moeats.services.TransactionService;
+
+@Component
+public class OrderRoomTimer {
+	Map<Integer, ScheduledFuture<?>> timers = new ConcurrentHashMap<>();
+	ThreadPoolTaskScheduler scheduler;
+	
+	@Autowired
+	TransactionService transactionService;
+	
+	public OrderRoomTimer() {
+		scheduler = new ThreadPoolTaskScheduler();
+		scheduler.setPoolSize(50);
+		scheduler.initialize();
+	}
+	public void start(int orderIdx,Timestamp expire) {
+		stop(orderIdx);
+		ScheduledFuture<?> timer = scheduler.schedule(() -> {
+			transactionService.expirePayment(orderIdx);
+		}, expire.toInstant());
+		timers.put(orderIdx, timer);
+	}
+	public void stop(int orderIdx) {
+		ScheduledFuture<?> timer = timers.remove(orderIdx);
+		if( timer!=null && !timer.isDone() ) timer.cancel(false);
+	}
+}

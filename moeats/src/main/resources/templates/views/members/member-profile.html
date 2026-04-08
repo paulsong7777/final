@@ -1,169 +1,154 @@
 
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layouts/main_layout}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>member-profile-edit/members/me/edit</title>
-<style>
-body {
-	font-family: Arial, sans-serif;
-	margin: 40px;
-	background: #f7f7f7;
-}
-
-.wrap {
-	max-width: 720px;
-	margin: 0 auto;
-	background: #fff;
-	padding: 32px;
-	border-radius: 16px;
-}
-
-h1 {
-	margin-top: 0;
-}
-
-.path {
-	color: #666;
-	margin-top: 8px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Member Profile</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
+    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
+    h1 { margin-top: 0; }
+    .path { color: #666; margin-top: 8px; }
+  </style>
 </head>
 <body>
-	<div class="wrap">
-		<h1>Create Type</h1>
-		<p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-		<p class="path">template: views/members/create-type</p>
-		<p>
-			<a href="/main">메인으로</a>
-		</p>
-		<th:block layout:fragment="content">
-			<!--
-새로운 5자리 우편번호로 회원 주소를 입력 받기 위해 daum.net에서
-제공하는 우편번호 찾기 API를 사용하였다.
-참고 사이트 : http://postcode.map.daum.net/guide
--->
-			<script
-				src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-			<div class="row my-5" id="global-content">
-				<div class="col">
-					<div class="row my-3 text-center">
-						<div class="col">
-							<h2 class="fs-3 fw-bold">회원 정보 수정</h2>
-						</div>
-					</div>
-					<form th:action="@{/members/me/edit}" method="post" id="memberUpdateForm">
-						<div class="row mt-5 mb-3">
-							<div class="col-8 offset-2">
-								<label for="memberNickname" class="form-label">* 이 름 : </label> <input
-									type="text" class="form-control" name="memberNickname" 
-									th:value="${session.member.memberNickname}" readonly>
-							</div>
-						</div>
-						<div class="row my-3">
-							<div class="col-8 offset-2">
-								<label for="memberEmail" class="form-label">* 아이디 : </label>
-								<div class="row">
-									<div class="col">
-										<input type="text" class="form-control" name="memberEmail" 
-											th:value="${session.member.memberEmail}" readonly>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="row my-3">
-							<div class="col-8 offset-2">
-								<label for="memberPassword" class="form-label">* 기존 비밀번호 : </label>
-								<div class="row">
-									<div class="col-6">
-										 <input type="memberPassword" class="form-control"
-											name="memberPassword" >
-									</div>
-									<div class="col-4">
-										<input type="button" class="btn btn-warning" id="btnPassCheck"
-											value="비밀번호 확인">
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="row my-3">
-							<div class="col-8 offset-2">
-								<label for="pass1" class="form-label">* 새 비밀번호 : </label> <input
-									type="password" class="form-control" name="pass1" id="pass1">
-							</div>
-						</div>
-						<div class="row my-3">
-							<div class="col-8 offset-2">
-								<label for="pass2" class="form-label">* 새 비밀번호 확인 : </label> <input
-									type="password" class="form-control" name="pass2" id="pass2">
-							</div>
-						</div>
-					<!-- 	<div class="row my-3">
-							<div class="col-8 offset-2">
-								<label for="zipcode" class="form-label">* 우편번호 : </label>
-								<div class="row">
-									<div class="col-4">
-										<input type="text" class="form-control" name="zipcode"
-											id="zipcode" maxlength="5" readonly
-											th:value="${session.member.zipcode}"> -->
-									</div>
-									<div class="col-4">
-										<input type="button" class="btn btn-warning" id="btnZipcode"
-											value="우편번호 찾기">
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="row my-3">
-							<div class="col-8 offset-2">
-								<label for="address1" class="form-label">* 자택주소 : </label> 
-								<input
-									type="text" class="form-control" name="address1" id="address1"
-									readonly >
-							</div>
-						</div>
-					
-						<div class="row my-3">
-							<div class="col-8 offset-2">
-								<label for="address2" class="form-label">상세주소 : </label> <input
-									type="text" class="form-control" name="address2" id="address2"
-									>
-							</div>
-						</div>
-						<div class="row my-3">
-							<div class="col-8 offset-2">
-								<label for="memberPhone" class="form-label">* 휴 대 폰 : </label> 
-								<div class="row">
-									<div class="col-md-3">
-										<select class="form-select" name="memberPhone">
-										<option th:selected="${session.member.memberPhone.split('-')[0] == '010'}">
-										010</option>
-										<option th:selected="${session.member.memberPhone.split('-')[0] == '011'}">
-										011</option>
-										<option th:selected="${session.member.memberPhone.split('-')[0] == '016'}">
-										016</option>
-										<option th:selected="${session.member.memberPhone.split('-')[0] == '017'}">
-										017</option>
-										<option th:selected="${session.member.memberPhone.split('-')[0] == '018'}">
-										018</option>
-										<option th:selected="${session.member.memberPhone.split('-')[0] == '019'}">
-										019</option>
-										</select>
-									
-									</div>
-								</div>
-								<input
-									type="text" class="form-control" name="memberPhone" 
-									>
-							</div>
-						</div>
-						
-						
-				</div>
-				</div>
-				</th:block>
+  <div class="wrap">
+    <h1>Member Profile</h1>
+    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
+    <p class="path">template: views/members/member-profile</p>
+    <p><a href="/main">메인으로</a></p>
+  </div>
+<body data-bs-spy="scroll" data-bs-target="#mypage-menu" data-bs-offset="100">
+
+    <header class="header-section d-flex flex-column align-items-center justify-content-center text-center">
+        <h1 class="display-5 fw-bold mb-2">My Page</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Mypage</li>
+            </ol>
+        </nav>
+    </header>
+
+    <main class="container content-wrapper">
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-10">
+                <div class="card shadow-lg bg-mo-navy text-white overflow-hidden">
+                    <div class="card-body p-5 position-relative">
+                        <div class="row align-items-center">
+                            <div class="col-md-8 text-start">
+                                <h3 class="fw-bold mb-1">반가워요, <span class="text-mo-orange" th:text="${session.member.memberNickname}">서윤</span>님!</h3>
+                                <p class="lead opacity-75 mb-4">오늘은 어떤 맛있는 음식을 함께 배달시킬까요?</p>
+                                <div class="d-flex gap-3">
+                                    <div class="bg-white bg-opacity-10 rounded-3 p-3 text-center">
+                                        <small class="d-block opacity-75">참여 중인 파티</small>
+                                        <span class="fs-4 fw-bold text-mo-orange">2개</span>
+                                    </div>
+                                    <div class="bg-white bg-opacity-10 rounded-3 p-3 text-center">
+                                        <small class="d-block opacity-75">이번 달 절약 금액</small>
+                                        <span class="fs-4 fw-bold text-mo-orange">12,500원</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-none d-md-block text-end">
+                                <span style="font-size: 5rem;">🛵</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-3">
+                <div id="mypage-menu" class="list-group sticky-top shadow-sm p-2 bg-white rounded-4" style="top: 30px;">
+                    <a class="list-group-item list-group-item-action active" href="#list-item-1">📦 나의 주문 현황</a>
+                    <a class="list-group-item list-group-item-action" href="#list-item-2">👤 회원 정보 수정</a>
+                    <a class="list-group-item list-group-item-action" href="#list-item-3">💰 정산 관리</a>
+                    <a class="list-group-item list-group-item-action" href="#list-item-4">⭐ 즐겨찾는 맛집</a>
+                </div>
+            </div>
+
+            <div class="col-lg-9">
+                <div class="p-1">
+                    
+                    <section id="list-item-1" class="mb-5">
+                        <div class="d-flex justify-content-between align-items-end mb-4">
+                            <h4 class="fw-bold m-0">나의 주문 현황</h4>
+                            <a href="#" class="text-decoration-none small text-muted">전체보기 &gt;</a>
+                        </div>
+                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                            <div class="col">
+                                <div class="card h-100 shadow-sm order-card position-relative">
+                                    <span class="badge-status bg-warning text-dark">배달 중</span>
+                                    <img th:src="@{/images/pizza.jpg}" class="card-img-top" alt="피자">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold mb-1">도미노피자</h6>
+                                        <p class="small text-muted mb-0">주문일시: 2026-04-08</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card h-100 shadow-sm order-card position-relative">
+                                    <span class="badge-status bg-info text-white">준비 중</span>
+                                    <img th:src="@{/images/starbucks.jpg}" class="card-img-top" alt="커피">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold mb-1">스타벅스</h6>
+                                        <p class="small text-muted mb-0">주문일시: 2026-04-08</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="list-item-2" class="mb-5 pt-4">
+                        <h4 class="fw-bold mb-4">회원 정보 수정</h4>
+                        <div class="card border-0 shadow-sm bg-white p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="fw-bold mb-2">보안 및 개인정보</h6>
+                                    <p class="text-muted small mb-0">연락처, 비밀번호 등 소중한 정보를 안전하게 관리하세요.</p>
+                                </div>
+                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                    <a href="/members/me/edit" class="btn btn-outline-dark rounded-pill px-4">수정하기</a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="list-item-3" class="mb-5 pt-4">
+                        <h4 class="fw-bold mb-4">정산 관리</h4>
+                        <div class="card bg-white border-0 shadow-sm p-5 text-center">
+                            <div class="mb-3"><span style="font-size: 3rem;">💸</span></div>
+                            <h6 class="fw-bold">정산할 내역이 없습니다</h6>
+                            <p class="text-muted small">모든 공동 배달 정산이 완료되었습니다.</p>
+                        </div>
+                    </section>
+
+                    <section id="list-item-4" class="mb-5 pt-4">
+                        <h4 class="fw-bold mb-4">즐겨찾는 맛집</h4>
+                        <div class="card border-0 shadow-sm overflow-hidden" style="background: linear-gradient(to right, #ffffff, #fff9f4);">
+                            <div class="card-body p-4">
+                                <p class="mb-2">가장 많이 주문한 카테고리</p>
+                                <h5 class="fw-bold mb-3">🔥 <span class="text-mo-orange">한식</span> 매니아!</h5>
+                                <a href="/stores" class="btn btn-navy bg-mo-navy text-white rounded-pill px-4 border-0">오늘의 추천 맛집 보기</a>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer-section mt-5">
+        <div class="container text-center">
+            <h4 class="fw-bold text-white mb-3">Mo-Eats</h4>
+            <p class="small opacity-50">배달 팁은 나누고 즐거움은 더하고!<br>© 2026 Mo-Eats Project Team. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
