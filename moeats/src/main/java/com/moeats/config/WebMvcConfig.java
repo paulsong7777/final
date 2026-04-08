@@ -3,6 +3,7 @@ package com.moeats.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.moeats.interceptor.LoginCheckInterceptor;
@@ -28,7 +29,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
     private PaymentInterceptor paymentInterceptor;
-
+    
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+    	// TODO 이 URI로 오는 링크는 나중에 forward되는 링크로 수정해주세요
+        registry.addViewController("/owner/menu/management")
+        		.setViewName("forward:/owners/menu");
+        registry.addViewController("/owner/menu/register")
+        		.setViewName("forward:/owners/menu/new");
+    }
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
