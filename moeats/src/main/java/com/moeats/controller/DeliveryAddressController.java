@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.DeliveryAddress;
 import com.moeats.service.DeliveryAddressService;
@@ -26,15 +27,38 @@ public class DeliveryAddressController {
 
 	
 	// 삭제
+	// 기본 배송지 삭제 막기 위해서 갈아엎는..다....아..아...ㅅㅂ..
+	/*
+	 * @PostMapping("/members/me/addresses/{deliveryAddressIdx}/delete") public
+	 * String deleteAddress( @PathVariable("deliveryAddressIdx") int
+	 * deliveryAddressIdx,
+	 * 
+	 * @SessionAttribute("memberIdx") int memberIdx) {
+	 * 
+	 * deliveryAddressService.deleteAddress(memberIdx, deliveryAddressIdx);
+	 * 
+	 * return "redirect:/members/me/addresses"; }
+	 */
+	
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/delete")
-	public String deleteAddress( @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
-	        @SessionAttribute("memberIdx") int memberIdx) {
+	public String deleteAddress(@PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
+	        @SessionAttribute("memberIdx") int memberIdx,
+	        RedirectAttributes ra) {
 
-		deliveryAddressService.deleteAddress(memberIdx, deliveryAddressIdx);
-		
-		return "redirect:/members/me/addresses";
+	    try {
+	        deliveryAddressService.deleteAddress(memberIdx, deliveryAddressIdx);
+	        ra.addFlashAttribute("message", "배송지가 삭제되었습니다.");
+	    } catch (IllegalStateException e) {
+	        ra.addFlashAttribute("error", e.getMessage());
+	    } catch (RuntimeException e) {
+	        ra.addFlashAttribute("error", "배송지 삭제 중 문제가 발생했습니다.");
+	    }
+
+	    return "redirect:/members/me/addresses";
 	}
-
+	
+	
+	
 	
 	// 수정
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/edit")
@@ -86,14 +110,14 @@ public class DeliveryAddressController {
 	
 	// 기본 배송지 변경
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/default")
-	@ResponseBody
+	
 	public String changeDefaultAddress(
 	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
 	        @SessionAttribute("memberIdx") int memberIdx) {
 
 	    deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
 
-	    return "ok";
+	    return "redirect:/members/me/addresses";
 	}
 	
 	// 배송지 선택 (주문 시)
