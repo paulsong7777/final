@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layouts/main_layout}">
-<html lang="ko" xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layout/default}">
+	
 <head>
     <title>Mo-Eats 일반 회원가입</title>
 </head>
-	<th:block layout:fragment="content">
+<section layout:fragment="pageContent">
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<script src="/js/member.js"></script>
 		<div class="row">
@@ -146,6 +144,5 @@
 			</div>
 		</div>
 	
-	
-	</th:block>
+</section>	
 </html>
