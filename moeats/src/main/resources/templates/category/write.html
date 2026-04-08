@@ -54,14 +54,13 @@
         // 3. [핵심] 타임리프가 서버 경로를 직접 주입 (Context Path 대응)
         const postUrl = /*[[@{/owners/store-menu-category/write}]]*/ '/owners/store-menu-category/write';
         const listUrl = /*[[@{/owners/store-menu-category}]]*/ '/owners/store-menu-category';
-
         try {
             // 4. fetch 요청
             const response = await fetch(postUrl, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    [header]: token 
+                    header: token 
                 },
                 body: params
             });

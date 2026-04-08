@@ -117,7 +117,7 @@ public class ViewOwnerController {
             @RequestParam(value="menuFile", required=false) MultipartFile menuFile) {
         return ResponseEntity.ok(Map.of("success", true));
     }
-
+/*
     // ==========================================
     // [CATEGORY] 설정 및 등록 (중복 에러 해결)
     // ==========================================
@@ -151,7 +151,7 @@ public class ViewOwnerController {
     public ResponseEntity<Map<String, Object>> categoryQuickProc(@RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(Map.of("success", true, "newIdx", (long)(Math.random() * 1000) + 100));
     }
-
+*/
     // ==========================================
     // [STORE & REVIEW & REPORT]
     // ==========================================
