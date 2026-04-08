@@ -14,10 +14,14 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.DeliveryAddress;
+import com.moeats.domain.DeliveryAddress;
 import com.moeats.domain.Member;
 import com.moeats.domain.Store;
 import com.moeats.service.DeliveryAddressService;
+import com.moeats.domain.Store;
+import com.moeats.service.DeliveryAddressService;
 import com.moeats.service.MemberAccountService;
+import com.moeats.service.StoreService;
 import com.moeats.service.StoreService;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,6 +33,13 @@ public class MemberController {
 	
 	@Autowired
 	private MemberAccountService memberService;
+	
+	@Autowired
+	private DeliveryAddressService deliveryAddressService;
+	
+	@Autowired
+	private StoreService storeService;
+	
 	
 	@Autowired
 	private DeliveryAddressService deliveryAddressService;
@@ -79,9 +90,12 @@ public class MemberController {
 	@GetMapping("/members/me/edit")
 	public String updateMemberForm(@SessionAttribute(name="member", required=false) Member member
 					) {
+	public String updateMemberForm(@SessionAttribute(name="member", required=false) Member member
+					) {
 		if(member==null) {
 			return "redirect:/login";
 		}
+		
 		
 		
 		return "views/members/member-profile-edit";
@@ -183,6 +197,7 @@ public class MemberController {
 	        return "redirect:/login";
 
 	    } catch (Exception e) {
+	    	e.printStackTrace();
 	    	e.printStackTrace();
 	        ra.addFlashAttribute("error", e.getMessage());
 	        return "redirect:/members/createType";

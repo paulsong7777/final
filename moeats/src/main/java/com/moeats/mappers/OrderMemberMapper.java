@@ -12,7 +12,7 @@ import com.moeats.domain.Member;
 public interface OrderMemberMapper {
 	List<Member> findAll();
 	Member findByIdx(int memberIdx);
-	List<Member> findByIdxs(Set<Integer> memberIdxs);
+	List<Member> findByIdxs(@Param("memberIdxs") Set<Integer> memberIdxs);
 	List<Member> findActive();
 	int insert(Member member);
 	int update(Member member);

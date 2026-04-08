@@ -1,7 +1,6 @@
 package com.moeats.geo;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,55 +20,121 @@ import lombok.RequiredArgsConstructor;
 public class GeoService {
 
     @Value("${kakao.api-key}")
-    private String KAKAO_API_KEY;
+    private String kakaoApiKey;
 
     private final RestTemplate restTemplate;
 
     public GeoPoint getLatLng(String address) {
+        return getLatLng(address, null);
+    }
+    
+    
+    public GeoPoint getLatLng(String roadAddress, String jibunAddress) {
+        GeoPoint point = requestAddressPoint(roadAddress);
+        if (point != null) {
+            return point;
+        }
+
+        String normalizedRoad = normalizeAddress(roadAddress);
+        if (!normalizedRoad.equals(roadAddress)) {
+            point = requestAddressPoint(normalizedRoad);
+            if (point != null) {
+                return point;
+            }
+        }
+
+        if (jibunAddress != null && !jibunAddress.isBlank()) {
+            point = requestAddressPoint(jibunAddress);
+            if (point != null) {
+                return point;
+            }
+
+            String normalizedJibun = normalizeAddress(jibunAddress);
+            if (!normalizedJibun.equals(jibunAddress)) {
+                point = requestAddressPoint(normalizedJibun);
+                if (point != null) {
+                    return point;
+                }
+            }
+        }
+
+        System.out.println("roadAddress = [" + roadAddress + "]");
+        System.out.println("normalizedRoad = [" + normalizedRoad + "]");
+        System.out.println("jibunAddress = [" + jibunAddress + "]");
+
+        throw new RuntimeException("주소 변환 실패: " + roadAddress);
+    }
+
+    private GeoPoint requestAddressPoint(String address) {
+        if (address == null || address.isBlank()) {
+            return null;
+        }
 
         try {
-            // 1. 주소 인코딩 (한글 깨짐 방지)
-            String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
+            URI uri = UriComponentsBuilder
+                    .fromHttpUrl("https://dapi.kakao.com/v2/local/search/address.json")
+                    .queryParam("query", address)
+                    .build()
+                    .encode()
+                    .toUri();
 
-            // 2. API URL 생성
-            String url = "https://dapi.kakao.com/v2/local/search/address.json?query=" + encodedAddress;
-
-            // 3. 헤더 설정 (카카오 인증)
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "KakaoAK " + KAKAO_API_KEY);
+            headers.set("Authorization", "KakaoAK " + kakaoApiKey.trim());
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            // 4. API 호출
             ResponseEntity<Map> response = restTemplate.exchange(
-                    url,
+                    uri,
                     HttpMethod.GET,
                     entity,
                     Map.class
             );
 
-            // 5. 응답 검증
             if (response.getBody() == null) {
-                throw new RuntimeException("카카오 API 응답 없음");
+                System.out.println("request address = [" + address + "]");
+                System.out.println("body = null");
+                return null;
             }
 
             Map body = response.getBody();
             List<Map> documents = (List<Map>) body.get("documents");
 
+            System.out.println("request address = [" + address + "]");
+            System.out.println("documents = " + documents);
+
             if (documents == null || documents.isEmpty()) {
-                throw new RuntimeException("주소 변환 실패: " + address);
+                return null;
             }
 
-            // 6. 첫 번째 결과 사용
             Map first = documents.get(0);
 
-            Double lng = Double.parseDouble((String) first.get("x")); // 경도
-            Double lat = Double.parseDouble((String) first.get("y")); // 위도
+            Double lng = Double.parseDouble(String.valueOf(first.get("x")));
+            Double lat = Double.parseDouble(String.valueOf(first.get("y")));
 
             return new GeoPoint(lat, lng);
 
         } catch (Exception e) {
-            throw new RuntimeException("좌표 변환 중 오류 발생", e);
+            System.out.println("request address = [" + address + "]");
+            e.printStackTrace();
+            return null;
         }
+    }
+
+    private String normalizeAddress(String address) {
+        if (address == null) {
+            return "";
+        }
+
+        String normalized = address.trim().replaceAll("\\s+", " ");
+
+        if (normalized.startsWith("대구 ")) {
+            normalized = normalized.replaceFirst("^대구\\s+", "대구광역시 ");
+        } else if (normalized.startsWith("서울 ")) {
+            normalized = normalized.replaceFirst("^서울\\s+", "서울특별시 ");
+        } else if (normalized.startsWith("부산 ")) {
+            normalized = normalized.replaceFirst("^부산\\s+", "부산광역시 ");
+        }
+
+        return normalized;
     }
 }

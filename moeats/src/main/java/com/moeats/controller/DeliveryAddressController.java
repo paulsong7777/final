@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.DeliveryAddress;
 import com.moeats.service.DeliveryAddressService;
@@ -27,15 +28,38 @@ public class DeliveryAddressController {
 
 	
 	// 삭제
+	// 기본 배송지 삭제 막기 위해서 갈아엎는..다....아..아...ㅅㅂ..
+	/*
+	 * @PostMapping("/members/me/addresses/{deliveryAddressIdx}/delete") public
+	 * String deleteAddress( @PathVariable("deliveryAddressIdx") int
+	 * deliveryAddressIdx,
+	 * 
+	 * @SessionAttribute("memberIdx") int memberIdx) {
+	 * 
+	 * deliveryAddressService.deleteAddress(memberIdx, deliveryAddressIdx);
+	 * 
+	 * return "redirect:/members/me/addresses"; }
+	 */
+	
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/delete")
-	public String deleteAddress( @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
-	        @SessionAttribute("memberIdx") int memberIdx) {
+	public String deleteAddress(@PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
+	        @SessionAttribute("memberIdx") int memberIdx,
+	        RedirectAttributes ra) {
 
-		deliveryAddressService.deleteAddress(memberIdx, deliveryAddressIdx);
-		
-		return "redirect:/members/me/addresses";
+	    try {
+	        deliveryAddressService.deleteAddress(memberIdx, deliveryAddressIdx);
+	        ra.addFlashAttribute("message", "배송지가 삭제되었습니다.");
+	    } catch (IllegalStateException e) {
+	        ra.addFlashAttribute("error", e.getMessage());
+	    } catch (RuntimeException e) {
+	        ra.addFlashAttribute("error", "배송지 삭제 중 문제가 발생했습니다.");
+	    }
+
+	    return "redirect:/members/me/addresses";
 	}
-
+	
+	
+	
 	
 	// 수정
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/edit")
@@ -90,11 +114,21 @@ public class DeliveryAddressController {
 	public String changeDefaultAddress(
 	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
 	        @SessionAttribute("memberIdx") int memberIdx,
-	        @RequestParam(name = "redirectUrl", required = false, defaultValue = "/members/me") String redirectUrl) {
+	        HttpSession session,
+	        RedirectAttributes ra) {
 
-	    deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
-	    
-	    return "redirect:" + redirectUrl;
+	    try {
+	        deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
+
+	        // 헤더에서 쓰는 현재 선택 배송지도 같이 동기화
+	        session.setAttribute("selected_address_idx", deliveryAddressIdx);
+
+	        ra.addFlashAttribute("message", "기본 배송지가 변경되었습니다.");
+	    } catch (RuntimeException e) {
+	        ra.addFlashAttribute("error", e.getMessage());
+	    }
+
+	    return "redirect:/members/me/addresses";
 	}
 	
 	// 배송지 선택 (주문 시)
@@ -112,15 +146,49 @@ public class DeliveryAddressController {
 	}
 	
 	// 주소 리스트 폼 띄우기
+	// 헤더 반영 위해서 수정 -영훈
 	@GetMapping("/members/me/addresses")
 	public String addressList(Model model,
 	        @SessionAttribute("memberIdx") int memberIdx) {
 
 	    List<DeliveryAddress> addressList = deliveryAddressService.getAddress(memberIdx);
+	    Integer defaultAddressIdx = deliveryAddressService.getDefaultAddressIdx(memberIdx);
 
 	    model.addAttribute("addressList", addressList);
+	    model.addAttribute("defaultAddressIdx", defaultAddressIdx);
 
 	    return "views/address-list";
 	}
+	
+	// 헤더에서 배송지 선택
+	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/select-from-header")
+	public String selectAddressFromHeader(
+	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
+	        @SessionAttribute("memberIdx") int memberIdx,
+	        HttpSession session,
+	        jakarta.servlet.http.HttpServletRequest request,
+	        RedirectAttributes ra) {
+
+	    try {
+	        // 실제 기본 배송지 DB 변경
+	        deliveryAddressService.changeDefaultAddress(memberIdx, deliveryAddressIdx);
+
+	        // 헤더 현재 선택도 즉시 동기화
+	        session.setAttribute("selected_address_idx", deliveryAddressIdx);
+
+	        ra.addFlashAttribute("message", "기본 배송지가 변경되었습니다.");
+	    } catch (RuntimeException e) {
+	        ra.addFlashAttribute("error", e.getMessage());
+	    }
+
+	    String referer = request.getHeader("Referer");
+	    if (referer == null || referer.isBlank()) {
+	        return "redirect:/";
+	    }
+
+	    return "redirect:" + referer;
+	}
+	
+	
 	
 }

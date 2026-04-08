@@ -62,8 +62,7 @@
 	</update>
 	
 	<!-- 주소 등록 -->
-	<insert id="insertAddress" useGeneratedKeys="true"
-        keyProperty="deliveryAddressIdx">
+	<insert id="insertAddress" useGeneratedKeys="true" keyProperty="deliveryAddressIdx">
 	    insert into delivery_address(
 	        member_idx,
 	        delivery_label,
@@ -73,8 +72,9 @@
 	        delivery_address1,
 	        delivery_address2,
 	        delivery_request,
-	        longitude,		
-			latitude		
+	        is_active,
+	        longitude,
+	        latitude
 	    ) values (
 	        #{memberIdx},
 	        #{deliveryLabel},
@@ -84,6 +84,7 @@
 	        #{deliveryAddress1},
 	        #{deliveryAddress2},
 	        #{deliveryRequest},
+	        #{active},
 	        #{longitude},
 	        #{latitude}
 	    )

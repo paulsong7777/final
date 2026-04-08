@@ -1,22 +1,209 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Address List</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
+
+<style>
+.mo-alert {
+    padding: 14px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.mo-alert--success {
+    background: rgba(34, 197, 94, 0.10);
+    border: 1px solid rgba(34, 197, 94, 0.20);
+    color: #15803d;
+}
+
+.mo-alert--error {
+    background: rgba(248, 94, 40, 0.10);
+    border: 1px solid rgba(248, 94, 40, 0.22);
+    color: #c2410c;
+}
+
+.mo-btn-primary {
+    background: #FF8000;
+    border: 1px solid #FF8000;
+    color: #fff;
+}
+
+.mo-btn-primary:hover {
+    background: #f97316;
+    border-color: #f97316;
+    color: #fff;
+}
+
+.mo-btn-outline {
+    background: #fff;
+    border: 1px solid rgba(42, 54, 89, 0.18);
+    color: #2A3659;
+}
+
+.mo-btn-outline:hover {
+    background: rgba(42, 54, 89, 0.04);
+    border-color: rgba(42, 54, 89, 0.28);
+    color: #252D59;
+}
+
+.mo-btn-danger {
+    background: #fff;
+    border: 1px solid rgba(248, 94, 40, 0.45);
+    color: #F85E28;
+}
+
+.mo-btn-danger:hover {
+    background: rgba(248, 94, 40, 0.08);
+    border-color: rgba(248, 94, 40, 0.70);
+    color: #ea580c;
+}
+
+.mo-btn-disabled {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+</style>
+    <title>배송지 관리</title>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Address List</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: views/address-list</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
+
+<section layout:fragment="pageContent">
+    <section class="mo-section">
+    <div class="d-flex flex-column gap-3 mb-3">
+    <div class="mo-alert mo-alert--success"
+         th:if="${message != null}"
+         th:text="${message}">
+        배송지가 삭제되었습니다.
+    </div>
+
+    <div class="mo-alert mo-alert--error"
+         th:if="${error != null}"
+         th:text="${error}">
+        기본 배송지는 삭제할 수 없습니다.
+    </div>
+</div>
+    
+    
+        <div class="mo-surface-card">
+            <div class="mo-section-head">
+                <div>
+                    <div class="mo-section-label">ADDRESS</div>
+                    <h2 class="mo-section-title">배송지 관리</h2>
+                    <p class="mo-helper-text mb-0">
+                        주문방 생성과 가게 탐색에 사용할 배송지를 관리합니다.
+                    </p>
+                </div>
+                <a th:href="@{/members/me/addresses/new}" class="mo-btn mo-btn-primary">
+                    배송지 추가
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="mo-section">
+        <div class="row g-4" th:if="${addressList != null and !#lists.isEmpty(addressList)}">
+            <div class="col-12 col-lg-6"
+                 th:each="address : ${addressList}">
+                <article class="mo-surface-card h-100"
+      			   th:classappend="${defaultAddressIdx == address.deliveryAddressIdx} ? ' border border-warning-subtle' : ''">
+                    <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <h3 class="mb-0 fs-5 fw-bold text-dark"
+                                    th:text="${address.deliveryLabel}">집</h3>
+                                <span class="mo-badge"
+								      th:if="${defaultAddressIdx == address.deliveryAddressIdx}">
+								    현재 기본 배송지
+								</span>
+                            </div>
+                            <p class="mo-helper-text mb-0 mt-2">
+                                <span th:text="${address.recipientName}">홍길동</span>
+                                <span> · </span>
+                                <span th:text="${address.recipientPhone}">010-0000-0000</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="fw-semibold text-dark mb-1">주소</div>
+                        <div class="text-secondary" style="line-height:1.7;">
+                            <span th:text="${address.deliveryAddress1}">기본주소</span>
+                            <span th:if="${address.deliveryAddress2 != null and !#strings.isEmpty(address.deliveryAddress2)}">
+                                <br>
+                                <span th:text="${address.deliveryAddress2}">상세주소</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4" th:if="${address.deliveryRequest != null and !#strings.isEmpty(address.deliveryRequest)}">
+                        <div class="fw-semibold text-dark mb-1">배송 요청사항</div>
+                        <div class="text-secondary" th:text="${address.deliveryRequest}">
+                            문 앞에 놓아주세요.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-sm-flex">
+					    <button th:if="${defaultAddressIdx == address.deliveryAddressIdx}"
+						        type="button"
+						        class="mo-btn mo-btn-disabled flex-fill"
+						        disabled>
+						    기본 배송지 적용됨
+						</button>
+
+    <form th:if="${defaultAddressIdx != address.deliveryAddressIdx}"
+	      th:action="@{/members/me/addresses/{deliveryAddressIdx}/default(deliveryAddressIdx=${address.deliveryAddressIdx})}"
+	      method="post"
+	      class="flex-fill">
+        <button type="submit" class="mo-btn mo-btn-primary w-100">
+            기본 배송지로 설정
+        </button>
+    </form>
+
+    <a th:href="@{/members/me/addresses/{deliveryAddressIdx}/edit(deliveryAddressIdx=${address.deliveryAddressIdx})}"
+       class="mo-btn mo-btn-outline flex-fill">
+        수정
+    </a>
+
+<button th:if="${defaultAddressIdx == address.deliveryAddressIdx}"
+        type="button"
+        class="mo-btn mo-btn-disabled flex-fill"
+        disabled>
+    기본 배송지는 삭제 불가
+</button>
+
+    <form th:if="${defaultAddressIdx != address.deliveryAddressIdx}"
+      th:action="@{/members/me/addresses/{deliveryAddressIdx}/delete(deliveryAddressIdx=${address.deliveryAddressIdx})}"
+      method="post"
+      class="flex-fill"
+      onsubmit="return confirm('이 배송지를 삭제하시겠습니까?');">
+        <button type="submit" class="mo-btn mo-btn-danger w-100">
+            삭제
+        </button>
+    </form>
+</div>
+                </article>
+            </div>
+        </div>
+
+        <div class="mo-empty-state"
+             th:if="${addressList == null or #lists.isEmpty(addressList)}">
+            <h3 class="mo-empty-state__title">등록된 배송지가 없습니다</h3>
+            <p class="mo-empty-state__desc">
+                자주 사용하는 배송지를 추가해 두면 가게 탐색과 주문방 생성이 더 빨라집니다.
+            </p>
+            <a th:href="@{/members/me/addresses/new}" class="mo-btn mo-btn-primary">
+                첫 배송지 추가
+            </a>
+        </div>
+    </section>
+</section>
+
+
 </body>
 </html>

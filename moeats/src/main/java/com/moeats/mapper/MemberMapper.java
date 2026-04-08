@@ -1,11 +1,19 @@
 package com.moeats.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.moeats.domain.Member;
 
 @Mapper
 public interface MemberMapper {
+	
+	// 기본 배송지 설정 
+    public void updateDefaultAddressIdx(@Param("memberIdx") int memberIdx,
+            @Param("deliveryAddressIdx") int deliveryAddressIdx);
+    
+    // 기본 배송지 해제
+    public void clearDefaultAddressIdx(@Param("memberIdx") int memberIdx);
 	
 	// 기본 배송지 가져옴
 	public Integer getDefaultAddressIdx(int memberIdx);
