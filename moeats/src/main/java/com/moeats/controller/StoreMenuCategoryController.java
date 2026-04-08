@@ -90,8 +90,7 @@ public class StoreMenuCategoryController {
     		return "redirect:/owners/store/new";
     	}
 
-		StoreMenuCategory category =
-				storeMenuCategoryService.getCategory(menuCategoryIdx, store.getStoreIdx());
+		StoreMenuCategory category = storeMenuCategoryService.getCategory(menuCategoryIdx);
 
 		model.addAttribute("category", category);
 
@@ -107,7 +106,7 @@ public class StoreMenuCategoryController {
 		int storeIdx = getStoreIdx(member);
 
 		StoreMenuCategory category =
-				storeMenuCategoryService.getCategory(menuCategoryIdx, storeIdx);
+				storeMenuCategoryService.getCategory(menuCategoryIdx);
 
 		model.addAttribute("category", category);
 

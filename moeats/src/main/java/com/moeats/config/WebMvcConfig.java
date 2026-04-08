@@ -15,68 +15,53 @@ import com.moeats.interceptor.RoomMemberInterceptor;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Autowired
-    private LoginCheckInterceptor loginCheckInterceptor;
+	@Autowired
+	private LoginCheckInterceptor loginCheckInterceptor;
 
-    @Autowired
-    private OwnerCheckInterceptor ownerCheckInterceptor;
+	@Autowired
+	private OwnerCheckInterceptor ownerCheckInterceptor;
 
-    @Autowired
-    private RoomMemberInterceptor roomMemberInterceptor;
+	@Autowired
+	private RoomMemberInterceptor roomMemberInterceptor;
 
-    @Autowired
-    private OrderMemberInterceptor orderMemberInterceptor;
+	@Autowired
+	private OrderMemberInterceptor orderMemberInterceptor;
 
-    @Autowired
-    private PaymentInterceptor paymentInterceptor;
-    
-    @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
-    	// TODO 이 URI로 오는 링크는 나중에 forward되는 링크로 수정해주세요
-        registry.addViewController("/members/dashboard")
-        		.setViewName("forward:/owners/dashboard");
-        registry.addViewController("/owners")
-        		.setViewName("forward:/owners/dashboard");
-        
-        registry.addViewController("/owner/menu/management")
-        		.setViewName("forward:/owners/menu");
-        registry.addViewController("/owner/menu/register")
-        		.setViewName("forward:/owners/menu/new");
-        registry.addViewController("/owner/store/setting")
-        		.setViewName("forward:/owners/menu/edit");
-    }
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
+	@Autowired
+	private PaymentInterceptor paymentInterceptor;
+	
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
 
-        // 로그인만 필요한 경로
-        registry.addInterceptor(loginCheckInterceptor)
-                .addPathPatterns(
-                        "/members/me/**",
-                        "/rooms/**",
-                        "/orders/**",
-                        "/owners/**"
-                );
+		// 로그인만 필요한 경로
+		registry.addInterceptor(loginCheckInterceptor)
+				.addPathPatterns(
+						"/members/me/**",
+						"/rooms/**",
+						"/orders/**",
+						"/owners/**"
+				);
 
-        // 점주 전용 경로 - OWNER 권한 체크
-        registry.addInterceptor(ownerCheckInterceptor)
-                .addPathPatterns("/owners/**");
+		// 점주 전용 경로 - OWNER 권한 체크
+		registry.addInterceptor(ownerCheckInterceptor)
+				.addPathPatterns("/owners/**");
 
-        registry.addInterceptor(roomMemberInterceptor)
-                .addPathPatterns(
-                        "/rooms/code/*/**"
-                )
-                .excludePathPatterns(
-                		"/rooms/code/*"
-                );
+		registry.addInterceptor(roomMemberInterceptor)
+				.addPathPatterns(
+						"/rooms/code/*/**"
+				)
+				.excludePathPatterns(
+						"/rooms/code/*"
+				);
 
-        registry.addInterceptor(orderMemberInterceptor)
-                .addPathPatterns(
-                        "/orders/**"
-                );
+		registry.addInterceptor(orderMemberInterceptor)
+				.addPathPatterns(
+						"/orders/**"
+				);
 
-        registry.addInterceptor(paymentInterceptor)
-                .addPathPatterns(
-                        "/orders/*/payment/**"
-                );
-    }
+		registry.addInterceptor(paymentInterceptor)
+				.addPathPatterns(
+						"/orders/*/payment/**"
+				);
+	}
 }

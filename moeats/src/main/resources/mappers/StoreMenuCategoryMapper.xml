@@ -39,7 +39,10 @@
 	<select id="getCategory" resultType="StoreMenuCategory">
 		select * from storeMenuCategory
 			where menu_category_idx = #{menuCategoryIdx}
-			  and store_idx = #{storeIdx}
+	</select>
+	<select id="getCategoryByStoreIdx" resultType="StoreMenuCategory">
+		select * from storeMenuCategory
+			where store_idx = #{storeIdx}
 	</select>
 	
 </mapper>
