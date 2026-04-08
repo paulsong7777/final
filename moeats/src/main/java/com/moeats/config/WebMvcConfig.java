@@ -37,6 +37,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         		.setViewName("forward:/owners/menu");
         registry.addViewController("/owner/menu/register")
         		.setViewName("forward:/owners/menu/new");
+        registry.addViewController("/owner/store/setting")
+        		.setViewName("forward:/owners/menu/edit");
     }
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

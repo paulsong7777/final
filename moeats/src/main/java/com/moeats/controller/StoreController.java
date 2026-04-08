@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -101,10 +102,17 @@ public class StoreController {
 
     // 가게 상태 수정
     @PostMapping("/owners/store/status")
-    public String updateStatus(@RequestParam("storeIdx") int storeIdx,
-                               @RequestParam("storeStatus") String storeStatus,
-                               @SessionAttribute("member") Member member) {
-
+    public String updateStatus(
+    		RedirectAttributes ra,
+    		@RequestParam("storeIdx") int storeIdx, 
+    		@RequestParam("storeStatus") String storeStatus,
+			@SessionAttribute("member") Member member) {
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	if ( store==null ) {
+    		ra.addAttribute("error", "잘못된 접근입니다");
+    		return "redirect:/home";
+    	}
+    	
         storeService.updateStatus(storeIdx, member.getMemberIdx(), storeStatus);
         return "redirect:/owners/store";
     }
@@ -121,20 +129,26 @@ public class StoreController {
 
     // 가게 정보 수정 폼
     @GetMapping("/owners/store/edit")
-    public String updateStore(@SessionAttribute("member") Member member,
-                              Model model) {
+    public String updateStore(
+    		RedirectAttributes ra,
+    		Model model,
+			@SessionAttribute("member") Member member) {
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	if ( store==null ) {
+    		ra.addAttribute("error", "가게가 없습니다.");
+    		return "redirect:/owners/store/new";
+    	}
 
-        Store store = storeService.myStore(member.getMemberIdx());
+        model.addAttribute("menu", "store");
         model.addAttribute("store", store);
-
         return "views/owner/store-edit";
     }
 
     // 가게 등록
     @PostMapping("/owners/store")
-    public String insertStore(Store store,
-                              @SessionAttribute("member") Member member) {
-
+    public String insertStore(
+    		@ModelAttribute Store store,
+			@SessionAttribute("member") Member member) {
         store.setOwnerMemberIdx(member.getMemberIdx());
         storeService.insertStore(store);
 
@@ -149,10 +163,16 @@ public class StoreController {
     
     // 내 가게 조회
     @GetMapping("/owners/store")
-    public String myStore(@SessionAttribute("member") Member member,
-    		Model model) {
-    	
+    public String myStore(
+    		RedirectAttributes ra,
+    		Model model,
+			@SessionAttribute("member") Member member) {
     	Store store = storeService.myStore(member.getMemberIdx());
+    	if ( store==null ) {
+    		ra.addAttribute("error", "가게가 없습니다");
+    		return "redirect:/owners/store/new";
+    	}
+    	
     	model.addAttribute("store", store);
     	
     	return "views/owner/store-manage";
