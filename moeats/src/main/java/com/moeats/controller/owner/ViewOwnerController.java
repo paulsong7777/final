@@ -94,7 +94,8 @@ public class ViewOwnerController {
 
     @GetMapping("/order/status_move")
     public String statusMove(@RequestParam("roomIdx") Long roomIdx, @RequestParam("nextStatus") String nextStatus) {
-        if ("COMPLETED".equals(nextStatus)) return "redirect:/owner/dashboard";
+        // ✅ [교정]: 배달 완료(COMPLETED) 시 /owners/dashboard-map으로 리다이렉트 (404 방지)
+        if ("COMPLETED".equals(nextStatus)) return "redirect:/owners/dashboard-map";
         return "redirect:/owner/order/detail?roomIdx=" + roomIdx + "&status=" + nextStatus;
     }
 
@@ -149,7 +150,6 @@ public class ViewOwnerController {
     public String menuEditPage(@RequestParam(value="menuIdx", required=false, defaultValue="0") int menuIdx, Model model) {
         model.addAttribute("menu", "menu-edit");
         
-        // ✅ [교정]: 번호가 없어도 리다이렉트 하지 않고 빈 객체라도 보냄 (수정 폼이 뜨게 함)
         if(menuIdx != 0) {
             model.addAttribute("menuVo", menuService.findByIdx(menuIdx));
         } else {
