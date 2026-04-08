@@ -1,7 +1,6 @@
 package com.moeats.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -42,16 +41,63 @@ public class StoreController {
 			Model model,
 			@SessionAttribute("member") Member member) {
 		Store store = storeService.myStore(member.getMemberIdx());
-	    if ( store==null || !"OWNER".equals(member.getMemberRoleType())) {
-	    	return "redirect:/main";
+	    if ( store==null ) {
+	    	ra.addAttribute("error", "가게가 없습니다");
+	    	return "redirect:/owners/store/new";
 	    }
-        model.addAttribute("menu", "dash");
-        model.addAttribute("store", store);
-        List<GroupOrderRecord> groupOrderList = groupOrderService.findByStore(store.getStoreIdx());
-        model.addAttribute("orderList", groupOrderList);
+	    List<GroupOrderRecord> groupOrderList = groupOrderService.findRecordByStore(store.getStoreIdx());
         
+	    model.addAttribute("menu", "dash");
+	    model.addAttribute("store", store);
+	    model.addAttribute("orderList", groupOrderList);
 	    return "views/owner/dashboard";
 	}
+	
+	@GetMapping("/owners/order/list")
+	public String orderList(
+			RedirectAttributes ra,
+			Model model,
+			@SessionAttribute("member") Member member) { 
+		Store store = storeService.myStore(member.getMemberIdx());
+		if ( store==null ) {
+			ra.addAttribute("error", "가게가 없습니다");
+			return "redirect:/owners/store/new";
+		}
+		List<GroupOrderRecord> groupOrders = groupOrderService.findRecordByStore(store.getStoreIdx());
+		
+		model.addAttribute("menu", "order");
+		model.addAttribute("store", store);
+		model.addAttribute("groupOrders", groupOrders);
+		return "views/owner/order-list"; 
+	}
+	
+    @GetMapping("/owners/order/detail")
+    public String orderDetail(
+    		RedirectAttributes ra,
+    		Model model,
+    		@RequestParam(name = "roomIdx", defaultValue = "0") Integer roomIdx,
+			@SessionAttribute("member") Member member) {
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	if ( store==null ) {
+    		ra.addAttribute("error", "가게가 없습니다");
+    		return "redirect:/owners/store/new";
+    	}
+    	if( roomIdx==0 ) {
+    		ra.addAttribute("error","잘못된 주문 번호입니다");
+    		return "redirect:/owners/dashboard";
+    	}
+    	GroupOrderRecord groupOrder = groupOrderService.findRecordByIdx(roomIdx);
+    	if( groupOrder.groupOrder()==null
+    			|| groupOrder.groupOrder().getStoreIdx() != store.getStoreIdx() ) {
+    		ra.addAttribute("error","잘못된 주문 번호입니다");
+    		return "redirect:/owners/dashboard";
+    	}
+    	
+    	model.addAttribute("menu", "order");
+    	model.addAttribute("store", store);
+        model.addAttribute("groupOrder", groupOrder);
+        return "views/owner/order-detail"; 
+    }
 
     // 가게 상태 수정
     @PostMapping("/owners/store/status")
@@ -67,7 +113,7 @@ public class StoreController {
     @PostMapping("/owners/store/edit")
     public String updateStore(Store store,
                               @SessionAttribute("member") Member member) {
-
+    	
         store.setOwnerMemberIdx(member.getMemberIdx());
         storeService.updateStore(store);
         return "redirect:/owners/store";
@@ -100,15 +146,15 @@ public class StoreController {
     public String insertStore() {
         return "views/owner/store-create";
     }
-
+    
     // 내 가게 조회
     @GetMapping("/owners/store")
     public String myStore(@SessionAttribute("member") Member member,
-                          Model model) {
-
-        Store store = storeService.myStore(member.getMemberIdx());
-        model.addAttribute("store", store);
-
-        return "views/owner/store-manage";
+    		Model model) {
+    	
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	model.addAttribute("store", store);
+    	
+    	return "views/owner/store-manage";
     }
 }

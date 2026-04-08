@@ -31,19 +31,28 @@ public class GroupOrderService {
 	@Autowired
 	OrderDeliveryMapper orderDeliveryMapper;
 	
-	public record GroupOrderRecord(GroupOrder groupOrder,List<GroupOrderItem> groupOrderItems) {}
+	public record GroupOrderRecord(GroupOrder groupOrder,List<GroupOrderItem> groupOrderItems,OrderDelivery orderDelivery) {}
+	
+	public GroupOrderRecord findRecordByIdx(int orderIdx) {
+		GroupOrder groupOrder = groupOrderMapper.findByIdx(orderIdx);
+		return new GroupOrderRecord(
+				groupOrder,
+				groupOrderItemMapper.findOrderMemberAmount(groupOrder.getOrderIdx()),
+				orderDeliveryMapper.findByOrder(groupOrder.getOrderIdx()));
+	}
+	public List<GroupOrderRecord> findRecordByStore(int storeIdx) {
+		return groupOrderMapper.findByStore(storeIdx).stream()
+				.map(groupOrder->new GroupOrderRecord(
+						groupOrder,
+						groupOrderItemMapper.findOrderMemberAmount(groupOrder.getOrderIdx()),
+						orderDeliveryMapper.findByOrder(groupOrder.getOrderIdx()))).toList();
+	}
 	
 	public GroupOrder findByIdx(int orderIdx) {
 		return groupOrderMapper.findByIdx(orderIdx);
 	}
 	public GroupOrder findByRoom(int roomIdx) {
 		return groupOrderMapper.findByRoom(roomIdx);
-	}
-	public List<GroupOrderRecord> findByStore(int storeIdx) {
-		return groupOrderMapper.findByStore(storeIdx).stream()
-				.map(groupOrder->new GroupOrderRecord(
-						groupOrder,
-						groupOrderItemMapper.findOrderMemberAmount(groupOrder.getOrderIdx()))).toList();
 	}
 	public int insert(GroupOrder groupOrder) {
 		return groupOrderMapper.insert(groupOrder);
