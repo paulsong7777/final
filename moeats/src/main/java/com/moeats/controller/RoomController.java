@@ -221,6 +221,7 @@ public class RoomController {
 	        @PathVariable("room_code") String roomCode,
 	        @SessionAttribute("member") Member member) {
 
+		System.out.println("[ROOM] subscribe request roomCode=" + roomCode + ", member=" + member.getMemberIdx());
 	    OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
 
 	    if (orderRoom == null) {

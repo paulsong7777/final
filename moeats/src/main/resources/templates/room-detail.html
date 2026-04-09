@@ -280,7 +280,9 @@
     </th:block>
 </head>
 <body>
-<section layout:fragment="pageContent">
+<section layout:fragment="pageContent"
+					id="roomDetailRoot"
+        			 th:attr="data-room-code=${orderRoom.roomCode}, data-room-status=${orderRoom.roomStatus}">
     <section class="mo-section">
         <div class="mo-surface-card rd-hero">
             <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
@@ -548,8 +550,6 @@
         </div>
     </section>
 </section>
-<input type="hidden" id="roomCode" th:value="${orderRoom.roomCode}">
-<input type="hidden" id="roomStatus" th:value="${orderRoom.roomStatus}">
 <th:block layout:fragment="pageScripts">
     <script th:src="@{/js/room/room-detail.js}"></script>
 </th:block>
