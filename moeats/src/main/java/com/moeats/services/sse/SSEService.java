@@ -16,15 +16,21 @@ public class SSEService {
 	Map<Integer, List<SseEmitter>> orderMap = new ConcurrentHashMap<>();
 	Map<Integer, List<SseEmitter>> storeMap = new ConcurrentHashMap<>();
 	
+	private void remove(Map<Integer, List<SseEmitter>> map, int idx, SseEmitter sseEmitter) {
+		map.computeIfPresent(idx,(key,list)->{
+			list.remove(sseEmitter);
+			return list.isEmpty() ? null : list;
+		});
+	}
 	private SseEmitter join(Map<Integer, List<SseEmitter>> map,int idx){
-		SseEmitter sseEmitter = new SseEmitter();
-		sseEmitter.onCompletion(() -> map.get(idx).remove(sseEmitter));
-		sseEmitter.onTimeout(() -> map.get(idx).remove(sseEmitter));
+		SseEmitter sseEmitter = new SseEmitter(60L * 60 * 1000);
+		sseEmitter.onCompletion(() -> remove(map,idx,sseEmitter));
+		sseEmitter.onTimeout(() -> remove(map,idx,sseEmitter));
 		if(!map.containsKey(idx))
 			map.put(idx, new CopyOnWriteArrayList<SseEmitter>());
 		try {
 			sseEmitter.send(SseEmitter.event().name("connect"));
-			map.get(idx).add(sseEmitter);
+			map.computeIfAbsent(idx, k -> new CopyOnWriteArrayList<>()).add(sseEmitter);
 		} catch (IOException e) {}
 		return sseEmitter;
 	}
@@ -37,7 +43,7 @@ public class SSEService {
 				sent++;
 			}catch (IOException e) {
 				sseEmitter.complete();
-				map.get(idx).remove(sseEmitter);
+				remove(map,idx,sseEmitter);
 			}
 		return sent;
 	}
@@ -58,10 +64,10 @@ public class SSEService {
 	public int cancelRoom(int roomIdx) {
 		return send(roomMap,roomIdx,SseEmitter.event().name("cancel"));
 	}
-	
 	public int expireOrder(int roomIdx) {
 		return send(roomMap,roomIdx,SseEmitter.event().name("expire"));
 	}
+	
 	public int completeOrder(int orderIdx) {
 		return send(orderMap,orderIdx,SseEmitter.event().name("complete"));
 	}
@@ -71,4 +77,5 @@ public class SSEService {
 	public int cancelOrder(int orderIdx) {
 		return send(orderMap,orderIdx,SseEmitter.event().name("cancel"));
 	}
+	
 }

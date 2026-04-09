@@ -29,7 +29,7 @@ public class SseController {
 	}
 	@GetMapping("/orders/{order_idx}/subscribe")
 	public SseEmitter subscribeOrder(@RequestAttribute("groupOrder") GroupOrder groupOrder) {
-		return sseService.joinOrder(groupOrder.getRoomIdx());
+		return sseService.joinOrder(groupOrder.getOrderIdx());
 	}
 	@GetMapping("/owners/order/subscribe")
 	public SseEmitter subscribeOrder(@SessionAttribute("member") Member member) {
