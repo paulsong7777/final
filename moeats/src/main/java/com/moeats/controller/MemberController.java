@@ -1,5 +1,7 @@
 package com.moeats.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -81,7 +83,6 @@ public class MemberController {
 			return "redirect:/login";
 		}
 		
-		
 		return "views/members/member-profile-edit";
 	}
 	
@@ -94,6 +95,11 @@ public class MemberController {
 	    if("USER".equals(member.getMemberRoleType())) {
 	        DeliveryAddress deliveryAddress = deliveryAddressService.getDefaultAddress(member.getMemberIdx());
 	        model.addAttribute("deliveryAddress", deliveryAddress);
+	        
+	        // 전체 주소 리스트 추가
+	        List<DeliveryAddress> addressList =
+	                deliveryAddressService.getAddress(member.getMemberIdx());
+	        model.addAttribute("addressList", addressList);
 	    }
 
 	    // OWNER용 가게 정보
@@ -101,7 +107,7 @@ public class MemberController {
 	        Store store = storeService.myStore(member.getMemberIdx());
 	        model.addAttribute("store", store);
 	    }
-		
+	    
 		return "views/members/member-profile";
 	}
 	
@@ -177,6 +183,7 @@ public class MemberController {
 
 	    } catch (Exception e) {
 	    	e.printStackTrace();
+	    	e.printStackTrace();
 	        ra.addFlashAttribute("error", e.getMessage());
 	        return "redirect:/members/createType";
 	    }
@@ -184,10 +191,22 @@ public class MemberController {
 	
 	// 통합 대시보드 분기(역할분기 일반/사업자)
 	@GetMapping("/members/dashboard")
-	public String dashboard(@SessionAttribute("member") Member member) {
+	public String dashboard(@SessionAttribute("member") Member member,
+					Model model) {
 
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	        return "views/owner/dashboard";
+	    	// 1. 로그인한 점주의 가게 정보를 DB에서 조회
+	        Store store = storeService.myStore(member.getMemberIdx());
+	        
+	        // 2. 화면(HTML)에서 사용하는 변수명인 'storeVo'로 Model에 담아 전달
+	        model.addAttribute("storeVo", store);
+
+            // 💡 참고: HTML을 보면 주문 내역(orderList)도 필요로 합니다.
+            // 주문 내역을 가져오는 서비스가 있다면 아래처럼 같이 넘겨주어야 실시간 주문 현황도 뜹니다.
+            // List<Order> orderList = orderService.getCurrentOrders(store.getStoreIdx());
+            // model.addAttribute("orderList", orderList);
+	    	
+	    	return "views/owner/dashboard";
 	    }
 
 	    return "redirect:/main";

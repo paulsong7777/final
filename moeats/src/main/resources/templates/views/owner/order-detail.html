@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layout/default}">
+<head>
+    <title>주문 상세 관리 - Mo-Eats</title>
+    <style>
+        /* HTML로 처리할 수 없는 가상요소(선), 애니메이션, 상태 컬러 매핑만 남김 */
+        .mo-step-container { position: relative; }
+        .mo-step-line { 
+            position: absolute; 
+            top: 26px; left: 12.5%; width: 75%; height: 4px; 
+            background-color: var(--mo-line); z-index: 0; 
+            border-radius: 2px;
+        }
+        .mo-step-circle { 
+            width: 56px; height: 56px; 
+            position: relative; z-index: 1; 
+            transition: all 0.4s ease; 
+            border: 3px solid var(--mo-line-strong); 
+        }
+        
+        /* 주문 단계별 Mo-Eats 브랜드 컬러 매핑 */
+        .mo-step-active-accepted { background-color: var(--mo-primary); color: #fff; border-color: var(--mo-primary); box-shadow: 0 8px 20px rgba(255, 128, 0, 0.25); }
+        .mo-step-active-cooking { background-color: var(--mo-accent); color: #fff; border-color: var(--mo-accent); box-shadow: 0 8px 20px rgba(248, 94, 40, 0.25); }
+        .mo-step-active-delivering { background-color: var(--mo-navy); color: #fff; border-color: var(--mo-navy); box-shadow: 0 8px 20px rgba(42, 54, 89, 0.25); }
+        .mo-step-active-completed { background-color: var(--mo-navy-strong); color: #fff; border-color: var(--mo-navy-strong); box-shadow: 0 8px 20px rgba(37, 45, 89, 0.35); }
+    </style>
+</head>
+
+<body>
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container" th:with="safeOrder=${orderRoom ?: (order ?: {}) }">
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+
+                <div class="mo-section text-center mb-5">
+                    <span class="mo-section-label">ORDER DETAIL</span>
+                    <h2 class="mo-section-title">주문 상세 관리</h2>
+                </div>
+                
+                <div class="mo-surface-card p-4 p-md-5">
+                    
+                    <div class="row text-center mo-step-container mb-5 pt-3">
+                        <div class="mo-step-line"></div>
+                        
+                        <div class="col-3" th:each="status : ${ {'ACCEPTED', 'COOKING', 'DELIVERING', 'COMPLETED'} }">
+                            <div class="mo-step-circle bg-white text-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2 fs-5"
+                                 th:classappend="${safeOrder.roomStatus == status ? 
+                                    (status == 'ACCEPTED' ? 'mo-step-active-accepted' : 
+                                    (status == 'COOKING' ? 'mo-step-active-cooking' : 
+                                    (status == 'DELIVERING' ? 'mo-step-active-delivering' : 'mo-step-active-completed'))) : ''}">
+                                <i class="bi" th:classappend="${status == 'ACCEPTED' ? 'bi-check-lg' : (status == 'COOKING' ? 'bi-fire' : (status == 'DELIVERING' ? 'bi-truck' : 'bi-flag-fill'))}"></i>
+                            </div>
+                            <div class="fw-bold" style="font-size: 13px;"
+                                 th:classappend="${safeOrder.roomStatus == status ? 'text-dark' : 'text-muted'}"
+                                 th:text="${status == 'ACCEPTED' ? '접수완료' : (status == 'COOKING' ? '조리중' : (status == 'DELIVERING' ? '배달중' : '배달완료'))}">상태</div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 mb-4 rounded-4" style="border: 1px solid var(--mo-line); background: #fafafa;">
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                            <span class="mo-form-label mb-0">주문 번호</span>
+                            <span class="fs-5 fw-bold" style="color: var(--mo-primary);" th:text="${safeOrder.roomIdx}">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center pt-1">
+                            <span class="mo-form-label mb-0">매장 이름</span>
+                            <span class="fw-bold" style="font-size: 15px; color: var(--mo-navy-strong);" th:text="${safeOrder.storeName}">매장명</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        <button type="button" th:if="${safeOrder.roomStatus == 'ACCEPTED'}" class="mo-btn mo-btn-primary w-100 py-2 fs-6" style="min-height: 52px;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COOKING')">🔥 조리 시작하기</button>
+                        
+                        <button type="button" th:if="${safeOrder.roomStatus == 'COOKING'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy); color: #fff; min-height: 52px;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'DELIVERING')">🚚 배달 시작하기</button>
+                        
+                        <button type="button" th:if="${safeOrder.roomStatus == 'DELIVERING'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff; min-height: 52px;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">🏁 배달 완료처리</button>
+                        
+                        <div th:if="${safeOrder.roomStatus == 'COMPLETED'}" class="p-3 text-center rounded-3 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy-strong);">
+                            고객에게 배달이 완료된 주문입니다.
+                        </div>
+
+                        <div class="text-center mt-2 border-top pt-3">
+                            <a th:href="@{/members/dashboard}" class="mo-btn mo-btn-plain text-secondary fw-bold" style="font-size: 13px;">
+                                <i class="bi bi-arrow-left me-1"></i> 돌아가기
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-4">
+        <div id="statusToast" class="toast align-items-center text-white border-0" style="background: var(--mo-navy-strong); border-radius: 12px; box-shadow: var(--mo-shadow-strong);" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex p-1">
+                <div class="toast-body fw-bold" style="font-size: 14px;">
+                    <span class="spinner-border spinner-border-sm me-2" style="color: var(--mo-primary);"></span>
+                    주문 상태를 업데이트하고 있습니다...
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // 기존에 잘 작동하던 URL 이동 방식 유지
+        function moveStatus(roomIdx, nextStatus) {
+            const toastEl = document.getElementById('statusToast');
+            if (toastEl) {
+                // 토스트 띄우기
+                const bsToast = new bootstrap.Toast(toastEl);
+                bsToast.show();
+            }
+
+            // 부드러운 전환을 위해 0.6초 대기 후 이동 (토스트 노출 시간 확보)
+            setTimeout(() => {
+                location.href = `/owner/order/status_move?roomIdx=${roomIdx}&nextStatus=${nextStatus}`;
+            }, 600);
+        }
+        /*]]>*/
+    </script>
+</th:block>
+</body>
+</html>

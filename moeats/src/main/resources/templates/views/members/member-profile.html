@@ -1,155 +1,147 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layout/default}">
+	
 <head>
     <title>Mo-Eats 마이페이지</title>
 </head>
-	<th:block layout:fragment="content">
-	<div class="row">
-		<div class="col">
-			
-			<div class="row">
-				<div class="col">
-					<h2>프로필 관리</h2>
-				</div>
-			</div>
-			
-			<div class="row">
-				<div class="col">
-					<div class="row">
-						<div class="col">
-							이메일
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<input type="text" th:value="${session.member.memberEmail}" readonly>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-			
-			<div class="row">
-				<div class="col">
-					<div class="row">
-						<div class="col">
-							전화번호
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<input type="text" th:value="${session.member.memberPhone}" readonly>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-			
-			<div class="row">
-				<div class="col">
-					<div class="row">
-						<div class="col">
-							닉네임
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<input type="text" th:value="${session.member.memberNickname}" readonly>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-			<th:block th:if="${session.member.memberRoleType == 'USER'}">
-				<div class="row">
-					<div class="col">
-						<div class="row">
-							<div class="col">
-								배달 주소 관리
-							</div>
-							<div class="col">
-								<input type="button" th:onclick="@{location.href='/members/me/addresses'}" value="추가">
-							</div>
-						</div>
-						<div class="row">
-							<div class="col">
-								<input type="text" name="deliveryAddress"
-								       th:value="${deliveryAddress != null 
-								           ? deliveryAddress.deliveryAddress1 
-								             + (deliveryAddress.deliveryAddress2 != null ? ' ' + deliveryAddress.deliveryAddress2 : '') 
-								           : '등록된 기본 주소 없음'}"
-								       readonly>
-									<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/edit'}" value="수정" style="display:inline">
-									<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/delete'}" value="삭제" style="display:inline">
-							</div>
-						</div>
-					</div>
-				</div>
-			</th:block>
-
-			<th:block th:if="${session.member.memberRoleType == 'OWNER'}">
-				<div class="row">
-					<div class="col">
-						<div class="row">
-							<div class="col">
-								가게 주소 관리
-								<input type="button" th:onclick="@{location.href='/owners/store/new'}" value="추가"  style="display:inline">
-							</div>
-							<div class="col">
-							</div>
-						</div>
-						<div class="row">
-							<div class="col">
-								<input type="text" name="store"
-								       th:value="${store != null 
-								           ? store.storeAddress1 
-								             + (store.storeAddress2!= null ? ' ' + store.storeAddress2 : '') 
-								           : '등록된 가게 없음'}"
-								       readonly>
-									<input type="button" th:onclick="@{location.href='/owners/store/edit'}" value="수정"  style="display:inline">
-									
-									<!-- 상태 변경 폼 -->
-									<th:block th:if="${store.storeStatus == 'INACTIVE'}">
-					                    <form th:action="@{/owners/store/status}" method="post" style="display:inline">
-					                        <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
-					                        <input type="hidden" name="storeStatus" value="ACTIVE" />
-					                        <input type="hidden" name="redirectUrl" value="/members/me" />
-					                        <button type="submit">활성화</button>
-					                    </form>
-				                    </th:block>
-				                    
-				                    <th:block th:if="${store.storeStatus == 'ACTIVE'}">
-					                    <form th:action="@{/owners/store/status}" method="post" style="display:inline">
-					                        <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
-					                        <input type="hidden" name="storeStatus" value="INACTIVE" />
-					                        <input type="hidden" name="redirectUrl" value="/members/me" />
-					                        <button type="submit">비활성화</button>
-					                    </form>
-				                    </th:block>
-							</div>
-						</div>
-					</div>
-				</div>
-			</th:block>
-			
-			<div class="row">
-				<div class="col">
-					<input type="button" th:onclick="@{location.href='/members/me/edit'}" value="회원정보수정">
-				</div>
-			</div>
-			
-			<div class="row">
-				<div class="col">
-					<input type="button" th:onclick="@{|location.href='/main'|}" value="메인으로" class="btn">
-					<a href="#">회원탈퇴</a>&nbsp;·&nbsp;
-					<a href="/logout">로그아웃</a>
-				</div>
-			</div>
-			
-			
+<section layout:fragment="pageContent">
+	<div class="mo-page-container container" style="max-width: 720px; margin: 0 auto;">
+		
+		<div class="mo-section" style="text-align: center; margin-bottom: 32px;">
+			<span class="mo-section-label">My Page</span>
+			<h2 class="mo-section-title">마이페이지</h2>
 		</div>
+		
+		<div class="mo-surface-card mb-4">
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h3 class="mo-store-card__title m-0">프로필 정보</h3>
+				<input type="button" th:onclick="@{location.href='/members/me/edit'}" value="정보 수정" class="mo-btn mo-btn-outline" style="min-height: 36px; padding: 0 14px; font-size: 13px;">
+			</div>
+			
+			<div class="row gy-3">
+				<div class="col-md-4">
+					<label class="mo-form-label">이메일</label>
+					<input type="text" th:value="${session.member.memberEmail}" class="form-control mo-form-control" style="background: var(--mo-bg); color: var(--mo-text-soft);" readonly>
+				</div>
+				<div class="col-md-4">
+					<label class="mo-form-label">전화번호</label>
+					<input type="text" th:value="${session.member.memberPhone}" class="form-control mo-form-control" style="background: var(--mo-bg); color: var(--mo-text-soft);" readonly>
+				</div>
+				<div class="col-md-4">
+					<label class="mo-form-label">닉네임</label>
+					<input type="text" th:value="${session.member.memberNickname}" class="form-control mo-form-control" style="background: var(--mo-bg); color: var(--mo-text-soft);" readonly>
+				</div>
+			</div>
+		</div>
+		
+		<th:block th:if="${session.member.memberRoleType == 'USER'}">
+			<div class="mo-surface-card mb-4">
+				<div class="d-flex justify-content-between align-items-center mb-4">
+					<h3 class="mo-store-card__title m-0">배달 주소 관리</h3>
+					<input type="button" th:onclick="@{location.href='/members/me/addresses'}" value="+ 주소 추가" class="mo-btn mo-btn-primary" style="min-height: 36px; padding: 0 14px; font-size: 13px;">
+				</div>
+				
+				<div style="background: rgba(255,128,0,0.05); border: 1px solid rgba(255,128,0,0.2); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+					<div class="d-flex align-items-center gap-2 mb-2">
+						<span class="mo-address-item__badge" style="margin: 0;">기본 주소</span>
+						<span style="font-weight: 800; color: var(--mo-navy-strong);" th:text="${deliveryAddress != null ? deliveryAddress.deliveryLabel: '등록된 주소 없음'}"></span>
+					</div>
+					<div style="color: var(--mo-text); font-size: 14px;">
+						<span th:text="${deliveryAddress != null ? deliveryAddress.deliveryAddress1 + (deliveryAddress.deliveryAddress2 != null ? ' ' + deliveryAddress.deliveryAddress2 : '') : '등록된 기본 주소가 없습니다.'}"></span>
+					</div>
+				</div>
+				
+				<th:block th:if="${ !#lists.isEmpty(addressList) }">
+					<div class="mo-address-list">
+						<div th:block th:each="address : ${addressList}" class="mo-address-item">
+							<div class="mo-address-item__head">
+								<div class="d-flex align-items-center gap-2">
+									<span class="mo-address-item__label" th:text="${address.deliveryLabel}"></span>
+									<span th:if="${address.isActive}" class="mo-address-item__badge" style="margin: 0; min-height: 24px; font-size: 11px;">기본</span>
+								</div>
+							</div>
+							<div class="mo-address-item__text mb-3" th:text="${address.deliveryAddress1 + ' ' + (address.deliveryAddress2 != null ? address.deliveryAddress2 : '')}"></div>
+							
+							<div class="d-flex gap-2">
+								<input type="button" th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/edit'|" value="수정" class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 12px; font-size: 12px;">
+								<input type="button" th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/delete'|" value="삭제" class="mo-btn mo-btn-plain" style="min-height: 32px; padding: 0 12px; font-size: 12px; color: #dc3545;">
+								
+								<form th:if="${!address.isActive}" th:action="@{/members/me/addresses/{id}/default(id=${address.deliveryAddressIdx})}" method="post" style="margin: 0; margin-left: auto;">
+									<input type="hidden" name="redirectUrl" value="/members/me"/>
+									<button type="submit" class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 12px; font-size: 12px; color: var(--mo-primary); border-color: rgba(255,128,0,0.3);">
+										기본 주소로 설정
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</th:block>
+				<th:block th:if="${ #lists.isEmpty(addressList) }">
+					<div class="mo-empty-state mo-empty-state--compact">
+						<p class="mo-empty-state__desc">등록된 배달 주소가 없습니다.<br>새로운 주소를 추가해 주세요.</p>
+					</div>
+				</th:block>
+			</div>
+		</th:block>
+
+		<th:block th:if="${session.member.memberRoleType == 'OWNER'}">
+			<div class="mo-surface-card mb-4">
+				<div class="d-flex justify-content-between align-items-center mb-4">
+					<h3 class="mo-store-card__title m-0">가게 관리</h3>
+					<input type="button" th:onclick="@{location.href='/owners/store/new'}" value="+ 가게 추가" class="mo-btn mo-btn-primary" style="min-height: 36px; padding: 0 14px; font-size: 13px;">
+				</div>
+				
+				<th:block th:if="${store != null}">
+					<div class="mo-address-item" style="border-color: rgba(42, 54, 89, 0.15);">
+						<div class="mo-address-item__head">
+							<div class="d-flex align-items-center gap-2">
+								<span class="mo-address-item__label" style="font-size: 18px;" th:text="${store.storeName}"></span>
+								<span th:if="${store.storeStatus == 'ACTIVE'}" class="mo-address-item__badge" style="background: rgba(40, 167, 69, 0.1); color: #28a745; margin: 0;">영업중</span>
+								<span th:if="${store.storeStatus == 'INACTIVE'}" class="mo-address-item__badge" style="background: rgba(107, 114, 128, 0.1); color: #6B7280; margin: 0;">준비중(비활성)</span>
+							</div>
+						</div>
+						<div class="mo-address-item__text mb-4" th:text="${store.storeAddress1 + (store.storeAddress2 != null ? ' ' + store.storeAddress2 : '')}"></div>
+						
+						<div class="d-flex align-items-center gap-2">
+							<input type="button" th:onclick="@{location.href='/owners/store/edit'}" value="가게 정보 수정" class="mo-btn mo-btn-outline" style="flex: 1;">
+							
+							<form th:if="${store.storeStatus == 'INACTIVE'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1;">
+								<input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
+								<input type="hidden" name="storeStatus" value="ACTIVE" />
+								<input type="hidden" name="redirectUrl" value="/members/me" />
+								<button type="submit" class="mo-btn mo-btn-primary" style="width: 100%;">영업 시작하기</button>
+							</form>
+							
+							<form th:if="${store.storeStatus == 'ACTIVE'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1;">
+								<input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
+								<input type="hidden" name="storeStatus" value="INACTIVE" />
+								<input type="hidden" name="redirectUrl" value="/members/me" />
+								<button type="submit" class="mo-btn" style="width: 100%; background: #6B7280; color: #fff;">영업 일시정지</button>
+							</form>
+						</div>
+					</div>
+				</th:block>
+				
+				<th:block th:if="${store == null}">
+					<div class="mo-empty-state mo-empty-state--compact">
+						<p class="mo-empty-state__desc">아직 등록된 가게가 없습니다.<br>사장님의 가게를 추가해 보세요!</p>
+					</div>
+				</th:block>
+			</div>
+		</th:block>
+		
+		<div class="d-flex justify-content-between align-items-center mt-5 mb-4 pl-2 pr-2">
+			<input type="button" th:onclick="@{|location.href='/main'|}" value="메인으로" class="mo-btn mo-btn-plain">
+			
+			<div style="font-size: 13px;">
+				<a href="#" style="color: var(--mo-text-soft); text-decoration: none;">회원탈퇴</a>
+				<span style="color: var(--mo-line-strong); margin: 0 8px;">|</span>
+				<a href="/logout" style="color: var(--mo-text-soft); text-decoration: none; font-weight: 700;">로그아웃</a>
+			</div>
+		</div>
+		
 	</div>
-	</th:block>
+</section>
 </html>

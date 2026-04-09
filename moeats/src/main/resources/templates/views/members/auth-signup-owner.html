@@ -1,113 +1,118 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layout/default}">
+	
 <head>
     <title>Mo-Eats 사업자 회원가입</title>
 </head>
-	<th:block layout:fragment="content">
+<section layout:fragment="pageContent">
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="/js/member.js"></script>
+	
+	<div class="mo-page-container container" style="max-width: 680px; margin: 0 auto;">
 		
-		<div class="row">
-			<div class="col">
-			
-				<div class="row">
-					<div class="col">
-						<h2>회원 가입(사업자)</h2>
+		<div class="mo-section" style="text-align: center; margin-bottom: 32px;">
+			<span class="mo-section-label">Partner Sign Up</span>
+			<h2 class="mo-section-title">사업자 회원가입</h2>
+			<p class="mo-helper-text mt-2">Mo-Eats와 함께 성공적인 비즈니스를 시작해 보세요!</p>
+		</div>
+		
+		<div class="mo-surface-card">
+			<form action="/members" name="signupForm" id="signupForm" method="post">
+				<input type="hidden" name="isIdCheck" id="isIdCheck" value="false">
+				<input type="hidden" name="memberRoleType" id="memberRoleType" value="OWNER">
+				
+				<div class="mb-4">
+					<label for="email_id" class="mo-form-label">* 이메일</label>
+					<div class="d-flex align-items-center gap-2">
+						<input type="text" name="email_id" id="email_id" class="form-control mo-form-control" style="flex: 1;" placeholder="이메일 아이디">
+						<span style="color: var(--mo-navy-strong); font-weight: 700;">@</span>
+						<input type="text" id="email_domain" name="email_domain" class="form-control mo-form-control" style="flex: 1;">
+						<select name="selectDomain" id="selectDomain" class="form-select mo-form-control" style="flex: 1;">
+							<option>직접입력</option>
+							<option>naver.com</option>
+							<option>daum.net</option>
+							<option>gmail.com</option>
+						</select>
+						<input type="button" id="btnOverlapId" value="중복확인" class="mo-btn mo-btn-outline" style="white-space: nowrap;">
+					</div>
+					<input type="hidden" name="memberEmail" id="memberEmail">
+				</div>
+				
+				<div class="row mb-4">
+					<div class="col-md-6 mb-3 mb-md-0">
+						<label for="memberPassword" class="mo-form-label">* 비밀번호</label>
+						<input type="password" name="memberPassword" id="memberPassword" class="form-control mo-form-control" placeholder="비밀번호를 입력하세요">
+					</div>
+					<div class="col-md-6">
+						<label for="memberPassword1" class="mo-form-label">* 비밀번호 확인</label>
+						<input type="password" name="memberPassword1" id="memberPassword1" class="form-control mo-form-control" placeholder="비밀번호를 다시 입력하세요">
 					</div>
 				</div>
 				
-				<form action="/members" name="signupForm" id="signupForm" method="post">
-					<input type="hidden" name="isIdCheck" id="isIdCheck" value="false">
-					
-					<div class="row">
-						<div class="col">
-							<label for="email_id">* 이메일 : </label>
-							
-							<div class="row">
-								<div class="col">
-									<input type="text" name="email_id" id="email_id">
-								</div>@
-								
-								<div class="col">
-									<input type="text" id="email_domain" name="email_domain">
-								</div>
-								
-								<div class="col">
-									<select name="selectDomain" id="selectDomain">
-										<option>직접입력</option>
-										<option>네이버</option>
-										<option>다음</option>
-										<option>Gmail</option>
-									</select>
-								</div>
-								<div class="col">
-									<input type="button" id="btnOverlapId" value="중복확인">
-								</div>
-							<input type="hidden" name="memberEmail" id="memberEmail">
-							</div>
+				<div class="mb-4">
+					<label for="memberNickname" class="mo-form-label">* 별명</label>
+					<input type="text" name="memberNickname" id="memberNickname" maxlength="10" class="form-control mo-form-control" placeholder="사용하실 닉네임을 입력하세요 (최대 10자)">
+				</div>
+				
+				<div class="mb-4">
+					<label for="phone2" class="mo-form-label">* 휴대폰</label>
+					<div class="d-flex align-items-center gap-2">
+						<input type="text" name="phone1" id="phone1" value="010" maxlength="3" class="form-control mo-form-control text-center" style="width: 90px;">
+						<span style="color: var(--mo-line-strong); font-weight: 700;">-</span>
+						<input type="text" name="phone2" id="phone2" maxlength="4" class="form-control mo-form-control text-center" style="flex: 1;">
+						<span style="color: var(--mo-line-strong); font-weight: 700;">-</span>
+						<input type="text" name="phone3" id="phone3" maxlength="4" class="form-control mo-form-control text-center" style="flex: 1;">
+					</div>
+					<input type="hidden" name="memberPhone" id="memberPhone">
+				</div>
+				
+				<div class="mb-4">
+					<label class="mo-form-label">* 구분</label>
+					<input type="text" value="사업자회원" readonly class="form-control mo-form-control" style="background-color: var(--mo-bg); color: var(--mo-text-soft);">
+				</div>
+				
+				<hr style="border-color: var(--mo-line); margin: 32px 0;">
+				
+				<div class="mb-4">
+					<label class="mo-form-label mb-2">약관 동의</label>
+					<div style="border: 1px solid var(--mo-line); border-radius: 12px; background: #fafafa; padding: 16px; height: 120px; overflow-y: auto; font-size: 13px; color: var(--mo-text-soft); line-height: 1.6; margin-bottom: 16px;">
+						<b>[이용약관]</b><br>
+						본 서비스는 회원에게 배달 주문 서비스를 제공합니다.<br>
+						회원은 서비스 이용 시 관련 법령을 준수해야 합니다.<br>
+						...
+						<br><br>
+						<b>[개인정보 처리방침]</b><br>
+						수집 항목: 이메일, 전화번호, 닉네임<br>
+						이용 목적: 회원 관리 및 서비스 제공<br>
+						...
+					</div>
+				
+					<div class="d-flex flex-column gap-2 pl-1">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="agreeAll" style="cursor: pointer;">
+							<label class="form-check-label mo-form-label mb-0" for="agreeAll" style="cursor: pointer;"><b>전체 동의</b></label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" name="agreeTerms" id="agreeTerms" style="cursor: pointer;">
+							<label class="form-check-label" for="agreeTerms" style="font-size: 14px; color: var(--mo-text); cursor: pointer;">(필수) 이용약관 동의</label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" name="agreePrivacy" id="agreePrivacy" style="cursor: pointer;">
+							<label class="form-check-label" for="agreePrivacy" style="font-size: 14px; color: var(--mo-text); cursor: pointer;">(필수) 개인정보 처리방침 동의</label>
 						</div>
 					</div>
-					
-					
-					<div class="row">
-						<div class="col">
-							<label for="memberPassword">* 비밀번호 : </label>
-							<input type="password" name="memberPassword" id="memberPassword">
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<label for="memberPassword1">* 비밀번호 확인 : </label>
-							<input type="password" name="memberPassword1" id="memberPassword1">
-						</div>
-					</div>
-					
-					<div class="row">
-						<div class="col">
-							<label for="memberNickname">* 별 명 : </label>
-							<input type="text" name="memberNickname" id="memberNickname" maxlength="10">
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<label for="phone2">* 휴대폰 : </label>
-							<div class="row">
-								<div class="col">
-							        <input type="text" name="phone1" id="phone1" value="010" maxlength="3">
-							    </div>-
-							    <div>
-							        <input type="text" name="phone2" id="phone2" maxlength="4">
-							    </div>-
-							    <div>
-							        <input type="text" name="phone3" id="phone3" maxlength="4">
-								</div>
-								<input type="hidden" name="memberPhone" id="memberPhone">
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<div class="row">
-								<div class="col">
-									<label>* 구 분 : </label>
-									<input type="text" value="사업자" readonly>
-									<input type="hidden" name="memberRoleType" id="memberRoleType" value="OWNER">
-								</div>
-							</div>
-						</div>
-					</div>
-					
-					<div class="row">
-						<div class="col">
-							<input type="button" th:onclick="@{|location.href='/main'|}" value="메인으로" class="btn">
-							<input type="button" th:onclick="@{|location.href='/members/createType'|}" value="다시 선택" class="btn">
-							<input type="submit" value="회원가입" class="btn">
-						</div>
-					</div>
-				</form>
-			</div>
+				</div>
+				
+				<div class="d-flex justify-content-center align-items-center gap-2 mt-5">
+					<input type="button" th:onclick="@{|location.href='/main'|}" value="취 소" class="mo-btn mo-btn-plain">
+					<input type="button" th:onclick="@{|location.href='/members/createType'|}" value="다시 선택" class="mo-btn mo-btn-outline">
+					<input type="submit" value="가입 완료" class="mo-btn mo-btn-primary" id="submitBtn" style="min-width: 140px;" disabled>
+				</div>
+				
+			</form>
 		</div>
-	
-	
-	</th:block>
+	</div>
+</section>	
 </html>

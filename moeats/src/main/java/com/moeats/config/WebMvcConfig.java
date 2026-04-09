@@ -39,12 +39,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/members/dashboard",
                         "/rooms/**",
                         "/orders/**",
+                        "/owner/**",
                         "/owners/**"
                 );
         
         // 점주 전용 경로 - OWNER 권한 체크
         registry.addInterceptor(ownerCheckInterceptor)
                 .addPathPatterns(
+                		"/owner/**",
                 		"/owners/**"
                 );
 
