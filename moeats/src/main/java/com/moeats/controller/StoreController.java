@@ -1,6 +1,7 @@
 package com.moeats.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,7 +22,10 @@ import com.moeats.service.StoreService;
 import com.moeats.services.GroupOrderService;
 import com.moeats.services.GroupOrderService.GroupOrderRecord;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
+@Slf4j
 public class StoreController {
     @Autowired
     private StoreService storeService;
@@ -97,39 +101,6 @@ public class StoreController {
     		ra.addFlashAttribute("error","잘못된 주문 번호입니다");
     		return "redirect:/owners/dashboard";
     	}
-//        String btnText, statusLabel;
-//        switch (groupOrder.groupOrder().getOrderStatus()) {
-//        	case "PAID":
-//		        statusLabel = "대기중";
-//		        btnText = "주문 접수하기";
-//		        break;
-//            case "ACCEPTED":
-//            	statusLabel = "접수완료";
-//            	btnText = "조리 시작하기";
-//            	break;
-//            case "PREPARING":
-//            	statusLabel = "조리중";
-//            	btnText = "조리 완료처리";
-//            	break;
-//            case "READY":
-//            	statusLabel = "조리완료";
-//            	btnText = "배달 시작하기";
-//            	break;
-//            case "DELIVERING":
-//            	statusLabel = "배달중";
-//            	btnText = "배달 완료처리";
-//            	break;
-//            case "COMPLETED":
-//            	statusLabel = "배달완료";
-//            	btnText = "종료된 주문";
-//            	break;
-//            default:
-//            	statusLabel = "INVALID";
-//            	btnText = "잘못된 주문";
-//        }
-//        
-//        model.addAttribute("statusLabel", statusLabel);
-//        model.addAttribute("btnText", btnText);
         
     	model.addAttribute("menu", "order-detail");
     	model.addAttribute("store", store);
@@ -137,34 +108,24 @@ public class StoreController {
         return "views/owner/order-detail"; 
     }
     
-    @GetMapping("/order/status_move")
-    public String statusMove(
-    		RedirectAttributes ra,
+    @PostMapping("/order/status_update")
+    @ResponseBody
+    public Map statusMove(
     		@RequestParam(name = "roomIdx",defaultValue = "0") int roomIdx,
 			@SessionAttribute("member") Member member) {
     	Store store = storeService.myStore(member.getMemberIdx());
-    	if ( store==null ) {
-    		ra.addFlashAttribute("error", "가게가 없습니다");
-    		return "redirect:/owners/store/new";
-    	}
-    	if( roomIdx==0 ) {
-    		ra.addFlashAttribute("error","잘못된 주문 번호입니다");
-    		return "redirect:/owners/dashboard";
+    	if ( store==null || roomIdx==0 ) {
+    		return Map.of("result",false);
     	}
     	GroupOrder groupOrder = groupOrderService.findByRoom(roomIdx);
     	if( 	groupOrder==null
     			|| groupOrder.getStoreIdx() != store.getStoreIdx()
-    			|| !ORDER_STATUSES.contains(groupOrder.getOrderStatus())) {
-    		ra.addFlashAttribute("error","잘못된 주문 번호입니다");
-    		return "redirect:/owners/dashboard";
+    			|| !ORDER_STATUSES.contains(groupOrder.getOrderStatus())
+    			|| COMPLETED.equals(store.getStoreStatus())
+    			|| groupOrderService.proceed(groupOrder) == 0 ) {
+    		return Map.of("result",false);
     	}
-    	if ( COMPLETED.equals(store.getStoreStatus()) ) {
-    		ra.addFlashAttribute("error","잘못된 접근입니다");
-    		return "redirect:/owner/dashboard";
-    	}
-    	if ( groupOrderService.proceed(groupOrder) == 0 )
-    		ra.addFlashAttribute("error","상태를 변경하는 중 오류가 발생했습니다");
-        return String.format("redirect:/owner/order/detail?roomIdx=%d",roomIdx);
+    	return Map.of("result",true);
     }
 
     // 가게 상태 수정
@@ -251,5 +212,21 @@ public class StoreController {
     	model.addAttribute("store", store);
     	
     	return "views/owner/store-manage";
+    }
+    
+    // 9. 리뷰 답변 관리
+    @GetMapping({"/owners/review/management","/owner/review/management"})
+    public String reviewManagement(Model model) {
+    	log.info("미구현");
+        model.addAttribute("menu", "review");
+        return "views/owner/review-management";
+    }
+
+    // 10. 영업 리포트
+    @GetMapping({"/owners/sales/report","/owner/sales/report"})
+    public String salesReport(Model model) {
+    	log.info("미구현");
+        model.addAttribute("menu", "report");
+        return "views/owner/sales-report";
     }
 }
