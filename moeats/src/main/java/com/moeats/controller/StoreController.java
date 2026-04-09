@@ -21,6 +21,7 @@ import com.moeats.dto.StoreSearchCond;
 import com.moeats.service.StoreService;
 import com.moeats.services.GroupOrderService;
 import com.moeats.services.GroupOrderService.GroupOrderRecord;
+import com.moeats.services.sse.SSEService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +32,8 @@ public class StoreController {
     private StoreService storeService;
     @Autowired
     private GroupOrderService groupOrderService;
+    @Autowired
+    private SSEService sseService;
     
     private final String COMPLETED = "COMPLETED";
     private final List<String> ORDER_STATUSES = List.of("PAID","ACCEPTED","PREPARING","READY","DELIVERING","COMPLETED");
@@ -125,6 +128,7 @@ public class StoreController {
     			|| groupOrderService.proceed(groupOrder) == 0 ) {
     		return Map.of("result",false);
     	}
+    	sseService.statusChangeOrder(groupOrder.getOrderIdx(), ORDER_STATUSES.get(ORDER_STATUSES.indexOf(groupOrder.getOrderStatus())+1));
     	return Map.of("result",true);
     }
 

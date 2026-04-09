@@ -37,14 +37,14 @@ public class GroupOrderService {
 		GroupOrder groupOrder = groupOrderMapper.findByIdx(orderIdx);
 		return new GroupOrderRecord(
 				groupOrder,
-				groupOrderItemMapper.findOrderMemberAmount(groupOrder.getOrderIdx()),
+				groupOrderItemMapper.findOrderItemAmount(groupOrder.getOrderIdx()),
 				orderDeliveryMapper.findByOrder(groupOrder.getOrderIdx()));
 	}
 	public List<GroupOrderRecord> findRecordByStore(int storeIdx) {
 		return groupOrderMapper.findByStore(storeIdx).stream()
 				.map(groupOrder->new GroupOrderRecord(
 						groupOrder,
-						groupOrderItemMapper.findOrderMemberAmount(groupOrder.getOrderIdx()),
+						groupOrderItemMapper.findOrderItemAmount(groupOrder.getOrderIdx()),
 						orderDeliveryMapper.findByOrder(groupOrder.getOrderIdx()))).toList();
 	}
 	
