@@ -114,6 +114,7 @@ public class DeliveryAddressController {
 	public String changeDefaultAddress(
 	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
 	        @SessionAttribute("memberIdx") int memberIdx,
+	        @RequestParam(value = "redirectUrl", defaultValue = "/members/me/addresses") String redirectUrl,
 	        HttpSession session,
 	        RedirectAttributes ra) {
 
@@ -128,7 +129,7 @@ public class DeliveryAddressController {
 	        ra.addFlashAttribute("error", e.getMessage());
 	    }
 
-	    return "redirect:/members/me/addresses";
+	    return "redirect:" + redirectUrl;
 	}
 	
 	// 배송지 선택 (주문 시)
