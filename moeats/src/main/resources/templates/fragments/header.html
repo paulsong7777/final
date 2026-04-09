@@ -415,5 +415,185 @@
         </div>
     </div>
 
+    <!-- =========================
+         CREATE ROOM : DESKTOP MODAL
+    ========================= -->
+    <div class="modal fade mo-auth-modal" id="moCreateRoomModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content mo-modal-card">
+                <div class="mo-modal-card__header">
+                    <div class="mo-modal-card__eyebrow">CREATE ROOM</div>
+                    <h2 class="mo-modal-card__title">주문방 생성</h2>
+                    <p class="mo-modal-card__desc">현재 보고 있는 가게 기준으로 주문방을 생성합니다.</p>
+                </div>
+
+                <div class="mo-modal-form">
+                    <form th:action="@{/rooms}" method="post"
+                          class="d-flex flex-column gap-3"
+                          data-mo-create-room-form>
+
+                        <input type="hidden" name="storeIdx" value="">
+                        <input type="hidden" name="orderMode" value="DELIVERY">
+
+                        <div class="p-3 rounded-4 border bg-light-subtle">
+                            <div class="small text-secondary mb-1">선택 가게</div>
+                            <div class="fw-bold text-dark" data-mo-store-name>가게를 선택해 주세요</div>
+                            <div class="small text-secondary mt-1" data-mo-store-minimum>최소주문금액 정보 없음</div>
+                            <div class="small text-secondary mt-1" data-mo-store-support>지원 정보 없음</div>
+                        </div>
+
+                        <div>
+                            <label class="mo-form-label">배송지 선택</label>
+
+                            <div class="d-flex flex-column gap-2"
+                                 th:if="${headerDeliveryAddressList != null and !#lists.isEmpty(headerDeliveryAddressList)}">
+                                <label class="mo-address-item"
+                                       th:each="address : ${headerDeliveryAddressList}">
+                                    <input class="form-check-input me-2"
+                                           type="radio"
+                                           name="selectedDeliveryAddressIdx"
+                                           th:value="${address.deliveryAddressIdx}"
+                                           th:checked="${headerCurrentDeliveryAddressIdx == address.deliveryAddressIdx}">
+                                    <strong th:text="${address.deliveryLabel}">집</strong>
+                                    <div class="small text-secondary mt-1">
+                                        <span th:text="${address.deliveryAddress1}">기본주소</span>
+                                        <span th:if="${address.deliveryAddress2 != null and !#strings.isEmpty(address.deliveryAddress2)}">
+                                            &nbsp;<span th:text="${address.deliveryAddress2}">상세주소</span>
+                                        </span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="mo-empty-state mo-empty-state--compact"
+                                 th:if="${headerDeliveryAddressList == null or #lists.isEmpty(headerDeliveryAddressList)}">
+                                <h3 class="mo-empty-state__title mo-empty-state__title--sm">등록된 배송지가 없습니다</h3>
+                                <p class="mo-empty-state__desc">배송지를 먼저 추가해 주세요.</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="mo-form-label">결제 방식</label>
+                            <div class="d-flex flex-column gap-2">
+                                <label class="mo-address-item">
+                                    <input class="form-check-input me-2"
+                                           type="radio"
+                                           name="paymentMode"
+                                           value="REPRESENTATIVE"
+                                           checked>
+                                    <strong>대표결제</strong>
+                                    <div class="small text-secondary mt-1">리더가 전체 금액을 결제합니다.</div>
+                                </label>
+
+                                <label class="mo-address-item">
+                                    <input class="form-check-input me-2"
+                                           type="radio"
+                                           name="paymentMode"
+                                           value="INDIVIDUAL">
+                                    <strong>각자결제</strong>
+                                    <div class="small text-secondary mt-1">참여자 각자가 본인 금액을 결제합니다.</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                                class="mo-btn mo-btn-primary w-100"
+                                data-mo-create-submit>
+                            주문방 생성하기
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         CREATE ROOM : MOBILE BOTTOM SHEET
+    ========================= -->
+    <div class="offcanvas offcanvas-bottom mo-bottom-sheet" tabindex="-1" id="moMobileCreateRoomSheet" aria-hidden="true">
+        <div class="mo-bottom-sheet__header">
+            <div class="mo-modal-card__eyebrow">CREATE ROOM</div>
+            <h2 class="mo-modal-card__title mb-0">주문방 생성</h2>
+        </div>
+
+        <div class="mo-bottom-sheet__body">
+            <div class="mo-modal-form mo-modal-form--sheet">
+                <form th:action="@{/rooms}" method="post"
+                      class="d-flex flex-column gap-3"
+                      data-mo-create-room-form>
+
+                    <input type="hidden" name="storeIdx" value="">
+                    <input type="hidden" name="orderMode" value="DELIVERY">
+
+                    <div class="p-3 rounded-4 border bg-light-subtle">
+                        <div class="small text-secondary mb-1">선택 가게</div>
+                        <div class="fw-bold text-dark" data-mo-store-name>가게를 선택해 주세요</div>
+                        <div class="small text-secondary mt-1" data-mo-store-minimum>최소주문금액 정보 없음</div>
+                        <div class="small text-secondary mt-1" data-mo-store-support>지원 정보 없음</div>
+                    </div>
+
+                    <div>
+                        <label class="mo-form-label">배송지 선택</label>
+
+                        <div class="d-flex flex-column gap-2"
+                             th:if="${headerDeliveryAddressList != null and !#lists.isEmpty(headerDeliveryAddressList)}">
+                            <label class="mo-address-item"
+                                   th:each="address : ${headerDeliveryAddressList}">
+                                <input class="form-check-input me-2"
+                                       type="radio"
+                                       name="selectedDeliveryAddressIdx"
+                                       th:value="${address.deliveryAddressIdx}"
+                                       th:checked="${headerCurrentDeliveryAddressIdx == address.deliveryAddressIdx}">
+                                <strong th:text="${address.deliveryLabel}">집</strong>
+                                <div class="small text-secondary mt-1">
+                                    <span th:text="${address.deliveryAddress1}">기본주소</span>
+                                    <span th:if="${address.deliveryAddress2 != null and !#strings.isEmpty(address.deliveryAddress2)}">
+                                        &nbsp;<span th:text="${address.deliveryAddress2}">상세주소</span>
+                                    </span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="mo-empty-state mo-empty-state--compact"
+                             th:if="${headerDeliveryAddressList == null or #lists.isEmpty(headerDeliveryAddressList)}">
+                            <h3 class="mo-empty-state__title mo-empty-state__title--sm">등록된 배송지가 없습니다</h3>
+                            <p class="mo-empty-state__desc">배송지를 먼저 추가해 주세요.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="mo-form-label">결제 방식</label>
+                        <div class="d-flex flex-column gap-2">
+                            <label class="mo-address-item">
+                                <input class="form-check-input me-2"
+                                       type="radio"
+                                       name="paymentMode"
+                                       value="REPRESENTATIVE"
+                                       checked>
+                                <strong>대표결제</strong>
+                                <div class="small text-secondary mt-1">리더가 전체 금액을 결제합니다.</div>
+                            </label>
+
+                            <label class="mo-address-item">
+                                <input class="form-check-input me-2"
+                                       type="radio"
+                                       name="paymentMode"
+                                       value="INDIVIDUAL">
+                                <strong>각자결제</strong>
+                                <div class="small text-secondary mt-1">참여자 각자가 본인 금액을 결제합니다.</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            class="mo-btn mo-btn-primary w-100"
+                            data-mo-create-submit>
+                        주문방 생성하기
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
 </th:block>
 </html>
