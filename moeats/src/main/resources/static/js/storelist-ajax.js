@@ -95,7 +95,7 @@
 
     function resolveStoreLink(store) {
         const storeIdx = resolveStoreIdx(store);
-        return storeIdx ? `/stores/${encodeURIComponent(storeIdx)}` : '#';
+        return storeIdx ? `/stores/${encodeURIComponent(storeIdx)}/menu` : '#';
     }
 
 	function buildStoreCard(store) {
