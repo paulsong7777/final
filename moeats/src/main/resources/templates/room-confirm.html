@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>주문 확인</title>
+    <th:block layout:fragment="pageStyles">
+        <style>
+            .rcf-wrap {
+                max-width: 860px;
+                margin: 0 auto;
+            }
+
+            .rcf-list {
+                display: grid;
+                gap: .75rem;
+            }
+
+            .rcf-item {
+                padding: 1rem;
+                border: 1px solid var(--mo-line);
+                border-radius: 18px;
+                background: #fff;
+            }
+
+            .rcf-row {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: .75rem;
+            }
+
+            .rcf-name {
+                color: var(--mo-navy-strong);
+                font-size: 1rem;
+                font-weight: 800;
+            }
+
+            .rcf-meta {
+                margin-top: .35rem;
+                color: var(--mo-text-soft);
+                font-size: .92rem;
+            }
+
+            .rcf-amount {
+                color: var(--mo-navy-strong);
+                font-size: 1rem;
+                font-weight: 800;
+                white-space: nowrap;
+            }
+
+            .rcf-total {
+                padding: 1rem 1.1rem;
+                border-radius: 18px;
+                background: var(--mo-navy-strong);
+                color: #fff;
+            }
+
+            .rcf-total__row {
+                display: flex;
+                justify-content: space-between;
+                gap: .75rem;
+                align-items: center;
+            }
+
+            .rcf-empty {
+                padding: 1.2rem;
+                border: 1px dashed rgba(42, 54, 89, .20);
+                border-radius: 18px;
+                background: rgba(42, 54, 89, .03);
+                color: var(--mo-text-soft);
+                line-height: 1.65;
+            }
+
+            .rcf-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .75rem;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<section layout:fragment="pageContent">
+    <section class="mo-section rcf-wrap">
+        <div class="mo-surface-card">
+            <div class="mo-section-head">
+                <div>
+                    <div class="mo-section-label">Confirm</div>
+                    <h1 class="mo-section-title">내 주문 확인</h1>
+                    <p class="mo-helper-text mb-0">내가 담은 메뉴를 최종 확인한 뒤 선택 완료 상태로 전환합니다.</p>
+                </div>
+                <span class="mo-badge" th:text="${orderRoom.roomCode}">135797</span>
+            </div>
+
+            <div class="mt-4" th:if="${#lists.isEmpty(myCartItems)}">
+                <div class="rcf-empty">장바구니가 비어 있습니다. 메뉴를 담은 뒤 다시 확인 단계로 들어오면 됩니다.</div>
+            </div>
+
+            <div class="rcf-list mt-4" th:unless="${#lists.isEmpty(myCartItems)}">
+                <div th:each="item : ${myCartItems}" class="rcf-item">
+                    <div class="rcf-row">
+                        <div>
+                            <div class="rcf-name" th:text="${item.storeMenu.menuName}">메뉴명</div>
+                            <div class="rcf-meta">
+                                수량 <span th:text="${item.groupCartItem.itemQuantity}">1</span>개
+                            </div>
+                        </div>
+                        <div class="rcf-amount" th:text="${#numbers.formatInteger(item.groupCartItem.itemTotalAmount, 0, 'COMMA')} + '원'">0원</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rcf-total mt-4">
+                <div class="rcf-total__row">
+                    <span>내 주문 합계</span>
+                    <strong th:text="${#numbers.formatInteger(myCartTotal, 0, 'COMMA')} + '원'">0원</strong>
+                </div>
+            </div>
+
+            <div class="rcf-actions mt-4">
+                <a class="mo-btn mo-btn-outline"
+                   th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">메뉴 다시 고르기</a>
+                <a class="mo-btn mo-btn-outline"
+                   th:href="@{/rooms/code/{code}(code=${orderRoom.roomCode})}">협업 화면으로 돌아가기</a>
+                <form th:unless="${#lists.isEmpty(myCartItems)}"
+                      th:action="@{/rooms/code/{code}/select(code=${orderRoom.roomCode})}"
+                      method="post"
+                      class="m-0">
+                    <button type="submit" class="mo-btn mo-btn-primary">선택 완료하기</button>
+                </form>
+            </div>
+        </div>
+    </section>
+</section>
+</body>
+</html>

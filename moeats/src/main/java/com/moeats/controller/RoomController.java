@@ -22,6 +22,7 @@ import com.moeats.domain.Member;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.RoomParticipant;
 import com.moeats.domain.StoreMenu;
+import com.moeats.service.StoreMenuService;
 import com.moeats.services.GroupCartItemService;
 import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.MenuService;
@@ -46,6 +47,8 @@ public class RoomController {
 	@Autowired
 	SSEService sseService;
 
+	@Autowired
+	StoreMenuService storeMenuService;
 	@Autowired
 	OrderRoomTimer orderRoomTimer;
 
@@ -101,7 +104,11 @@ public class RoomController {
 		    roomParticipant.setRoomIdx(orderRoom.getRoomIdx());
 		    roomParticipant.setMemberIdx(member.getMemberIdx());
 		    // 방 생성 시에는 무조건 leader 이기 때문에 아래 추가.
-		    roomParticipant.setParticipantRole("LEADER");
+		    if (orderRoom.getLeaderMemberIdx() == member.getMemberIdx()) {
+		        roomParticipant.setParticipantRole("LEADER");
+		    } else {
+		        roomParticipant.setParticipantRole("PARTICIPANT");
+		    }
 
 		    // 방에 참가할 수 없으면 redirect
 		    if (orderRoom.isJoinLocked() || orderRoomService.join(roomParticipant) == 0) {
@@ -156,6 +163,31 @@ public class RoomController {
 		model.addAttribute("myCartItems", myCartItems);
 		model.addAttribute("otherCartItems", otherCartItems);
 		model.addAttribute("roomParticipants", roomParticipants);
+		int myCartTotal = myCartItems.stream()
+		        .mapToInt(cartItem -> cartItem.groupCartItem().getItemTotalAmount())
+		        .sum();
+
+		int otherCartTotal = otherCartItems.stream()
+		        .mapToInt(memberItem -> memberItem.totalAmount() == null ? 0 : memberItem.totalAmount())
+		        .sum();
+
+		int participantCount = 1 + roomParticipants.size();
+
+		long completedCount = (myState != null && "SELECTED".equals(myState.getSelectionStatus()) ? 1 : 0)
+		        + roomParticipants.stream()
+		            .filter(p -> "SELECTED".equals(p.roomParticipant().getSelectionStatus()))
+		            .count();
+
+		boolean isLeader = myState != null && "LEADER".equals(myState.getParticipantRole());
+		boolean allSelected = participantCount > 0 && completedCount == participantCount;
+
+		model.addAttribute("orderRoom", orderRoom);
+		model.addAttribute("isLeader", isLeader);
+		model.addAttribute("participantCount", participantCount);
+		model.addAttribute("completedCount", completedCount);
+		model.addAttribute("myCartTotal", myCartTotal);
+		model.addAttribute("roomGrandTotal", myCartTotal + otherCartTotal);
+		model.addAttribute("allSelected", allSelected);
 		return "room-detail";
 	}
 	
@@ -163,6 +195,23 @@ public class RoomController {
 	public String joinRoom() {
 		return "room-join";
 	}
+	
+	@GetMapping("/rooms/code/{room_code}/cart")
+	public String roomCart(
+	        @PathVariable("room_code") String roomCode,
+	        @RequestAttribute("orderRoom") OrderRoom orderRoom,
+	        @SessionAttribute("member") Member member,
+	        Model model) {
+
+	    List<StoreMenu> menuList = storeMenuService.menuListForUser(orderRoom.getStoreIdx());
+	    model.addAttribute("menuList", menuList);
+	    model.addAttribute("orderRoom", orderRoom);
+
+	    return "room-cart";
+	}
+
+	
+	
 	
 	// 이후는 Intercepter에서 코드를 처리함
 	@PostMapping("/rooms/code/{room_code}/confirm")

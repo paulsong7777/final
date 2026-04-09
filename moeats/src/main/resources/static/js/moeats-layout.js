@@ -44,18 +44,26 @@
         return false;
     };
 
-    const closeLayer = (desktopEl, mobileEl) => {
-        const desktop = getModalInstance(desktopEl);
-        const mobile = getOffcanvasInstance(mobileEl);
+	const closeLayer = (desktopEl, mobileEl) => {
+	    const desktop = getModalInstance(desktopEl);
+	    const mobile = getOffcanvasInstance(mobileEl);
 
-        if (desktopEl && desktopEl.classList.contains('show') && desktop) {
-            desktop.hide();
-        }
+	    if (desktopEl && desktopEl.contains(document.activeElement)) {
+	        document.activeElement.blur();
+	    }
 
-        if (mobileEl && mobileEl.classList.contains('show') && mobile) {
-            mobile.hide();
-        }
-    };
+	    if (mobileEl && mobileEl.contains(document.activeElement)) {
+	        document.activeElement.blur();
+	    }
+
+	    if (desktopEl && desktopEl.classList.contains('show') && desktop) {
+	        desktop.hide();
+	    }
+
+	    if (mobileEl && mobileEl.classList.contains('show') && mobile) {
+	        mobile.hide();
+	    }
+	};
 
     const closeAllLayers = () => {
         closeLayer(loginModalEl, mobileLoginSheetEl);
