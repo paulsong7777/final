@@ -56,6 +56,15 @@
         </choose>
     </select>
 
+	<!-- 주문방 생성시 가게 정보를 불러오겠음. -->
+	<select id="findByStoreIdx" resultType="Store">
+	    SELECT *
+	    FROM store
+	    WHERE store_idx = #{storeIdx}
+	</select>
+	
+	
+
     <!-- 가게 번호와 점주 번호가 일치하는 가게 찾기 -->
     <select id="findByStoreIdxAndOwner" resultType="Store">
         SELECT *

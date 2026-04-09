@@ -120,26 +120,22 @@
 	    return `최소주문금액 ${num.toLocaleString('ko-KR')}원`;
 	};
 
-	const formatSupportText = (payload) => {
-	    const supports = [];
 
-	    if (payload.supportsDelivery) supports.push('배달 가능');
-	    if (payload.supportsOnsite) supports.push('현장 가능');
-
-	    return supports.length ? supports.join(' / ') : '지원 정보 없음';
-	};
 
 	const syncCreateRoomForms = (payload) => {
 	    document.querySelectorAll('[data-mo-create-room-form]').forEach((form) => {
 	        const storeIdxInput = form.querySelector('input[name="storeIdx"]');
 	        const storeNameEl = form.querySelector('[data-mo-store-name]');
 	        const minimumEl = form.querySelector('[data-mo-store-minimum]');
-	        const supportEl = form.querySelector('[data-mo-store-support]');
+	        const submitButton = form.querySelector('[data-mo-create-submit]');
 
 	        if (storeIdxInput) storeIdxInput.value = payload.storeIdx ?? '';
 	        if (storeNameEl) storeNameEl.textContent = payload.storeName || '가게를 선택해 주세요';
 	        if (minimumEl) minimumEl.textContent = formatMinimumOrderText(payload.minimumOrderAmount);
-	        if (supportEl) supportEl.textContent = formatSupportText(payload);
+
+	        if (submitButton) {
+	            submitButton.disabled = !validateCreateRoomForm(form);
+	        }
 	    });
 	};
 
@@ -199,9 +195,7 @@
 	    openCreateRoomLayer({
 	        storeIdx: payload.storeIdx,
 	        storeName: payload.storeName || '',
-	        minimumOrderAmount: payload.minimumOrderAmount || '',
-	        supportsDelivery: Boolean(payload.supportsDelivery),
-	        supportsOnsite: Boolean(payload.supportsOnsite)
+	        minimumOrderAmount: payload.minimumOrderAmount || ''
 	    });
 	};
 	

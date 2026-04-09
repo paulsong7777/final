@@ -356,11 +356,14 @@
 
             <div class="fe02-actions">
                 <button type="button"
-                        class="mo-btn mo-btn-primary"
-                        id="fe02CreateRoomBtn"
-                        th:attr="data-store-idx=${currentStoreIdx}">
-                    주문방 만들기
-                </button>
+				        class="mo-btn mo-btn-primary"
+				        id="fe02CreateRoomBtn"
+				        th:attr="
+				            data-store-idx=${store != null ? store.storeIdx : currentStoreIdx},
+				            data-store-name=${store != null ? store.storeName : ''},
+				            data-minimum-order-amount=${store != null ? store.minimumOrderAmount : ''}">
+				    주문방 만들기
+				</button>
 
                 <button type="button"
                         class="mo-btn mo-btn-outline"

@@ -95,16 +95,30 @@ public class RoomController {
 			return "redirect:/rooms/join";
 		}
 		// 방에 참가되지 않으면 자동으로 참가
+		// 방 생성시 participantRole을 가져오는 로직 오류로 수정함. -영훈
 		if (orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
-			RoomParticipant roomParticipant = new RoomParticipant();
-			roomParticipant.setRoomIdx(orderRoom.getRoomIdx());
-			roomParticipant.setMemberIdx(member.getMemberIdx());
-			// 방에 참가할 수 없으면 redirect
-			if (orderRoom.isJoinLocked() || orderRoomService.join(roomParticipant) == 0) {
-				ra.addFlashAttribute("error", "더이상 방에 참여할 수 없습니다");
-				return "redirect:/rooms/join";
-			}
+		    RoomParticipant roomParticipant = new RoomParticipant();
+		    roomParticipant.setRoomIdx(orderRoom.getRoomIdx());
+		    roomParticipant.setMemberIdx(member.getMemberIdx());
+		    // 방 생성 시에는 무조건 leader 이기 때문에 아래 추가.
+		    roomParticipant.setParticipantRole("LEADER");
+
+		    // 방에 참가할 수 없으면 redirect
+		    if (orderRoom.isJoinLocked() || orderRoomService.join(roomParticipant) == 0) {
+		        ra.addFlashAttribute("error", "더이상 방에 참여할 수 없습니다");
+		        return "redirect:/rooms/join";
+		    }
 		}
+		/*
+		 * if (orderRoomService.findRoomMember(orderRoom.getRoomIdx(),
+		 * member.getMemberIdx()) == null) { RoomParticipant roomParticipant = new
+		 * RoomParticipant(); roomParticipant.setRoomIdx(orderRoom.getRoomIdx());
+		 * roomParticipant.setMemberIdx(member.getMemberIdx());
+		 *  // 방에 참가할 수 없으면 redirect
+		 * if (orderRoom.isJoinLocked() || orderRoomService.join(roomParticipant) == 0)
+		 * { ra.addFlashAttribute("error", "더이상 방에 참여할 수 없습니다"); return
+		 * "redirect:/rooms/join"; } }
+		 */
 		List<GroupCartItem> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx());
 		Map<Integer, StoreMenu> storeMenuMap = menuService
 				.findByIdxs(groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()).stream()

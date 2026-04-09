@@ -25,6 +25,13 @@ public class StoreService {
     @Autowired
     private MemberMapper memberMapper;
 
+    // 주문방 생성시 가게 정보를 불러오겠음.
+    public Store getStoreByIdx(int storeIdx) {
+        return storeMapper.findByStoreIdx(storeIdx);
+    }
+    
+    
+    
     // 고객 가게 리스트 조회 - 전체 or 카테고리 클릭 or 키워드 검색 -
     public List<Store> getStoreList(StoreSearchCond cond, int memberIdx) {
 

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.moeats.domain.Store;
+import com.moeats.service.StoreService;
 import com.moeats.domain.StoreMenu;
 import com.moeats.service.StoreMenuService;
 
@@ -19,6 +21,9 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class StoreMenuController {
 
+	
+	@Autowired
+	private StoreService storeService;
     @Autowired
     private StoreMenuService storeMenuService;
 
@@ -30,18 +35,33 @@ public class StoreMenuController {
      */
 
     // 메뉴 리스트 조회
+    // 주문방 생성 위해서 수정함. -영훈
     @GetMapping("/stores/{storeIdx}/menu")
     public String menuListForUser(@PathVariable("storeIdx") int storeIdx, Model model) {
 
         List<StoreMenu> menuList = storeMenuService.menuListForUser(storeIdx);
+        Store store = storeService.getStoreByIdx(storeIdx);
 
         model.addAttribute("menuList", menuList);
+        model.addAttribute("store", store);
 
         return "views/user/menu-list";
     }
+    
+	/*
+	 * @GetMapping("/stores/{storeIdx}/menu") public String
+	 * menuListForUser(@PathVariable("storeIdx") int storeIdx, Model model) {
+	 * 
+	 * List<StoreMenu> menuList = storeMenuService.menuListForUser(storeIdx);
+	 * 
+	 * model.addAttribute("menuList", menuList);
+	 * 
+	 * return "views/user/menu-list"; }
+	 */
 
 
     // 메뉴 검색
+    // store 모델에 추가. 영훈
     @GetMapping("/stores/{storeIdx}/menu/search")
     public String searchMenuForUser(
             @PathVariable("storeIdx") int storeIdx,
@@ -49,12 +69,31 @@ public class StoreMenuController {
             Model model) {
 
         List<StoreMenu> menuList = storeMenuService.searchMenuForUser(storeIdx, keyword);
+        Store store = storeService.getStoreByIdx(storeIdx);
 
         model.addAttribute("menuList", menuList);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("store", store);
 
         return "views/user/menu-list";
     }
+    
+	/*
+	 * @GetMapping("/stores/{storeIdx}/menu/search") public String
+	 * searchMenuForUser(
+	 * 
+	 * @PathVariable("storeIdx") int storeIdx,
+	 * 
+	 * @RequestParam String keyword, Model model) {
+	 * 
+	 * List<StoreMenu> menuList = storeMenuService.searchMenuForUser(storeIdx,
+	 * keyword);
+	 * 
+	 * model.addAttribute("menuList", menuList); model.addAttribute("keyword",
+	 * keyword);
+	 * 
+	 * return "views/user/menu-list"; }
+	 */
 
 
     /**

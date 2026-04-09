@@ -81,12 +81,14 @@
             }
 
             // 추후 전역 방 생성 모달 엔진이 붙으면 그걸 우선 호출
-            if (typeof window.openCreateRoomSheet === 'function') {
-                window.openCreateRoomSheet({
-                    storeIdx: Number(storeIdx)
-                });
-                return;
-            }
+			if (typeof window.openCreateRoomSheet === 'function') {
+			    window.openCreateRoomSheet({
+			        storeIdx: Number(storeIdx),
+			        storeName: createRoomBtn?.dataset.storeName || '',
+			        minimumOrderAmount: createRoomBtn?.dataset.minimumOrderAmount || ''
+			    });
+			    return;
+			}
 
             // 현재 브랜치 기준 fallback
             window.location.href = `/rooms/new?storeIdx=${encodeURIComponent(storeIdx)}`;
