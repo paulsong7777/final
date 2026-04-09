@@ -31,7 +31,7 @@ public class StoreMenuController {
 
     // 메뉴 리스트 조회
     @GetMapping("/stores/{storeIdx}/menu")
-    public String menuListForUser(@PathVariable int storeIdx, Model model) {
+    public String menuListForUser(@PathVariable("storeIdx") int storeIdx, Model model) {
 
         List<StoreMenu> menuList = storeMenuService.menuListForUser(storeIdx);
 
@@ -44,7 +44,7 @@ public class StoreMenuController {
     // 메뉴 검색
     @GetMapping("/stores/{storeIdx}/menu/search")
     public String searchMenuForUser(
-            @PathVariable int storeIdx,
+            @PathVariable("storeIdx") int storeIdx,
             @RequestParam String keyword,
             Model model) {
 

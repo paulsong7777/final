@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+      
 <head>
     <meta charset="UTF-8">
     <title>Mo-Eats Login</title>
@@ -14,6 +17,7 @@
     </style>
 </head>
 <body>
+<section layout:fragment="pageContent">
 <div class="wrap">
     <h1>로그인</h1>
     <form method="post" action="/login">
@@ -32,5 +36,6 @@
         <a href="/main">메인으로</a>
     </p>
 </div>
+</section>
 </body>
 </html>
