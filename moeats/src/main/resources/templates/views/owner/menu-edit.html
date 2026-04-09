@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/owner-layout}">
+<head>
+    <title>메뉴 정보 수정 - MoEats</title>
+</head>
+
+<body>
+<main layout:fragment="content" class="py-4">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 600px;">
+        <div class="card-body p-4 p-md-5">
+            
+            <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                <a th:href="@{/owner/menu/management}" class="text-dark text-decoration-none fw-bold me-3">
+                    <i class="bi bi-arrow-left"></i> 목록으로
+                </a>
+                <h3 class="fw-bold mb-0 text-navy">메뉴 정보 수정</h3>
+            </div>
+
+            <form id="menuEditForm" enctype="multipart/form-data">
+                <input type="hidden" name="menuIdx" th:value="${menuVo != null ? menuVo['menuIdx'] : 0}">
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Category</label>
+                    <div class="input-group">
+                        <select id="categorySelect" name="menuCategoryIdx" class="form-select py-3 rounded-start-3 fw-bold text-navy border-2 shadow-none" required>
+                            <option value="">카테고리를 선택하세요</option>
+                            <option th:each="cat : ${categoryList}" 
+                                    th:value="${cat['menuCategoryIdx']}" 
+                                    th:text="${cat['menuCategoryName']}"
+                                    th:selected="${menuVo != null and cat['menuCategoryIdx'] == menuVo['menuCategoryIdx']}"></option>
+                        </select>
+                        <button class="btn btn-outline-success border-2 fw-bold px-3 rounded-end-3" type="button" 
+                                data-bs-toggle="modal" data-bs-target="#categoryQuickModal">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Image</label>
+                    <input type="file" id="imageFile" name="menuFile" class="d-none" accept="image/*" onchange="previewImage(this)">
+                    
+                    <div id="imageContainer" class="bg-light rounded-4 d-flex align-items-center justify-content-center position-relative overflow-hidden" 
+                         style="height: 220px; border: 2px dashed #dee2e6; cursor: pointer;"
+                         onclick="document.getElementById('imageFile').click()">
+                        
+                        <div id="guideMsg" th:classappend="${menuVo != null and menuVo['menuImg'] != null} ? 'd-none' : ''" class="text-center text-secondary">
+                            <i class="bi bi-camera fs-1 d-block mb-2"></i>
+                            <span class="fw-bold small d-block">클릭하여 사진 교체</span>
+                        </div>
+                        
+                        <img id="preview" th:src="${menuVo != null ? menuVo['menuImg'] : ''}" 
+                             th:classappend="${menuVo == null or menuVo['menuImg'] == null} ? 'd-none' : ''"
+                             class="w-100 h-100" style="object-fit: cover;" alt="미리보기">
+                        
+                        <div class="position-absolute bottom-0 end-0 m-2 bg-dark bg-opacity-50 text-white px-2 py-1 rounded small">
+                            <i class="bi bi-pencil-fill me-1"></i>변경
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Menu Name</label>
+                    <input type="text" name="menuName" th:value="${menuVo != null ? menuVo['menuName'] : ''}" 
+                           class="form-control py-3 rounded-3 fw-bold border-2 shadow-none" placeholder="메뉴 이름을 입력하세요" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Price</label>
+                    <div class="input-group">
+                        <input type="number" name="menuPrice" th:value="${menuVo != null ? menuVo['menuPrice'] : 0}" 
+                               class="form-control py-3 text-end fw-bold border-2 shadow-none" placeholder="0" required>
+                        <span class="input-group-text bg-light fw-bold border-2">원</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary text-uppercase">Description</label>
+                    <textarea name="menuDescription" class="form-control py-3 rounded-3 border-2 shadow-none no-resize" 
+                              rows="3" th:text="${menuVo != null ? menuVo['menuDescription'] : ''}" placeholder="메뉴 설명을 입력하세요"></textarea>
+                </div>
+
+                <div class="row g-2 mt-5">
+                    <div class="col-4">
+                        <button type="button" class="btn btn-light border py-3 fw-bold rounded-pill" onclick="history.back()">취소</button>
+                    </div>
+                    <div class="col-8">
+                        <button type="button" id="submitBtn" class="btn btn-warning text-white fw-bold py-3 fs-5 rounded-pill shadow-sm w-100" 
+                                onclick="handleMenuUpdate()">수정 완료</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="categoryQuickModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold mb-0">새 카테고리</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <input type="text" id="newCategoryName" class="form-control py-3 rounded-3 fw-bold border-2 shadow-none" placeholder="카테고리 명칭">
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-success w-100 py-3 rounded-pill fw-bold" onclick="handleCategoryQuickAdd()">즉시 등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        // 카테고리 퀵 등록 (AJAX)
+        async function handleCategoryQuickAdd() {
+            const catNameInput = document.getElementById('newCategoryName');
+            const catName = catNameInput.value.trim();
+            if(!catName) { alert("이름을 입력하세요."); return; }
+
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            try {
+                const response = await fetch('/owner/category/register_proc', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        ...(header && { [header]: token }) 
+                    },
+                    body: JSON.stringify({ "menuCategoryName": catName })
+                });
+
+                if(response.ok) {
+                    const data = await response.json();
+                    if(data.success) {
+                        const select = document.getElementById('categorySelect');
+                        const newOption = new Option(catName, data.newIdx || Date.now());
+                        select.add(newOption);
+                        newOption.selected = true;
+                        bootstrap.Modal.getInstance(document.getElementById('categoryQuickModal')).hide();
+                        catNameInput.value = "";
+                        alert("카테고리가 추가되었습니다.");
+                    }
+                }
+            } catch(e) { alert("카테고리 등록 중 에러 발생"); }
+        }
+
+        /**
+         * [Rule 2] AJAX: 메뉴 수정 비동기 처리
+         * [Rule 6] 변경은 POST 고정
+         */
+        async function handleMenuUpdate() {
+            const form = document.getElementById('menuEditForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (!form.menuCategoryIdx.value) { alert("카테고리를 선택해 주세요."); return; }
+            if (!form.menuName.value.trim()) { alert("메뉴 이름을 입력해 주세요."); return; }
+            if (!form.menuPrice.value) { alert("가격을 입력해 주세요."); return; }
+
+            if(!confirm("메뉴 정보를 수정하시겠습니까?")) return;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>수정 중...';
+
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+            
+            const formData = new FormData(form);
+
+            try {
+                // 백엔드 컨트롤러의 /owner/menu/update 와 연동
+                const response = await fetch('/owner/menu/update', {
+                    method: 'POST',
+                    headers: { ...(header && { [header]: token }) },
+                    body: formData
+                });
+
+                if (response.ok || response.redirected) {
+                    alert("성공적으로 수정되었습니다.");
+                    location.href = '/owner/menu/management'; 
+                } else {
+                    alert("수정 실패 (에러 코드: " + response.status + ")");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "수정 완료";
+                }
+            } catch (error) {
+                alert("통신 에러가 발생했습니다.");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "수정 완료";
+            }
+        }
+
+        function previewImage(input) {
+            const preview = document.getElementById('preview');
+            const guideMsg = document.getElementById('guideMsg');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                    if(guideMsg) guideMsg.classList.add('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        /*]]>*/
+    </script>
+</th:block>
+</body>
+</html>

@@ -1,22 +1,75 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>All Image List</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
-</head>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/owner-layout}">
+<head><title>통합 이미지 보관함 - MoEats</title></head>
 <body>
-  <div class="wrap">
-    <h1>All Image List</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: views/owner/all-image-list</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
+<main layout:fragment="content" class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2">
+        <div>
+            <h3 class="fw-bold mb-0 text-navy"><i class="bi bi-images me-2 text-orange"></i>이미지 보관함</h3>
+            <p class="text-secondary small mb-0 mt-1">우리 매장의 모든 이미지 자산입니다.</p>
+        </div>
+        <a th:href="@{/owners/menus/0/images/new}" class="btn btn-warning text-white fw-bold px-4 rounded-pill shadow-sm">
+            <i class="bi bi-cloud-upload me-1"></i> 새 이미지 업로드
+        </a>
+    </div>
+
+    <div class="row g-3">
+        <th:block th:if="${allImages != null and not #lists.isEmpty(allImages)}">
+            <div th:each="img : ${allImages}" class="col-6 col-md-4 col-lg-2" th:id="|img-wrapper-${img.menuImageIdx}|">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+                    <img th:src="${img.imageUrl ?: 'https://via.placeholder.com/150/FF8000/FFFFFF?text=No+Image'}" 
+                         class="w-100" style="height: 150px; object-fit: cover;">
+                    
+                    <div class="card-body p-2 text-center">
+                        <p class="small text-truncate mb-2 fw-bold text-secondary">파일 번호: <span th:text="${img.menuImageIdx}"></span></p>
+                        <div class="d-flex gap-1">
+                            <a th:href="@{/owners/menus/0/images/{iIdx}/edit(iIdx=${img.menuImageIdx})}" class="btn btn-sm btn-outline-secondary w-100">수정</a>
+                            <button class="btn btn-sm btn-outline-danger w-100" th:onclick="deleteImage(0, [[${img.menuImageIdx}]])">삭제</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+        
+        <div th:if="${allImages == null or #lists.isEmpty(allImages)}" class="col-12 text-center py-5">
+            <i class="bi bi-image-alt display-1 text-muted opacity-25"></i>
+            <p class="text-secondary fw-bold mt-3">보관된 이미지가 없습니다.<br>매장 사진이나 메뉴 사진을 먼저 등록해 보세요!</p>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /**
+         * [Rule 2] AJAX 처리: 새로고침 없이 이미지 삭제
+         */
+        async function deleteImage(mIdx, iIdx) {
+            if(!confirm("이 이미지를 보관함에서 영구 삭제하시겠습니까?")) return;
+            
+            // [Rule 4] Security: CSRF 토큰 추출
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            try {
+                // [Rule 6] 변경 사항은 POST 고정
+                const response = await fetch(`/owners/menus/${mIdx}/images/${iIdx}/delete`, {
+                    method: 'POST',
+                    headers: { ...(header && { [header]: token }) }
+                });
+
+                if(response.ok) {
+                    // 삭제 성공 시 해당 카드 요소를 화면에서 즉시 제거
+                    const wrapper = document.getElementById(`img-wrapper-${iIdx}`);
+                    if(wrapper) wrapper.remove();
+                } else { 
+                    alert("삭제 처리에 실패했습니다. (코드: " + response.status + ")"); 
+                }
+            } catch(e) { 
+                console.error("Delete Error:", e);
+                alert("통신 중 오류가 발생했습니다."); 
+            }
+        }
+    </script>
+</th:block>
 </body>
 </html>

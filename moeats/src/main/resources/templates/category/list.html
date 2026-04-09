@@ -1,22 +1,56 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Category List</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
-</head>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/owner-layout}">
+<head><title>메뉴 카테고리 목록</title></head>
 <body>
-  <div class="wrap">
-    <h1>Category List</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: category/list</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
+<main layout:fragment="content" class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2">
+        <div>
+            <h3 class="fw-bold mb-1 text-navy"><i class="bi bi-collection me-2 text-orange"></i>메뉴 카테고리 관리</h3>
+            <p class="text-secondary small mb-0">등록된 메뉴 카테고리 목록입니다.</p>
+        </div>
+        <a th:href="@{/owners/store-menu-category/write}" class="btn btn-orange px-4 fw-bold">
+            <i class="bi bi-plus-lg me-2"></i>새 카테고리 추가
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <table class="table table-hover align-middle text-center mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="py-3">번호</th>
+                    <th class="text-start py-3">카테고리 명칭</th>
+                    <th class="py-3">관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="cat, stat : ${categoryList}" th:id="|row-${cat['categoryIdx']}|">
+                    <td th:text="${stat.count}">1</td>
+                    <td class="text-start fw-bold" th:text="${cat['categoryName']}">인기 메뉴</td>
+                    <td>
+                        <a th:href="@{/owners/store-menu-category/detail(categoryIdx=${cat['categoryIdx']})}" class="btn btn-sm btn-outline-primary px-3 rounded-pill">상세</a>
+                        <button class="btn btn-sm btn-outline-danger px-3 rounded-pill ms-1" th:onclick="deleteCategory([[${cat['categoryIdx']}]])">삭제</button>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(categoryList)}">
+                    <td colspan="3" class="py-5 text-muted fw-bold">등록된 카테고리가 없습니다.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+<script th:inline="javascript">
+    async function deleteCategory(idx) {
+        if (!confirm("삭제하시겠습니까?")) return;
+        const response = await fetch('/owners/store-menu-category/delete_proc', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.content },
+            body: new URLSearchParams({ categoryIdx: idx })
+        });
+        if (response.ok) { document.getElementById(`row-${idx}`).remove(); alert("삭제 완료!"); }
+    }
+</script>
+</th:block>
 </body>
 </html>

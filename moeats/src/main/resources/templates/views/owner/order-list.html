@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layouts/owner-layout}">
+<head>
+    <title>주문 내역 관리 - MoEats</title>
+</head>
+
+<body>
+<main layout:fragment="content" class="py-4">
+    
+    <div class="d-flex justify-content-between align-items-end mb-4 pb-3 border-bottom border-2">
+        <div>
+            <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-clock-history me-2 text-orange"></i>주문 내역 관리</h2>
+            <p class="text-secondary small mb-0 mt-1">매장에서 접수된 모든 주문을 상세히 조회합니다.</p>
+        </div>
+        <div class="bg-white border rounded-pill px-3 py-2 fw-bold text-secondary small shadow-sm d-none d-md-block">
+             <i class="bi bi-calendar-event me-1 text-orange"></i>
+             조회 기준: <span id="lastUpdateTime" th:text="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd HH:mm')}"></span>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="orderTable" style="table-layout: fixed;">
+                <colgroup>
+                    <col style="width: 80px;">  <col style="width: 120px;"> <col style="width: 160px;"> <col style="width: auto;">  <col style="width: 120px;"> <col style="width: 130px;"> <col style="width: 100px;"> </colgroup>
+                <thead class="bg-light text-secondary small fw-bold text-center align-middle">
+                    <tr style="height: 50px;">
+                        <th class="ps-4 text-start">번호</th>
+                        <th>주문일시</th>
+                        <th>주문코드(ID)</th>
+                        <th class="text-start">매장명</th>
+                        <th class="text-end">현재 상태</th>
+                        <th>진행상태</th>
+                        <th class="pe-4">상세</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center border-top-0" id="orderTableBody">
+                    <th:block th:if="${not #lists.isEmpty(orderList)}">
+                        <tr th:each="order, stat : ${orderList}" th:data-room-idx="${order.roomIdx ?: 0}" class="order-row">
+                            <td class="ps-4 text-start text-muted small row-num" th:text="${stat.count}">1</td>
+                            <td class="small text-secondary" th:text="${order.createdAt != null ? #dates.format(order.createdAt, 'HH:mm') : '00:00'}">00:00</td>
+                            <td>
+                                <span class="fw-bold px-2 py-1 rounded border bg-light text-dark small" 
+                                      th:text="${'ROOM-' + (order.roomIdx ?: 0)}">ORD-001</span>
+                            </td>
+                            <td class="text-start fw-bold text-navy text-truncate" th:text="${order.storeName ?: 'MoEats 매장'}">매장명</td>
+                            <td class="text-end fw-bold text-orange" th:text="${order.roomStatus}">WAITING</td>
+                            <td class="status-cell">
+                                <div th:switch="${order.roomStatus}">
+                                    <span th:case="'WAITING'" class="badge bg-danger-subtle text-danger px-3 rounded-pill">대기중</span>
+                                    <span th:case="'ACCEPTED'" class="badge bg-warning-subtle text-warning px-3 rounded-pill">접수완료</span>
+                                    <span th:case="'COOKING'" class="badge bg-info-subtle text-info px-3 rounded-pill">조리중</span>
+                                    <span th:case="'DELIVERING'" class="badge bg-primary-subtle text-primary px-3 rounded-pill">배달중</span>
+                                    <span th:case="'COMPLETED'" class="badge bg-success-subtle text-success px-3 rounded-pill">완료</span>
+                                    <span th:case="*" class="badge bg-secondary-subtle text-secondary px-3 rounded-pill">알수없음</span>
+                                </div>
+                            </td>
+                            <td class="pe-4">
+                                <a th:href="@{/owners/order/detail(roomIdx=${order.roomIdx ?: 0})}" 
+                                   class="btn btn-sm btn-light rounded-pill px-3 fw-bold shadow-sm">보기</a>
+                            </td>
+                        </tr>
+                    </th:block>
+                    
+                    <tr th:if="${#lists.isEmpty(orderList)}" id="emptyRow">
+                        <td colspan="7" class="py-5 text-center text-muted">
+                            <i class="bi bi-inbox d-block fs-1 mb-3 opacity-25"></i>
+                            <p class="fw-bold mb-0">표시할 주문 내역이 없습니다.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // 10초마다 상태 동기화
+        document.addEventListener('DOMContentLoaded', function() {
+            setInterval(syncOrderStatuses, 10000); 
+        });
+
+        async function syncOrderStatuses() {
+            try {
+                // 식별자는 roomIdx 고정 표준 준수
+                const response = await fetch('/owners/order/api/list'); 
+                if (!response.ok) return;
+                const latestOrders = await response.json(); 
+                if (latestOrders && latestOrders.length > 0) {
+                    processOrders(latestOrders);
+                    updateLastRefreshTime();
+                }
+            } catch (error) { console.debug("[Sync] 대기 중..."); }
+        }
+
+        function processOrders(orders) {
+            const tbody = document.getElementById('orderTableBody');
+            const emptyRow = document.getElementById('emptyRow');
+            orders.forEach((order) => {
+                let existingRow = document.querySelector(`tr[data-room-idx="${order.roomIdx}"]`);
+                if (existingRow) {
+                    const statusCell = existingRow.querySelector('.status-cell');
+                    const newBadge = getStatusBadgeHtml(order.roomStatus);
+                    if (statusCell.innerHTML.trim() !== newBadge.trim()) {
+                        statusCell.innerHTML = newBadge;
+                        // 상태 변경 시 시각적 효과 (반짝임)
+                        existingRow.style.backgroundColor = '#fff3cd';
+                        setTimeout(() => { existingRow.style.backgroundColor = ''; }, 2000);
+                    }
+                } else {
+                    if (emptyRow) emptyRow.remove();
+                    prependNewOrderRow(tbody, order);
+                }
+            });
+            reorderNumbers();
+        }
+
+        function prependNewOrderRow(tbody, order) {
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-room-idx', order.roomIdx);
+            newRow.className = 'order-row';
+            newRow.innerHTML = `
+                <td class="ps-4 text-start text-muted small row-num">-</td>
+                <td class="small text-secondary">방금 전</td>
+                <td><span class="fw-bold px-2 py-1 rounded border bg-light text-dark small">ROOM-${order.roomIdx}</span></td>
+                <td class="text-start fw-bold text-navy text-truncate">${order.storeName || 'MoEats'}</td>
+                <td class="text-end fw-bold text-orange">${order.roomStatus}</td>
+                <td class="status-cell">${getStatusBadgeHtml(order.roomStatus)}</td>
+                <td class="pe-4">
+                    <a href="/owners/order/detail?roomIdx=${order.roomIdx}" 
+                       class="btn btn-sm btn-light rounded-pill px-3 fw-bold shadow-sm">보기</a>
+                </td>
+            `;
+            tbody.prepend(newRow); 
+        }
+
+        function reorderNumbers() {
+            document.querySelectorAll('.row-num').forEach((el, idx) => { el.innerText = idx + 1; });
+        }
+
+        function getStatusBadgeHtml(status) {
+            const badges = {
+                'WAITING': '<span class="badge bg-danger-subtle text-danger px-3 rounded-pill">대기중</span>',
+                'ACCEPTED': '<span class="badge bg-warning-subtle text-warning px-3 rounded-pill">접수완료</span>',
+                'COOKING': '<span class="badge bg-info-subtle text-info px-3 rounded-pill">조리중</span>',
+                'DELIVERING': '<span class="badge bg-primary-subtle text-primary px-3 rounded-pill">배달중</span>',
+                'COMPLETED': '<span class="badge bg-success-subtle text-success px-3 rounded-pill">완료</span>'
+            };
+            return badges[status] || '<span class="badge bg-secondary-subtle text-secondary px-3 rounded-pill">알수없음</span>';
+        }
+
+        function updateLastRefreshTime() {
+            const now = new Date();
+            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            const timeEl = document.getElementById('lastUpdateTime');
+            if(timeEl) timeEl.innerText = timeStr;
+        }
+        /*]]>*/
+    </script>
+</th:block>
+</body>
+</html>

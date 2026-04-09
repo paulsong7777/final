@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/owner-layout}">
+<head>
+    <title>영업 리포트 - MoEats</title>
+</head>
+
+<body>
+<main layout:fragment="content" class="sales-report-page py-4">
+    
+    <div class="d-flex justify-content-between align-items-end mb-4 border-bottom border-2 pb-3">
+        <div>
+            <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-graph-up-arrow me-2 text-orange"></i>영업 리포트</h2>
+            <p class="text-secondary small mb-0 mt-1">매장의 매출 실적과 인기 메뉴를 분석하여 효율적인 운영을 돕습니다.</p>
+        </div>
+        <div class="bg-white border rounded-pill px-3 py-2 fw-bold text-secondary small shadow-sm">
+             <i class="bi bi-calendar-check me-1 text-orange"></i>
+             기준일: <span th:text="${reportDate ?: #calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">2026-00-00</span>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white metric-card">
+                <span class="small text-secondary fw-bold text-uppercase">총 매출액</span>
+                <div class="mt-2 fw-bold fs-3 text-orange" 
+                     th:text="${#numbers.formatInteger(totalSales ?: 0, 0, 'COMMA')} + '원'">0원</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white metric-card">
+                <span class="small text-secondary fw-bold text-uppercase">주문 건수</span>
+                <div class="mt-2 fw-bold fs-3 text-navy" 
+                     th:text="${orderCount ?: 0} + '건'">0건</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white metric-card">
+                <span class="small text-secondary fw-bold text-uppercase">주문 취소</span>
+                <div class="mt-2 fw-bold fs-3 text-danger" 
+                     th:text="${cancelCount ?: 0} + '건'">0건</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 rounded-4 bg-white metric-card">
+                <span class="small text-secondary fw-bold text-uppercase">평균 별점</span>
+                <div class="mt-2 fw-bold fs-3 text-orange" 
+                     th:text="'★ ' + ${avgRating ?: '0.0'}">★ 0.0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card p-4 bg-white shadow-sm h-100 rounded-4 border-0">
+                <h6 class="fw-bold mb-4 ps-2 border-start border-4 border-dark text-navy">시간대별 주문 트렌드</h6>
+                <div class="position-relative" style="height: 350px;">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card p-4 bg-white shadow-sm h-100 rounded-4 border-0">
+                <h6 class="fw-bold mb-4 ps-2 border-start border-4 border-warning text-navy">인기 메뉴 TOP 5</h6>
+                <div class="list-group list-group-flush border-0">
+                    <th:block th:if="${not #lists.isEmpty(popularMenuList)}">
+                        <div th:each="popular, stat : ${popularMenuList}" 
+                             class="list-group-item px-0 py-3 d-flex align-items-center justify-content-between border-0">
+                            <div class="d-flex align-items-center">
+                                <span class="fw-bold me-3 fs-5 text-orange" th:text="${stat.count}">1</span>
+                                <span class="fw-bold text-navy small text-truncate" style="max-width: 150px;"
+                                      th:text="${popular['menuName'] ?: '정보 없음'}">메뉴명</span>
+                            </div>
+                            <span class="badge bg-light text-navy border rounded-pill fw-bold px-3 py-2" 
+                                  th:text="${popular['orderCount'] ?: 0} + ' 건'">0 건</span>
+                        </div>
+                    </th:block>
+                    
+                    <div th:if="${#lists.isEmpty(popularMenuList)}" class="py-5 text-center text-muted">
+                        <i class="bi bi-database-fill-dash d-block fs-1 mb-3 text-light opacity-50"></i>
+                        <p class="fw-bold mb-0">데이터 집계 중입니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-end mt-4 d-print-none">
+        <button class="btn btn-moeats px-5 py-3 rounded-pill shadow-sm fw-bold border-0 text-white" 
+                onclick="window.print()">
+            <i class="bi bi-printer me-2"></i>리포트 인쇄하기
+        </button>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // [Rule 3] 타임리프 인라인: 백엔드 데이터를 JS 배열로 안전하게 할당
+        const chartLabels = /*[[${chartLabels ?: {}}]]*/ ['09시', '12시', '15시', '18시', '21시'];
+        const chartDataValues = /*[[${chartData ?: {}}]]*/ [0, 0, 0, 0, 0];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartDom = document.getElementById('salesChart');
+            if(!chartDom) return;
+            
+            const ctx = chartDom.getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels.length > 0 ? chartLabels : ['데이터 없음'],
+                    datasets: [{
+                        label: '주문수',
+                        data: chartDataValues.length > 0 ? chartDataValues : [0],
+                        borderColor: '#001f3f', // Navy
+                        backgroundColor: 'rgba(0, 31, 63, 0.05)',
+                        borderWidth: 4,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#FF8000', // Orange
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#001f3f' }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1, color: '#999' }, 
+                            grid: { color: '#f1f1f1' } 
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { color: '#999' } 
+                        }
+                    }
+                }
+            });
+        });
+        /*]]>*/
+    </script>
+</th:block>
+</html>

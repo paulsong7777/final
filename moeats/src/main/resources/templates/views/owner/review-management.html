@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layouts/owner-layout}">
+<head>
+    <title>리뷰 및 답변 관리 - MoEats</title>
+    <style>
+        .review-img-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .review-img-thumb:hover { transform: scale(1.05); filter: brightness(0.9); }
+        .reply-textarea { transition: height 0.2s; overflow: hidden; resize: none; }
+    </style>
+</head>
+
+<body th:data-api-base="@{/owners}">
+<main layout:fragment="content" class="review-page-wrapper py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2">
+        <div>
+            <h3 class="fw-bold mb-0 text-navy">
+                <i class="bi bi-chat-right-text me-2 text-orange"></i>리뷰 및 답변 관리
+            </h3>
+            <p class="text-secondary small mb-0 mt-1">고객님의 소중한 리뷰에 정성스러운 답변을 남겨주세요.</p>
+        </div>
+    </div>
+
+    <div class="review-container edit-card-limit" style="max-width: 800px; margin: 0 auto;">
+
+        <th:block th:if="${reviewList != null and !reviewList.isEmpty()}">
+            <div th:each="rev : ${reviewList}" class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="fw-bold text-navy fs-5" th:text="${rev['memberNickname'] ?: '익명 고객님'}">닉네임</span>
+                            <span class="ms-2 text-muted small" th:text="${rev['createdAt'] != null ? #dates.format(rev['createdAt'], 'yyyy-MM-dd') : '날짜정보없음'}">날짜</span>
+                            <div class="mt-1">
+                                <i th:each="num : ${#numbers.sequence(1, 5)}"
+                                   class="bi"
+                                   th:classappend="${num <= (rev['reviewRating'] ?: 0)} ? 'bi-star-fill text-warning' : 'bi-star text-light'"></i>
+                            </div>
+                        </div>
+                        <div class="badge bg-light text-navy border px-3 py-2 fw-bold" th:text="${rev['menuName'] ?: '전체 메뉴'}">메뉴명</div>
+                    </div>
+
+                    <div th:if="${rev['reviewImg'] != null}" class="mb-3">
+                        <img th:src="${rev['reviewImg']}" class="review-img-thumb shadow-sm border" alt="리뷰사진">
+                    </div>
+
+                    <p class="text-dark mb-4" th:text="${rev['reviewContent'] ?: '내용이 없습니다.'}">리뷰 본문</p>
+
+                    <hr class="opacity-10">
+
+                    <div th:id="|reply-section-${rev['reviewIdx']}|" class="rounded-4 p-3 bg-light">
+                        <div th:if="${rev['replyContent'] != null and rev['replyContent'] != ''}" class="existing-reply">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-dark text-white me-2 px-3 rounded-pill">사장님 답변</span>
+                                <span class="text-muted small" th:text="${rev['replyCreatedAt'] != null ? #dates.format(rev['replyCreatedAt'], 'yyyy-MM-dd HH:mm') : '답변 완료'}">날짜</span>
+                            </div>
+                            <p class="text-secondary mb-0 small" th:text="${rev['replyContent']}">답변 내용</p>
+                        </div>
+
+                        <div th:unless="${rev['replyContent'] != null and rev['replyContent'] != ''}" class="reply-input-wrapper">
+                            <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                <textarea th:id="|reply-input-${rev['reviewIdx']}|"
+                                          class="form-control border-0 bg-white shadow-none p-3 reply-textarea"
+                                          rows="1" placeholder="고객님께 따뜻한 답변을 남겨주세요. (Enter로 등록)"
+                                          th:onkeydown="|handleKeydown(event, ${rev['reviewIdx']})|"
+                                          oninput="autoResize(this)"></textarea>
+                                <button class="btn btn-moeats fw-bold px-4"
+                                        th:id="|reply-btn-${rev['reviewIdx']}|"
+                                        th:onclick="submitReply([[${rev['reviewIdx']}]])">등록</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+
+        <div th:if="${reviewList == null or reviewList.isEmpty()}" class="text-center py-5">
+            <div class="text-muted mb-3 opacity-25"><i class="bi bi-chat-dots display-1"></i></div>
+            <h5 class="fw-bold text-secondary">작성된 리뷰가 없습니다.</h5>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.review-img-thumb').forEach(img => {
+                img.onclick = () => window.open(img.src, '_blank');
+            });
+        });
+
+        function resetButton(btn) {
+            if (!btn) return;
+            btn.disabled = false;
+            btn.innerText = "등록";
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function handleKeydown(e, reviewIdx) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitReply(reviewIdx);
+            }
+        }
+
+        async function submitReply(reviewIdx) {
+            const inputArea = document.getElementById(`reply-input-${reviewIdx}`);
+            const submitBtn = document.getElementById(`reply-btn-${reviewIdx}`);
+            const content = inputArea.value.trim();
+
+            if (!content) {
+                alert("답변 내용을 입력해 주세요.");
+                inputArea.focus();
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+            const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+            if (header && token) headers[header] = token;
+
+            try {
+                const apiBase = document.body.dataset.apiBase;
+                const response = await fetch(`${apiBase}/review/reply`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: new URLSearchParams({ 'reviewIdx': reviewIdx, 'replyContent': content })
+                });
+
+                // [⚠️ 1. HTTP 에러 체크 우선]
+                if (!response.ok) {
+                    throw new Error(`HTTP 오류: ${response.status}`);
+                }
+
+                // [⚠️ 2. JSON 파싱 안전성] 오타 수정: 서비 -> 서버
+                let result;
+                try {
+                    result = await response.json();
+                } catch (e) {
+                    throw new Error("서버 응답이 올바르지 않습니다. (JSON Error)");
+                }
+
+                // [⚠️ 3. 비즈니스 로직 성공 여부 확인]
+                if (result.success) {
+                    const section = document.getElementById(`reply-section-${reviewIdx}`);
+                    const dateStr = new Date().toLocaleString('ko-KR', {
+                        year: 'numeric', month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                    
+                    section.innerHTML = '';
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'existing-reply';
+                    wrapper.innerHTML = `
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-dark text-white me-2 px-3 rounded-pill">사장님 답변</span>
+                            <span class="text-muted small">${dateStr}</span>
+                        </div>
+                    `;
+
+                    const p = document.createElement('p');
+                    p.className = 'text-secondary mb-0 small';
+                    p.innerText = content;
+                    
+                    wrapper.appendChild(p);
+                    section.appendChild(wrapper);
+
+                    // [⚠️ 4. 성공 시 입력창 초기화 UX]
+                    inputArea.value = '';
+                    inputArea.style.height = 'auto';
+
+                } else {
+                    throw new Error(result.message || "등록 실패");
+                }
+            } catch (error) {
+                alert(error.message || "통신 중 오류가 발생했습니다.");
+                resetButton(submitBtn);
+            }
+        }
+        /*]]>*/
+    </script>
+</th:block>
+</body>
+</html>
