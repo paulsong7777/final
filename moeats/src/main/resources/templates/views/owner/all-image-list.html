@@ -1,74 +1,125 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/owner-layout}">
-<head><title>통합 이미지 보관함 - MoEats</title></head>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layout/default}">
+<head>
+    <title>통합 이미지 보관함 - Mo-Eats</title>
+</head>
 <body>
-<main layout:fragment="content" class="py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2">
-        <div>
-            <h3 class="fw-bold mb-0 text-navy"><i class="bi bi-images me-2 text-orange"></i>이미지 보관함</h3>
-            <p class="text-secondary small mb-0 mt-1">우리 매장의 모든 이미지 자산입니다.</p>
-        </div>
-        <a th:href="@{/owners/menus/0/images/new}" class="btn btn-warning text-white fw-bold px-4 rounded-pill shadow-sm">
-            <i class="bi bi-cloud-upload me-1"></i> 새 이미지 업로드
-        </a>
-    </div>
 
-    <div class="row g-3">
-        <th:block th:if="${allImages != null and not #lists.isEmpty(allImages)}">
-            <div th:each="img : ${allImages}" class="col-6 col-md-4 col-lg-2" th:id="|img-wrapper-${img.menuImageIdx}|">
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
-                    <img th:src="${img.imageUrl ?: 'https://via.placeholder.com/150/FF8000/FFFFFF?text=No+Image'}" 
-                         class="w-100" style="height: 150px; object-fit: cover;">
-                    
-                    <div class="card-body p-2 text-center">
-                        <p class="small text-truncate mb-2 fw-bold text-secondary">파일 번호: <span th:text="${img.menuImageIdx}"></span></p>
-                        <div class="d-flex gap-1">
-                            <a th:href="@{/owners/menus/0/images/{iIdx}/edit(iIdx=${img.menuImageIdx})}" class="btn btn-sm btn-outline-secondary w-100">수정</a>
-                            <button class="btn btn-sm btn-outline-danger w-100" th:onclick="deleteImage(0, [[${img.menuImageIdx}]])">삭제</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </th:block>
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container" style="max-width: 1400px;">
         
-        <div th:if="${allImages == null or #lists.isEmpty(allImages)}" class="col-12 text-center py-5">
-            <i class="bi bi-image-alt display-1 text-muted opacity-25"></i>
-            <p class="text-secondary fw-bold mt-3">보관된 이미지가 없습니다.<br>매장 사진이나 메뉴 사진을 먼저 등록해 보세요!</p>
+        <div class="mo-section mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 border-bottom pb-4">
+                <div>
+                    <span class="mo-section-label">IMAGE GALLERY</span>
+                    <h2 class="mo-section-title">이미지 보관함</h2>
+                    <p class="mo-helper-text mt-2 mb-0">우리 매장에서 사용 중인 모든 이미지 자산을 관리합니다.</p>
+                </div>
+                <a th:href="@{/owners/menus/0/images/new}" class="mo-btn mo-btn-primary rounded-pill px-4" style="min-height: 48px;">
+                    <i class="bi bi-cloud-upload me-2"></i> 새 이미지 업로드
+                </a>
+            </div>
         </div>
-    </div>
-</main>
 
-<th:block layout:fragment="script">
+        <div class="row g-4" id="imageGrid">
+            
+            <th:block th:if="${allImages != null and not #lists.isEmpty(allImages)}">
+                <div th:each="img : ${allImages}" class="col-6 col-md-4 col-lg-3 col-xl-2" th:id="|img-wrapper-${img.menuImageIdx}|">
+                    
+                    <article class="mo-surface-card d-flex flex-column p-0 overflow-hidden border-0 shadow-sm h-100">
+                        <div class="position-relative" style="padding: 10px 10px 0;">
+                            <div class="rounded-3 overflow-hidden border" style="height: 160px; border-color: rgba(42, 54, 89, 0.08) !important;">
+                                <div class="w-100 h-100" 
+                                     th:style="'background: url(' + ${img.imageUrl ?: 'https://via.placeholder.com/300x300/FF8000/FFFFFF?text=No+Image'} + ') center/cover no-repeat;'">
+                                </div>
+                            </div>
+                            <span class="position-absolute top-0 start-0 m-3 px-2 py-1 text-white fw-bold rounded-2 shadow-sm" 
+                                  style="background: rgba(37, 45, 89, 0.85); font-size: 10px; z-index: 2;">
+                                ID: <span th:text="${img.menuImageIdx}"></span>
+                            </span>
+                        </div>
+                        
+                        <div class="p-3 mt-auto">
+                            <div class="d-flex gap-2">
+                                <a th:href="@{/owners/menus/0/images/{iIdx}/edit(iIdx=${img.menuImageIdx})}" 
+                                   class="mo-btn mo-btn-outline flex-fill border-secondary-subtle py-1" style="min-height: 34px; font-size: 12px;">
+                                    수정
+                                </a>
+                                <button type="button" 
+                                        class="mo-btn mo-btn-plain flex-fill text-danger fw-bold py-1" 
+                                        th:onclick="deleteImage(0, [[${img.menuImageIdx}]])" 
+                                        style="min-height: 34px; font-size: 12px;">
+                                    삭제
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                </div>
+            </th:block>
+            
+        </div>
+
+        <div th:if="${allImages == null or #lists.isEmpty(allImages)}" class="py-5 mt-4">
+            <div class="mo-empty-state mx-auto border-0 shadow-none bg-transparent" style="max-width: 560px;">
+                <div class="mb-2" style="font-size: 64px;">🖼️</div>
+                <h3 class="mo-empty-state__title mb-3 fs-4">보관된 이미지가 없습니다</h3>
+                <p class="mo-empty-state__desc mb-4 fw-bold text-secondary">매장 사진이나 메뉴 사진을 먼저 등록해 보세요!</p>
+                <a th:href="@{/owners/menus/0/images/new}" class="mo-btn mo-btn-primary rounded-pill px-5" style="min-height: 52px; font-size: 16px;">
+                    <i class="bi bi-cloud-upload me-2"></i> 이미지 업로드하기
+                </a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
+        /*<![CDATA[*/
+        
         /**
-         * [Rule 2] AJAX 처리: 새로고침 없이 이미지 삭제
+         * AJAX 처리: 이미지 삭제
          */
         async function deleteImage(mIdx, iIdx) {
             if(!confirm("이 이미지를 보관함에서 영구 삭제하시겠습니까?")) return;
             
-            // [Rule 4] Security: CSRF 토큰 추출
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             try {
-                // [Rule 6] 변경 사항은 POST 고정
                 const response = await fetch(`/owners/menus/${mIdx}/images/${iIdx}/delete`, {
                     method: 'POST',
                     headers: { ...(header && { [header]: token }) }
                 });
 
                 if(response.ok) {
-                    // 삭제 성공 시 해당 카드 요소를 화면에서 즉시 제거
                     const wrapper = document.getElementById(`img-wrapper-${iIdx}`);
-                    if(wrapper) wrapper.remove();
+                    if(wrapper) {
+                        // Mo-Eats 전용 삭제 애니메이션
+                        wrapper.style.transition = 'all 0.3s ease';
+                        wrapper.style.opacity = '0';
+                        wrapper.style.transform = 'scale(0.9) translateY(10px)';
+                        setTimeout(() => {
+                            wrapper.remove();
+                            // 만약 마지막 이미지가 삭제되었다면 페이지 새로고침하여 Empty State 노출
+                            if(document.querySelectorAll('#imageGrid > div').length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
                 } else { 
-                    alert("삭제 처리에 실패했습니다. (코드: " + response.status + ")"); 
+                    alert("삭제 처리에 실패했습니다."); 
                 }
             } catch(e) { 
                 console.error("Delete Error:", e);
                 alert("통신 중 오류가 발생했습니다."); 
             }
         }
+        /*]]>*/
     </script>
 </th:block>
 </body>

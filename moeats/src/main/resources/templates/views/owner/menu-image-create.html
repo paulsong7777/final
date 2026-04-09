@@ -1,47 +1,99 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/owner-layout}">
-<head><title>이미지 등록 - MoEats</title></head>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layout/default}">
+<head>
+    <title>이미지 등록 - Mo-Eats</title>
+    <style>
+        /* HTML 클래스로 대체 불가능한 인터랙션 CSS */
+        .image-upload-box { border: 2px dashed var(--mo-line-strong); transition: all 0.2s ease; }
+        .image-upload-box:hover { border-color: var(--mo-primary); background-color: rgba(255, 128, 0, 0.04) !important; transform: translateY(-2px); }
+        .image-preview-wrapper { background-color: var(--mo-bg); z-index: 5; }
+    </style>
+</head>
 <body>
-<main layout:fragment="content" class="py-4">
-    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white" style="max-width: 600px;">
-        <div class="card-body p-4 p-md-5">
-            <div class="d-flex align-items-center mb-4 border-bottom pb-3">
-                <a href="javascript:history.back()" class="text-navy text-decoration-none fw-bold me-3"><i class="bi bi-arrow-left"></i> 뒤로가기</a>
-                <h3 class="fw-bold mb-0 text-navy">이미지 업로드</h3>
-            </div>
-            
-            <form th:action="@{/owners/menus/{idx}/images(idx=${menuIdx})}" method="post" enctype="multipart/form-data">
-                <div class="mb-4">
-                    <label class="form-label fw-bold">사진 선택</label>
-                    <div class="upload-box text-center p-5 border border-2 border-dashed rounded-4" style="cursor:pointer;" onclick="document.getElementById('file').click()">
-                        <i class="bi bi-cloud-arrow-up display-4 text-orange"></i>
-                        <p class="mt-2 text-muted mb-0">컴퓨터에서 사진을 선택하세요.</p>
-                        <img id="preview" class="d-none w-100 rounded-3 mt-3 shadow-sm">
-                    </div>
-                    <input type="file" name="file" id="file" class="d-none" onchange="readURL(this);" required>
-                </div>
+
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container">
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
                 
-                <button type="submit" class="btn btn-warning text-white w-100 py-3 rounded-pill fw-bold shadow-sm">
-                    이미지 저장하기
-                </button>
-            </form>
+                <div class="mo-section text-center mb-5">
+                    <span class="mo-section-label">UPLOAD IMAGE</span>
+                    <h2 class="mo-section-title">이미지 업로드</h2>
+                    <p class="mo-store-card__desc mt-2">새로운 메뉴 사진을 등록합니다.</p>
+                </div>
+
+                <div class="mo-surface-card p-4 p-md-5">
+                    
+                    <div class="mb-4 pb-3 border-bottom">
+                        <a href="javascript:history.back()" class="text-decoration-none fw-bold" style="color: var(--mo-text-soft);">
+                            <i class="bi bi-arrow-left me-1"></i> 뒤로가기
+                        </a>
+                    </div>
+                    
+                    <form th:action="@{/owners/menus/{idx}/images(idx=${menuIdx})}" method="post" enctype="multipart/form-data">
+                        
+                        <div class="mb-4">
+                            <label class="mo-form-label">사진 선택</label>
+                            
+                            <div class="image-upload-box position-relative d-flex flex-column align-items-center justify-content-center overflow-hidden rounded-4 bg-light" 
+                                 style="min-height: 240px; cursor: pointer;"
+                                 onclick="document.getElementById('file').click()">
+                                
+                                <div id="guideMsg" class="text-center">
+                                    <div class="mb-3" style="font-size: 42px;">☁️</div>
+                                    <h4 class="fw-bold fs-6 mb-1" style="color: var(--mo-navy-strong);">클릭하여 사진을 선택하세요</h4>
+                                    <p class="text-secondary mb-0" style="font-size: 13px;">컴퓨터에서 이미지 파일을 선택해 주세요.</p>
+                                </div>
+                                
+                                <div id="previewWrapper" class="image-preview-wrapper position-absolute top-0 start-0 w-100 h-100 d-none">
+                                    <img id="preview" class="w-100 h-100 object-fit-cover" alt="미리보기">
+                                    <div class="position-absolute bottom-0 end-0 m-3 px-3 py-1 text-white fw-bold rounded-3 shadow-sm" 
+                                         style="background: rgba(37, 45, 89, 0.75); font-size: 13px;">
+                                        <i class="bi bi-pencil-fill me-1"></i> 사진 변경
+                                    </div>
+                                </div>
+
+                            </div>
+                            <input type="file" name="file" id="file" class="d-none" onchange="readURL(this);" accept="image/*" required>
+                        </div>
+                        
+                        <div class="mt-5 pt-3 border-top">
+                            <button type="submit" class="mo-btn mo-btn-primary w-100 py-3 fs-6">
+                                <i class="bi bi-check-lg me-2"></i> 이미지 저장하기
+                            </button>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
         </div>
+
     </div>
-</main>
-<th:block layout:fragment="script">
+</section>
+
+<th:block layout:fragment="pageScripts">
     <script>
         function readURL(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = e => {
+                    const previewWrapper = document.getElementById('previewWrapper');
                     const img = document.getElementById('preview');
+                    const guideMsg = document.getElementById('guideMsg');
+                    
                     img.src = e.target.result;
-                    img.classList.remove('d-none');
+                    previewWrapper.classList.remove('d-none');
+                    guideMsg.classList.add('d-none');
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
     </script>
 </th:block>
+
 </body>
 </html>

@@ -2,93 +2,122 @@
 <html lang="ko" 
       xmlns:th="http://www.thymeleaf.org" 
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
-      layout:decorate="~{layouts/owner-layout}">
+      layout:decorate="~{layout/default}">
 <head>
-    <title>리뷰 및 답변 관리 - MoEats</title>
+    <title>리뷰 및 답변 관리 - Mo-Eats</title>
     <style>
-        .review-img-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        /* 필수 커스텀 속성 및 상태 제어(Hover)용 CSS */
+        .review-img-thumb { 
+            width: 100px; height: 100px; 
+            object-fit: cover; border-radius: 12px; 
+            cursor: pointer; transition: 0.2s; 
+            border: 1px solid var(--mo-line);
+        }
         .review-img-thumb:hover { transform: scale(1.05); filter: brightness(0.9); }
-        .reply-textarea { transition: height 0.2s; overflow: hidden; resize: none; }
+        
+        .reply-textarea { transition: height 0.2s; overflow: hidden; resize: none; min-height: 52px; padding-top: 15px; }
+        
+        .review-star { color: var(--mo-primary); font-size: 16px; margin-right: 2px; }
+        .review-star-empty { color: #d1d5db; font-size: 16px; margin-right: 2px; }
+        
+        .reply-box { background-color: #fafafa; border: 1px solid var(--mo-line); }
     </style>
 </head>
 
 <body th:data-api-base="@{/owners}">
-<main layout:fragment="content" class="review-page-wrapper py-4">
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container">
 
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2">
-        <div>
-            <h3 class="fw-bold mb-0 text-navy">
-                <i class="bi bi-chat-right-text me-2 text-orange"></i>리뷰 및 답변 관리
-            </h3>
-            <p class="text-secondary small mb-0 mt-1">고객님의 소중한 리뷰에 정성스러운 답변을 남겨주세요.</p>
-        </div>
-    </div>
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
 
-    <div class="review-container edit-card-limit" style="max-width: 800px; margin: 0 auto;">
-
-        <th:block th:if="${reviewList != null and !reviewList.isEmpty()}">
-            <div th:each="rev : ${reviewList}" class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-                <div class="card-body p-4">
-
-                    <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="mo-section mb-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 border-bottom pb-4">
                         <div>
-                            <span class="fw-bold text-navy fs-5" th:text="${rev['memberNickname'] ?: '익명 고객님'}">닉네임</span>
-                            <span class="ms-2 text-muted small" th:text="${rev['createdAt'] != null ? #dates.format(rev['createdAt'], 'yyyy-MM-dd') : '날짜정보없음'}">날짜</span>
-                            <div class="mt-1">
-                                <i th:each="num : ${#numbers.sequence(1, 5)}"
-                                   class="bi"
-                                   th:classappend="${num <= (rev['reviewRating'] ?: 0)} ? 'bi-star-fill text-warning' : 'bi-star text-light'"></i>
-                            </div>
-                        </div>
-                        <div class="badge bg-light text-navy border px-3 py-2 fw-bold" th:text="${rev['menuName'] ?: '전체 메뉴'}">메뉴명</div>
-                    </div>
-
-                    <div th:if="${rev['reviewImg'] != null}" class="mb-3">
-                        <img th:src="${rev['reviewImg']}" class="review-img-thumb shadow-sm border" alt="리뷰사진">
-                    </div>
-
-                    <p class="text-dark mb-4" th:text="${rev['reviewContent'] ?: '내용이 없습니다.'}">리뷰 본문</p>
-
-                    <hr class="opacity-10">
-
-                    <div th:id="|reply-section-${rev['reviewIdx']}|" class="rounded-4 p-3 bg-light">
-                        <div th:if="${rev['replyContent'] != null and rev['replyContent'] != ''}" class="existing-reply">
-                            <div class="d-flex align-items-center mb-2">
-                                <span class="badge bg-dark text-white me-2 px-3 rounded-pill">사장님 답변</span>
-                                <span class="text-muted small" th:text="${rev['replyCreatedAt'] != null ? #dates.format(rev['replyCreatedAt'], 'yyyy-MM-dd HH:mm') : '답변 완료'}">날짜</span>
-                            </div>
-                            <p class="text-secondary mb-0 small" th:text="${rev['replyContent']}">답변 내용</p>
-                        </div>
-
-                        <div th:unless="${rev['replyContent'] != null and rev['replyContent'] != ''}" class="reply-input-wrapper">
-                            <div class="input-group shadow-sm rounded-3 overflow-hidden">
-                                <textarea th:id="|reply-input-${rev['reviewIdx']}|"
-                                          class="form-control border-0 bg-white shadow-none p-3 reply-textarea"
-                                          rows="1" placeholder="고객님께 따뜻한 답변을 남겨주세요. (Enter로 등록)"
-                                          th:onkeydown="|handleKeydown(event, ${rev['reviewIdx']})|"
-                                          oninput="autoResize(this)"></textarea>
-                                <button class="btn btn-moeats fw-bold px-4"
-                                        th:id="|reply-btn-${rev['reviewIdx']}|"
-                                        th:onclick="submitReply([[${rev['reviewIdx']}]])">등록</button>
-                            </div>
+                            <span class="mo-section-label">REVIEW MANAGEMENT</span>
+                            <h2 class="mo-section-title">리뷰 및 답변 관리</h2>
+                            <p class="mo-helper-text mt-2 mb-0">고객님의 소중한 리뷰에 정성스러운 답변을 남겨주세요.</p>
                         </div>
                     </div>
                 </div>
+
+                <div class="review-container">
+                    <th:block th:if="${not #lists.isEmpty(reviewList)}">
+                        
+                        <div th:each="rev : ${reviewList}" class="mo-surface-card p-4 p-md-5 mb-4">
+                            
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="fw-bold fs-5" style="color: var(--mo-navy-strong);" th:text="${rev['memberNickname'] ?: '익명 고객님'}">닉네임</span>
+                                        <span class="fw-bold text-secondary" style="font-size: 13px;" th:text="${rev['createdAt'] != null ? #dates.format(rev['createdAt'], 'yyyy-MM-dd') : '날짜정보없음'}">날짜</span>
+                                    </div>
+                                    <div class="mt-1 d-flex">
+                                        <i th:each="num : ${#numbers.sequence(1, 5)}"
+                                           class="bi"
+                                           th:classappend="${num <= (rev['reviewRating'] ?: 0)} ? 'bi-star-fill review-star' : 'bi-star-fill review-star-empty'"></i>
+                                    </div>
+                                </div>
+                                <span class="mo-chip border-0 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy);" th:text="${rev['menuName'] ?: '전체 메뉴'}">메뉴명</span>
+                            </div>
+
+                            <div th:if="${rev['reviewImg'] != null}" class="mb-3">
+                                <img th:src="${rev['reviewImg']}" class="review-img-thumb" alt="리뷰사진">
+                            </div>
+
+                            <p class="mb-4" style="font-size: 15px; color: var(--mo-text); line-height: 1.6;" th:text="${rev['reviewContent'] ?: '내용이 없습니다.'}">리뷰 본문</p>
+
+                            <div class="border-top border-dashed my-4 mx-n4 mx-md-n5" style="border-style: dashed !important; border-color: var(--mo-line) !important;"></div>
+
+                            <div th:id="|reply-section-${rev['reviewIdx']}|">
+                                
+                                <div th:if="${not #strings.isEmpty(rev['replyContent'])}" class="reply-box p-3 rounded-3">
+                                    <div class="d-flex align-items-center mb-2 gap-2">
+                                        <span class="mo-badge" style="background: var(--mo-navy-strong); color: #fff; border: none;">사장님 답변</span>
+                                        <span class="fw-bold text-secondary" style="font-size: 12px;" th:text="${rev['replyCreatedAt'] != null ? #dates.format(rev['replyCreatedAt'], 'yyyy-MM-dd HH:mm') : '답변 완료'}">날짜</span>
+                                    </div>
+                                    <p class="mb-0 text-secondary" style="font-size: 14px; line-height: 1.6;" th:text="${rev['replyContent']}">답변 내용</p>
+                                </div>
+
+                                <div th:unless="${not #strings.isEmpty(rev['replyContent'])}" class="reply-input-wrapper">
+                                    <div class="d-flex gap-2 align-items-end">
+                                        <textarea th:id="|reply-input-${rev['reviewIdx']}|"
+                                                  class="form-control mo-form-control reply-textarea flex-grow-1" style="border-radius: 16px;"
+                                                  rows="1" placeholder="고객님께 따뜻한 답변을 남겨주세요. (Enter로 등록)"
+                                                  th:onkeydown="|handleKeydown(event, ${rev['reviewIdx']})|"
+                                                  oninput="autoResize(this)"></textarea>
+                                        
+                                        <button type="button" class="mo-btn mo-btn-primary flex-shrink-0" style="height: 52px; padding: 0 24px; border-radius: 16px;"
+                                                th:id="|reply-btn-${rev['reviewIdx']}|"
+                                                th:onclick="submitReply([[${rev['reviewIdx']}]])">등록</button>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </th:block>
+
+                    <div th:if="${#lists.isEmpty(reviewList)}" class="py-5">
+                        <div class="mo-empty-state mx-auto border-0 shadow-none bg-transparent" style="max-width: 560px;">
+                            <div class="mb-2" style="font-size: 64px;">💬</div>
+                            <h3 class="mo-empty-state__title mb-3">작성된 리뷰가 없습니다</h3>
+                            <p class="mo-empty-state__desc fw-bold">고객님들이 정성스러운 리뷰를 남겨주실 때까지 조금만 기다려주세요!</p>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-        </th:block>
-
-        <div th:if="${reviewList == null or reviewList.isEmpty()}" class="text-center py-5">
-            <div class="text-muted mb-3 opacity-25"><i class="bi bi-chat-dots display-1"></i></div>
-            <h5 class="fw-bold text-secondary">작성된 리뷰가 없습니다.</h5>
         </div>
-    </div>
-</main>
 
-<th:block layout:fragment="script">
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
         /*<![CDATA[*/
 
         document.addEventListener('DOMContentLoaded', () => {
+            // 이미지 클릭 시 원본 보기 (새 창)
             document.querySelectorAll('.review-img-thumb').forEach(img => {
                 img.onclick = () => window.open(img.src, '_blank');
             });
@@ -100,12 +129,14 @@
             btn.innerText = "등록";
         }
 
+        // 텍스트에어리어 자동 높이 조절
         function autoResize(textarea) {
             textarea.style.height = 'auto';
             textarea.style.height = textarea.scrollHeight + 'px';
         }
 
         function handleKeydown(e, reviewIdx) {
+            // 엔터 치면 등록 (Shift+Enter는 줄바꿈)
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 submitReply(reviewIdx);
@@ -123,6 +154,7 @@
                 return;
             }
 
+            // 버튼 로딩 상태
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
@@ -132,55 +164,42 @@
             if (header && token) headers[header] = token;
 
             try {
-                const apiBase = document.body.dataset.apiBase;
+                const apiBase = document.body.dataset.apiBase || '/owners';
                 const response = await fetch(`${apiBase}/review/reply`, {
                     method: 'POST',
                     headers: headers,
                     body: new URLSearchParams({ 'reviewIdx': reviewIdx, 'replyContent': content })
                 });
 
-                // [⚠️ 1. HTTP 에러 체크 우선]
                 if (!response.ok) {
                     throw new Error(`HTTP 오류: ${response.status}`);
                 }
 
-                // [⚠️ 2. JSON 파싱 안전성] 오타 수정: 서비 -> 서버
                 let result;
                 try {
                     result = await response.json();
                 } catch (e) {
-                    throw new Error("서버 응답이 올바르지 않습니다. (JSON Error)");
+                    throw new Error("서버 응답이 올바르지 않습니다.");
                 }
 
-                // [⚠️ 3. 비즈니스 로직 성공 여부 확인]
                 if (result.success) {
                     const section = document.getElementById(`reply-section-${reviewIdx}`);
+                    // 작성된 시간을 포맷팅 (예: 2026-00-00 00:00)
                     const dateStr = new Date().toLocaleString('ko-KR', {
                         year: 'numeric', month: '2-digit', day: '2-digit',
                         hour: '2-digit', minute: '2-digit'
-                    });
+                    }).replace(/\./g, '-').replace(' -', ' ');
                     
-                    section.innerHTML = '';
-                    
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'existing-reply';
-                    wrapper.innerHTML = `
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="badge bg-dark text-white me-2 px-3 rounded-pill">사장님 답변</span>
-                            <span class="text-muted small">${dateStr}</span>
+                    // 작성 창을 '작성 완료 뷰'로 교체 (Mo-Eats 스타일)
+                    section.innerHTML = `
+                        <div class="reply-box p-3 rounded-3">
+                            <div class="d-flex align-items-center mb-2 gap-2">
+                                <span class="mo-badge" style="background: var(--mo-navy-strong); color: #fff; border: none;">사장님 답변</span>
+                                <span class="fw-bold text-secondary" style="font-size: 12px;">${dateStr}</span>
+                            </div>
+                            <p class="mb-0 text-secondary" style="font-size: 14px; line-height: 1.6;">${content}</p>
                         </div>
                     `;
-
-                    const p = document.createElement('p');
-                    p.className = 'text-secondary mb-0 small';
-                    p.innerText = content;
-                    
-                    wrapper.appendChild(p);
-                    section.appendChild(wrapper);
-
-                    // [⚠️ 4. 성공 시 입력창 초기화 UX]
-                    inputArea.value = '';
-                    inputArea.style.height = 'auto';
 
                 } else {
                     throw new Error(result.message || "등록 실패");

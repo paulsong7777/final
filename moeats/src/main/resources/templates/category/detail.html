@@ -1,60 +1,105 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/owner-layout}">
-<head><title>카테고리 상세 정보 - MoEats</title></head>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>카테고리 상세 정보 - Mo-Eats</title>
+</head>
 <body>
-<main layout:fragment="content" class="py-4">
-    <div class="mb-4 pb-3 border-bottom border-2">
-        <h3 class="fw-bold mb-1 text-navy">
-            <i class="bi bi-info-circle me-2 text-orange"></i>카테고리 상세 정보
-        </h3>
-    </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body p-4">
-            <div class="mb-4">
-                <label class="form-label small fw-bold text-secondary">카테고리 번호</label>
-                <p class="fs-5 fw-bold text-dark" th:text="${category['categoryIdx']}">101</p>
-            </div>
-            <div class="mb-4">
-                <label class="form-label small fw-bold text-secondary">카테고리 명칭</label>
-                <p class="fs-4 fw-bold text-navy" th:text="${category['categoryName']}">인기 메뉴</p>
-            </div>
-            <div class="d-flex gap-2">
-                <a th:href="@{/owners/store-menu-category/edit(categoryIdx=${category['categoryIdx']})}" 
-                   class="btn btn-orange btn-lg px-5 fw-bold">수정하기</a>
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container">
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
                 
-                <button type="button" class="btn btn-outline-danger btn-lg px-5 fw-bold" 
-                        th:onclick="deleteCategory([[${category['categoryIdx']}]])">삭제하기</button>
+                <div class="mo-section text-center mb-5">
+                    <span class="mo-section-label">CATEGORY DETAIL</span>
+                    <h2 class="mo-section-title">카테고리 상세 정보</h2>
+                    <p class="mo-store-card__desc mt-2">등록된 카테고리의 상세 내용을 확인합니다.</p>
+                </div>
+
+                <div class="mo-surface-card p-4 p-md-5">
+                    
+                    <div class="mb-4 pb-4 border-bottom">
+                        <span class="d-block mo-form-label text-secondary mb-1">카테고리 번호</span>
+                        <span class="fs-5 fw-bold" style="color: var(--mo-navy);" th:text="${category['categoryIdx']}">101</span>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <span class="d-block mo-form-label text-secondary mb-1">카테고리 명칭</span>
+                        <span class="fs-4 fw-bold" style="color: var(--mo-navy-strong);" th:text="${category['categoryName']}">인기 메뉴</span>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4 pt-2">
+                        <a th:href="@{/owners/store-menu-category}" class="mo-btn mo-btn-outline w-100 fs-6 py-2 text-center">
+                            목록으로
+                        </a>
+                        <a th:href="@{/owners/store-menu-category/edit(categoryIdx=${category['categoryIdx']})}" class="mo-btn mo-btn-primary w-100 fs-6 py-2 text-center">
+                            수정하기
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-4 pt-2">
+                        <button type="button" class="mo-btn mo-btn-plain text-danger px-3 py-1" style="min-height: 36px; font-size: 14px;"
+                                th:onclick="deleteCategory([[${category['categoryIdx']}]])">
+                            <i class="bi bi-trash3 me-1"></i> 카테고리 삭제하기
+                        </button>
+                    </div>
+
+                </div>
                 
-                <a th:href="@{/owners/store-menu-category}" class="btn btn-light btn-lg px-5 fw-bold ms-auto">목록으로</a>
             </div>
         </div>
-    </div>
-</main>
 
-<th:block layout:fragment="script">
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
 <script th:inline="javascript">
+/*<![CDATA[*/
     async function deleteCategory(idx) {
-        if (!confirm("정말 삭제하시겠습니까? 연결된 메뉴가 있으면 삭제되지 않습니다.")) return;
-        
+        if (!confirm("정말 삭제하시겠습니까?\n연결된 메뉴가 있으면 삭제되지 않습니다.")) return;
+
+        // 1. 보안 메타태그 읽기
+        const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        // 2. 파라미터 세팅
+        const params = new URLSearchParams();
+        params.append('categoryIdx', idx);
+
         try {
+            // 헤더 조립
+            const fetchHeaders = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            if (header && token) {
+                fetchHeaders[header] = token;
+            }
+
+            // 3. 서버 요청
             const response = await fetch('/owners/store-menu-category/delete_proc', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.content 
-                },
-                body: new URLSearchParams({ categoryIdx: idx })
+                headers: fetchHeaders,
+                body: params
             });
 
+            // 4. 응답 처리
             if (response.ok) {
-                alert("삭제되었습니다.");
+                alert("성공적으로 삭제되었습니다.");
                 location.href = "/owners/store-menu-category";
             } else {
                 alert("삭제 실패: 메뉴가 포함된 카테고리는 삭제할 수 없습니다.");
             }
-        } catch (e) { console.error(e); }
+        } catch (error) {
+            console.error('삭제 통신 오류:', error);
+            alert("서버 연결에 실패했습니다.");
+        }
     }
+/*]]>*/
 </script>
 </th:block>
 </body>

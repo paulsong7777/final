@@ -2,82 +2,135 @@
 <html lang="ko" 
       xmlns:th="http://www.thymeleaf.org" 
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
-      layout:decorate="~{layouts/owner-layout}">
+      layout:decorate="~{layout/default}">
 <head>
-    <title>주문 내역 관리 - MoEats</title>
+    <title>주문 내역 관리 - Mo-Eats</title>
+    <style>
+        /* Mo-Eats 스타일 테이블 커스텀 */
+        .mo-table {
+            width: 100%;
+            margin-bottom: 0;
+            color: var(--mo-text);
+            vertical-align: middle;
+        }
+        .mo-table th {
+            font-weight: 800;
+            color: var(--mo-text-soft);
+            background-color: #fafafa;
+            border-bottom: 1px solid rgba(42, 54, 89, 0.1);
+            padding: 14px 12px;
+            font-size: 13px;
+        }
+        .mo-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid rgba(42, 54, 89, 0.05);
+            font-size: 14px;
+        }
+        .mo-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .mo-table tbody tr:hover td {
+            background-color: rgba(42, 54, 89, 0.02);
+        }
+        
+        /* 테이블 내부 뱃지 커스텀 (상태별 컬러) */
+        .mo-badge--waiting { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+        .mo-badge--accepted { background: rgba(255, 128, 0, 0.1); color: var(--mo-primary); }
+        .mo-badge--cooking { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+        .mo-badge--delivering { background: rgba(23, 162, 184, 0.1); color: #17a2b8; }
+        .mo-badge--completed { background: rgba(42, 54, 89, 0.1); color: var(--mo-navy-strong); }
+        
+        .order-row { transition: background-color 0.3s ease; }
+    </style>
 </head>
 
 <body>
-<main layout:fragment="content" class="py-4">
-    
-    <div class="d-flex justify-content-between align-items-end mb-4 pb-3 border-bottom border-2">
-        <div>
-            <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-clock-history me-2 text-orange"></i>주문 내역 관리</h2>
-            <p class="text-secondary small mb-0 mt-1">매장에서 접수된 모든 주문을 상세히 조회합니다.</p>
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container" style="max-width: 1400px;">
+        
+        <div class="mo-section mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3" style="border-bottom: 1px solid var(--mo-line); padding-bottom: 24px;">
+                <div>
+                    <span class="mo-section-label">Order History</span>
+                    <h2 class="mo-section-title">주문 내역 관리</h2>
+                    <p class="mo-helper-text mt-2 mb-0">매장에서 접수된 모든 주문을 상세히 조회합니다.</p>
+                </div>
+                <div style="background: #fff; border: 1px solid var(--mo-line-strong); border-radius: 999px; padding: 10px 18px; font-size: 13px; font-weight: 700; color: var(--mo-text-soft);">
+                     <i class="bi bi-arrow-repeat" style="color: var(--mo-primary); margin-right: 4px;"></i>
+                     조회 기준: <span id="lastUpdateTime" style="color: var(--mo-navy-strong);" th:text="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd HH:mm')}"></span>
+                </div>
+            </div>
         </div>
-        <div class="bg-white border rounded-pill px-3 py-2 fw-bold text-secondary small shadow-sm d-none d-md-block">
-             <i class="bi bi-calendar-event me-1 text-orange"></i>
-             조회 기준: <span id="lastUpdateTime" th:text="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd HH:mm')}"></span>
-        </div>
-    </div>
 
-    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="orderTable" style="table-layout: fixed;">
-                <colgroup>
-                    <col style="width: 80px;">  <col style="width: 120px;"> <col style="width: 160px;"> <col style="width: auto;">  <col style="width: 120px;"> <col style="width: 130px;"> <col style="width: 100px;"> </colgroup>
-                <thead class="bg-light text-secondary small fw-bold text-center align-middle">
-                    <tr style="height: 50px;">
-                        <th class="ps-4 text-start">번호</th>
-                        <th>주문일시</th>
-                        <th>주문코드(ID)</th>
-                        <th class="text-start">매장명</th>
-                        <th class="text-end">현재 상태</th>
-                        <th>진행상태</th>
-                        <th class="pe-4">상세</th>
-                    </tr>
-                </thead>
-                <tbody class="text-center border-top-0" id="orderTableBody">
-                    <th:block th:if="${not #lists.isEmpty(orderList)}">
-                        <tr th:each="order, stat : ${orderList}" th:data-room-idx="${order.roomIdx ?: 0}" class="order-row">
-                            <td class="ps-4 text-start text-muted small row-num" th:text="${stat.count}">1</td>
-                            <td class="small text-secondary" th:text="${order.createdAt != null ? #dates.format(order.createdAt, 'HH:mm') : '00:00'}">00:00</td>
-                            <td>
-                                <span class="fw-bold px-2 py-1 rounded border bg-light text-dark small" 
-                                      th:text="${'ROOM-' + (order.roomIdx ?: 0)}">ORD-001</span>
-                            </td>
-                            <td class="text-start fw-bold text-navy text-truncate" th:text="${order.storeName ?: 'MoEats 매장'}">매장명</td>
-                            <td class="text-end fw-bold text-orange" th:text="${order.roomStatus}">WAITING</td>
-                            <td class="status-cell">
-                                <div th:switch="${order.roomStatus}">
-                                    <span th:case="'WAITING'" class="badge bg-danger-subtle text-danger px-3 rounded-pill">대기중</span>
-                                    <span th:case="'ACCEPTED'" class="badge bg-warning-subtle text-warning px-3 rounded-pill">접수완료</span>
-                                    <span th:case="'COOKING'" class="badge bg-info-subtle text-info px-3 rounded-pill">조리중</span>
-                                    <span th:case="'DELIVERING'" class="badge bg-primary-subtle text-primary px-3 rounded-pill">배달중</span>
-                                    <span th:case="'COMPLETED'" class="badge bg-success-subtle text-success px-3 rounded-pill">완료</span>
-                                    <span th:case="*" class="badge bg-secondary-subtle text-secondary px-3 rounded-pill">알수없음</span>
+        <div class="mo-surface-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="mo-table" id="orderTable" style="table-layout: fixed;">
+                    <colgroup>
+                        <col style="width: 70px;"> 
+                        <col style="width: 100px;"> 
+                        <col style="width: 140px;"> 
+                        <col style="width: auto;">  
+                        <col style="width: 120px;"> 
+                        <col style="width: 120px;"> 
+                        <col style="width: 110px;"> 
+                    </colgroup>
+                    <thead class="text-center align-middle">
+                        <tr>
+                            <th class="ps-4 text-start">No</th>
+                            <th>주문시간</th>
+                            <th>주문코드(ID)</th>
+                            <th class="text-start">매장명</th>
+                            <th class="text-end">현재 상태</th>
+                            <th>진행상태</th>
+                            <th class="pe-4">상세 내역</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center" id="orderTableBody">
+                        
+                        <th:block th:if="${not #lists.isEmpty(orderList)}">
+                            <tr th:each="order, stat : ${orderList}" th:data-room-idx="${order.roomIdx ?: 0}" class="order-row">
+                                <td class="ps-4 text-start text-muted small row-num" th:text="${stat.count}">1</td>
+                                <td style="color: var(--mo-text-soft); font-weight: 700;" th:text="${order.createdAt != null ? #dates.format(order.createdAt, 'HH:mm') : '00:00'}">00:00</td>
+                                <td>
+                                    <span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;" 
+                                          th:text="${'ROOM-' + (order.roomIdx ?: 0)}">ORD-001</span>
+                                </td>
+                                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;" th:text="${order.storeName ?: 'MoEats 매장'}">매장명</td>
+                                <td class="text-end fw-bold" style="color: var(--mo-text-soft);" th:text="${order.roomStatus}">WAITING</td>
+                                <td class="status-cell">
+                                    <div th:switch="${order.roomStatus}">
+                                        <span th:case="'WAITING'" class="mo-badge mo-badge--waiting">대기중</span>
+                                        <span th:case="'ACCEPTED'" class="mo-badge mo-badge--accepted">접수완료</span>
+                                        <span th:case="'COOKING'" class="mo-badge mo-badge--cooking">조리중</span>
+                                        <span th:case="'DELIVERING'" class="mo-badge mo-badge--delivering">배달중</span>
+                                        <span th:case="'COMPLETED'" class="mo-badge mo-badge--completed">완료</span>
+                                        <span th:case="*" class="mo-badge">알수없음</span>
+                                    </div>
+                                </td>
+                                <td class="pe-4">
+                                    <a th:href="@{/owners/order/detail(roomIdx=${order.roomIdx ?: 0})}" 
+                                       class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
+                                </td>
+                            </tr>
+                        </th:block>
+                        
+                        <tr th:if="${#lists.isEmpty(orderList)}" id="emptyRow">
+                            <td colspan="7" class="py-5 text-center">
+                                <div class="mo-empty-state mo-empty-state--compact mx-auto border-0 shadow-none bg-transparent">
+                                    <div style="font-size: 48px; margin-bottom: 8px;">🧾</div>
+                                    <p class="mo-empty-state__desc" style="font-weight: 700; color: var(--mo-text-soft);">표시할 주문 내역이 없습니다.</p>
                                 </div>
                             </td>
-                            <td class="pe-4">
-                                <a th:href="@{/owners/order/detail(roomIdx=${order.roomIdx ?: 0})}" 
-                                   class="btn btn-sm btn-light rounded-pill px-3 fw-bold shadow-sm">보기</a>
-                            </td>
                         </tr>
-                    </th:block>
-                    
-                    <tr th:if="${#lists.isEmpty(orderList)}" id="emptyRow">
-                        <td colspan="7" class="py-5 text-center text-muted">
-                            <i class="bi bi-inbox d-block fs-1 mb-3 opacity-25"></i>
-                            <p class="fw-bold mb-0">표시할 주문 내역이 없습니다.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</main>
+</section>
 
-<th:block layout:fragment="script">
+<th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
         /*<![CDATA[*/
         // 10초마다 상태 동기화
@@ -108,8 +161,13 @@
                     const newBadge = getStatusBadgeHtml(order.roomStatus);
                     if (statusCell.innerHTML.trim() !== newBadge.trim()) {
                         statusCell.innerHTML = newBadge;
-                        // 상태 변경 시 시각적 효과 (반짝임)
-                        existingRow.style.backgroundColor = '#fff3cd';
+                        
+                        // 현재 상태 컬럼 텍스트도 같이 업데이트
+                        const statusTextCell = existingRow.querySelector('td:nth-child(5)');
+                        if(statusTextCell) statusTextCell.innerText = order.roomStatus;
+
+                        // 상태 변경 시 시각적 효과 (반짝임 - Mo-Eats 오렌지 톤)
+                        existingRow.style.backgroundColor = 'rgba(255, 128, 0, 0.08)';
                         setTimeout(() => { existingRow.style.backgroundColor = ''; }, 2000);
                     }
                 } else {
@@ -126,14 +184,14 @@
             newRow.className = 'order-row';
             newRow.innerHTML = `
                 <td class="ps-4 text-start text-muted small row-num">-</td>
-                <td class="small text-secondary">방금 전</td>
-                <td><span class="fw-bold px-2 py-1 rounded border bg-light text-dark small">ROOM-${order.roomIdx}</span></td>
-                <td class="text-start fw-bold text-navy text-truncate">${order.storeName || 'MoEats'}</td>
-                <td class="text-end fw-bold text-orange">${order.roomStatus}</td>
+                <td style="color: var(--mo-text-soft); font-weight: 700;">방금 전</td>
+                <td><span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;">ROOM-${order.roomIdx}</span></td>
+                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;">${order.storeName || 'MoEats 매장'}</td>
+                <td class="text-end fw-bold" style="color: var(--mo-text-soft);">${order.roomStatus}</td>
                 <td class="status-cell">${getStatusBadgeHtml(order.roomStatus)}</td>
                 <td class="pe-4">
                     <a href="/owners/order/detail?roomIdx=${order.roomIdx}" 
-                       class="btn btn-sm btn-light rounded-pill px-3 fw-bold shadow-sm">보기</a>
+                       class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
                 </td>
             `;
             tbody.prepend(newRow); 
@@ -143,15 +201,16 @@
             document.querySelectorAll('.row-num').forEach((el, idx) => { el.innerText = idx + 1; });
         }
 
+        // 상태별 뱃지 HTML 반환 (Mo-Eats 스타일)
         function getStatusBadgeHtml(status) {
             const badges = {
-                'WAITING': '<span class="badge bg-danger-subtle text-danger px-3 rounded-pill">대기중</span>',
-                'ACCEPTED': '<span class="badge bg-warning-subtle text-warning px-3 rounded-pill">접수완료</span>',
-                'COOKING': '<span class="badge bg-info-subtle text-info px-3 rounded-pill">조리중</span>',
-                'DELIVERING': '<span class="badge bg-primary-subtle text-primary px-3 rounded-pill">배달중</span>',
-                'COMPLETED': '<span class="badge bg-success-subtle text-success px-3 rounded-pill">완료</span>'
+                'WAITING': '<span class="mo-badge mo-badge--waiting">대기중</span>',
+                'ACCEPTED': '<span class="mo-badge mo-badge--accepted">접수완료</span>',
+                'COOKING': '<span class="mo-badge mo-badge--cooking">조리중</span>',
+                'DELIVERING': '<span class="mo-badge mo-badge--delivering">배달중</span>',
+                'COMPLETED': '<span class="mo-badge mo-badge--completed">완료</span>'
             };
-            return badges[status] || '<span class="badge bg-secondary-subtle text-secondary px-3 rounded-pill">알수없음</span>';
+            return badges[status] || '<span class="mo-badge">알수없음</span>';
         }
 
         function updateLastRefreshTime() {
@@ -163,5 +222,6 @@
         /*]]>*/
     </script>
 </th:block>
+
 </body>
 </html>

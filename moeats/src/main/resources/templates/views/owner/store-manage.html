@@ -2,56 +2,72 @@
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/owner-layout}">
+      layout:decorate="~{layout/default}">
 <head>
-    <title>매장 관리 홈 - MoEats</title>
+    <title>매장 관리 홈 - Mo-Eats</title>
 </head>
 
 <body>
-<main layout:fragment="content" class="py-4">
-    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white edit-card-limit">
-        <div class="card-body p-4 p-md-5">
-            
-            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3">
-                <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-shop-window me-2 text-orange"></i>내 매장 정보</h2>
-                
-                <a th:href="@{/owners/store-manage/edit}" class="btn btn-moeats px-4 rounded-pill shadow-sm">
-                    <i class="bi bi-pencil-square me-1"></i> 정보 수정
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container" style="max-width: 800px; margin: 0 auto;">
+
+        <div class="mo-section" style="text-align: center; margin-bottom: 32px;">
+            <span class="mo-section-label">My Store</span>
+            <h2 class="mo-section-title">내 매장 정보</h2>
+        </div>
+
+        <div class="mo-surface-card" style="padding: 32px 24px;">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 1px solid var(--mo-line);">
+                <h3 class="mo-store-card__title m-0" style="font-size: 20px;">매장 상세 정보</h3>
+                <a th:href="@{/owners/store-manage/edit}" class="mo-btn mo-btn-primary" style="min-height: 38px; padding: 0 16px; font-size: 13px;">
+                    <i class="bi bi-pencil-square me-2"></i> 정보 수정
                 </a>
             </div>
 
-            <div class="mb-5 text-center">
-                <div class="rounded-4 overflow-hidden border shadow-sm position-relative" style="height: 300px;">
-                    <img th:src="${storeVo != null and storeVo['storeImg'] != null ? storeVo['storeImg'] : 'https://via.placeholder.com/800/FF8000/FFFFFF?text=MoEats+Store'}" 
-                         class="w-100 h-100 preview-img" alt="매장 대표 이미지">
-                    
-                    <div class="position-absolute top-0 end-0 m-3">
-                        <span th:if="${storeVo != null and storeVo['storeStatus'] == 'OPEN'}" class="badge bg-success px-4 py-2 rounded-pill fs-6 shadow">영업 중</span>
-                        <span th:if="${storeVo != null and storeVo['storeStatus'] == 'CLOSED'}" class="badge bg-danger px-4 py-2 rounded-pill fs-6 shadow">영업 종료</span>
-                        <span th:if="${storeVo != null and storeVo['storeStatus'] == 'BREAK'}" class="badge bg-warning text-dark px-4 py-2 rounded-pill fs-6 shadow">브레이크 타임</span>
-                    </div>
+            <div class="mb-5 position-relative" style="border-radius: var(--mo-radius-xl); overflow: hidden; height: 300px; border: 1px solid rgba(42, 54, 89, 0.08);">
+                <img th:src="${storeVo != null and storeVo['storeImg'] != null ? storeVo['storeImg'] : 'https://via.placeholder.com/800/FF8000/FFFFFF?text=Mo-Eats+Store'}" 
+                     class="w-100 h-100" style="object-fit: cover;" alt="매장 대표 이미지">
+                
+                <div class="position-absolute" style="top: 16px; right: 16px;">
+                    <span th:if="${storeVo != null and storeVo['storeStatus'] == 'OPEN'}" 
+                          class="mo-chip" style="background: rgba(40, 167, 69, 0.95); color: #fff; border: none; font-weight: 800; font-size: 13px; padding: 0 16px; min-height: 34px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                        영업 중
+                    </span>
+                    <span th:if="${storeVo != null and storeVo['storeStatus'] == 'CLOSED'}" 
+                          class="mo-chip" style="background: rgba(220, 53, 69, 0.95); color: #fff; border: none; font-weight: 800; font-size: 13px; padding: 0 16px; min-height: 34px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                        영업 종료
+                    </span>
+                    <span th:if="${storeVo != null and storeVo['storeStatus'] == 'BREAK'}" 
+                          class="mo-chip" style="background: rgba(255, 193, 7, 0.95); color: var(--mo-navy-strong); border: none; font-weight: 800; font-size: 13px; padding: 0 16px; min-height: 34px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                        브레이크 타임
+                    </span>
                 </div>
             </div>
 
             <div class="row g-4">
                 <div class="col-md-6">
-                    <label class="small fw-bold text-secondary text-uppercase d-block mb-1">매장명</label>
-                    <p class="fs-4 fw-bold text-navy" th:text="${storeVo != null ? storeVo['storeName'] : '등록된 이름이 없습니다.'}">매장명</p>
-                </div>
-                <div class="col-md-6">
-                    <label class="small fw-bold text-secondary text-uppercase d-block mb-1">연락처</label>
-                    <p class="fs-4 fw-bold text-navy" th:text="${storeVo != null ? storeVo['storePhone'] : '번호 미등록'}">010-0000-0000</p>
+                    <label class="mo-form-label">매장명</label>
+                    <p style="font-size: 22px; font-weight: 800; color: var(--mo-navy-strong); margin: 0;" 
+                       th:text="${storeVo != null ? storeVo['storeName'] : '등록된 이름이 없습니다.'}">매장명</p>
                 </div>
                 
-                <div class="col-12 border-top pt-4">
-                    <label class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 주소</label>
-                    <p class="fs-5 text-dark" th:text="${storeVo != null ? storeVo['storeAddress'] : '주소 정보가 없습니다.'}">매장 주소</p>
+                <div class="col-md-6">
+                    <label class="mo-form-label">연락처</label>
+                    <p style="font-size: 22px; font-weight: 800; color: var(--mo-navy-strong); margin: 0;" 
+                       th:text="${storeVo != null ? storeVo['storePhone'] : '번호 미등록'}">010-0000-0000</p>
+                </div>
+                
+                <div class="col-12 mt-5 pt-4" style="border-top: 1px solid var(--mo-line);">
+                    <label class="mo-form-label">매장 주소</label>
+                    <p style="font-size: 16px; color: var(--mo-text); font-weight: 500; margin: 0;" 
+                       th:text="${storeVo != null ? storeVo['storeAddress'] : '주소 정보가 없습니다.'}">매장 주소</p>
                 </div>
 
-                <div class="col-12 border-top pt-4">
-                    <label class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 소개</label>
-                    <div class="p-3 bg-light rounded-3">
-                        <p class="mb-0 text-secondary" style="white-space: pre-line;" 
+                <div class="col-12 mt-4">
+                    <label class="mo-form-label">매장 소개</label>
+                    <div style="background: #fafafa; border: 1px solid var(--mo-line); border-radius: 12px; padding: 20px;">
+                        <p style="font-size: 15px; color: var(--mo-text-soft); line-height: 1.6; margin: 0; white-space: pre-line;" 
                            th:text="${storeVo != null ? storeVo['storeDescription'] : '사장님의 정성스러운 소개글을 기다리고 있어요.'}">
                            매장 소개 내용
                         </p>
@@ -59,20 +75,20 @@
                 </div>
             </div>
 
-            <div class="text-center mt-5">
-                <a th:href="@{/members/dashboard}" class="btn btn-outline-secondary px-5 py-2 rounded-pill fw-bold">
-                    <i class="bi bi-house-door me-1"></i> 대시보드로 이동
+            <div class="text-center mt-5 pt-3">
+                <a th:href="@{/members/dashboard}" class="mo-btn mo-btn-outline" style="padding: 0 32px; min-height: 48px; font-size: 14px; border-radius: 999px;">
+                    <i class="bi bi-house-door me-2"></i> 대시보드로 이동
                 </a>
             </div>
 
         </div>
     </div>
-</main>
+</section>
 
-<th:block layout:fragment="script">
+<th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // 조회 페이지이므로 단순 활성 메뉴 표시 로직 등 추가 가능
+        // 조회 전용 페이지이므로 별도의 복잡한 스크립트는 필요하지 않습니다.
         /*]]>*/
     </script>
 </th:block>
