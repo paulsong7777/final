@@ -1,32 +1,37 @@
 package com.moeats.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.moeats.domain.Member;
 import com.moeats.domain.Store;
-import com.moeats.service.StoreService;
 import com.moeats.domain.StoreMenu;
+import com.moeats.domain.StoreMenuCategory;
+import com.moeats.service.StoreMenuCategoryService;
 import com.moeats.service.StoreMenuService;
-
-import jakarta.servlet.http.HttpSession;
+import com.moeats.service.StoreService;
 
 @Controller
 public class StoreMenuController {
-
-	
 	@Autowired
 	private StoreService storeService;
     @Autowired
     private StoreMenuService storeMenuService;
-
+    @Autowired
+    private StoreMenuCategoryService storeMenuCategoryService;
 
     /**
      * =========================
@@ -104,59 +109,126 @@ public class StoreMenuController {
 
     // 메뉴 관리 화면
     @GetMapping("/owners/menu")
-    public String menuListForOwner(HttpSession session, Model model) {
-
-        int storeIdx = (int) session.getAttribute("storeIdx"); // 로그인 기반
-
-        List<StoreMenu> menuList = storeMenuService.menuList(storeIdx);
-
+    public String menuListForOwner(
+    		RedirectAttributes ra,
+    		Model model,
+			@SessionAttribute("member") Member member) {
+		Store store = storeService.myStore(member.getMemberIdx());
+	    if ( store==null ) {
+	    	ra.addAttribute("error", "가게가 없습니다");
+	    	return "redirect:/owners/store/new";
+	    }
+	    
+        List<StoreMenu> menuList = storeMenuService.menuList(store.getStoreIdx());
+        
+        model.addAttribute("menu", "menu-mgmt");
+        model.addAttribute("store", store);
         model.addAttribute("menuList", menuList);
-
+        
         return "views/owner/menu-manage";
     }
 
 
     // 메뉴 등록
-    @PostMapping("/owners/menu")
-    public String insertMenu(StoreMenu storeMenu, HttpSession session) {
-
-        int storeIdx = (int) session.getAttribute("storeIdx");
-
-        storeMenu.setStoreIdx(storeIdx); // 강제 세팅 (보안)
-
-        storeMenuService.insertMenu(storeMenu);
-
-        return "redirect:/owners/menu";
+    @GetMapping("/owners/menu/new")
+    public String newMenuForm(
+    		RedirectAttributes ra,
+    		Model model,
+    		@SessionAttribute("member") Member member) {
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	if ( store==null ) {
+    		ra.addAttribute("error", "가게가 없습니다");
+    		return "redirect:/owners/store/new";
+    	}
+    	List<StoreMenuCategory> storeMenuCategories = storeMenuCategoryService.getCategoryByStore(store.getStoreIdx());
+    	model.addAttribute("menu", "menu-reg");
+    	model.addAttribute("store", store);
+    	model.addAttribute("storeMenuCategories", storeMenuCategories);
+    	return "views/owner/menu-register";
     }
-
-
+    
+    @PostMapping("/owners/menu")
+    @ResponseBody
+    public Map insertMenu(
+    		@ModelAttribute StoreMenu storeMenu,
+    		@RequestParam(value="menuFile", required=false) MultipartFile menuFile,
+			@SessionAttribute("member") Member member) {
+		Store store = storeService.myStore(member.getMemberIdx());
+		StoreMenuCategory storeMenuCategory = storeMenuCategoryService.getCategory(storeMenu.getMenuCategoryIdx());
+	    if ( store==null || storeMenuCategory==null || storeMenuCategory.getStoreIdx()!=store.getStoreIdx() ) {
+	    	return Map.of("result",false);
+	    }
+	    storeMenu.setStoreIdx(store.getStoreIdx()); // 강제 세팅
+	    
+	    // TODO 파일 받아서 저장하기
+        storeMenuService.insertMenu(storeMenu);
+        return Map.of("result",true);
+    }
+    
     // 메뉴 수정
+    @GetMapping("/owners/menu/edit")
+    public String updateMenuForm(
+    		RedirectAttributes ra,
+    		Model model,
+    		@RequestParam(name = "menuIdx",defaultValue = "0") int menuIdx,
+    		@SessionAttribute("member") Member member) {
+    	Store store = storeService.myStore(member.getMemberIdx());
+    	if ( store==null ) {
+    		ra.addAttribute("error", "가게가 없습니다");
+    		return "redirect:/owners/store/new";
+    	}
+    	
+    	StoreMenu storeMenu = storeMenuService.getMenu(store.getStoreIdx(), menuIdx);
+    	if ( storeMenu==null || storeMenu.getStoreIdx()!=store.getStoreIdx() ) {
+    		ra.addAttribute("error", "잘못된 접근입니다");
+    		return "redirect:/home";
+    	}
+        model.addAttribute("menu", "menu-edit");
+    	model.addAttribute("store", store);
+    	model.addAttribute("storeMenu", storeMenu);
+    	return "redirect:/owners/menu";
+    }
+    
     @PostMapping("/owners/menu/edit")
-    public String updateMenu(StoreMenu storeMenu, HttpSession session) {
+    public String updateMenu(
+    		RedirectAttributes ra,
+    		@ModelAttribute StoreMenu storeMenu,
+			@SessionAttribute("member") Member member) {
+		Store store = storeService.myStore(member.getMemberIdx());
+	    if ( store==null ) {
+	    	ra.addAttribute("error", "잘못된 접근입니다");
+	    	return "redirect:/home";
+	    }
 
-        int storeIdx = (int) session.getAttribute("storeIdx");
-
-        storeMenu.setStoreIdx(storeIdx); // 강제 세팅
+        StoreMenu check = storeMenuService.getMenu(store.getStoreIdx(), storeMenu.getMenuIdx());
+        if ( check==null || check.getStoreIdx()!=store.getStoreIdx() ) {
+        	ra.addAttribute("error", "잘못된 접근입니다");
+        	return "redirect:/home";
+        }
 
         storeMenuService.updateMenu(storeMenu);
 
         return "redirect:/owners/menu";
     }
-
-
+    
     // 메뉴 상태 변경 (AJAX 추천)
     @PostMapping("/owners/menu/status")
     @ResponseBody
-    public String updateStatus(
+    public Map updateStatus(
             @RequestParam int menuIdx,
             @RequestParam String menuStatus,
-            HttpSession session) {
+			@SessionAttribute("member") Member member) {
+		Store store = storeService.myStore(member.getMemberIdx());
+	    if ( store==null ) {
+	    	return Map.of("result",false);
+	    }
+	    StoreMenu check = storeMenuService.getMenu(store.getStoreIdx(), menuIdx);
+	    if ( check==null || check.getStoreIdx()!=store.getStoreIdx() ) {
+	    	return Map.of("result",false);
+	    }
 
-        int storeIdx = (int) session.getAttribute("storeIdx");
-
-        storeMenuService.updateStatus(storeIdx, menuIdx, menuStatus);
-
-        return "OK";
+        storeMenuService.updateStatus(store.getStoreIdx(), menuIdx, menuStatus);
+        return Map.of("result",true);
     }
 
 }

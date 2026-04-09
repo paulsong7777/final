@@ -3,6 +3,7 @@ package com.moeats.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.moeats.interceptor.LoginCheckInterceptor;
@@ -14,23 +15,23 @@ import com.moeats.interceptor.RoomMemberInterceptor;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Autowired
-    private LoginCheckInterceptor loginCheckInterceptor;
+	@Autowired
+	private LoginCheckInterceptor loginCheckInterceptor;
 
-    @Autowired
-    private OwnerCheckInterceptor ownerCheckInterceptor;
+	@Autowired
+	private OwnerCheckInterceptor ownerCheckInterceptor;
 
-    @Autowired
-    private RoomMemberInterceptor roomMemberInterceptor;
+	@Autowired
+	private RoomMemberInterceptor roomMemberInterceptor;
 
-    @Autowired
-    private OrderMemberInterceptor orderMemberInterceptor;
+	@Autowired
+	private OrderMemberInterceptor orderMemberInterceptor;
 
-    @Autowired
-    private PaymentInterceptor paymentInterceptor;
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
+	@Autowired
+	private PaymentInterceptor paymentInterceptor;
+	
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
 
         // 로그인이 필요한 경로
         registry.addInterceptor(loginCheckInterceptor)
@@ -50,22 +51,22 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 		"/owners/**"
                 );
 
-        registry.addInterceptor(roomMemberInterceptor)
-                .addPathPatterns(
-                        "/rooms/code/*/**"
-                )
-        		.excludePathPatterns(
-        				"/rooms/code/*"
-        		);
+		registry.addInterceptor(roomMemberInterceptor)
+				.addPathPatterns(
+						"/rooms/code/*/**"
+				)
+				.excludePathPatterns(
+						"/rooms/code/*"
+				);
 
-        registry.addInterceptor(orderMemberInterceptor)
-                .addPathPatterns(
-                        "/orders/**"
-                );
+		registry.addInterceptor(orderMemberInterceptor)
+				.addPathPatterns(
+						"/orders/**"
+				);
 
-        registry.addInterceptor(paymentInterceptor)
-                .addPathPatterns(
-                        "/orders/*/payment/**"
-                );
-    }
+		registry.addInterceptor(paymentInterceptor)
+				.addPathPatterns(
+						"/orders/*/payment/**"
+				);
+	}
 }

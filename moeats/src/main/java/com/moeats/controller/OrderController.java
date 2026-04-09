@@ -31,6 +31,8 @@ import com.moeats.timer.OrderRoomTimer;
 @Controller
 public class OrderController {
 	@Autowired
+    DeliveryAddressController deliveryAddressController;
+	@Autowired
 	GroupOrderService groupOrderService;
 	@Autowired
 	OrderRoomService orderRoomService;
@@ -151,14 +153,17 @@ public class OrderController {
  			paymentShare = paymentService.findShareByIdx(paymentShareIdx);
  			paymentService.paidByRepresentative(payment.getPaymentIdx(),paymentShare.getPaidAt());
  			orderRoomTimer.stop(orderIdx);
- 			sseService.completeOrder(orderIdx);
+ 			sseService.payOrder(orderIdx, paymentShareIdx);
+ 			sseService.payComplete(orderIdx,groupOrder.getStoreIdx());
  			return String.format("redirect:/orders/%d/status",orderIdx);
  		}
-if( paymentService.findPaymentPending(payment.getPaymentIdx()).isEmpty() ){
-    orderRoomTimer.stop(orderIdx);
-    sseService.completeOrder(orderIdx);
-    return String.format("redirect:/orders/%d/status",orderIdx);
-}
-return String.format("redirect:/orders/%d/payment/wait",orderIdx);
+		if( paymentService.findPaymentPending(payment.getPaymentIdx()).isEmpty() ){
+		    orderRoomTimer.stop(orderIdx);
+		    sseService.payOrder(orderIdx, paymentShareIdx);
+		    sseService.payComplete(orderIdx,groupOrder.getStoreIdx());
+		    return String.format("redirect:/orders/%d/status",orderIdx);
+		}
+		sseService.payOrder(orderIdx, paymentShareIdx);
+		return String.format("redirect:/orders/%d/payment/wait",orderIdx);
 	}
 }

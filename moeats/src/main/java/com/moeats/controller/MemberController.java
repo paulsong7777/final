@@ -159,7 +159,7 @@ public class MemberController {
 
 	    // 사업자 회원이면 사업자 대시보드로 리다이렉트
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	        return "redirect:/members/dashboard";
+	        return "redirect:/owners/dashboard";
 	    }
 	    
 		// 만약 가려던 주소가 없었다면(그냥 로그인 버튼 누르고 들어온 경우) 메인으로 보냅니다.
