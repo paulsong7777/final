@@ -12,39 +12,37 @@
 	완전한 클래스 이름(패키지를 포함한 이름)을 지정하면 된다.   
 -->
 <mapper namespace="com.moeats.mapper.StoreMenuCategoryMapper">
-	
-	<delete id="deleteCategory">
-		delete from storeMenuCategory
+	<select id="getCategory" resultType="StoreMenuCategory">
+		select * from store_menu_category
 			where menu_category_idx = #{menuCategoryIdx}
-			  and store_idx = #{storeIdx}
-	</delete>
+	</select>
+	
+	<select id="getCategoryByStoreIdx" resultType="StoreMenuCategory">
+		select * from store_menu_category
+			where store_idx = #{storeIdx}
+	</select>
+	
+	<insert id="insertCategory" parameterType="StoreMenuCategory"
+			useGeneratedKeys="true" keyProperty="menuCategoryIdx">
+		insert into store_menu_category 
+			(store_idx, category_name, display_order)
+		values
+			(#{storeIdx}, #{categoryName}, #{displayOrder})
+	</insert>
 	
 	<update id="updateCategory" parameterType="StoreMenuCategory">
-		update storeMenuCategory set
+		update store_menu_category set
 			category_name = #{categoryName},
 			display_order = #{displayOrder}
 		where menu_category_idx = #{menuCategoryIdx}
 		  and store_idx = #{storeIdx}
 	</update>
 	
-	<insert id="insertCategory" parameterType="StoreMenuCategory"
-			useGeneratedKeys="true" keyProperty="menuCategoryIdx">
-		insert into storeMenuCategory 
-			(store_idx, category_name, display_order)
-		values
-			#{storeIdx}, #{categoryName}, #{displayOrder}
-	</insert>
-	
-	
-	<select id="getCategory" resultType="StoreMenuCategory">
-		select * from storeMenuCategory
+	<delete id="deleteCategory">
+		delete from store_menu_category
 			where menu_category_idx = #{menuCategoryIdx}
-	</select>
-	<select id="getCategoryByStoreIdx" resultType="StoreMenuCategory">
-		select * from storeMenuCategory
-			where store_idx = #{storeIdx}
-	</select>
-	
+			  and store_idx = #{storeIdx}
+	</delete>
 </mapper>
 
 

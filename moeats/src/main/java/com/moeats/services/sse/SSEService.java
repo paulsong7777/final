@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter.SseEvent
 public class SSEService {
 	Map<Integer, List<SseEmitter>> roomMap = new ConcurrentHashMap<>();
 	Map<Integer, List<SseEmitter>> orderMap = new ConcurrentHashMap<>();
+	Map<Integer, List<SseEmitter>> storeMap = new ConcurrentHashMap<>();
 	
 	private SseEmitter join(Map<Integer, List<SseEmitter>> map,int idx){
 		SseEmitter sseEmitter = new SseEmitter();
@@ -46,6 +47,9 @@ public class SSEService {
 	}
 	public SseEmitter joinOrder(int roomIdx){
 		return join(orderMap,roomIdx);
+	}
+	public SseEmitter joinStore(int storeIdx){
+		return join(storeMap,storeIdx);
 	}
 	
 	public int beginOrder(int roomIdx) {

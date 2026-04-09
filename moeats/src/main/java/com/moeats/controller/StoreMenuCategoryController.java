@@ -1,6 +1,7 @@
 package com.moeats.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -43,7 +45,7 @@ public class StoreMenuCategoryController {
         model.addAttribute("menu", "category");
 		model.addAttribute("store", store);
 		model.addAttribute("storeMenuCategories", storeMenuCategories);
-		return "category/list";
+		return "views/owner/category-list";
 	}
 
 	// 2. 등록 폼
@@ -60,24 +62,23 @@ public class StoreMenuCategoryController {
     	
     	model.addAttribute("menu", "category-reg");
     	model.addAttribute("store", store);
-		return "category/write";
+		return "views/owner/category-register";
 	}
 
 	// 3. 등록
 	@PostMapping("/write")
-	public String create(
-			RedirectAttributes ra,
+	@ResponseBody
+	public Map create(
 			@ModelAttribute StoreMenuCategory category,
 			@SessionAttribute("member") Member member) {
     	Store store = storeService.myStore(member.getMemberIdx());
     	if ( store==null ) {
-    		ra.addAttribute("error", "잘못된 접근입니다");
-    		return "redirect:/home";
+    		return Map.of("result",false);
     	}
 		category.setStoreIdx(store.getStoreIdx());
 		
 		storeMenuCategoryService.createCategory(category);
-		return "redirect:/owners/store-menu-category";
+		return Map.of("result",true);
 	}
 
 	// 4. 상세
@@ -143,19 +144,17 @@ public class StoreMenuCategoryController {
 
 	// 7. 삭제
 	@PostMapping("/{menuCategoryIdx}/delete")
-	public String delete(
-			RedirectAttributes ra,
+	public Map delete(
 			@PathVariable int menuCategoryIdx,
 			@SessionAttribute("member") Member member) {
     	Store store = storeService.myStore(member.getMemberIdx());
     	StoreMenuCategory check = storeMenuCategoryService.getCategory(menuCategoryIdx);
     	if ( store==null || check==null || check.getStoreIdx()!=store.getStoreIdx() ) {
-    		ra.addAttribute("error", "잘못된 접근입니다");
-    		return "redirect:/home";
+    		return Map.of("result",false);
     	}
     	
 		storeMenuCategoryService.deleteCategory(menuCategoryIdx, store.getStoreIdx());
-		
-		return "redirect:/owners/store-menu-category";
+
+		return Map.of("result",true);
 	}
 }

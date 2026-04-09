@@ -15,20 +15,20 @@
 	
 	<!-- 메뉴 삭제 -->
 <!-- 	<delete id="deleteMenu" parameterType="int">
-		delete from Store_menu where menu_idx = #{menuIdx}
+		delete from store_menu where menu_idx = #{menuIdx}
 	</delete> -->
 	
 	
 	<!-- 메뉴 상태 변경 (활성, 품절, 숨김 등)-->
 	<update id="updateStatus">
-		update Store_Menu set
+		update store_menu set
 			menu_status = #{menuStatus}
 		where store_idx = #{storeIdx} and menu_idx = #{menuIdx}
 	</update>
 	
 	<!-- 메뉴 수정 -->
 	<update id="updateMenu">
-		update Store_Menu set
+		update store_menu set
 			menu_name = #{menuName},
 			menu_description = #{menuDescription},
 			menu_price = #{menuPrice},
@@ -40,7 +40,7 @@
 	<!-- 메뉴 추가 -->
 	<insert id="insertMenu" parameterType="StoreMenu"
 		useGeneratedKeys="true" keyProperty="menuIdx">
-		insert into Store_Menu(
+		insert into store_menu(
 					store_idx,
 					menu_name,
 					menu_description,
@@ -61,7 +61,7 @@
 	<!-- “이 메뉴가 내 가게 것 맞냐?” 확인하는 필수 메서드 -->
 	<select id="findByMenuIdx" resultType="StoreMenu">
 	    select *
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_idx = #{menuIdx}
 	</select>
@@ -71,7 +71,7 @@
 	-->
 	<select id="searchMenu" resultType="StoreMenu">
 	    select *
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_name like CONCAT('%', #{keyword}, '%')
 	</select>
@@ -79,7 +79,7 @@
 	<!-- 메뉴 검색 사용자용 -->
 	<select id="searchMenuForUser" resultType="StoreMenu">
 	    select *
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_status != 'HIDDEN'
 	      and menu_name like CONCAT('%', #{keyword}, '%')
@@ -88,7 +88,7 @@
 	<!-- 점주 - 메뉴 조회(리스트) 메인 사이드 음료 등으로 정렬-->
 	<select id="menuList" resultType="StoreMenu">
 	    select *
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	    order by display_order, menu_idx
 	</select>
@@ -96,7 +96,7 @@
 	<!-- 사용자 - 메뉴 조회, 숨김메뉴 표시 안함-->
 	<select id="menuListForUser" resultType="StoreMenu">
 	    select *
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_status != 'HIDDEN'
 	    order by display_order, menu_idx

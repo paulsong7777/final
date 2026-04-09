@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @Slf4j
 public class LegacyController {
-	@GetMapping({"/members/dashboard","/owners","/owner"})
+	@GetMapping({"/members/dashboard","/owners/dashboard-map","/owners","/owner"})
 	public String forward1(HttpServletRequest request) {
 		log.warn("해당 URI는 다음으로 교체해야 함 :\nGET "+request.getRequestURI()+"\n -> GET /owners/dashboard");
 		return "forward:/owners/dashboard";
