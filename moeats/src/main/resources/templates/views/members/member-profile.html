@@ -1,348 +1,231 @@
-<!-- 
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 	layout:decorate="~{layout/default}">
 <head>
-    <title>Mo-Eats 마이페이지</title>
+<title>Mo-Eats 마이페이지</title>
+<style>
+    /* 우측 상단 플로팅 카드 스타일 */
+    .floating-order-card {
+        position: fixed !important; 
+        z-index: 9999 !important; 
+        top: 120px !important;  /* 상단 여백을 살짝 늘림 */
+        right: 40px !important; /* 오른쪽 여백을 살짝 늘림 */
+        width: 300px !important; /* 230px -> 300px로 확대 */
+        transition: all 0.3s ease;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.15) !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+    }
+
+    /* 반응형: 태블릿/모바일에서는 기존처럼 하단 바 유지 */
+    @media (max-width: 991px) {
+        .floating-order-card {
+            top: auto !important;
+            bottom: 15px !important;
+            right: 15px !important;
+            left: 15px !important;
+            width: auto !important;
+        }
+    }
+</style>
 </head>
-
 <body>
-  <div class="wrap">
-    <h1>Member Profile</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: views/members/member-profile</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
-<body data-bs-spy="scroll" data-bs-target="#mypage-menu" data-bs-offset="100">
+<div layout:fragment="pageContent" class="container py-5">
+    <div class="row">
+        <div class="col-lg-12">
 
-    <header class="header-section d-flex flex-column align-items-center justify-content-center text-center">
-        <h1 class="display-5 fw-bold mb-2">My Page</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center">
-                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">Home</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">Mypage</li>
-            </ol>
-        </nav>
-    </header>
+            <div class="row">
+                <div class="col">
+                    <h2>프로필 관리</h2>
+                </div>
+            </div>
 
-    <main class="container content-wrapper">
-        <div class="row justify-content-center mb-5">
-            <div class="col-lg-10">
-                <div class="card shadow-lg bg-mo-navy text-white overflow-hidden">
-                    <div class="card-body p-5 position-relative">
-                        <div class="row align-items-center">
-                            <div class="col-md-8 text-start">
-                                <h3 class="fw-bold mb-1">반가워요, <span class="text-mo-orange" th:text="${session.member.memberNickname}">서윤</span>님!</h3>
-                                <p class="lead opacity-75 mb-4">오늘은 어떤 맛있는 음식을 함께 배달시킬까요?</p>
-                                <div class="d-flex gap-3">
-                                    <div class="bg-white bg-opacity-10 rounded-3 p-3 text-center">
-                                        <small class="d-block opacity-75">참여 중인 파티</small>
-                                        <span class="fs-4 fw-bold text-mo-orange">2개</span>
-                                    </div>
-                                    <div class="bg-white bg-opacity-10 rounded-3 p-3 text-center">
-                                        <small class="d-block opacity-75">이번 달 절약 금액</small>
-                                        <span class="fs-4 fw-bold text-mo-orange">12,500원</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 d-none d-md-block text-end">
-                                <span style="font-size: 5rem;">🛵</span>
-                            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="row">
+                        <div class="col">이메일</div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" th:value="${session.member.memberEmail}"
+                                readonly>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row g-4">
-            <div class="col-lg-3">
-                <div id="mypage-menu" class="list-group sticky-top shadow-sm p-2 bg-white rounded-4" style="top: 30px;">
-                    <a class="list-group-item list-group-item-action active" href="#list-item-1">📦 나의 주문 현황</a>
-                    <a class="list-group-item list-group-item-action" href="#list-item-2">👤 회원 정보 수정</a>
-                    <a class="list-group-item list-group-item-action" href="#list-item-3">💰 정산 관리</a>
-                    <a class="list-group-item list-group-item-action" href="#list-item-4">⭐ 즐겨찾는 맛집</a>
+            <div class="row">
+                <div class="col">
+                    <div class="row">
+                        <div class="col">전화번호</div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" th:value="${session.member.memberPhone}"
+                                readonly>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-lg-9">
-                <div class="p-1">
-                    
-                    <section id="list-item-1" class="mb-5">
-                        <div class="d-flex justify-content-between align-items-end mb-4">
-                            <h4 class="fw-bold m-0">나의 주문 현황</h4>
-                            <a href="#" class="text-decoration-none small text-muted">전체보기 &gt;</a>
+            <div class="row">
+                <div class="col">
+                    <div class="row">
+                        <div class="col">닉네임</div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" th:value="${session.member.memberNickname}"
+                                readonly>
                         </div>
-                        <div class="row row-cols-1 row-cols-md-2 g-4">
-                            <div class="col">
-                                <div class="card h-100 shadow-sm order-card position-relative">
-                                    <span class="badge-status bg-warning text-dark">배달 중</span>
-                                    <img th:src="@{/images/pizza.jpg}" class="card-img-top" alt="피자">
-                                    <div class="card-body">
-                                        <h6 class="fw-bold mb-1">도미노피자</h6>
-                                        <p class="small text-muted mb-0">주문일시: 2026-04-08</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="card h-100 shadow-sm order-card position-relative">
-                                    <span class="badge-status bg-info text-white">준비 중</span>
-                                    <img th:src="@{/images/starbucks.jpg}" class="card-img-top" alt="커피">
-                                    <div class="card-body">
-                                        <h6 class="fw-bold mb-1">스타벅스</h6>
-                                        <p class="small text-muted mb-0">주문일시: 2026-04-08</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="list-item-2" class="mb-5 pt-4">
-                        <h4 class="fw-bold mb-4">회원 정보 수정</h4>
-                        <div class="card border-0 shadow-sm bg-white p-4">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <h6 class="fw-bold mb-2">보안 및 개인정보</h6>
-                                    <p class="text-muted small mb-0">연락처, 비밀번호 등 소중한 정보를 안전하게 관리하세요.</p>
-                                </div>
-                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                    <a href="/members/me/edit" class="btn btn-outline-dark rounded-pill px-4">수정하기</a>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="list-item-3" class="mb-5 pt-4">
-                        <h4 class="fw-bold mb-4">정산 관리</h4>
-                        <div class="card bg-white border-0 shadow-sm p-5 text-center">
-                            <div class="mb-3"><span style="font-size: 3rem;">💸</span></div>
-                            <h6 class="fw-bold">정산할 내역이 없습니다</h6>
-                            <p class="text-muted small">모든 공동 배달 정산이 완료되었습니다.</p>
-                        </div>
-                    </section>
-
-                    <section id="list-item-4" class="mb-5 pt-4">
-                        <h4 class="fw-bold mb-4">즐겨찾는 맛집</h4>
-                        <div class="card border-0 shadow-sm overflow-hidden" style="background: linear-gradient(to right, #ffffff, #fff9f4);">
-                            <div class="card-body p-4">
-                                <p class="mb-2">가장 많이 주문한 카테고리</p>
-                                <h5 class="fw-bold mb-3">🔥 <span class="text-mo-orange">한식</span> 매니아!</h5>
-                                <a href="/stores" class="btn btn-navy bg-mo-navy text-white rounded-pill px-4 border-0">오늘의 추천 맛집 보기</a>
-                            </div>
-                        </div>
-                    </section>
-
+                    </div>
                 </div>
             </div>
+
+            <th:block th:if="${session.member.memberRoleType == 'USER'}">
+                <div class="row">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col">배달 주소 관리</div>
+                            <div class="col">
+                                <input type="button"
+                                    th:onclick="@{location.href='/members/me/addresses'}"
+                                    value="추가">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <b>기본 주소 : </b> <span
+                                    th:text="${deliveryAddress != null ? deliveryAddress.deliveryLabel: '등록된 주소 없음'}"></span>
+                                <input type="text" name="deliveryAddress"
+                                    th:value="${deliveryAddress != null 
+                                       ? deliveryAddress.deliveryAddress1 
+                                         + (deliveryAddress.deliveryAddress2 != null ? ' ' + deliveryAddress.deliveryAddress2 : '') 
+                                       : '등록된 기본 주소 없음'}"
+                                    readonly>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                <th:block th:if="${ !#lists.isEmpty(addressList) }">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>배달지 명칭</th>
+                                                <th>주소</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:block th:each="address : ${addressList}">
+                                                <td th:text="${address.deliveryLabel}"></td>
+                                                <td
+                                                    th:text="${address.deliveryAddress1 + '	' + address.deliveryAddress2}"></td>
+                                                <td><input type="button"
+                                                    th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/edit'|"
+                                                    value="수정"> <input type="button"
+                                                    th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/delete'|"
+                                                    value="삭제"> <span
+                                                    th:if="${address.isActive}">[기본주소]</span> <form th:if="${!address.isActive}"
+                                                        th:action="@{/members/me/addresses/{id}/default(id=${address.deliveryAddressIdx})}"
+                                                        method="post" style="display: inline">
+                                                        <input type="hidden" name="redirectUrl"
+                                                            value="/members/me" />
+                                                        <button type="submit">기본 주소로 변경</button>
+                                                    </form></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </th:block>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </th:block>
+
+            <th:block th:if="${session.member.memberRoleType == 'OWNER'}">
+                <div class="row">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col">
+                                가게 주소 관리 <input type="button"
+                                    th:onclick="@{location.href='/owners/store/new'}" value="추가"
+                                    style="display: inline">
+                            </div>
+                            <div class="col"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <span th:text="${store != null ? store.storeName : '가게 없음'}"></span>
+                                <input type="text" name="store"
+                                    th:value="${store != null 
+                                       ? store.storeAddress1 
+                                         + (store.storeAddress2!= null ? ' ' + store.storeAddress2 : '') 
+                                       : '등록된 가게 없음'}"
+                                    readonly> <input type="button"
+                                    th:onclick="@{location.href='/owners/store/edit'}" value="수정"
+                                    style="display: inline">
+
+                                <th:block th:if="${store.storeStatus == 'INACTIVE'}">
+                                    <form th:action="@{/owners/store/status}" method="post"
+                                        style="display: inline">
+                                        <input type="hidden" name="storeIdx"
+                                            th:value="${store.storeIdx}" /> <input type="hidden"
+                                            name="storeStatus" value="ACTIVE" /> <input type="hidden"
+                                            name="redirectUrl" value="/members/me" />
+                                        <button type="submit">활성화</button>
+                                    </form>
+                                </th:block>
+
+                                <th:block th:if="${store.storeStatus == 'ACTIVE'}">
+                                    <form th:action="@{/owners/store/status}" method="post"
+                                        style="display: inline">
+                                        <input type="hidden" name="storeIdx"
+                                            th:value="${store.storeIdx}" /> <input type="hidden"
+                                            name="storeStatus" value="INACTIVE" /> <input type="hidden"
+                                            name="redirectUrl" value="/members/me" />
+                                        <button type="submit">비활성화</button>
+                                    </form>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+
+            <div class="row">
+                <div class="col">
+                    <input type="button"
+                        th:onclick="@{location.href='/members/me/edit'}" value="회원정보수정">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <input type="button" th:onclick="@{|location.href='/main'|}"
+                        value="메인으로" class="btn"> <a href="#">회원탈퇴</a>&nbsp;·&nbsp;
+                    <a href="/logout">로그아웃</a>
+                </div>
+            </div>
+
+        </div> </div> <div class="card border-0 shadow-lg rounded-4 overflow-hidden floating-order-card">
+        <div class="card-header border-0 py-3" style="background-color: #252D59; color: white;">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>실시간 주문 현황</h6>
         </div>
-    </main>
-
-    <footer class="footer-section mt-5">
-        <div class="container text-center">
-            <h4 class="fw-bold text-white mb-3">Mo-Eats</h4>
-            <p class="small opacity-50">배달 팁은 나누고 즐거움은 더하고!<br>© 2026 Mo-Eats Project Team. All rights reserved.</p>
+        <div class="card-body p-4"> <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong style="color: #252D59; font-size: 1.1rem;">태산만두</strong>
+                <span class="badge" style="background-color: #FF8000; font-size: 0.8rem;">진행중</span>
+            </div>
+            <p class="card-text text-secondary mb-3" style="font-size: 0.9rem; line-height: 1.5;">
+                현재 <strong>3명</strong> 모집 중입니다.<br>
+                (목표 인원: 5명)
+            </p>
+            <a th:href="@{/members/me/orders}" class="btn btn-md w-100 fw-bold"
+               style="background-color: #252D59; color: white; border-radius: 8px; padding: 10px 0;">
+                자세히 보기
+            </a>
         </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body> -->
-<!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
-	
-<head>
-    <title>Mo-Eats 마이페이지</title>
-    <title>Mo-Eats 마이페이지</title>
-</head>
-<section layout:fragment="pageContent">
-	<div class="row">
-		<div class="col">
-			
-			<div class="row">
-				<div class="col">
-					<h2>프로필 관리</h2>
-				</div>
-			</div>
-			
-			<div class="row">
-				<div class="col">
-					<div class="row">
-						<div class="col">
-							이메일
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<input type="text" th:value="${session.member.memberEmail}" readonly>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-			
-			<div class="row">
-				<div class="col">
-					<div class="row">
-						<div class="col">
-							전화번호
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<input type="text" th:value="${session.member.memberPhone}" readonly>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-			
-			<div class="row">
-				<div class="col">
-					<div class="row">
-						<div class="col">
-							닉네임
-						</div>
-					</div>
-					<div class="row">
-						<div class="col">
-							<input type="text" th:value="${session.member.memberNickname}" readonly>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-			<th:block th:if="${session.member.memberRoleType == 'USER'}">
-				<div class="row">
-					<div class="col">
-						<div class="row">
-							<div class="col">
-								배달 주소 관리
-							</div>
-							<div class="col">
-								<input type="button" th:onclick="@{location.href='/members/me/addresses'}" value="추가">
-							</div>
-						</div>
-						<div class="row">
-							<div class="col">
-							<b>기본 주소 : </b>
-							<span th:text="${deliveryAddress != null ? deliveryAddress.deliveryLabel: '등록된 주소 없음'}"></span>
-								<input type="text" name="deliveryAddress"
-								       th:value="${deliveryAddress != null 
-								           ? deliveryAddress.deliveryAddress1 
-								             + (deliveryAddress.deliveryAddress2 != null ? ' ' + deliveryAddress.deliveryAddress2 : '') 
-								           : '등록된 기본 주소 없음'}"
-								       readonly>
-							</div>
-						</div>
-						
-						<div class="row">
-							<div class="col">
-								<th:block th:if="${ !#lists.isEmpty(addressList) }">
-								<table>
-									<thead>
-										<tr>
-											<th>배달지 명칭</th>
-											<th>주소</th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr th:block th:each="address : ${addressList}">
-											<td th:text="${address.deliveryLabel}"></td>
-											<td th:text="${address.deliveryAddress1 + '	' + address.deliveryAddress2}"></td>
-										    <td>
-										        <input type="button"
-										               th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/edit'|"
-										               value="수정">
-										
-										        <input type="button"
-										               th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/delete'|"
-										               value="삭제">
-											    <!-- 기본주소 표시 -->
-											    <span th:if="${address.isActive}">[기본주소]</span>
-											
-											    <!-- 기본주소 설정 버튼 (기본 아닐 때만) -->
-											    <form th:if="${!address.isActive}"
-											          th:action="@{/members/me/addresses/{id}/default(id=${address.deliveryAddressIdx})}"
-											          method="post"
-											          style="display:inline">
-											          <input type="hidden" name="redirectUrl" value="/members/me"/>
-											        <button type="submit">기본 주소로 변경</button>
-											    </form>
-										    </td>
-										</tr>
-									</tbody>
-								</th:block>
-								</table>
-							</div>
-						</div>
-						
-					</div>
-				</div>
-			</th:block>
-
-			<th:block th:if="${session.member.memberRoleType == 'OWNER'}">
-				<div class="row">
-					<div class="col">
-						<div class="row">
-							<div class="col">
-								가게 주소 관리
-								<input type="button" th:onclick="@{location.href='/owners/store/new'}" value="추가"  style="display:inline">
-							</div>
-							<div class="col">
-							</div>
-						</div>
-						<div class="row">
-							<div class="col">
-								<span th:text="${store != null ? store.storeName : '가게 없음'}"></span>
-								<input type="text" name="store"
-								       th:value="${store != null 
-								           ? store.storeAddress1 
-								             + (store.storeAddress2!= null ? ' ' + store.storeAddress2 : '') 
-								           : '등록된 가게 없음'}"
-								       readonly>
-									<input type="button" th:onclick="@{location.href='/owners/store/edit'}" value="수정"  style="display:inline">
-									
-									<!-- 상태 변경 폼 -->
-									<th:block th:if="${store.storeStatus == 'INACTIVE'}">
-					                    <form th:action="@{/owners/store/status}" method="post" style="display:inline">
-					                        <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
-					                        <input type="hidden" name="storeStatus" value="ACTIVE" />
-					                        <input type="hidden" name="redirectUrl" value="/members/me" />
-					                        <button type="submit">활성화</button>
-					                    </form>
-				                    </th:block>
-				                    
-				                    <th:block th:if="${store.storeStatus == 'ACTIVE'}">
-					                    <form th:action="@{/owners/store/status}" method="post" style="display:inline">
-					                        <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
-					                        <input type="hidden" name="storeStatus" value="INACTIVE" />
-					                        <input type="hidden" name="redirectUrl" value="/members/me" />
-					                        <button type="submit">비활성화</button>
-					                    </form>
-				                    </th:block>
-							</div>
-						</div>
-					</div>
-				</div>
-			</th:block>
-			
-			<div class="row">
-				<div class="col">
-					<input type="button" th:onclick="@{location.href='/members/me/edit'}" value="회원정보수정">
-				</div>
-			</div>
-			
-			<div class="row">
-				<div class="col">
-					<input type="button" th:onclick="@{|location.href='/main'|}" value="메인으로" class="btn">
-					<a href="#">회원탈퇴</a>&nbsp;·&nbsp;
-					<a href="/logout">로그아웃</a>
-				</div>
-			</div>
-			
-			
-		</div>
-	</div>
-	</section>
+    </div>
+</div> </body>
 </html>

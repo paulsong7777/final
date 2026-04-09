@@ -1,22 +1,241 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Store Edit</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Store Edit</title>
+<style>
+body {
+	font-family: Arial, sans-serif;
+	margin: 40px;
+	background: #f7f7f7;
+}
+
+.wrap {
+	max-width: 720px;
+	margin: 0 auto;
+	background: #fff;
+	padding: 32px;
+	border-radius: 16px;
+}
+
+h1 {
+	margin-top: 0;
+}
+
+.path {
+	color: #666;
+	margin-top: 8px;
+}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Store Edit</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: views/owner/store-edit</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
+	<div class="wrap">
+		<h1>Store Edit</h1>
+		<p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
+		<p class="path">template: views/owner/store-edit</p>
+		<p>
+			<a href="/main">메인으로</a>
+		</p>
+	</div>
+	
+	<main layout:fragment="content" class="store-setting-page py-4">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white edit-card-limit">
+        <div class="card-body p-4 p-md-5">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3">
+                <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-shop me-2 text-orange"></i>매장 정보 수정</h2>
+                <a th:href="@{/owners/dashboard-map}" class="text-decoration-none text-secondary small fw-bold">
+                    <i class="bi bi-arrow-left me-1"></i>이전으로
+                </a>
+            </div>
+
+            <form id="storeUpdateForm" th:action="@{/owners/store/update}" method="post" enctype="multipart/form-data">
+
+                <input type="hidden" name="storeIdx" th:value="${storeVo != null ? storeVo['storeIdx'] : 0}">
+
+                <div class="mb-5">
+                    <label class="fw-bold small text-secondary text-uppercase d-block mb-2">매장 대표 사진 (드래그하여 교체)</label>
+                    <div id="dropZone" class="rounded-4 upload-box shadow-sm" onclick="document.getElementById('storeImg').click()">
+                        <input type="file" name="storeImgFile" id="storeImg" accept="image/*" class="d-none" onchange="previewImage(this)">
+
+                        <!-- 기존 이미지 없을 때 업로드 안내 -->
+                        <div id="uploadContent"
+                             th:classappend="${storeVo != null and storeVo['storeImg'] != null} ? 'd-none' : ''"
+                             class="text-center">
+                            <i class="bi bi-cloud-arrow-up text-muted" style="font-size: 3rem;"></i>
+                            <p class="mt-2 mb-0 fw-bold text-navy">사진을 드래그하거나 클릭하여 교체하세요</p>
+                        </div>
+
+                        <!-- 기존 이미지 있을 때 미리보기 + 오버레이 -->
+                        <div id="imagePreview"
+                             th:classappend="${storeVo == null or storeVo['storeImg'] == null} ? 'd-none' : ''"
+                             class="w-100 h-100">
+                            <img id="previewImg" th:src="${storeVo != null ? storeVo['storeImg'] : ''}" alt="미리보기" class="preview-img">
+                            <div class="upload-overlay">
+                                <span><i class="bi bi-camera-fill me-2"></i>사진 교체하기</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">매장명</label>
+                        <input type="text" name="storeName"
+                               th:value="${storeVo != null ? storeVo['storeName'] : ''}"
+                               class="form-control py-3 fw-bold text-navy rounded-3 border-2 shadow-none" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">영업 상태</label>
+                        <select name="storeStatus" class="form-select py-3 fw-bold text-navy rounded-3 border-2 shadow-none">
+                            <option value="OPEN"   th:selected="${storeVo != null and storeVo['storeStatus'] == 'OPEN'}">영업 중 (주문 가능)</option>
+                            <option value="CLOSED" th:selected="${storeVo != null and storeVo['storeStatus'] == 'CLOSED'}">영업 종료 (준비 중)</option>
+                            <option value="BREAK"  th:selected="${storeVo != null and storeVo['storeStatus'] == 'BREAK'}">브레이크 타임</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 border-top pt-4">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-3">휴무일 설정</label>
+                        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+
+                            <input type="checkbox" name="holidays" id="day-none" value="연중무휴" class="holiday-chip"
+                                   th:checked="${storeVo != null and storeVo['holidays'] == '연중무휴'}"
+                                   onchange="toggleAllYear(this)">
+                            <label for="day-none" class="all-year-label"><i class="bi bi-calendar-check me-1"></i> 연중무휴</label>
+
+                            <div class="vr mx-2"></div>
+
+                            <!-- [수정] th:block 내부 구조 개선 -->
+                            <th:block th:each="day : ${#strings.arraySplit('월,화,수,목,금,토,일', ',')}">
+                                <input type="checkbox" name="holidays" th:id="${'day-' + day}" th:value="${day}"
+                                       class="holiday-chip day-checkbox"
+                                       th:checked="${storeVo != null and storeVo['holidays'] != null and storeVo['holidays'].contains(day)}">
+                                <label th:for="${'day-' + day}" class="holiday-label" th:text="${day}"></label>
+                            </th:block>
+
+                        </div>
+
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-2 border-end-0 text-secondary small fw-bold">기타 휴무 직접 입력</span>
+                            <input type="text" name="customHoliday" id="customHoliday"
+                                   th:value="${storeVo != null ? storeVo['customHoliday'] : ''}"
+                                   class="form-control py-2 fw-bold text-navy rounded-end-3 border-2 shadow-none"
+                                   placeholder="예: 매월 셋째주 일요일 등">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">연락처</label>
+                        <input type="text" name="storePhone"
+                               th:value="${storeVo != null ? storeVo['storePhone'] : ''}"
+                               class="form-control py-3 fw-bold text-navy rounded-3 border-2 shadow-none"
+                               placeholder="053-000-0000" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 주소</label>
+                        <input type="text" name="storeAddress"
+                               th:value="${storeVo != null ? storeVo['storeAddress'] : ''}"
+                               class="form-control py-3 fw-bold text-navy rounded-3 border-2 shadow-none" required>
+                    </div>
+
+                    <div class="col-12 border-top pt-4">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 소개</label>
+                        <textarea name="storeDescription" rows="5"
+                                  class="form-control py-3 fw-bold rounded-3 border-2 no-resize shadow-none"
+                                  th:text="${storeVo != null ? storeVo['storeDescription'] : ''}"></textarea>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn btn-moeats w-100 py-3 rounded-pill fs-5 shadow-sm">
+                        <i class="bi bi-check-lg me-2"></i> 설정 저장하기
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        // ==========================================
+        // [연중무휴] 선택 시 요일/기타 입력 비활성화
+        // ==========================================
+        function toggleAllYear(checkbox) {
+            const dayCheckboxes = document.querySelectorAll('.day-checkbox');
+            const customInput = document.getElementById('customHoliday');
+            if (checkbox.checked) {
+                dayCheckboxes.forEach(cb => { 
+                    cb.checked = false; 
+                    cb.disabled = true; 
+                });
+                customInput.value = "";
+                customInput.disabled = true;
+                customInput.placeholder = "연중무휴 시 입력 불가";
+            } else {
+                dayCheckboxes.forEach(cb => { 
+                    cb.disabled = false; 
+                });
+                customInput.disabled = false;
+                customInput.placeholder = "예: 매월 셋째주 일요일 등";
+            }
+        }
+
+        // ==========================================
+        // [이미지] 드래그&드롭 + 클릭 업로드
+        // ==========================================
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('storeImg');
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('uploadContent').classList.add('d-none');
+                    document.getElementById('imagePreview').classList.remove('d-none');
+                    document.getElementById('previewImg').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                previewImage(fileInput);
+            }
+        });
+
+        // ==========================================
+        // [초기화] 페이지 로드 시 연중무휴 상태 복원
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', function() {
+            const allYearCb = document.getElementById('day-none');
+            if (allYearCb && allYearCb.checked) {
+                toggleAllYear(allYearCb);
+            }
+        });
+
+        // ==========================================
+        // [폼 제출] 수정 확인
+        // ==========================================
+        document.getElementById('storeUpdateForm').onsubmit = function() {
+            return confirm("입력하신 정보로 매장 정보를 수정하시겠습니까?");
+        };
+
+        /*]]>*/
+    </script>
+</th:block>
+	
 </body>
 </html>
