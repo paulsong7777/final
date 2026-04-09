@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>배송지 추가</title>
+</head>
+<body>
+
+<section layout:fragment="pageContent">
+    <section class="mo-section">
+        <div class="mo-surface-card">
+            <div class="mo-section-head">
+                <div>
+                    <div class="mo-section-label">ADDRESS</div>
+                    <h2 class="mo-section-title">배송지 추가</h2>
+                    <p class="mo-helper-text mb-0">
+                        가게 탐색과 주문방 생성에 사용할 배송지를 등록합니다.
+                    </p>
+                </div>
+                <a th:href="@{/members/me/addresses}" class="mo-btn mo-btn-outline">
+                    목록으로
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="mo-section">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-8">
+                <div class="mo-surface-card">
+                    <form th:action="@{/members/me/addresses}" method="post" class="row g-3">
+
+                        <div class="col-12 col-md-6">
+                            <label for="deliveryLabel" class="mo-form-label">배송지 이름</label>
+                            <input type="text"
+                                   id="deliveryLabel"
+                                   name="deliveryLabel"
+                                   class="form-control mo-form-control"
+                                   placeholder="예: 집, 회사"
+                                   required>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="recipientName" class="mo-form-label">수령인명</label>
+                            <input type="text"
+                                   id="recipientName"
+                                   name="recipientName"
+                                   class="form-control mo-form-control"
+                                   placeholder="받는 분 이름"
+                                   required>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="recipientPhone" class="mo-form-label">연락처</label>
+                            <input type="text"
+                                   id="recipientPhone"
+                                   name="recipientPhone"
+                                   class="form-control mo-form-control"
+                                   placeholder="010-0000-0000"
+                                   required>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label for="zipCode" class="mo-form-label">우편번호</label>
+                            <div class="d-flex gap-2">
+                                <input type="text"
+                                       id="zipCode"
+                                       name="zipCode"
+                                       class="form-control mo-form-control"
+                                       placeholder="우편번호"
+                                       readonly
+                                       required>
+                                <button type="button"
+                                        class="mo-btn mo-btn-outline flex-shrink-0"
+                                        id="btnAddressSearch">
+                                    주소 검색
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-8">
+                            <label for="deliveryAddress1" class="mo-form-label">기본주소</label>
+                            <input type="text"
+                                   id="deliveryAddress1"
+                                   name="deliveryAddress1"
+                                   class="form-control mo-form-control"
+                                   placeholder="주소 검색을 이용해 주세요"
+                                   readonly
+                                   required>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="deliveryAddress2" class="mo-form-label">상세주소</label>
+                            <input type="text"
+                                   id="deliveryAddress2"
+                                   name="deliveryAddress2"
+                                   class="form-control mo-form-control"
+                                   placeholder="상세주소를 입력하세요">
+                        </div>
+
+                        <div class="col-12">
+                            <label for="deliveryRequest" class="mo-form-label">배송 요청사항</label>
+                            <input type="text"
+                                   id="deliveryRequest"
+                                   name="deliveryRequest"
+                                   class="form-control mo-form-control"
+                                   placeholder="예: 문 앞에 놓아주세요">
+                        </div>
+
+                        <div class="col-12 d-grid d-md-flex justify-content-md-end gap-2 pt-2">
+                            <a th:href="@{/members/me/addresses}" class="mo-btn mo-btn-outline">
+                                취소
+                            </a>
+                            <button type="submit" class="mo-btn mo-btn-primary">
+                                배송지 저장
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</section>
+
+<th:block layout:fragment="pageScripts">
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script>
+        (function () {
+            const searchButton = document.getElementById('btnAddressSearch');
+            if (!searchButton) return;
+
+            searchButton.addEventListener('click', function () {
+                new daum.Postcode({
+                    oncomplete: function (data) {
+                        document.getElementById('zipCode').value = data.zonecode || '';
+                        document.getElementById('deliveryAddress1').value = data.roadAddress || data.address || '';
+                        document.getElementById('deliveryAddress2').focus();
+                    }
+                }).open();
+            });
+        })();
+    </script>
+</th:block>
+
+</body>
+</html>

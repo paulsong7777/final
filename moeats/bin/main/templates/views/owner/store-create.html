@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>신규 매장 등록 - MoEats</title>
+    <style>
+        .upload-box {
+            width: 100%; height: 300px; border: 2px dashed #ccc;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; background-color: #fafafa;
+            transition: all 0.3s; overflow: hidden;
+        }
+        .upload-box:hover, .upload-box.dragover {
+            border-color: var(--moeats-orange);
+            background-color: rgba(255, 128, 0, 0.05);
+        }
+        .preview-img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 휴무일 칩 스타일 수정 */
+        .holiday-chip { 
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .holiday-label {
+            display: inline-block;
+            padding: 8px 18px; border: 2px solid #eee; border-radius: 50px;
+            cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.85rem; color: #777;
+            user-select: none;
+        }
+        
+        /* 체크되었을 때 스타일 */
+        .holiday-chip:checked + .holiday-label {
+            background-color: var(--moeats-orange, #ff8000); 
+            border-color: var(--moeats-orange, #ff8000); 
+            color: white;
+        }
+
+        .all-year-label {
+            display: inline-block;
+            padding: 8px 20px; border: 2px solid #eee; border-radius: 50px;
+            cursor: pointer; font-weight: 800; transition: 0.2s; font-size: 0.85rem; color: #6610f2;
+            user-select: none;
+        }
+        
+        .holiday-chip:checked + .all-year-label {
+            background-color: #6610f2; border-color: #6610f2; color: white;
+        }
+
+        /* 비활성화(disabled) 상태일 때 스타일 추가 */
+        .holiday-chip:disabled + .holiday-label {
+            background-color: #f5f5f5;
+            border-color: #eee;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* [추가] 이미지 업로드 박스 - 사진 미선택 경고 상태 */
+        .upload-box.invalid {
+            border-color: #dc3545;
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+<main layout:fragment="content" class="store-setting-page py-4">
+    <div class="card shadow-sm border-0 mx-auto rounded-4 bg-white edit-card-limit">
+        <div class="card-body p-4 p-md-5">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3">
+                <h2 class="fw-bold mb-0 text-navy"><i class="bi bi-shop-window me-2 text-orange"></i>신규 매장 등록</h2>
+                <a th:href="@{/owners/dashboard-map}" class="text-decoration-none text-secondary small fw-bold">
+                    <i class="bi bi-arrow-left me-1"></i>이전으로
+                </a>
+            </div>
+
+            <form id="storeCreateForm" th:action="@{/owner/store/new}" method="post" enctype="multipart/form-data">
+
+                <div class="mb-5">
+                    <label class="fw-bold small text-secondary text-uppercase d-block mb-2">매장 대표 사진 (드래그 가능)</label>
+                    <div id="dropZone" class="rounded-4 upload-box shadow-sm" onclick="document.getElementById('storeImg').click()">
+                        <input type="file" name="storeImgFile" id="storeImg" accept="image/*" class="d-none" onchange="previewImage(this)">
+                        <div id="uploadContent" class="text-center">
+                            <i class="bi bi-cloud-arrow-up text-muted" style="font-size: 3rem;"></i>
+                            <p class="mt-2 mb-0 fw-bold text-navy">사진을 드래그하거나 클릭하여 등록하세요</p>
+                            <!-- [추가] 미선택 시 경고 문구 (기본 hidden) -->
+                            <p id="imgRequiredMsg" class="text-danger small mt-1 mb-0 d-none fw-bold">
+                                <i class="bi bi-exclamation-circle me-1"></i>매장 대표 사진을 등록해주세요
+                            </p>
+                        </div>
+                        <div id="imagePreview" class="d-none w-100 h-100">
+                            <img id="previewImg" src="" alt="미리보기" class="preview-img">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">매장명</label>
+                        <input type="text" name="storeName" class="form-control py-3 fw-bold text-navy rounded-3 border-2 shadow-none" placeholder="예: 모이츠 대구본점" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">영업 상태</label>
+                        <select name="storeStatus" class="form-select py-3 fw-bold text-navy rounded-3 border-2 shadow-none">
+                            <option value="OPEN" selected>영업 중 (주문 가능)</option>
+                            <option value="CLOSED">영업 종료 (준비 중)</option>
+                            <option value="BREAK">브레이크 타임</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 border-top pt-4">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-3">휴무일 설정 (중복 선택 가능)</label>
+                        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+
+                            <input type="checkbox" name="holidays" id="day-none" value="연중무휴" class="holiday-chip" onchange="toggleAllYear(this)">
+                            <label for="day-none" class="all-year-label"><i class="bi bi-calendar-check me-1"></i> 연중무휴</label>
+
+                            <div class="vr mx-2"></div>
+
+                            <!-- [수정] th:block 내부 구조 개선 -->
+                            <th:block th:each="day : ${#strings.arraySplit('월,화,수,목,금,토,일', ',')}">
+                                <input type="checkbox" name="holidays" th:id="${'day-' + day}" th:value="${day}" class="holiday-chip day-checkbox">
+                                <label th:for="${'day-' + day}" class="holiday-label" th:text="${day}"></label>
+                            </th:block>
+
+                        </div>
+
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-2 border-end-0 text-secondary small fw-bold">기타 휴무 직접 입력</span>
+                            <input type="text" name="customHoliday" id="customHoliday" class="form-control py-2 fw-bold text-navy rounded-end-3 border-2 shadow-none" placeholder="예: 매월 셋째주 일요일, 금일 휴업 등">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">연락처</label>
+                        <input type="text" name="storePhone" class="form-control py-3 fw-bold text-navy rounded-3 border-2 shadow-none" placeholder="053-000-0000" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 주소</label>
+                        <input type="text" name="storeAddress" class="form-control py-3 fw-bold text-navy rounded-3 border-2 shadow-none" placeholder="대구광역시 중구..." required>
+                    </div>
+
+                    <div class="col-12 border-top pt-4">
+                        <label class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 소개</label>
+                        <textarea name="storeDescription" rows="5" class="form-control py-3 fw-bold rounded-3 border-2 no-resize shadow-none" placeholder="사장님의 매장을 멋지게 소개해 주세요."></textarea>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn btn-moeats w-100 py-3 rounded-pill fs-5 shadow-sm">
+                        <i class="bi bi-check-lg me-2"></i> 매장 등록 완료
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        // ==========================================
+        // [연중무휴] 선택 시 요일/기타 입력 비활성화
+        // ==========================================
+        function toggleAllYear(checkbox) {
+            const dayCheckboxes = document.querySelectorAll('.day-checkbox');
+            const customInput = document.getElementById('customHoliday');
+
+            if (checkbox.checked) {
+                dayCheckboxes.forEach(cb => { 
+                    cb.checked = false; 
+                    cb.disabled = true; 
+                });
+                customInput.value = "";
+                customInput.disabled = true;
+                customInput.placeholder = "연중무휴 시 입력 불가";
+            } else {
+                dayCheckboxes.forEach(cb => { 
+                    cb.disabled = false; 
+                });
+                customInput.disabled = false;
+                customInput.placeholder = "예: 매월 셋째주 일요일, 금일 휴업 등";
+            }
+        }
+
+        // ==========================================
+        // [이미지] 드래그&드롭 + 클릭 업로드
+        // ==========================================
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('storeImg');
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('uploadContent').classList.add('d-none');
+                    document.getElementById('imagePreview').classList.remove('d-none');
+                    document.getElementById('previewImg').src = e.target.result;
+                    // [추가] 사진 선택 시 경고 상태 해제
+                    dropZone.classList.remove('invalid');
+                    document.getElementById('imgRequiredMsg').classList.add('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                previewImage(fileInput);
+            }
+        });
+
+        // ==========================================
+        // [폼 제출] 이미지 미선택 검증 추가
+        // ==========================================
+        document.getElementById('storeCreateForm').onsubmit = function() {
+            // [추가] 이미지 미선택 시 제출 차단
+            if (!fileInput.files || !fileInput.files[0]) {
+                dropZone.classList.add('invalid');
+                document.getElementById('uploadContent').classList.remove('d-none');
+                document.getElementById('imgRequiredMsg').classList.remove('d-none');
+                dropZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+            return confirm("입력하신 정보로 매장을 등록하시겠습니까?");
+        };
+
+        /*]]>*/
+    </script>
+</th:block>
+</body>
+</html>

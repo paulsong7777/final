@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+
+<th:block layout:fragment="css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .dashboard-wrapper { background-color: #F5F7FA; min-height: 100vh; }
+        
+        /* 메인 레이아웃 (데스크탑 2단 / 모바일 1단) */
+        .dashboard-content { display: flex; gap: 24px; padding: 20px 0; }
+        @media (max-width: 992px) { .dashboard-content { flex-direction: column; } }
+
+        /* 주문 리스트 섹션 */
+        .order-section { flex: 4; min-width: 400px; }
+        .order-list-container { 
+            max-height: calc(100vh - 150px); overflow-y: auto; 
+            padding-right: 10px; 
+        }
+
+        /* 지도 섹션 (우측 고정) */
+        .map-section { flex: 6; position: sticky; top: 20px; height: calc(100vh - 80px); }
+        .map-card { 
+            height: 100%; border-radius: 30px; overflow: hidden; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06); background: white; border: 1px solid #eee;
+        }
+        #map { width: 100%; height: 100%; background: #fdfdfd; }
+
+        /* 주문 카드 공통 스타일 */
+        .order-card {
+            background: white; border-radius: 22px; border: 1px solid #edf2f7;
+            padding: 24px; margin-bottom: 16px; transition: 0.3s; position: relative;
+        }
+        .order-card:hover { border-color: var(--mo-orange); transform: translateX(5px); }
+        
+        /* 상태별 카드 포인트 */
+        .order-card.new { border-top: 5px solid var(--mo-orange); }
+        .order-card.cooking { border-left: 6px solid var(--mo-navy); }
+
+        /* 버튼 커스텀 */
+        .btn-mo-action {
+            width: 100%; padding: 14px; border-radius: 14px; font-weight: 800;
+            transition: 0.2s; border: none; font-size: 1rem;
+        }
+        .btn-accept { background: var(--mo-orange); color: white; }
+        .btn-accept:hover { background: #e67300; box-shadow: 0 5px 15px rgba(255, 128, 0, 0.3); }
+        
+        .btn-finish { background: var(--mo-navy); color: white; }
+        .btn-finish:hover { background: #1a2040; box-shadow: 0 5px 15px rgba(37, 45, 89, 0.3); }
+
+        .status-badge { font-size: 0.8rem; padding: 5px 14px; border-radius: 50px; font-weight: 700; margin-bottom: 10px; display: inline-block; }
+        .bg-orange-light { background: #FFF0E0; color: var(--mo-orange); }
+        .bg-navy-light { background: #E9ECEF; color: var(--mo-navy); }
+    </style>
+</th:block>
+
+<div layout:fragment="content" class="dashboard-wrapper">
+    <div class="container-fluid px-4">
+        
+        <div th:if="${isEmpty}" class="text-center py-5">
+            <div class="soft-card p-5 shadow-sm border-0">
+                <i class="bi bi-shop fs-1 text-orange mb-3"></i>
+                <h3 class="fw-bold">아직 메뉴가 등록되지 않았습니다</h3>
+                <p class="text-muted">가게 운영을 위해 메뉴를 먼저 등록해주세요!</p>
+                <a href="/owner/menu/register" class="btn btn-primary-mo mt-3 px-5">메뉴 등록하기</a>
+            </div>
+        </div>
+
+        <div th:unless="${isEmpty}" class="dashboard-content">
+            
+            <section class="order-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0 text-navy">실시간 주문 <span class="text-orange" th:text="${newOrderCount ?: 3}">3</span></h4>
+                    <div class="badge bg-white text-success border rounded-pill px-3 py-2">
+                        <i class="bi bi-circle-fill blink me-1"></i> LIVE 관제중
+                    </div>
+                </div>
+
+                <div class="order-list-container custom-scrollbar">
+                    
+                    <div class="order-card new shadow-sm" id="order-201">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="status-badge bg-orange-light">신규 주문</span>
+                            <span class="small text-muted font-monospace">18:40</span>
+                        </div>
+                        <h5 class="fw-bold text-navy mb-1">훈제치킨 한마리 (순한맛)</h5>
+                        <p class="small text-muted mb-4"><i class="bi bi-geo-alt"></i> 대구 중구 국채보상로 600</p>
+                        
+                        <button class="btn-mo-action btn-accept" onclick="processOrder(201, 'accept')">
+                            주문 접수 (조리 시작)
+                        </button>
+                    </div>
+
+                    <div class="order-card cooking shadow-sm" id="order-202">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="status-badge bg-navy-light">조리 중 (12분 경과)</span>
+                            <span class="small text-muted font-monospace">#A-442</span>
+                        </div>
+                        <h5 class="fw-bold text-navy mb-1">불맛 볶음면 외 1건</h5>
+                        <p class="small text-muted mb-4"><i class="bi bi-geo-alt"></i> 대구 중구 중앙대로 401 (반월당)</p>
+                        
+                        <button class="btn-mo-action btn-finish" onclick="processOrder(202, 'complete')">
+                            조리 완료 (배달 요청)
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="map-section">
+                <div class="map-card">
+                    <div id="map"></div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3355be34fede739dcf93c2a5f3ec84f1"></script>
+    
+    <script th:inline="javascript">
+        // 1. 지도 초기화 (대구 중심)
+        window.onload = function() {
+            var container = document.getElementById('map');
+            if(container) {
+                var options = {
+                    center: new kakao.maps.LatLng(35.8714, 128.6014),
+                    level: 3
+                };
+                var map = new kakao.maps.Map(container, options);
+                
+                // 우리 가게 마커 (샘플)
+                var marker = new kakao.maps.Marker({
+                    position: new kakao.maps.LatLng(35.8714, 128.6014),
+                    map: map
+                });
+            }
+        };
+
+        // 2. 통합 주문 처리 함수 (접수 & 완료)
+        function processOrder(orderId, type) {
+            let confirmMsg = "";
+            let targetStatus = 0;
+
+            if(type === 'accept') {
+                confirmMsg = "주문을 접수하시겠습니까?\n고객님께 조리 시작 알림이 전송됩니다.";
+                targetStatus = 2; // 조리중 상태
+            } else if(type === 'complete') {
+                confirmMsg = "조리가 완료되었습니까?\n배달 대행 업체로 라이더 호출을 요청합니다.";
+                targetStatus = 3; // 배달중 상태
+            }
+
+            if(confirm(confirmMsg)) {
+                // 버튼 비활성화 시각 효과
+                const card = document.getElementById('order-' + orderId);
+                const btn = card.querySelector('.btn-mo-action');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>처리 중...';
+                
+                // 해당 상태의 상세페이지로 리다이렉트
+                setTimeout(() => {
+                    location.href = '/owner/order/detail?status=' + targetStatus + '&orderId=' + orderId;
+                }, 700);
+            }
+        }
+    </script>
+</th:block>
+</html>

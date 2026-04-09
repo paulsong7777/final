@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mappers.GroupOrderMapper">
+	<select id="findAll" resultType="GroupOrder">
+		SELECT * FROM group_order
+	</select>
+	<select id="findByIdx" resultType="GroupOrder">
+		SELECT * FROM group_order WHERE order_idx = #{orderIdx}
+	</select>
+	<select id="findByRoom" resultType="GroupOrder">
+		SELECT * FROM group_order WHERE room_idx = #{roomIdx}
+	</select>
+	<select id="findActive" resultType="GroupOrder">
+		SELECT * FROM group_order WHERE order_status = 'ACTIVE'
+	</select>
+	<insert id="insert" parameterType="GroupOrder">
+		INSERT INTO group_order(
+			room_idx,
+			store_idx,
+			leader_member_idx,
+			order_mode,
+			payment_mode,
+			order_status,
+			order_total_amount
+		) VALUES (
+			#{roomIdx},
+			#{storeIdx},
+			#{leaderMemberIdx},
+			#{orderMode},
+			#{paymentMode},
+			'PAYMENT_PENDING',
+			#{orderTotalAmount}
+		)
+	</insert>
+	<update id="pay" parameterType="int">
+		UPDATE group_order SET
+			order_status		= 'PAID',
+			payment_confirmed_at= CURRENT_TIMESTAMP
+		WHERE order_idx			= #{orderIdx}
+	</update>
+	<update id="accept" parameterType="int">
+		UPDATE group_order SET
+			order_status		= 'ACCEPTED',
+			store_confirmed_at	= CURRENT_TIMESTAMP
+		WHERE order_idx			= #{orderIdx}
+			AND order_status	= 'PAID'
+	</update>
+	<update id="prepare" parameterType="int">
+		UPDATE group_order SET
+			order_status		= 'PREPARING'
+		WHERE order_idx			= #{orderIdx}
+			AND order_status	= 'ACCEPTED'
+	</update>
+	<update id="ready" parameterType="int">
+		UPDATE group_order SET
+			order_status	= 'READY'
+		WHERE order_idx		= #{orderIdx}
+			AND order_status	= 'PREPARING'
+	</update>
+	<update id="deliver" parameterType="int">
+		UPDATE group_order SET
+			order_status	= 'DELIVERING'
+		WHERE order_idx		= #{orderIdx}
+	</update>
+	<update id="complete" parameterType="int">
+		UPDATE group_order SET
+			order_status	= 'COMPLETED',
+			completed_at	= CURRENT_TIMESTAMP
+		WHERE order_idx		= #{orderIdx}
+			AND order_status	= 'READY'
+	</update>
+	<update id="cancel" parameterType="int">
+		UPDATE group_order SET
+			order_status	= 'CANCELLED',
+			cancelled_at	= CURRENT_TIMESTAMP
+		WHERE order_idx		= #{orderIdx}
+	</update>
+	<delete id="delete" parameterType="int">
+		DELETE FROM group_order WHERE order_idx = #{orderIdx}
+	</delete>
+	
+	<!-- 이후는 현장 모드 -->
+	<update id="checkIn" parameterType="int">
+		UPDATE group_order SET
+			order_status	= 'CHECKED_IN',
+			checked_in_at	= CURRENT_TIMESTAMP
+		WHERE order_idx		= #{orderIdx}
+	</update>
+	<update id="expectVisit" parameterType="int">
+		UPDATE group_order SET
+			expected_visit_at	= #{expectedVisitAt}
+		WHERE order_idx			= #{orderIdx}
+	</update>
+</mapper>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--/* Thymeleaf 주석  - Thymeleaf를 사용하기 위한 네임스페이스 적용 */-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h1>Thymeleaf 사용하기1</h1>
+	<p th:text="${text1}">text1의 내용이 태그를 포함해서 p태그의 내용으로 출력됨</p>
+	<p th:utext="${text1}">text1의 내용이 태그가 적용되서 p태그의 내용으로 출력됨</p>
+	<p class="test1" th:attrappend="class='temp1'">내용1</p>
+	<p class="test1" th:classappend="temp2">내용1</p>		
+	<!--/*
+		#temporals는 자바8 날짜 서식을 지원하는 객체이며 다음과 같은 유용한 객체도 지원한다.
+		날짜 관련 객체 : #calendars, #dates, 배열 관련 객체 : #arrays, #lists
+		숫자 관련 서식 : #numbers, 날짜 관련 서식 : #strings, 논리값 관련 : #bools 
+		https://www.thymeleaf.org/doc/tutorials/3.1/usingthymeleaf.html#expression-utility-objects
+	*/-->	
+	<p th:text="${#temporals.format(today, 'yyyy-MM-dd')}"></p>
+	<p th:text="${#dates.format(memo.regDate, 'yyyy-MM-dd')}"></p>	
+	<ul th:object="${memo}"><!--/* memo를 선택한 객체로 지정 */-->
+		<li th:text="|no : *{no}|"></li><!--/* 선택한 객체의 변수 출력 */-->
+		<li th:text="|제목 : *{title}|"></li>		
+		<li th:text="'작성자 : ' + *{writer}"></li>
+		<li th:text="|내용 : *{content}|"></li>
+		<li th:text="|작성일 : ${#dates.format(memo.regDate, 'yyyy-MM-dd')}|"></li>		
+	</ul>	
+	<a th:href="@{thymeleaf2/{no}(no=${memo.no})}">다음 보기</a>	
+	<a th:href="@{thymeleaf3(no=${memo.no})}">마지막 보기</a>
+</body>
+</html>

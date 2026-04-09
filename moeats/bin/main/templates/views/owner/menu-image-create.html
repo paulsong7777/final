@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/default}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu Image Create</title>
+<style>
+body {
+	font-family: Arial, sans-serif;
+	margin: 40px;
+	background: #f7f7f7;
+}
+
+.wrap {
+	max-width: 720px;
+	margin: 0 auto;
+	background: #fff;
+	padding: 32px;
+	border-radius: 16px;
+}
+
+h1 {
+	margin-top: 0;
+}
+
+.path {
+	color: #666;
+	margin-top: 8px;
+}
+</style>
+</head>
+<body>
+	<div class="wrap">
+		<h1>Menu Image Create</h1>
+		<p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
+		<p class="path">template: views/owner/menu-image-create</p>
+		<p>
+			<a href="/main">메인으로</a>
+		</p>
+
+		<main layout:fragment="content" class="py-4">
+			<div class="card shadow-sm border-0 mx-auto rounded-4 bg-white"
+				style="max-width: 600px;">
+				<div class="card-body p-4 p-md-5">
+					<div class="d-flex align-items-center mb-4 border-bottom pb-3">
+						<a href="javascript:history.back()"
+							class="text-navy text-decoration-none fw-bold me-3"><i
+							class="bi bi-arrow-left"></i> 뒤로가기</a>
+						<h3 class="fw-bold mb-0 text-navy">이미지 업로드</h3>
+					</div>
+
+					<form th:action="@{/owners/menus/{idx}/images(idx=${menuIdx})}"
+						method="post" enctype="multipart/form-data">
+						<div class="mb-4">
+							<label class="form-label fw-bold">사진 선택</label>
+							<div
+								class="upload-box text-center p-5 border border-2 border-dashed rounded-4"
+								style="cursor: pointer;"
+								onclick="document.getElementById('file').click()">
+								<i class="bi bi-cloud-arrow-up display-4 text-orange"></i>
+								<p class="mt-2 text-muted mb-0">컴퓨터에서 사진을 선택하세요.</p>
+								<img id="preview" class="d-none w-100 rounded-3 mt-3 shadow-sm">
+							</div>
+							<input type="file" name="file" id="file" class="d-none"
+								onchange="readURL(this);" required>
+						</div>
+
+						<button type="submit"
+							class="btn btn-warning text-white w-100 py-3 rounded-pill fw-bold shadow-sm">
+							이미지 저장하기</button>
+					</form>
+				</div>
+			</div>
+		</main>
+		<th:block layout:fragment="script">
+			<script>
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = document.getElementById('preview');
+                    img.src = e.target.result;
+                    img.classList.remove('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+		</th:block>
+
+
+	</div>
+</body>
+</html>

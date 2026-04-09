@@ -15,7 +15,7 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        
+
 
         // 1. 현재 요청의 세션을 가져옵니다.
         HttpSession session = request.getSession(false);
@@ -32,7 +32,7 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
         
         // 5. 로그인된 사용자라면 true를 반환하여 정상적으로 컨트롤러로 통과시킵니다.
 
-  
+
         
         if (session == null || session.getAttribute("member") == null) {
             
@@ -49,8 +49,7 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
             response.sendRedirect("/login");
             return false; 
         }
-        
-
+ 
         return true; 
     }
 }

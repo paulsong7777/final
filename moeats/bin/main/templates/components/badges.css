@@ -1,0 +1,43 @@
+@charset "UTF-8";
+
+.mo-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: var(--mo-radius-pill);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+.mo-badge-navy {
+    background: rgba(42, 54, 89, 0.08);
+    border-color: rgba(42, 54, 89, 0.12);
+    color: var(--mo-navy-900);
+}
+
+.mo-badge-primary {
+    background: rgba(255, 128, 0, 0.10);
+    border-color: rgba(255, 128, 0, 0.18);
+    color: var(--mo-primary);
+}
+
+.mo-badge-accent {
+    background: rgba(248, 94, 40, 0.10);
+    border-color: rgba(248, 94, 40, 0.18);
+    color: var(--mo-accent);
+}
+
+.mo-badge-success {
+    background: rgba(15, 118, 110, 0.10);
+    border-color: rgba(15, 118, 110, 0.18);
+    color: var(--mo-success);
+}
+
+.mo-badge-soft {
+    background: rgba(42, 54, 89, 0.05);
+    border-color: var(--mo-border);
+    color: var(--mo-text-muted);
+}

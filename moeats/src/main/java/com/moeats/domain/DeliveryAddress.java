@@ -22,6 +22,7 @@ public class DeliveryAddress {
 	String deliveryAddress1;		// 도로명/지번주소
 	String deliveryAddress2;		// 상세주소
 
+
 	String deliveryRequest;			// 배송요청사항
 	boolean isActive;				// 사용여부
 	Timestamp createdAt;			// 생성시각

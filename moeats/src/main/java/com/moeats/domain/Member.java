@@ -1,5 +1,6 @@
 package com.moeats.domain;
 
+
 import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
@@ -22,4 +23,6 @@ public class Member {
         String memberStatus;
         Timestamp createdAt;
         Timestamp updatedAt;
+
 }
+

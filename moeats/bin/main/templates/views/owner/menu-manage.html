@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/default}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Owner Menu Manage</title>
+<style>
+body {
+	font-family: Arial, sans-serif;
+	margin: 40px;
+	background: #f7f7f7;
+}
+
+.wrap {
+	max-width: 720px;
+	margin: 0 auto;
+	background: #fff;
+	padding: 32px;
+	border-radius: 16px;
+}
+
+h1 {
+	margin-top: 0;
+}
+
+.path {
+	color: #666;
+	margin-top: 8px;
+}
+</style>
+</head>
+<body>
+	<div class="wrap">
+		<h1>Owner Menu Manage</h1>
+		<p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
+		<p class="path">template: views/owner/menu-manage</p>
+		<p>
+			<a href="/main">메인으로</a>
+		</p>
+	</div>
+
+<body>
+	<main layout:fragment="content" class="py-4">
+    <div
+			class="card shadow-sm border-0 mx-auto rounded-4 bg-white edit-card-limit">
+        <div class="card-body p-4 p-md-5">
+            
+            <div
+					class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3">
+                <h2 class="fw-bold mb-0 text-navy">
+						<i class="bi bi-shop-window me-2 text-orange"></i>내 매장 정보</h2>
+                
+                <a th:href="@{/owners/store-manage/edit}"
+						class="btn btn-moeats px-4 rounded-pill shadow-sm">
+                    <i class="bi bi-pencil-square me-1"></i> 정보 수정
+                </a>
+            </div>
+
+            <div class="mb-5 text-center">
+                <div
+						class="rounded-4 overflow-hidden border shadow-sm position-relative"
+						style="height: 300px;">
+                    <img
+							th:src="${storeVo != null and storeVo['storeImg'] != null ? storeVo['storeImg'] : 'https://via.placeholder.com/800/FF8000/FFFFFF?text=MoEats+Store'}"
+							class="w-100 h-100 preview-img" alt="매장 대표 이미지">
+                    
+                    <div class="position-absolute top-0 end-0 m-3">
+                        <span
+								th:if="${storeVo != null and storeVo['storeStatus'] == 'OPEN'}"
+								class="badge bg-success px-4 py-2 rounded-pill fs-6 shadow">영업 중</span>
+                        <span
+								th:if="${storeVo != null and storeVo['storeStatus'] == 'CLOSED'}"
+								class="badge bg-danger px-4 py-2 rounded-pill fs-6 shadow">영업 종료</span>
+                        <span
+								th:if="${storeVo != null and storeVo['storeStatus'] == 'BREAK'}"
+								class="badge bg-warning text-dark px-4 py-2 rounded-pill fs-6 shadow">브레이크 타임</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label
+							class="small fw-bold text-secondary text-uppercase d-block mb-1">매장명</label>
+                    <p class="fs-4 fw-bold text-navy"
+							th:text="${storeVo != null ? storeVo['storeName'] : '등록된 이름이 없습니다.'}">매장명</p>
+                </div>
+                <div class="col-md-6">
+                    <label
+							class="small fw-bold text-secondary text-uppercase d-block mb-1">연락처</label>
+                    <p class="fs-4 fw-bold text-navy"
+							th:text="${storeVo != null ? storeVo['storePhone'] : '번호 미등록'}">010-0000-0000</p>
+                </div>
+                
+                <div class="col-12 border-top pt-4">
+                    <label
+							class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 주소</label>
+                    <p class="fs-5 text-dark"
+							th:text="${storeVo != null ? storeVo['storeAddress'] : '주소 정보가 없습니다.'}">매장 주소</p>
+                </div>
+
+                <div class="col-12 border-top pt-4">
+                    <label
+							class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 소개</label>
+                    <div class="p-3 bg-light rounded-3">
+                        <p class="mb-0 text-secondary"
+								style="white-space: pre-line;"
+								th:text="${storeVo != null ? storeVo['storeDescription'] : '사장님의 정성스러운 소개글을 기다리고 있어요.'}">
+                           매장 소개 내용
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a th:href="@{/members/dashboard}"
+						class="btn btn-outline-secondary px-5 py-2 rounded-pill fw-bold">
+                    <i class="bi bi-house-door me-1"></i> 대시보드로 이동
+                </a>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+					/*<![CDATA[*/
+					// 조회 페이지이므로 단순 활성 메뉴 표시 로직 등 추가 가능
+					/*]]>*/
+				</script>
+</th:block>
+  
+</body>
+
+
+</html>

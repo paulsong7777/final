@@ -33,5 +33,7 @@ public class Store {
 
     private Timestamp createdAt;           // 생성 시각
     private Timestamp updatedAt;           // 수정 시각
+
 }
+
 
