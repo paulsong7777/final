@@ -159,7 +159,7 @@ public class MemberController {
 
 	    // 사업자 회원이면 사업자 대시보드로 리다이렉트
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	        return "redirect:/members/dashboard";
+	        return "redirect:/owners/dashboard";
 	    }
 	    
 		// 만약 가려던 주소가 없었다면(그냥 로그인 버튼 누르고 들어온 경우) 메인으로 보냅니다.
@@ -191,10 +191,22 @@ public class MemberController {
 	
 	// 통합 대시보드 분기(역할분기 일반/사업자)
 	@GetMapping("/members/dashboard")
-	public String dashboard(@SessionAttribute("member") Member member) {
+	public String dashboard(@SessionAttribute("member") Member member,
+					Model model) {
 
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	        return "views/owner/dashboard";
+	    	// 1. 로그인한 점주의 가게 정보를 DB에서 조회
+	        Store store = storeService.myStore(member.getMemberIdx());
+	        
+	        // 2. 화면(HTML)에서 사용하는 변수명인 'storeVo'로 Model에 담아 전달
+	        model.addAttribute("storeVo", store);
+
+            // 💡 참고: HTML을 보면 주문 내역(orderList)도 필요로 합니다.
+            // 주문 내역을 가져오는 서비스가 있다면 아래처럼 같이 넘겨주어야 실시간 주문 현황도 뜹니다.
+            // List<Order> orderList = orderService.getCurrentOrders(store.getStoreIdx());
+            // model.addAttribute("orderList", orderList);
+	    	
+	    	return "views/owner/dashboard";
 	    }
 
 	    return "redirect:/main";

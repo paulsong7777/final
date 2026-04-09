@@ -1,5 +1,7 @@
 package com.moeats.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,7 +21,6 @@ public interface StoreMenuCategoryMapper {
 	int insertCategory(StoreMenuCategory category);
 
 	// 조회
-	StoreMenuCategory getCategory(@Param("menuCategoryIdx") int menuCategoryIdx,
-								 @Param("storeIdx") int storeIdx);
-	
+	StoreMenuCategory getCategory(int menuCategoryIdx);
+	List<StoreMenuCategory> getCategoryByStore(int storeIdx);
 }

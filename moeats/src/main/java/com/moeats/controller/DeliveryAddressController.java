@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -113,6 +114,7 @@ public class DeliveryAddressController {
 	public String changeDefaultAddress(
 	        @PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
 	        @SessionAttribute("memberIdx") int memberIdx,
+	        @RequestParam(value = "redirectUrl", defaultValue = "/members/me/addresses") String redirectUrl,
 	        HttpSession session,
 	        RedirectAttributes ra) {
 
@@ -127,7 +129,7 @@ public class DeliveryAddressController {
 	        ra.addFlashAttribute("error", e.getMessage());
 	    }
 
-	    return "redirect:/members/me/addresses";
+	    return "redirect:" + redirectUrl;
 	}
 	
 	// 배송지 선택 (주문 시)

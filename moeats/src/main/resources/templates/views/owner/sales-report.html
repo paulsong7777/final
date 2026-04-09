@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>영업 리포트 - Mo-Eats</title>
+    <style>
+        /* 리포트 카드 전용 프린트 스타일 */
+        @media print {
+            body { background-color: #fff !important; }
+            .mo-surface-card { box-shadow: none !important; border: 1px solid #ddd !important; }
+        }
+    </style>
+</head>
+
+<body>
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container" style="max-width: 1400px;">
+        
+        <div class="mo-section mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 border-bottom pb-4">
+                <div>
+                    <span class="mo-section-label">SALES REPORT</span>
+                    <h2 class="mo-section-title">영업 리포트</h2>
+                    <p class="mo-helper-text mt-2 mb-0">매장의 매출 실적과 인기 메뉴를 분석하여 효율적인 운영을 돕습니다.</p>
+                </div>
+                <div class="bg-white border rounded-pill px-3 py-2 fw-bold" style="font-size: 13px; color: var(--mo-text-soft); border-color: var(--mo-line-strong) !important;">
+                     <i class="bi bi-calendar-check me-1" style="color: var(--mo-primary);"></i>
+                     기준일: <span style="color: var(--mo-navy-strong);" th:text="${reportDate ?: #calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">2026-00-00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4 text-center">
+            <div class="col-6 col-md-3">
+                <div class="mo-surface-card h-100 d-flex flex-column justify-content-center p-4">
+                    <span class="fw-bold" style="font-size: 13px; color: var(--mo-text-soft); letter-spacing: 0.05em;">총 매출액</span>
+                    <div class="fw-bold mt-2" style="font-size: 28px; color: var(--mo-primary);" 
+                         th:text="${#numbers.formatInteger(totalSales ?: 0, 0, 'COMMA')} + '원'">0원</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="mo-surface-card h-100 d-flex flex-column justify-content-center p-4">
+                    <span class="fw-bold" style="font-size: 13px; color: var(--mo-text-soft); letter-spacing: 0.05em;">주문 건수</span>
+                    <div class="fw-bold mt-2" style="font-size: 28px; color: var(--mo-navy-strong);" 
+                         th:text="${orderCount ?: 0} + '건'">0건</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="mo-surface-card h-100 d-flex flex-column justify-content-center p-4">
+                    <span class="fw-bold" style="font-size: 13px; color: var(--mo-text-soft); letter-spacing: 0.05em;">주문 취소</span>
+                    <div class="fw-bold mt-2 text-danger" style="font-size: 28px;" 
+                         th:text="${cancelCount ?: 0} + '건'">0건</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="mo-surface-card h-100 d-flex flex-column justify-content-center p-4">
+                    <span class="fw-bold" style="font-size: 13px; color: var(--mo-text-soft); letter-spacing: 0.05em;">평균 별점</span>
+                    <div class="fw-bold mt-2" style="font-size: 28px; color: var(--mo-primary);" 
+                         th:text="'★ ' + ${avgRating ?: '0.0'}">★ 0.0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-lg-8">
+                <div class="mo-surface-card h-100 d-flex flex-column p-4 p-lg-5">
+                    <h3 class="mo-store-card__title mb-4 fs-5">시간대별 주문 트렌드</h3>
+                    <div class="position-relative flex-grow-1" style="min-height: 350px;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="mo-surface-card h-100 d-flex flex-column p-4 p-lg-5">
+                    <h3 class="mo-store-card__title mb-4 fs-5">인기 메뉴 TOP 5</h3>
+                    
+                    <div class="d-flex flex-column gap-3">
+                        <th:block th:if="${not #lists.isEmpty(popularMenuList)}">
+                            <div th:each="popular, stat : ${popularMenuList}" 
+                                 class="d-flex align-items-center justify-content-between border-bottom pb-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="fw-bold text-center" style="font-size: 18px; color: var(--mo-primary); width: 24px;" th:text="${stat.count}">1</span>
+                                    <span class="fw-bold text-truncate" style="font-size: 15px; color: var(--mo-navy-strong); max-width: 150px;" 
+                                          th:text="${popular['menuName'] ?: '정보 없음'}">메뉴명</span>
+                                </div>
+                                <span class="mo-chip border-0 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy);" 
+                                      th:text="${popular['orderCount'] ?: 0} + ' 건'">0 건</span>
+                            </div>
+                        </th:block>
+                        
+                        <div th:if="${#lists.isEmpty(popularMenuList)}" class="mo-empty-state mo-empty-state--compact border-0 shadow-none h-100 bg-transparent py-5">
+                            <div class="mb-2" style="font-size: 48px;">📊</div>
+                            <p class="mo-empty-state__desc fw-bold">데이터 집계 중입니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="text-end mt-5 pt-2 d-print-none">
+            <button type="button" class="mo-btn mo-btn-primary rounded-pill px-4" style="min-height: 52px; font-size: 15px;" onclick="window.print()">
+                <i class="bi bi-printer me-2"></i> 리포트 인쇄하기
+            </button>
+        </div>
+
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // 타임리프 인라인: 백엔드 데이터를 JS 배열로 안전하게 할당
+        const chartLabels = /*[[${chartLabels ?: {}}]]*/ ['09시', '12시', '15시', '18시', '21시'];
+        const chartDataValues = /*[[${chartData ?: {}}]]*/ [0, 0, 0, 0, 0];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartDom = document.getElementById('salesChart');
+            if(!chartDom) return;
+            
+            const ctx = chartDom.getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels.length > 0 ? chartLabels : ['데이터 없음'],
+                    datasets: [{
+                        label: '주문수',
+                        data: chartDataValues.length > 0 ? chartDataValues : [0],
+                        borderColor: '#252D59', /* Mo-Eats: --mo-navy-strong */
+                        backgroundColor: 'rgba(37, 45, 89, 0.08)',
+                        borderWidth: 4,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#FF8000', /* Mo-Eats: --mo-primary */
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { 
+                            backgroundColor: '#252D59',
+                            titleFont: { family: 'Noto Sans KR', size: 13 },
+                            bodyFont: { family: 'Noto Sans KR', size: 14, weight: 'bold' },
+                            padding: 12,
+                            cornerRadius: 8
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1, color: '#6B7280', font: { family: 'Inter' } }, 
+                            grid: { color: 'rgba(42, 54, 89, 0.08)' },
+                            border: { display: false }
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { color: '#6B7280', font: { family: 'Inter' } },
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+        });
+        /*]]>*/
+    </script>
+</th:block>
+</body>
+</html>

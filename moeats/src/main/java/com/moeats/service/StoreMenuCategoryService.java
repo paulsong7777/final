@@ -1,5 +1,7 @@
 package com.moeats.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,15 +41,21 @@ public class StoreMenuCategoryService {
 	}
 
 	// 조회
-	public StoreMenuCategory getCategory(int menuCategoryIdx, int storeIdx) {
+	public StoreMenuCategory getCategory(int menuCategoryIdx) {
 
 		StoreMenuCategory category =
-				storeMenuCategorymapper.getCategory(menuCategoryIdx, storeIdx);
+				storeMenuCategorymapper.getCategory(menuCategoryIdx);
 
 		if (category == null) {
 			throw new IllegalStateException("카테고리 없음 또는 권한 없음");
 		}
 
+		return category;
+	}
+	public List<StoreMenuCategory> getCategoryByStore(int storeIdx) {
+		
+		List<StoreMenuCategory> category = storeMenuCategorymapper.getCategoryByStore(storeIdx);
+		
 		return category;
 	}
 

@@ -1,22 +1,557 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Room Detail</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
+    <title>주문방 상세</title>
+    <th:block layout:fragment="pageStyles">
+        <style>
+            .rd-grid {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .rd-hero {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .rd-title {
+                margin: 0;
+                color: var(--mo-navy-strong);
+                font-size: clamp(1.6rem, 2vw, 2rem);
+                font-weight: 800;
+                letter-spacing: -0.04em;
+            }
+
+            .rd-subtitle {
+                margin: .5rem 0 0;
+                color: var(--mo-text-soft);
+                line-height: 1.65;
+            }
+
+            .rd-meta-grid {
+                display: grid;
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+                gap: .75rem;
+            }
+
+            .rd-meta-card {
+                height: 100%;
+                padding: 1rem 1rem 1.1rem;
+                border: 1px solid var(--mo-line);
+                border-radius: 18px;
+                background: #fff;
+            }
+
+            .rd-meta-card__label {
+                color: #8A93A6;
+                font-size: .78rem;
+                font-weight: 700;
+            }
+
+            .rd-meta-card__value {
+                margin-top: .45rem;
+                color: var(--mo-navy-strong);
+                font-size: 1.05rem;
+                font-weight: 800;
+                line-height: 1.35;
+            }
+
+            .rd-code-box {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: .75rem;
+                flex-wrap: wrap;
+            }
+
+            .rd-code {
+                display: inline-flex;
+                align-items: center;
+                min-height: 44px;
+                padding: 0 .9rem;
+                border-radius: 999px;
+                background: rgba(255, 128, 0, .10);
+                color: var(--mo-primary);
+                font-size: 1.05rem;
+                font-weight: 800;
+                letter-spacing: .14em;
+            }
+
+            .rd-badge-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .5rem;
+            }
+
+            .rd-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 32px;
+                padding: 0 .85rem;
+                border-radius: 999px;
+                font-size: .8rem;
+                font-weight: 800;
+            }
+
+            .rd-badge--status-open,
+            .rd-badge--status-selecting {
+                background: rgba(42, 54, 89, .08);
+                color: var(--mo-navy-strong);
+            }
+
+            .rd-badge--status-payment {
+                background: rgba(255, 128, 0, .12);
+                color: var(--mo-primary);
+            }
+
+            .rd-badge--status-confirmed {
+                background: rgba(40, 167, 69, .12);
+                color: #198754;
+            }
+
+            .rd-badge--role-leader,
+            .rd-badge--my-role {
+                background: rgba(255, 128, 0, .12);
+                color: var(--mo-primary);
+            }
+
+            .rd-badge--role-participant {
+                background: rgba(42, 54, 89, .06);
+                color: var(--mo-navy);
+            }
+
+            .rd-badge--selected {
+                background: rgba(25, 135, 84, .12);
+                color: #198754;
+            }
+
+            .rd-badge--not-selected {
+                background: rgba(248, 94, 40, .12);
+                color: var(--mo-accent);
+            }
+
+            .rd-section-card {
+                height: 100%;
+            }
+
+            .rd-participant-list,
+            .rd-cart-list,
+            .rd-other-list {
+                display: grid;
+                gap: .75rem;
+            }
+
+            .rd-participant-item,
+            .rd-other-item {
+                padding: 1rem;
+                border: 1px solid var(--mo-line);
+                border-radius: 18px;
+                background: #fff;
+            }
+
+            .rd-participant-item--me {
+                border-color: rgba(255, 128, 0, .28);
+                background: rgba(255, 128, 0, .05);
+            }
+
+            .rd-participant-head,
+            .rd-other-head,
+            .rd-cart-row {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: .75rem;
+            }
+
+            .rd-name {
+                color: var(--mo-navy-strong);
+                font-size: 1rem;
+                font-weight: 800;
+            }
+
+            .rd-subtext {
+                margin-top: .3rem;
+                color: var(--mo-text-soft);
+                font-size: .9rem;
+                line-height: 1.55;
+            }
+
+            .rd-amount {
+                color: var(--mo-navy-strong);
+                font-size: 1rem;
+                font-weight: 800;
+                white-space: nowrap;
+            }
+
+            .rd-cart-item {
+                padding: .95rem 1rem;
+                border: 1px solid var(--mo-line);
+                border-radius: 18px;
+                background: #fff;
+            }
+
+            .rd-cart-name {
+                color: var(--mo-navy-strong);
+                font-weight: 700;
+            }
+
+            .rd-cart-meta {
+                margin-top: .35rem;
+                color: var(--mo-text-soft);
+                font-size: .9rem;
+            }
+
+            .rd-summary-box {
+                padding: 1rem 1.05rem;
+                border-radius: 18px;
+                background: var(--mo-navy-strong);
+                color: #fff;
+            }
+
+            .rd-summary-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: .75rem;
+            }
+
+            .rd-summary-row + .rd-summary-row {
+                margin-top: .65rem;
+            }
+
+            .rd-summary-row strong {
+                font-size: 1.15rem;
+            }
+
+            .rd-actions {
+                display: grid;
+                gap: .75rem;
+            }
+
+            .rd-actions__group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .6rem;
+            }
+
+            .rd-inline-form {
+                margin: 0;
+            }
+
+            .rd-note {
+                margin: 0;
+                color: var(--mo-text-soft);
+                font-size: .9rem;
+                line-height: 1.6;
+            }
+
+            .rd-empty {
+                padding: 1.25rem;
+                border: 1px dashed rgba(42, 54, 89, .20);
+                border-radius: 18px;
+                background: rgba(42, 54, 89, .03);
+                color: var(--mo-text-soft);
+                line-height: 1.65;
+            }
+
+            .rd-divider {
+                height: 1px;
+                margin: .25rem 0;
+                background: var(--mo-line);
+            }
+
+            @media (min-width: 768px) {
+                .rd-meta-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            @media (min-width: 992px) {
+                .rd-grid {
+                    grid-template-columns: minmax(0, 1.4fr) minmax(320px, .9fr);
+                    align-items: start;
+                }
+            }
+        </style>
+    </th:block>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Room Detail</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: room-detail</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
+<section layout:fragment="pageContent"
+					id="roomDetailRoot"
+        			 th:attr="data-room-code=${orderRoom.roomCode}, data-room-status=${orderRoom.roomStatus}">
+    <section class="mo-section">
+        <div class="mo-surface-card rd-hero">
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                <div>
+                    <div class="mo-section-label">FE-06</div>
+                    <h1 class="rd-title">주문방 협업 허브</h1>
+                    <p class="rd-subtitle">참여자 상태, 내 장바구니, 팀 요약을 한 화면에서 확인하고 결제로 넘어가는 기준 화면입니다.</p>
+                </div>
+                <div class="rd-badge-group">
+                    <span class="rd-badge"
+                          th:classappend="${isLeader} ? ' rd-badge--my-role' : ' rd-badge--role-participant'"
+                          th:text="${isLeader} ? '내 권한 · 방장' : '내 권한 · 참여자'">내 권한</span>
+                    <span class="rd-badge"
+                          th:classappend="${myState.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
+                          th:text="${myState.selectionStatus == 'SELECTED'} ? '내 상태 · 선택 완료' : '내 상태 · 선택 전'">내 상태</span>
+                </div>
+            </div>
+
+            <div class="rd-meta-grid">
+                <div class="rd-meta-card">
+                    <div class="rd-meta-card__label">방 코드</div>
+                    <div class="rd-code-box">
+                        <span class="rd-code" th:text="${orderRoom.roomCode}">135797</span>
+                        <button type="button"
+                                class="mo-btn mo-btn-outline js-copy-room-code"
+                                th:data-room-code="${orderRoom.roomCode}">코드 복사</button>
+                    </div>
+                </div>
+                <div class="rd-meta-card">
+                    <div class="rd-meta-card__label">진행 상태</div>
+                    <div class="rd-badge-group mt-2">
+                        <span class="rd-badge"
+                              th:classappend="${orderRoom.roomStatus == 'PAYMENT_PENDING'} ? ' rd-badge--status-payment' : (${orderRoom.roomStatus == 'ORDER_CONFIRMED'} ? ' rd-badge--status-confirmed' : ' rd-badge--status-selecting')"
+                              th:text="${orderRoom.roomStatus == 'OPEN'} ? '열림' : (${orderRoom.roomStatus == 'SELECTING'} ? '메뉴 선택 중' : (${orderRoom.roomStatus == 'PAYMENT_PENDING'} ? '결제 진행 중' : '주문 확정'))">메뉴 선택 중</span>
+                        <span class="rd-badge rd-badge--role-participant"
+                              th:text="${orderRoom.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">대표결제</span>
+                    </div>
+                </div>
+                <div class="rd-meta-card">
+                    <div class="rd-meta-card__label">참여 현황</div>
+                    <div class="rd-meta-card__value">
+                        <span th:text="${completedCount}">0</span>
+                        /
+                        <span th:text="${participantCount}">0</span>
+                        명 선택 완료
+                    </div>
+                </div>
+                <div class="rd-meta-card">
+                    <div class="rd-meta-card__label">팀 총액</div>
+                    <div class="rd-meta-card__value" th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')} + '원'">0원</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mo-section rd-grid">
+        <div class="rd-grid-left">
+            <div class="mo-surface-card rd-section-card">
+                <div class="mo-section-head">
+                    <div>
+                        <div class="mo-section-label">Participants</div>
+                        <h2 class="mo-section-title">참여자 상태</h2>
+                    </div>
+                </div>
+
+                <div class="rd-participant-list mt-3">
+                    <div class="rd-participant-item rd-participant-item--me">
+                        <div class="rd-participant-head">
+                            <div>
+                                <div class="rd-name" th:text="${session.member.memberNickname} + ' (나)'">내 닉네임</div>
+                                <div class="rd-badge-group mt-2">
+                                    <span class="rd-badge"
+                                          th:classappend="${myState.participantRole == 'LEADER'} ? ' rd-badge--role-leader' : ' rd-badge--role-participant'"
+                                          th:text="${myState.participantRole == 'LEADER'} ? '방장' : '참여자'">방장</span>
+                                    <span class="rd-badge"
+                                          th:classappend="${myState.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
+                                          th:text="${myState.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 완료</span>
+                                </div>
+                            </div>
+                            <div class="rd-amount" th:text="${#numbers.formatInteger(myCartTotal, 0, 'COMMA')} + '원'">0원</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(roomParticipants)}" class="rd-empty">
+                        아직 다른 참여자가 없습니다. 지금은 생성자 단독 상태로 진행 중입니다.
+                    </div>
+
+                    <div th:each="participant : ${roomParticipants}" class="rd-participant-item">
+                        <div class="rd-participant-head">
+                            <div>
+                                <div class="rd-name" th:text="${participant.member.memberNickname}">참여자</div>
+                                <div class="rd-badge-group mt-2">
+                                    <span class="rd-badge"
+                                          th:classappend="${participant.roomParticipant.participantRole == 'LEADER'} ? ' rd-badge--role-leader' : ' rd-badge--role-participant'"
+                                          th:text="${participant.roomParticipant.participantRole == 'LEADER'} ? '방장' : '참여자'">참여자</span>
+                                    <span class="rd-badge"
+                                          th:classappend="${participant.roomParticipant.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
+                                          th:text="${participant.roomParticipant.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 전</span>
+                                </div>
+                            </div>
+                            <form th:if="${isLeader and participant.roomParticipant.participantRole != 'LEADER' and (orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING')}"
+                                  class="rd-inline-form js-confirm-kick"
+                                  th:action="@{/rooms/code/{code}/kick(code=${orderRoom.roomCode})}"
+                                  method="post"
+                                  th:data-target-name="${participant.member.memberNickname}">
+                                <input type="hidden" name="kickMemberIdx" th:value="${participant.member.memberIdx}">
+                                <button type="submit" class="mo-btn mo-btn-outline">내보내기</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mo-surface-card rd-section-card mt-3">
+                <div class="mo-section-head">
+                    <div>
+                        <div class="mo-section-label">My Cart</div>
+                        <h2 class="mo-section-title">내 장바구니</h2>
+                    </div>
+                </div>
+
+                <div class="mt-3" th:if="${#lists.isEmpty(myCartItems)}">
+                    <div class="rd-empty">아직 담은 메뉴가 없습니다. 먼저 메뉴를 고른 뒤 주문 확인 단계로 넘어가면 됩니다.</div>
+                </div>
+
+                <div class="rd-cart-list mt-3" th:unless="${#lists.isEmpty(myCartItems)}">
+                    <div th:each="item : ${myCartItems}" class="rd-cart-item">
+                        <div class="rd-cart-row">
+                            <div>
+                                <div class="rd-cart-name" th:text="${item.storeMenu.menuName}">메뉴명</div>
+                                <div class="rd-cart-meta">
+                                    수량 <span th:text="${item.groupCartItem.itemQuantity}">1</span>개
+                                </div>
+                            </div>
+                            <div class="rd-amount" th:text="${#numbers.formatInteger(item.groupCartItem.itemTotalAmount, 0, 'COMMA')} + '원'">0원</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rd-divider mt-3"></div>
+                <div class="rd-summary-row mt-3">
+                    <span>내 주문 합계</span>
+                    <strong th:text="${#numbers.formatInteger(myCartTotal, 0, 'COMMA')} + '원'">0원</strong>
+                </div>
+
+                <div class="rd-actions mt-3" th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
+                    <div class="rd-actions__group" th:if="${myState.selectionStatus != 'SELECTED' and #lists.isEmpty(myCartItems)}">
+                        <a class="mo-btn mo-btn-primary"
+                           th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">메뉴 선택하기</a>
+                    </div>
+
+                    <div class="rd-actions__group" th:if="${myState.selectionStatus != 'SELECTED' and !#lists.isEmpty(myCartItems)}">
+                        <a class="mo-btn mo-btn-primary"
+                           th:href="@{/rooms/code/{code}/confirm(code=${orderRoom.roomCode})}">주문 확인하기</a>
+                        <a class="mo-btn mo-btn-outline"
+                           th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">메뉴 더 담기</a>
+                    </div>
+
+                    <div class="rd-actions__group" th:if="${myState.selectionStatus == 'SELECTED'}">
+                        <form class="rd-inline-form js-confirm-unselect"
+                              th:action="@{/rooms/code/{code}/unselect(code=${orderRoom.roomCode})}"
+                              method="post">
+                            <button type="submit" class="mo-btn mo-btn-primary">메뉴 수정하기</button>
+                        </form>
+                    </div>
+
+                    <p class="rd-note" th:if="${myState.selectionStatus == 'SELECTED'}">메뉴를 수정하면 내 선택 상태는 다시 선택 전으로 돌아갑니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="rd-grid-right">
+            <div class="mo-surface-card rd-section-card">
+                <div class="mo-section-head">
+                    <div>
+                        <div class="mo-section-label">Others</div>
+                        <h2 class="mo-section-title">타인 장바구니 요약</h2>
+                    </div>
+                </div>
+
+                <div class="mt-3" th:if="${#lists.isEmpty(otherCartItems)}">
+                    <div class="rd-empty">다른 참여자의 장바구니는 아직 비어 있습니다.</div>
+                </div>
+
+                <div class="rd-other-list mt-3" th:unless="${#lists.isEmpty(otherCartItems)}">
+                    <div th:each="participantCart : ${otherCartItems}" class="rd-other-item">
+                        <div class="rd-other-head">
+                            <div>
+                                <div class="rd-name" th:text="${participantCart.member.memberNickname}">참여자</div>
+                                <div class="rd-badge-group mt-2">
+                                    <span class="rd-badge"
+                                          th:classappend="${participantCart.roomParticipant.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
+                                          th:text="${participantCart.roomParticipant.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 전</span>
+                                </div>
+                            </div>
+                            <div class="rd-amount" th:text="${#numbers.formatInteger(participantCart.totalAmount, 0, 'COMMA')} + '원'">0원</div>
+                        </div>
+                        <div class="rd-subtext" th:if="${#lists.isEmpty(participantCart.items)}">아직 담은 메뉴가 없습니다.</div>
+                        <div class="rd-subtext" th:unless="${#lists.isEmpty(participantCart.items)}">
+                            <span th:each="item, stat : ${participantCart.items}">
+                                <span th:text="${item.storeMenu.menuName} + ' × ' + ${item.groupCartItem.itemQuantity}">메뉴</span><span th:if="${!stat.last}">, </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mo-surface-card rd-section-card mt-3">
+                <div class="mo-section-head">
+                    <div>
+                        <div class="mo-section-label">Checkout</div>
+                        <h2 class="mo-section-title">결제 진입</h2>
+                    </div>
+                </div>
+
+                <div class="rd-summary-box mt-3">
+                    <div class="rd-summary-row">
+                        <span>선택 완료 인원</span>
+                        <strong><span th:text="${completedCount}">0</span>/<span th:text="${participantCount}">0</span></strong>
+                    </div>
+                    <div class="rd-summary-row">
+                        <span>팀 총액</span>
+                        <strong th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')} + '원'">0원</strong>
+                    </div>
+                </div>
+
+                <div class="rd-actions mt-3" th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
+                    <div th:if="${isLeader}">
+                        <div class="rd-actions__group" th:if="${allSelected}">
+                            <form class="rd-inline-form js-confirm-checkout"
+                                  th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
+                                  method="post">
+                                <button type="submit" class="mo-btn mo-btn-primary">결제 진행하기</button>
+                            </form>
+                            <form class="rd-inline-form js-confirm-cancel"
+                                  th:action="@{/rooms/code/{code}/cancel(code=${orderRoom.roomCode})}"
+                                  method="post">
+                                <button type="submit" class="mo-btn mo-btn-outline">방 종료</button>
+                            </form>
+                        </div>
+                        <div th:unless="${allSelected}">
+                            <button type="button" class="mo-btn mo-btn-primary" disabled>결제 진행하기</button>
+                            <p class="rd-note mt-2">아직 선택 완료되지 않은 참여자가 있어 결제 단계로 넘어갈 수 없습니다.</p>
+                        </div>
+                    </div>
+
+                    <div th:unless="${isLeader}">
+                        <p class="rd-note">방장이 모든 참여자 선택 완료를 확인한 뒤 결제를 시작합니다.</p>
+                        <form class="rd-inline-form js-confirm-leave mt-2"
+                              th:action="@{/rooms/code/{code}/leave(code=${orderRoom.roomCode})}"
+                              method="post">
+                            <button type="submit" class="mo-btn mo-btn-outline">방 나가기</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="rd-actions mt-3" th:if="${orderRoom.roomStatus == 'PAYMENT_PENDING'}">
+                    <p class="rd-note">결제가 시작된 상태입니다. 협업 화면 수정은 잠겼고 결제 흐름만 진행할 수 있습니다.</p>
+                </div>
+
+                <div class="rd-actions mt-3" th:if="${orderRoom.roomStatus == 'ORDER_CONFIRMED'}">
+                    <p class="rd-note">주문이 확정된 상태입니다. 이후 진행은 주문 상세 화면에서 확인합니다.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</section>
+<th:block layout:fragment="pageScripts">
+    <script th:src="@{/js/room/room-detail.js}"></script>
+</th:block>
 </body>
 </html>

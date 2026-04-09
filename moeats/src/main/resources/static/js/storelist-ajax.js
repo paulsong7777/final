@@ -95,60 +95,51 @@
 
     function resolveStoreLink(store) {
         const storeIdx = resolveStoreIdx(store);
-        return storeIdx ? `/stores/${encodeURIComponent(storeIdx)}` : '#';
+        return storeIdx ? `/stores/${encodeURIComponent(storeIdx)}/menu` : '#';
     }
 
-    function buildStoreCard(store) {
-        const categoryCode = resolveCategoryCode(store);
-        const categoryName = categoryLabel(categoryCode);
-        const imageUrl = resolveImageUrl(store);
-        const description = resolveDescription(store);
-        const etaText = resolveEtaText(store);
-        const supportText = resolveSupportText(store);
-        const minimumOrderAmount = formatPrice(store.minimumOrderAmount);
-        const storeLink = resolveStoreLink(store);
+	function buildStoreCard(store) {
+	    const categoryCode = resolveCategoryCode(store);
+	    const imageUrl = resolveImageUrl(store);
+	    const description = resolveDescription(store);
+	    const etaText = resolveEtaText(store);
+	    const minimumOrderAmount = formatPrice(store.minimumOrderAmount);
+	    const storeLink = resolveStoreLink(store);
+	    const storeName = store.storeName || '가게명';
 
-        return `
-            <div class="col-12 col-md-6 col-xl-4 js-store-item" data-category="${escapeHtml(categoryCode)}">
-                <article class="mo-store-card h-100">
-                    <div class="mo-store-card__image-wrap">
-                        <div class="mo-store-card__image" style="background-image:url('${escapeHtml(imageUrl)}');"></div>
-                        <span class="mo-chip mo-chip--navy">${escapeHtml(categoryName)}</span>
-                    </div>
-                    <div class="mo-store-card__body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start gap-3">
-                            <div>
-                                <h3 class="mo-store-card__title js-store-title">${escapeHtml(store.storeName || '가게명')}</h3>
-                                <p class="mo-store-card__desc js-store-desc">${escapeHtml(description)}</p>
-                            </div>
-                            <span class="mo-chip">${escapeHtml(etaText)}</span>
-                        </div>
-                        <div class="mo-store-card__meta-grid">
-                            <div>
-                                <span class="mo-store-card__meta-label">최소주문</span>
-                                <strong>${escapeHtml(minimumOrderAmount)}</strong>
-                            </div>
-                            <div>
-                                <span class="mo-store-card__meta-label">지원 정보</span>
-                                <strong>${escapeHtml(supportText)}</strong>
-                            </div>
-                        </div>
-                        <div class="mt-3 mb-3">
-                            <div class="d-flex flex-wrap gap-2">
-                                ${store.supportsDelivery ? '<span class="mo-chip">배달</span>' : ''}
-                                ${store.supportsOnsite ? '<span class="mo-chip">현장</span>' : ''}
-                                ${store.minimumOrderAmount !== null && store.minimumOrderAmount !== undefined ? '<span class="mo-chip">최소주문</span>' : ''}
-                            </div>
-                        </div>
-                        <div class="mo-store-card__actions mt-auto">
-                            <a href="${storeLink}" class="mo-btn mo-btn-outline flex-fill">상세 보기</a>
-                            <a href="${storeLink}" class="mo-btn mo-btn-primary flex-fill">주문 시작</a>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        `;
-    }
+	    return `
+	        <div class="col-12 col-md-6 col-xl-3 js-store-item" data-category="${escapeHtml(categoryCode)}">
+	            <article class="mo-store-card mo-store-card--ajax h-100">
+	                <div class="mo-store-card--ajax__image-wrap">
+	                    <a href="${storeLink}" class="mo-store-card--ajax__image-link" aria-label="${escapeHtml(storeName)} 상세 보기">
+	                        <div class="mo-store-card--ajax__image" style="background-image:url('${escapeHtml(imageUrl)}');"></div>
+	                    </a>
+	                </div>
+
+	                <div class="mo-store-card__body mo-store-card--ajax__body d-flex flex-column">
+	                    <div class="mo-store-card--ajax__top">
+	                        <h3 class="mo-store-card__title mo-store-card--ajax__title js-store-title">${escapeHtml(storeName)}</h3>
+	                        <span class="mo-chip mo-store-card--ajax__eta">${escapeHtml(etaText)}</span>
+	                    </div>
+
+	                    <div class="mo-store-card--ajax__middle">
+	                        <p class="mo-store-card__desc mo-store-card--ajax__desc js-store-desc">${escapeHtml(description)}</p>
+
+	                        <div class="mo-store-card--ajax__minimum-inline">
+	                            <span class="mo-store-card--ajax__minimum-inline-label">최소주문</span>
+	                            <strong class="mo-store-card--ajax__minimum-inline-value">${escapeHtml(minimumOrderAmount)}</strong>
+	                        </div>
+	                    </div>
+
+	                    <div class="mo-store-card__actions mo-store-card--ajax__actions mt-auto">
+	                        <a href="${storeLink}" class="mo-btn mo-btn-outline flex-fill">상세 보기</a>
+	                        <a href="${storeLink}" class="mo-btn mo-btn-primary flex-fill">주문 시작</a>
+	                    </div>
+	                </div>
+	            </article>
+	        </div>
+	    `;
+	}
 
     function matchesCategory(store) {
         return activeCategory === 'ALL' || resolveCategoryCode(store) === activeCategory;

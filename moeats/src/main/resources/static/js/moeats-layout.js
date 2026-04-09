@@ -12,6 +12,9 @@
     const mobileJoinSheetEl = document.getElementById('moMobileJoinSheet');
     const mobileAddressSheetEl = document.getElementById('moMobileAddressSheet');
 
+	const createRoomModalEl = document.getElementById('moCreateRoomModal');
+	const mobileCreateRoomSheetEl = document.getElementById('moMobileCreateRoomSheet');
+	
     const isMobile = () => window.innerWidth < DESKTOP_BREAKPOINT;
 
     const getModalInstance = (el) => {
@@ -41,23 +44,32 @@
         return false;
     };
 
-    const closeLayer = (desktopEl, mobileEl) => {
-        const desktop = getModalInstance(desktopEl);
-        const mobile = getOffcanvasInstance(mobileEl);
+	const closeLayer = (desktopEl, mobileEl) => {
+	    const desktop = getModalInstance(desktopEl);
+	    const mobile = getOffcanvasInstance(mobileEl);
 
-        if (desktopEl && desktopEl.classList.contains('show') && desktop) {
-            desktop.hide();
-        }
+	    if (desktopEl && desktopEl.contains(document.activeElement)) {
+	        document.activeElement.blur();
+	    }
 
-        if (mobileEl && mobileEl.classList.contains('show') && mobile) {
-            mobile.hide();
-        }
-    };
+	    if (mobileEl && mobileEl.contains(document.activeElement)) {
+	        document.activeElement.blur();
+	    }
+
+	    if (desktopEl && desktopEl.classList.contains('show') && desktop) {
+	        desktop.hide();
+	    }
+
+	    if (mobileEl && mobileEl.classList.contains('show') && mobile) {
+	        mobile.hide();
+	    }
+	};
 
     const closeAllLayers = () => {
         closeLayer(loginModalEl, mobileLoginSheetEl);
         closeLayer(joinModalEl, mobileJoinSheetEl);
         closeLayer(addressModalEl, mobileAddressSheetEl);
+		closeLayer(createRoomModalEl, mobileCreateRoomSheetEl);
     };
 
     const openLoginLayer = () => {
@@ -105,6 +117,96 @@
         }, delayed ? 240 : 0);
     };
 
+	const formatMinimumOrderText = (value) => {
+	    const sanitized = String(value ?? '').replace(/[^\d.-]/g, '');
+	    const num = Number(sanitized);
+
+	    if (!sanitized || Number.isNaN(num)) {
+	        return '최소주문금액 정보 없음';
+	    }
+
+	    return `최소주문금액 ${num.toLocaleString('ko-KR')}원`;
+	};
+
+
+
+	const syncCreateRoomForms = (payload) => {
+	    document.querySelectorAll('[data-mo-create-room-form]').forEach((form) => {
+	        const storeIdxInput = form.querySelector('input[name="storeIdx"]');
+	        const storeNameEl = form.querySelector('[data-mo-store-name]');
+	        const minimumEl = form.querySelector('[data-mo-store-minimum]');
+	        const submitButton = form.querySelector('[data-mo-create-submit]');
+
+	        if (storeIdxInput) storeIdxInput.value = payload.storeIdx ?? '';
+	        if (storeNameEl) storeNameEl.textContent = payload.storeName || '가게를 선택해 주세요';
+	        if (minimumEl) minimumEl.textContent = formatMinimumOrderText(payload.minimumOrderAmount);
+
+	        if (submitButton) {
+	            submitButton.disabled = !validateCreateRoomForm(form);
+	        }
+	    });
+	};
+
+	const validateCreateRoomForm = (form) => {
+	    const storeIdx = form.querySelector('input[name="storeIdx"]')?.value;
+	    const selectedDeliveryAddressIdx = form.querySelector('input[name="selectedDeliveryAddressIdx"]:checked')?.value;
+	    const paymentMode = form.querySelector('input[name="paymentMode"]:checked')?.value;
+
+	    return Boolean(storeIdx && selectedDeliveryAddressIdx && paymentMode);
+	};
+
+	const bindCreateRoomForms = () => {
+	    document.querySelectorAll('[data-mo-create-room-form]').forEach((form) => {
+	        const refresh = () => {
+	            const submitButton = form.querySelector('[data-mo-create-submit]');
+	            if (submitButton) {
+	                submitButton.disabled = !validateCreateRoomForm(form);
+	            }
+	        };
+
+	        form.addEventListener('change', refresh);
+
+	        form.addEventListener('submit', (event) => {
+	            if (!validateCreateRoomForm(form)) {
+	                event.preventDefault();
+	                window.alert('가게, 배송지, 결제 방식을 모두 확인해 주세요.');
+	                return;
+	            }
+	        });
+
+	        refresh();
+	    });
+	};
+
+	const openCreateRoomLayer = (payload) => {
+	    const delayed = closeMobileMenu();
+	    closeAllLayers();
+	    syncCreateRoomForms(payload);
+
+	    window.setTimeout(() => {
+	        if (isMobile()) {
+	            const mobileCreateSheet = getOffcanvasInstance(mobileCreateRoomSheetEl);
+	            if (mobileCreateSheet) mobileCreateSheet.show();
+	        } else {
+	            const createRoomModal = getModalInstance(createRoomModalEl);
+	            if (createRoomModal) createRoomModal.show();
+	        }
+	    }, delayed ? 240 : 0);
+	};
+
+	window.openCreateRoomSheet = (payload = {}) => {
+	    if (!payload.storeIdx) {
+	        window.alert('가게 정보가 없어 주문방을 생성할 수 없습니다.');
+	        return;
+	    }
+
+	    openCreateRoomLayer({
+	        storeIdx: payload.storeIdx,
+	        storeName: payload.storeName || '',
+	        minimumOrderAmount: payload.minimumOrderAmount || ''
+	    });
+	};
+	
     const bindButtons = () => {
         document.querySelectorAll('[data-mo-open-mobile-menu]').forEach((button) => {
             button.addEventListener('click', (event) => {
@@ -213,6 +315,7 @@
 
     bindButtons();
     bindRoomCodeInputs();
+	bindCreateRoomForms();
     bindAutoFocus();
     bindResponsiveCleanup();
 })();

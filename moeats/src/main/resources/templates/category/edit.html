@@ -1,22 +1,115 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Category Edit</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>카테고리 수정 - Mo-Eats</title>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Category Edit</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: category/edit</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
+
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container">
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                
+                <div class="mo-section text-center mb-5">
+                    <span class="mo-section-label">EDIT CATEGORY</span>
+                    <h2 class="mo-section-title">카테고리 명칭 수정</h2>
+                    <p class="mo-store-card__desc mt-2">등록된 카테고리의 명칭을 변경합니다.</p>
+                </div>
+
+                <div class="mo-surface-card p-4 p-md-5">
+                    
+                    <input type="hidden" id="categoryIdx" th:value="${category['categoryIdx']}">
+                    
+                    <div class="mb-5">
+                        <label for="categoryName" class="mo-form-label">
+                            카테고리 명칭 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               id="categoryName" 
+                               class="form-control mo-form-control fw-bold" 
+                               th:value="${category['categoryName']}" 
+                               placeholder="수정할 명칭을 입력하세요"
+                               maxlength="20"
+                               autocomplete="off">
+                        <p class="mo-helper-text mt-2"><i class="bi bi-info-circle me-1"></i>최대 20자까지 입력 가능합니다.</p>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4 pt-4 border-top">
+                        <button type="button" class="mo-btn mo-btn-outline w-100 fs-6 py-2" onclick="history.back()">
+                            취소
+                        </button>
+                        <button type="button" class="mo-btn mo-btn-primary w-100 fs-6 py-2" onclick="updateCategory()">
+                            <i class="bi bi-check-lg me-1"></i> 수정 완료
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
+<script th:inline="javascript">
+/*<![CDATA[*/
+    async function updateCategory() {
+        const idx = document.getElementById('categoryIdx').value;
+        const nameInput = document.getElementById('categoryName');
+        const name = nameInput.value.trim();
+        
+        if (!name) {
+            alert("수정할 카테고리 명칭을 입력해주세요.");
+            nameInput.focus();
+            return;
+        }
+
+        // 1. 보안 메타태그 추출
+        const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        // 2. 파라미터 세팅
+        const params = new URLSearchParams();
+        params.append('categoryIdx', idx);
+        params.append('categoryName', name);
+
+        try {
+            // 헤더 조립 (CSRF 토큰이 있을 경우에만 안전하게 추가)
+            const fetchHeaders = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            if (header && token) {
+                fetchHeaders[header] = token;
+            }
+
+            // 3. 서버 요청
+            const response = await fetch('/owners/store-menu-category/edit_proc', {
+                method: 'POST',
+                headers: fetchHeaders,
+                body: params
+            });
+
+            // 4. 응답 처리
+            if (response.ok) {
+                alert("성공적으로 수정되었습니다.");
+                // 수정 완료 후 다시 상세 페이지로 이동
+                location.href = "/owners/store-menu-category/detail?categoryIdx=" + idx;
+            } else {
+                alert("수정 실패 (오류 코드: " + response.status + ")");
+            }
+        } catch (e) { 
+            console.error('수정 통신 오류:', e); 
+            alert("서버 연결에 실패했습니다.");
+        }
+    }
+/*]]>*/
+</script>
+</th:block>
 </body>
 </html>

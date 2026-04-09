@@ -16,12 +16,7 @@ public class OwnerCheckInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
         HttpSession session = request.getSession(false);
-
-        if (session == null || session.getAttribute("member") == null) {
-            response.sendRedirect("/login");
-            return false;
-        }
-
+        
         Member member = (Member) session.getAttribute("member");
 
         if (member.getMemberRoleType() == null || !member.getMemberRoleType().equals("OWNER")) {

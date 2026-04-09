@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+      
 <head>
     <meta charset="UTF-8">
-    <title>Mo-Eats Login</title>
+    <title>로그인 - Mo-Eats</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+<<<<<<< HEAD
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
         .wrap { max-width: 420px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -33,5 +37,66 @@
             <a th:href="@{/members/new-user}">회원가입하기</a>
         </p>
     </div>
+=======
+</head>
+<body>
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container" style="max-width: 480px; margin: 0 auto; padding-top: 60px;">
+        
+        <div class="mo-surface-card" style="padding: 48px 36px;">
+            
+            <div class="text-center mb-5">
+                <div class="mo-section-label mb-2">LOGIN</div>
+                <h2 class="mo-section-title">Mo-Eats 로그인</h2>
+                <p class="mo-store-card__desc mt-2">로그인 후 맛있는 여정을 이어가세요.</p>
+            </div>
+
+            <form method="post" th:action="@{/login}" class="d-flex flex-column gap-4">
+                
+                <div>
+                    <label for="memberEmail" class="mo-form-label">이메일</label>
+                    <input type="email" 
+                           id="memberEmail" 
+                           name="memberEmail" 
+                           class="form-control mo-form-control" 
+                           placeholder="이메일을 입력하세요" 
+                           required>
+                </div>
+
+                <div>
+                    <label for="memberPassword" class="mo-form-label">비밀번호</label>
+                    <input type="password" 
+                           id="memberPassword" 
+                           name="memberPassword" 
+                           class="form-control mo-form-control" 
+                           placeholder="비밀번호를 입력하세요" 
+                           required>
+                </div>
+
+                <div th:if="${error}" 
+                     class="p-3 mt-2" 
+                     style="background-color: #FFF0F0; border: 1px solid #FFD6D6; border-radius: 12px; color: #D32F2F; font-size: 13px; font-weight: 700;">
+                    <i class="bi bi-exclamation-circle me-1"></i> <span th:text="${error}">아이디 혹은 비밀번호를 확인해주세요.</span>
+                </div>
+
+                <button type="submit" class="mo-btn mo-btn-primary w-100 mt-2" style="min-height: 52px; font-size: 16px;">
+                    로그인
+                </button>
+            </form>
+
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-5 pt-4" style="border-top: 1px solid var(--mo-line);">
+                <a th:href="@{/members/createType}" style="color: var(--mo-text-soft); font-size: 14px; font-weight: 600; text-decoration: none;">
+                    회원가입
+                </a>
+                <span style="color: var(--mo-line-strong); font-size: 12px;">|</span>
+                <a th:href="@{/main}" style="color: var(--mo-text-soft); font-size: 14px; font-weight: 600; text-decoration: none;">
+                    메인으로 돌아가기
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>
+>>>>>>> f912c3bdcbaa730126e1afc9ed59c4958613a12e
 </body>
 </html>

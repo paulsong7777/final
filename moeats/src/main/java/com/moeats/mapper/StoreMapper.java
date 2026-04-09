@@ -31,4 +31,8 @@ public interface StoreMapper {
 	
 	// 가게 조회
 	public Store myStore(@Param("ownerMemberIdx") int ownerMemberIdx);
+	
+	// 주문방 생성시 가게 정보를 불러오겠음.
+	public Store findByStoreIdx(@Param("storeIdx") int storeIdx);
+	
 }
