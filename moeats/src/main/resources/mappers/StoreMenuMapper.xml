@@ -21,14 +21,14 @@
 	
 	<!-- 메뉴 상태 변경 (활성, 품절, 숨김 등)-->
 	<update id="updateStatus">
-		update Store_Menu set
+		update store_menu set
 			menu_status = #{menuStatus}
 		where store_idx = #{storeIdx} and menu_idx = #{menuIdx}
 	</update>
 	
 	<!-- 메뉴 수정 -->
 	<update id="updateMenu">
-		update Store_Menu set
+		update store_menu set
 			menu_name = #{menuName},
 			menu_description = #{menuDescription},
 			menu_price = #{menuPrice},
@@ -40,7 +40,7 @@
 	<!-- 메뉴 추가 -->
 	<insert id="insertMenu" parameterType="StoreMenu"
 		useGeneratedKeys="true" keyProperty="menuIdx">
-		insert into Store_Menu(
+		insert into store_menu(
 					store_idx,
 					menu_name,
 					menu_description,
@@ -70,7 +70,7 @@
 	        display_order,
 	        created_at,
 	        updated_at
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_idx = #{menuIdx}
 	</select>
@@ -89,7 +89,7 @@
 		    display_order,
 		    created_at,
 		    updated_at
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_name like CONCAT('%', #{keyword}, '%')
 	</select>
@@ -106,7 +106,7 @@
 	        display_order,
 	        created_at,
 	        updated_at
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_status != 'HIDDEN'
 	      and menu_name like CONCAT('%', #{keyword}, '%')
@@ -124,7 +124,7 @@
 		    display_order,
 		    created_at,
 		    updated_at
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	    order by display_order asc, menu_idx asc
 	</select>
@@ -141,7 +141,7 @@
 	        display_order,
 	        created_at,
 	        updated_at
-	    from Store_Menu
+	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_status != 'HIDDEN'
 	    order by display_order asc, menu_idx asc

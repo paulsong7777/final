@@ -1,134 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layout/default}">
+	
 <head>
-<<<<<<< HEAD
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Signup User</title>
-<style type="text/css">
-body {
-	font-family: Arial, sans-serif;
-	margin: 40px;
-	background: #f7f7f7;
-}
-
-.wrap {
-	max-width: 720px;
-	margin: 0 auto;
-	background: #fff;
-	padding: 32px;
-	border-radius: 16px;
-}
-
-h1 {
-	margin-top: 0;
-}
-
-.path {
-	color: #666;
-	margin-top: 8px;
-}
-
-table {
-	border: 1px solid blue;
-	border-collapse: collapse;
-}
-
-td {
-	border: 1px solid blue;
-	height: 30px;
-}
-
-.title {
-	width: 100px;
-	padding-left: 5px;
-}
-
-.content {
-	width: 250px;
-	padding-left: 5px;
-}
-</style>
-</head>
-
-<div class="wrap">
-	<h1>Signup User@GetMapping("/members/new-user")</h1>
-	<p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-	<p class="path">template: views/members/auth-signup-user</p>
-	<p>
-		<a href="/main">메인으로</a>
-	</p>
-</div>
-
-<div id="joinForm">
-	<table>
-		<tr>
-			<th>닉네임</th>
-			<td><input type="text" name="memberNickname"
-				placeholder="이름을 입력하세요"></td>
-		</tr>
-		<tr>
-		<tr>
-			<th>이메일</th>
-			<td><input type="text" name="memberEmail"
-				placeholder="아이디를 입력하세요"></td>
-		</tr>
-		<tr>
-			<td class="title">비밀번호</td>
-			<td class="content">${ sessionScope.member.memberPassword }</td>
-		</tr>
-		<tr>
-			<td class="title">전화번호</td>
-			<td class="content">${ sessionScope.member.memberPhone }</td>
-		</tr>
-		<tr>
-			<td class="title">회원타입</td>
-			<td class="content">${ sessionScope.member.memberRoleType ==
-				null ? "입력않됨" : sessionScope.member.memberRoleType }</td>
-		</tr>
-		<tr>
-			<td class="title">기본 배송 주소</td>
-			<td class="content">${
-				sessionScope.member.defaultDeliveryAddressIdx }</td>
-		</tr>
-		<tr>
-
-			<legend>회원 정보</legend>
-		<tr>
-			<td rowspan="3" class="title">메일수신</td>
-			<td class="content">${sessionScope.member.noticeMail ? "공지메일 받음"
-				: "공지메일 받지 않음"}</td>
-		</tr>
-		<tr>
-			<td class="content">${ sessionScope.member.addMail ? "광고메일 받음" :
-				"광고메일 받지 않음" }</td>
-		</tr>
-		<tr>
-			<td class="content">${ sessionScope.member.infoMail ? "정보메일 받음"
-				: "정보메일 받지 않음" }</td>
-		</tr>
-		
-	</table>
-	<button onclick="showSuccess()">가입하기</button>
-</div>
-
-
-<!-- textarea cols="50" rows="5" name="memo" id="memo"></textarea>
-
-<div>
-	<input type="submit" value="가입하기"> <input type="reset"
-		value="다시 쓰기"> -->
-</div>
-
-</body>
-=======
     <title>Mo-Eats 일반 회원가입</title>
 </head>
-	<th:block layout:fragment="content">
-		
+<section layout:fragment="pageContent">
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="/js/member.js"></script>
 		<div class="row">
 			<div class="col">
 			
@@ -218,54 +98,51 @@ td {
 							</div>
 						</div>
 					</div>
+					<br>
+					<div class="row mt-3">
+					    <div class="col">
+					
+					        <div style="border:1px solid #ddd; padding:15px; height:120px; overflow-y:auto;">
+					            <b>[이용약관]</b><br>
+					            본 서비스는 회원에게 배달 주문 서비스를 제공합니다.<br>
+					            회원은 서비스 이용 시 관련 법령을 준수해야 합니다.<br>
+					            ...
+					            <br><br>
+					            <b>[개인정보 처리방침]</b><br>
+					            수집 항목: 이메일, 전화번호, 닉네임<br>
+					            이용 목적: 회원 관리 및 서비스 제공<br>
+					            ...
+					        </div>
+						
+					        <div style="margin-top:10px;">
+					            <input type="checkbox" id="agreeAll">
+					            <label for="agreeAll"><b>전체 동의</b></label>
+					        </div>
+						
+					        <div>
+					            <input type="checkbox" name="agreeTerms" id="agreeTerms">
+					            <label for="agreeTerms">(필수) 이용약관 동의</label>
+					        </div>
+						
+					        <div>
+					            <input type="checkbox" name="agreePrivacy" id="agreePrivacy">
+					            <label for="agreePrivacy">(필수) 개인정보 처리방침 동의</label>
+					        </div>
+						
+					    </div>
+					</div>
 					
 					<div class="row">
 						<div class="col">
 							<input type="button" th:onclick="@{|location.href='/main'|}" value="취 소" class="btn">
 							<input type="button" th:onclick="@{|location.href='/members/createType'|}" value="다시 선택" class="btn">
-							<input type="submit" value="회원가입" class="btn">
+							<input type="submit" value="회원가입" class="btn" id="submitBtn"  disabled>
 						</div>
 					</div>
+					
 				</form>
 			</div>
 		</div>
 	
-	
-	</th:block>
->>>>>>> 62de2c119fc856c272e22540e4082084e8823452
+	</section>	
 </html>
-
-
-
-
-<div id="joinSuccess" style="display: none;">
-	<table class="table">
-		<tr>
-			<td colspan="2" style="text-align: center;">
-				<h3>회원 등록 완료</h3> 아래와 같이 등록되었습니다.
-			</td>
-		</tr>
-	</table>
-</div>
-
-<div class="container mt-5 modal fade" id="joinSuccessModal"
-	tabindex="-1"></div>
-	<table class="table table-bordered">
-		<tr>
-			<td colspan="2"
-				style="text-align: center; height: 30px; line-height: 30px">
-				<h3>회원 등록 완료</h3> 아래와 같이 회원 등록이 완료 되었습니다.<br />
-			</td>
-		</tr>
-		<tr>
-			<th scope="row" class="text-center">이름</th>
-			<td th:text="${memberName}">유서윤</td>
-		</tr>
-	</table>
-
-	<div class="text-center mt-3">
-		<a th:href="@{/main}" class="btn btn-orange">메인으로 가기</a>
-	</div>
-
-
-

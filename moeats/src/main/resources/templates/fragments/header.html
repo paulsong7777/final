@@ -106,49 +106,8 @@
     </style>
 </head>
 <body>
-<!-- /* header */ -->
-<!-- /* header라는 프래그먼트를 정의*/ -->
-<div th:fragment="header" class="row border-bottom border"></div>
-<header class="container-fluid" id="global-header">
-    <div class="row align-items-center px-lg-5 px-3">
-        <div class="col-4 logo-box">
-            <a href="main.jsp">
-                <img src="https://via.placeholder.com/180x60/252D59/FF8000?text=Mo-Eats" alt="Mo-Eats Logo">
-            </a>
-        </div>
 
-        <div class="col-8">
-            <div class="row">
-                <div class="col">
-                    <ul class="nav justify-content-end align-items-center">
-                        <li class="nav-item">
-                            <a class="nav-link" href='${ sessionScope.isLogin ? "logout.jsp" : "loginForm.jsp" }'>
-                                <i class="bi bi-power"></i> ${ sessionScope.isLogin ? "로그아웃" : "로그인" }
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <c:if test="${ not sessionScope.isLogin }">
-                                <a class="nav-link" href="#">회원가입</a>
-                            </c:if> 
-                            <c:if test="${ sessionScope.isLogin }">
-                                <a class="nav-link" href="#">내 정보수정</a>
-                            </c:if>
-                        </li>
-                        <li class="nav-item"><a class="nav-link" href="main.jsp">게시글</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">주문/배송</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">고객센터</a></li>
-                    </ul>
-                </div>
-            </div>
 
-            <div class="row mt-1">
-                <div class="col text-end">
-                    <c:if test="${ sessionScope.isLogin }">
-                        <span class="user-greeting">
-                            <i class="bi bi-person-circle me-1"></i>안녕하세요, <strong>${ sessionScope.id }</strong>님!
-                        </span>
-                    </c:if>
-=======
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="siteHeader">
 
@@ -166,7 +125,7 @@
                     <button type="button" class="mo-btn mo-btn-plain" data-mo-open-login>
                         로그인
                     </button>
-                    <a th:href="@{/signup}" class="mo-btn mo-btn-primary">
+                    <a th:href="@{/members/createType}" class="mo-btn mo-btn-primary">
                         회원가입
                     </a>
                 </div>
@@ -341,17 +300,14 @@
                         </div>
                         <button type="submit" class="mo-btn mo-btn-primary w-100">로그인</button>
                     </form>
->>>>>>> 62de2c119fc856c272e22540e4082084e8823452
+
                 </div>
             </div>
         </div>
     </div>
-<<<<<<< HEAD
-</header>
 
-</body>
-</html>
-=======
+
+
 
     <!-- =========================
          LOGIN : MOBILE BOTTOM SHEET

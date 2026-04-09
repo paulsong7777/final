@@ -1,5 +1,7 @@
 package com.moeats.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -81,7 +83,6 @@ public class MemberController {
 			return "redirect:/login";
 		}
 		
-		
 		return "views/members/member-profile-edit";
 	}
 	
@@ -94,6 +95,11 @@ public class MemberController {
 	    if("USER".equals(member.getMemberRoleType())) {
 	        DeliveryAddress deliveryAddress = deliveryAddressService.getDefaultAddress(member.getMemberIdx());
 	        model.addAttribute("deliveryAddress", deliveryAddress);
+	        
+	        // 전체 주소 리스트 추가
+	        List<DeliveryAddress> addressList =
+	                deliveryAddressService.getAddress(member.getMemberIdx());
+	        model.addAttribute("addressList", addressList);
 	    }
 
 	    // OWNER용 가게 정보
@@ -101,7 +107,7 @@ public class MemberController {
 	        Store store = storeService.myStore(member.getMemberIdx());
 	        model.addAttribute("store", store);
 	    }
-		
+	    
 		return "views/members/member-profile";
 	}
 	
@@ -177,6 +183,7 @@ public class MemberController {
 
 	    } catch (Exception e) {
 	    	e.printStackTrace();
+	    	e.printStackTrace();
 	        ra.addFlashAttribute("error", e.getMessage());
 	        return "redirect:/members/createType";
 	    }
@@ -213,5 +220,25 @@ public class MemberController {
 		
 		return "views/members/create-type";
 	}
+	
+	/*
+	 * // ⭐ 추가: 비밀번호 확인 버튼 클릭 시 AJAX 요청을 처리하는 메서드
+	 * 
+	 * @PostMapping("/members/check-password")
+	 * 
+	 * @ResponseBody // 결과 데이터를 JSON으로 돌려주기 위해 반드시 필요! public Map<String, Object>
+	 * checkPassword(@RequestParam("password") String memberPassword,
+	 * 
+	 * @SessionAttribute("member") Member loginUser) {
+	 * 
+	 * Map<String, Object> response = new HashMap<>();
+	 * 
+	 * // 1. 서비스 호출해서 세션 유저의 비밀번호와 입력받은 비밀번호 비교 boolean isPassCheck =
+	 * memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
+	 * 
+	 * // 2. 결과값 담기 response.put("isValid", isPassCheck);
+	 * 
+	 * return response; // { "isValid": true } 형식으로 JS에 전달됨 }
+	 */
 	
 }

@@ -1,5 +1,49 @@
 $(function(){
-	
+
+	function toggleSubmitBtn() {
+	    const terms = $("#agreeTerms").is(":checked");
+	    const privacy = $("#agreePrivacy").is(":checked");
+		
+		const email = $("#email_id").val().trim();
+		const domain = $("#email_domain").val().trim();
+		const pw = $("#memberPassword").val().trim();
+		const pw2 = $("#memberPassword1").val().trim();
+		const nick = $("#memberNickname").val().trim();
+		const p1 = $("#phone1").val().trim();
+		const p2 = $("#phone2").val().trim();
+		const p3 = $("#phone3").val().trim();
+
+		const allFilled =
+		    email && domain && pw && pw2 && nick && p1 && p2 && p3;
+
+		$("#submitBtn").prop("disabled", !(terms && privacy && allFilled));
+	}
+
+	// 전체 동의
+	$("#agreeAll").on("change", function(){
+	    const checked = $(this).is(":checked");
+
+	    $("#agreeTerms").prop("checked", checked);
+	    $("#agreePrivacy").prop("checked", checked);
+
+	    toggleSubmitBtn();
+	});
+
+	// 개별 체크
+	$("#agreeTerms, #agreePrivacy").on("change", function(){
+	    const allChecked =
+	        $("#agreeTerms").is(":checked") &&
+	        $("#agreePrivacy").is(":checked");
+
+	    $("#agreeAll").prop("checked", allChecked);
+
+	    toggleSubmitBtn();
+	});
+
+	// ⭐ 초기 상태 반영 (중요)
+	toggleSubmitBtn();
+	$("#signupForm input").on("input", toggleSubmitBtn);
+		
 	// 이메일 중복확인
 	$("#btnOverlapId").on("click", function(){
 
@@ -26,6 +70,7 @@ $(function(){
 	                alert("이미 사용중인 이메일입니다.");
 	                $("#isIdCheck").val("false");
 	            }
+				toggleSubmitBtn();
 	        },
 	        error: function(){
 	            alert("서버 오류 발생");
@@ -53,6 +98,7 @@ $(function(){
 			$("#email_domain").prop("readonly", true);
 		}
 		
+		toggleSubmitBtn();
 	})
 	
 	
@@ -209,6 +255,12 @@ $(function(){
 		
 		if($("#isIdCheck").val() !== "true"){
 		    alert("이메일 중복 확인을 해주세요");
+		    return false;
+		}
+		
+		// 약관 체크
+		if(!$("#agreeTerms").is(":checked") || !$("#agreePrivacy").is(":checked")){
+		    alert("약관 동의 필요");
 		    return false;
 		}
 		

@@ -1,12 +1,12 @@
-
+<!-- 
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layouts/main_layout}">
+	layout:decorate="~{layout/default}">
 <head>
     <title>Mo-Eats 마이페이지</title>
 </head>
-<<<<<<< HEAD
+
 <body>
   <div class="wrap">
     <h1>Member Profile</h1>
@@ -145,9 +145,17 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-=======
-	<th:block layout:fragment="content">
+</body> -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+	
+<head>
+    <title>Mo-Eats 마이페이지</title>
+    <title>Mo-Eats 마이페이지</title>
+</head>
+<section layout:fragment="pageContent">
 	<div class="row">
 		<div class="col">
 			
@@ -217,16 +225,58 @@
 						</div>
 						<div class="row">
 							<div class="col">
+							<b>기본 주소 : </b>
+							<span th:text="${deliveryAddress != null ? deliveryAddress.deliveryLabel: '등록된 주소 없음'}"></span>
 								<input type="text" name="deliveryAddress"
 								       th:value="${deliveryAddress != null 
 								           ? deliveryAddress.deliveryAddress1 
 								             + (deliveryAddress.deliveryAddress2 != null ? ' ' + deliveryAddress.deliveryAddress2 : '') 
 								           : '등록된 기본 주소 없음'}"
 								       readonly>
-									<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/edit'}" value="수정" style="display:inline">
-									<input type="button" th:onclick="@{location.href='/members/me/addresses/{deliveryAddressIdx}/delete'}" value="삭제" style="display:inline">
 							</div>
 						</div>
+						
+						<div class="row">
+							<div class="col">
+								<th:block th:if="${ !#lists.isEmpty(addressList) }">
+								<table>
+									<thead>
+										<tr>
+											<th>배달지 명칭</th>
+											<th>주소</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:block th:each="address : ${addressList}">
+											<td th:text="${address.deliveryLabel}"></td>
+											<td th:text="${address.deliveryAddress1 + '	' + address.deliveryAddress2}"></td>
+										    <td>
+										        <input type="button"
+										               th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/edit'|"
+										               value="수정">
+										
+										        <input type="button"
+										               th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/delete'|"
+										               value="삭제">
+											    <!-- 기본주소 표시 -->
+											    <span th:if="${address.isActive}">[기본주소]</span>
+											
+											    <!-- 기본주소 설정 버튼 (기본 아닐 때만) -->
+											    <form th:if="${!address.isActive}"
+											          th:action="@{/members/me/addresses/{id}/default(id=${address.deliveryAddressIdx})}"
+											          method="post"
+											          style="display:inline">
+											          <input type="hidden" name="redirectUrl" value="/members/me"/>
+											        <button type="submit">기본 주소로 변경</button>
+											    </form>
+										    </td>
+										</tr>
+									</tbody>
+								</th:block>
+								</table>
+							</div>
+						</div>
+						
 					</div>
 				</div>
 			</th:block>
@@ -244,6 +294,7 @@
 						</div>
 						<div class="row">
 							<div class="col">
+								<span th:text="${store != null ? store.storeName : '가게 없음'}"></span>
 								<input type="text" name="store"
 								       th:value="${store != null 
 								           ? store.storeAddress1 
@@ -293,6 +344,5 @@
 			
 		</div>
 	</div>
-	</th:block>
->>>>>>> 62de2c119fc856c272e22540e4082084e8823452
+	</section>
 </html>

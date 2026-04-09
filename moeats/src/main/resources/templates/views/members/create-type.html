@@ -1,34 +1,55 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layout/default}">
 	
 <head>
     <title>Mo-Eats 회원가입</title>
 </head>
-	<th:block layout:fragment="content">
+<section layout:fragment="pageContent">
 	<div class="row">
 		<div class="col">
 			
 			<div class="row">
 				<div class="col">
-					<h4>회원가입 유형 선택</h4>
+					<h2>회원가입 유형 선택</h2>
 				</div>
 			</div>
 			
 			<div class="row">
-				<div class="col">
-					<input type="button" th:onclick="@{location.href='/members/new-user'}" value="일반회원">
-				</div>
-				
-				<div class="col">
-					<input type="button" th:onclick="@{location.href='/members/new-owner'}" value="사업자회원">	
-					
-				</div>
+			    <div class="col-md-6">
+			        <div class="card p-3">
+			            <h3>🍔 일반회원</h3>
+			            <ul>
+			                <li>음식 주문</li>
+			                <li>배달 주소 관리</li>
+			                <li>주문 내역 조회</li>
+			            </ul>
+			            <button th:onclick="@{location.href='/members/new-user'}">선택</button>
+			        </div>
+			    </div>
+			
+			    <div class="col-md-6">
+			        <div class="card p-3">
+			            <h3>🏪 사업자회원</h3>
+			            <ul>
+			                <li>가게 등록</li>
+			                <li>메뉴 관리</li>
+			                <li>주문 관리</li>
+			            </ul>
+			            <button th:onclick="@{location.href='/members/new-owner'}">선택</button>
+			        </div>
+			    </div>
 			</div>
-			<input type="button" th:onclick="@{|location.href='/main'|}" value="취 소" class="btn">
+			
+			<p>이미 계정이 있으신가요? <a href="/login">로그인</a></p>
+			
+			<p>회원가입 시 이용약관 및 개인정보처리방침에 동의하게 됩니다.</p>
+			
+			
+			<input type="button" th:onclick="@{|location.href='/main'|}" value="돌아가기" class="btn">
 			
 		</div>
 	</div>
-	</th:block>
+	</section>
 </html>
