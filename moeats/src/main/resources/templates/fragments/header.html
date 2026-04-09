@@ -241,7 +241,7 @@
                     <p class="mo-modal-card__desc">6자리 코드를 입력하면 주문방에 바로 참여할 수 있습니다.</p>
                 </div>
                 <div class="mo-modal-form">
-                    <form th:action="@{/room/join}" method="get" class="d-flex flex-column gap-3">
+                    <form th:action="@{/rooms/join}" method="get" class="d-flex flex-column gap-3">
                         <div>
                             <label for="desktopRoomCode" class="mo-form-label">방 코드</label>
                             <input type="text"
@@ -269,7 +269,7 @@
         </div>
         <div class="mo-bottom-sheet__body">
             <div class="mo-modal-form mo-modal-form--sheet">
-                <form th:action="@{/room/join}" method="get" class="d-flex flex-column gap-3">
+                <form th:action="@{/rooms/join}" method="get" class="d-flex flex-column gap-3">
                     <div>
                         <label for="mobileRoomCode" class="mo-form-label">방 코드</label>
                         <input type="text"

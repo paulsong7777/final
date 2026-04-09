@@ -1,5 +1,8 @@
 package com.moeats.controller;
 
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -115,6 +118,7 @@ public class RoomController {
 		        ra.addFlashAttribute("error", "더이상 방에 참여할 수 없습니다");
 		        return "redirect:/rooms/join";
 		    }
+		    sseService.participantUpdate(orderRoom.getRoomIdx());
 		}
 		/*
 		 * if (orderRoomService.findRoomMember(orderRoom.getRoomIdx(),
@@ -192,9 +196,51 @@ public class RoomController {
 	}
 	
 	@GetMapping("/rooms/join")
-	public String joinRoom() {
-		return "room-join";
+	public String joinRoom(
+	        @RequestParam(name = "roomCode", required = false) String roomCode,
+	        RedirectAttributes ra) {
+
+	    if (roomCode != null && !roomCode.isBlank()) {
+	        String normalized = roomCode.replaceAll("\\D", "");
+
+	        if (!normalized.matches("\\d{6}")) {
+	            ra.addFlashAttribute("error", "방 코드는 6자리 숫자여야 합니다");
+	            return "redirect:/main";
+	        }
+
+	        return "redirect:/rooms/code/" + normalized;
+	    }
+
+	    return "room-join";
 	}
+	
+	// room 보는 엔드포인트 sse ㅈㄴ어렵네 ㅅㅂ
+	@GetMapping(value = "/rooms/code/{room_code}/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	@ResponseBody
+	public SseEmitter subscribeRoom(
+	        @PathVariable("room_code") String roomCode,
+	        @SessionAttribute("member") Member member) {
+
+	    OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
+
+	    if (orderRoom == null) {
+	        SseEmitter emitter = new SseEmitter(0L);
+	        emitter.complete();
+	        return emitter;
+	    }
+
+	    RoomParticipant participant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
+	    if (participant == null) {
+	        SseEmitter emitter = new SseEmitter(0L);
+	        emitter.complete();
+	        return emitter;
+	    }
+
+	    return sseService.joinRoom(orderRoom.getRoomIdx());
+	}
+	
+	
+	
 	
 	@GetMapping("/rooms/code/{room_code}/cart")
 	public String roomCart(
@@ -249,6 +295,7 @@ public class RoomController {
 			ra.addFlashAttribute("error", "선택을 확정하는 중 오류가 발생했습니다");
 			return String.format("redirect:/rooms/code/%s/confirm",roomCode);
 		}
+		sseService.participantUpdate(orderRoom.getRoomIdx());
 		return String.format("redirect:/rooms/code/%s",roomCode);
 	}
 	
@@ -265,6 +312,7 @@ public class RoomController {
 				ra.addFlashAttribute("error", "선택을 취소하는 중 오류가 발생했습니다");
 			return String.format("redirect:/rooms/code/%s",roomCode);
 		}
+		sseService.participantUpdate(orderRoom.getRoomIdx());
 		return String.format("redirect:/rooms/code/%s/confirm",roomCode);
 	}
 	
@@ -283,8 +331,10 @@ public class RoomController {
 			ra.addFlashAttribute("error", "방장은 방을 나갈 수 없습니다");
 		else if (orderRoomService.leave(roomParticipant.getRoomParticipantIdx()) == 0)
 			ra.addFlashAttribute("error", "방을 나가는데 실패했습니다");
-		else
+		else {
+			sseService.participantUpdate(orderRoom.getRoomIdx());
 			return "redirect:/main";
+			}
 		return String.format("redirect:/rooms/code/%s",roomCode);
 	}
 	
@@ -306,6 +356,7 @@ public class RoomController {
 				|| orderRoomService.leave(targetParticipant.getRoomParticipantIdx()) == 0) {
 			ra.addFlashAttribute("error", "사용자를 강퇴하는 중 오류가 발생했습니다");
 		}
+		sseService.participantUpdate(orderRoom.getRoomIdx());
 		return String.format("redirect:/rooms/code/%s",roomCode);
 	}
 	
@@ -352,7 +403,7 @@ public class RoomController {
 		}
 		GroupOrder groupOrder = (GroupOrder) res.get("groupOrder");
 		orderRoomTimer.start(groupOrder.getOrderIdx(), orderRoom.getExpiresAt());
-		sseService.beginOrder(orderRoom.getRoomIdx());
+		sseService.beginOrder(orderRoom.getRoomIdx(), groupOrder.getOrderIdx());
 		return String.format("redirect:/orders/%d/payment", groupOrder.getOrderIdx());
 	}
 }

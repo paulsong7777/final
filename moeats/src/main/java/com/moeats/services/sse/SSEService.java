@@ -28,6 +28,9 @@ public class SSEService {
 		return sseEmitter;
 	}
 	private int send(Map<Integer, List<SseEmitter>> map,int idx,SseEventBuilder message) {
+		if (!map.containsKey(idx) || map.get(idx) == null || map.get(idx).isEmpty()) {
+	        return 0;
+	    }
 		int sent = 0;
 		message.id(String.valueOf(System.currentTimeMillis()));
 		for( SseEmitter sseEmitter : map.get(idx) )
@@ -48,13 +51,21 @@ public class SSEService {
 		return join(orderMap,roomIdx);
 	}
 	
-	public int beginOrder(int roomIdx) {
-		return send(roomMap,roomIdx,SseEmitter.event().name("to_order"));
+	public int beginOrder(int roomIdx, int orderIdx) {
+	    return send(
+	        roomMap,
+	        roomIdx,
+	        SseEmitter.event()
+	            .name("to_order")
+	            .data(Map.of("orderIdx", orderIdx))
+	    );
 	}
 	public int cancelRoom(int roomIdx) {
 		return send(roomMap,roomIdx,SseEmitter.event().name("cancel"));
 	}
-	
+	public int participantUpdate(int roomIdx) {
+	    return send(roomMap, roomIdx, SseEmitter.event().name("participantUpdate"));
+	}
 	public int expireOrder(int roomIdx) {
 		return send(roomMap,roomIdx,SseEmitter.event().name("expire"));
 	}
