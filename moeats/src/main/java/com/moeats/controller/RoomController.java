@@ -1,8 +1,5 @@
 package com.moeats.controller;
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -14,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
-
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -27,8 +23,8 @@ import com.moeats.domain.RoomParticipant;
 import com.moeats.domain.StoreMenu;
 import com.moeats.service.StoreMenuService;
 import com.moeats.services.GroupCartItemService;
-import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.MenuService;
+import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.TransactionService;
 import com.moeats.services.sse.SSEService;
@@ -215,30 +211,32 @@ public class RoomController {
 	}
 	
 	// room 보는 엔드포인트 sse ㅈㄴ어렵네 ㅅㅂ
-	@GetMapping(value = "/rooms/code/{room_code}/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	@ResponseBody
-	public SseEmitter subscribeRoom(
-	        @PathVariable("room_code") String roomCode,
-	        @SessionAttribute("member") Member member) {
-
-		System.out.println("[ROOM] subscribe request roomCode=" + roomCode + ", member=" + member.getMemberIdx());
-	    OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
-
-	    if (orderRoom == null) {
-	        SseEmitter emitter = new SseEmitter(0L);
-	        emitter.complete();
-	        return emitter;
-	    }
-
-	    RoomParticipant participant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
-	    if (participant == null) {
-	        SseEmitter emitter = new SseEmitter(0L);
-	        emitter.complete();
-	        return emitter;
-	    }
-
-	    return sseService.joinRoom(orderRoom.getRoomIdx());
-	}
+	// SseController 에서도 같은 엔드포인트 잡고있음... ㅅㅂ...
+	
+//	@GetMapping(value = "/rooms/code/{room_code}/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+//	@ResponseBody
+//	public SseEmitter subscribeRoom(
+//	        @PathVariable("room_code") String roomCode,
+//	        @SessionAttribute("member") Member member) {
+//
+//		System.out.println("[ROOM] subscribe request roomCode=" + roomCode + ", member=" + member.getMemberIdx());
+//	    OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
+//
+//	    if (orderRoom == null) {
+//	        SseEmitter emitter = new SseEmitter(0L);
+//	        emitter.complete();
+//	        return emitter;
+//	    }
+//
+//	    RoomParticipant participant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
+//	    if (participant == null) {
+//	        SseEmitter emitter = new SseEmitter(0L);
+//	        emitter.complete();
+//	        return emitter;
+//	    }
+//
+//	    return sseService.joinRoom(orderRoom.getRoomIdx());
+//	}
 	
 	
 	

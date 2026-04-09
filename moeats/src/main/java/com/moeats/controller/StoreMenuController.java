@@ -168,25 +168,32 @@ public class StoreMenuController {
     // 메뉴 수정
     @GetMapping("/owners/menu/edit")
     public String updateMenuForm(
-    		RedirectAttributes ra,
-    		Model model,
-    		@RequestParam(name = "menuIdx",defaultValue = "0") int menuIdx,
-    		@SessionAttribute("member") Member member) {
-    	Store store = storeService.myStore(member.getMemberIdx());
-    	if ( store==null ) {
-    		ra.addAttribute("error", "가게가 없습니다");
-    		return "redirect:/owners/store/new";
-    	}
-    	
-    	StoreMenu storeMenu = storeMenuService.getMenu(store.getStoreIdx(), menuIdx);
-    	if ( storeMenu==null || storeMenu.getStoreIdx()!=store.getStoreIdx() ) {
-    		ra.addAttribute("error", "잘못된 접근입니다");
-    		return "redirect:/home";
-    	}
+            RedirectAttributes ra,
+            Model model,
+            @RequestParam(name = "menuIdx", defaultValue = "0") int menuIdx,
+            @SessionAttribute("member") Member member) {
+
+        Store store = storeService.myStore(member.getMemberIdx());
+        if (store == null) {
+            ra.addFlashAttribute("error", "가게가 없습니다");
+            return "redirect:/owners/store/new";
+        }
+
+        StoreMenu storeMenu = storeMenuService.getMenu(store.getStoreIdx(), menuIdx);
+        if (storeMenu == null || storeMenu.getStoreIdx() != store.getStoreIdx()) {
+            ra.addFlashAttribute("error", "잘못된 접근입니다");
+            return "redirect:/owners/menu";
+        }
+
+        List<StoreMenuCategory> storeMenuCategories =
+                storeMenuCategoryService.getCategoryByStore(store.getStoreIdx());
+
         model.addAttribute("menu", "menu-edit");
-    	model.addAttribute("store", store);
-    	model.addAttribute("storeMenu", storeMenu);
-    	return "redirect:/owners/menu";
+        model.addAttribute("store", store);
+        model.addAttribute("storeMenu", storeMenu);
+        model.addAttribute("storeMenuCategories", storeMenuCategories);
+
+        return "views/owner/menu-edit";
     }
     
     @PostMapping("/owners/menu/edit")

@@ -29,6 +29,7 @@
 	<!-- 메뉴 수정 -->
 	<update id="updateMenu">
 		update store_menu set
+			menu_category_idx = #{menuCategoryIdx},
 			menu_name = #{menuName},
 			menu_description = #{menuDescription},
 			menu_price = #{menuPrice},
@@ -42,6 +43,7 @@
 		useGeneratedKeys="true" keyProperty="menuIdx">
 		insert into store_menu(
 					store_idx,
+					menu_category_idx,
 					menu_name,
 					menu_description,
 					menu_price,
@@ -50,6 +52,7 @@
 					)
 		values(
 			#{storeIdx},
+			#{menuCategoryIdx},
 			#{menuName},
 			#{menuDescription},
 			#{menuPrice},
