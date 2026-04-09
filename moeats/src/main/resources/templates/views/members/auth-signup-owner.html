@@ -5,6 +5,15 @@
 	
 <head>
     <title>Mo-Eats 사업자 회원가입</title>
+	<style>
+	    /* 가짜 비활성화 스타일 */
+	    .fake-disabled {
+	        background-color: #e9ecef !important; /* 죽은 회색 */
+	        border-color: #e9ecef !important;
+	        color: #adb5bd !important; /* 흐린 글씨 */
+	        cursor: not-allowed !important; /* 마우스 오버 시 X 표시 🚫 */
+	    }
+	</style>
 </head>
 <section layout:fragment="pageContent">
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -108,7 +117,7 @@
 				<div class="d-flex justify-content-center align-items-center gap-2 mt-5">
 					<input type="button" th:onclick="@{|location.href='/main'|}" value="취 소" class="mo-btn mo-btn-plain">
 					<input type="button" th:onclick="@{|location.href='/members/createType'|}" value="다시 선택" class="mo-btn mo-btn-outline">
-					<input type="submit" value="가입 완료" class="mo-btn mo-btn-primary" id="submitBtn" style="min-width: 140px;" disabled>
+					<input type="submit" value="가입 완료" class="mo-btn mo-btn-primary fake-disabled" id="submitBtn" style="min-width: 140px;">
 				</div>
 				
 			</form>

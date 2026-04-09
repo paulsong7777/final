@@ -1,23 +1,28 @@
 $(function(){
 
 	function toggleSubmitBtn() {
-	    const terms = $("#agreeTerms").is(":checked");
-	    const privacy = $("#agreePrivacy").is(":checked");
-		
-		const email = $("#email_id").val().trim();
-		const domain = $("#email_domain").val().trim();
-		const pw = $("#memberPassword").val().trim();
-		const pw2 = $("#memberPassword1").val().trim();
-		const nick = $("#memberNickname").val().trim();
-		const p1 = $("#phone1").val().trim();
-		const p2 = $("#phone2").val().trim();
-		const p3 = $("#phone3").val().trim();
+		    const terms = $("#agreeTerms").is(":checked");
+		    const privacy = $("#agreePrivacy").is(":checked");
+			
+			const email = $("#email_id").val().trim();
+			const domain = $("#email_domain").val().trim();
+			const pw = $("#memberPassword").val().trim();
+			const pw2 = $("#memberPassword1").val().trim();
+			const nick = $("#memberNickname").val().trim();
+			const p1 = $("#phone1").val().trim();
+			const p2 = $("#phone2").val().trim();
+			const p3 = $("#phone3").val().trim();
 
-		const allFilled =
-		    email && domain && pw && pw2 && nick && p1 && p2 && p3;
+			const allFilled =
+			    email && domain && pw && pw2 && nick && p1 && p2 && p3;
 
-		$("#submitBtn").prop("disabled", !(terms && privacy && allFilled));
-	}
+			// 💡 핵심 변경점: disabled 속성 대신 클래스를 조작합니다.
+			if (terms && privacy && allFilled) {
+			    $("#submitBtn").removeClass("fake-disabled"); // 파란색으로 활성화!
+			} else {
+			    $("#submitBtn").addClass("fake-disabled"); // 회색 + 마우스 X 표시
+			}
+		}
 
 	// 전체 동의
 	$("#agreeAll").on("change", function(){
@@ -86,14 +91,14 @@ $(function(){
 		
 		if(str == "직접입력"){
 			$("#email_domain").val("");
-			$("#email_domain").prop("readonly", false);
-		}else if(str == "네이버"){
+			$("#email_domain").prop("readonly", false).focus();
+		}else if(str == "naver.com"){
 			$("#email_domain").val("naver.com");
 			$("#email_domain").prop("readonly", true);
-		}else if(str == "다음"){
+		}else if(str == "daum.net"){
 			$("#email_domain").val("daum.net");
 			$("#email_domain").prop("readonly", true);
-		}else if(str == "Gmail"){
+		}else if(str == "gmail.com"){
 			$("#email_domain").val("gmail.com");
 			$("#email_domain").prop("readonly", true);
 		}
@@ -265,6 +270,74 @@ $(function(){
 		}
 		
         $("#memberPhone").val(p1 + "-" + p2 + "-" + p3);
+		
+		if(!confirm("회원가입 하시겠습니까?")){
+			return false;
+		}
     });
+	
+	// =========================
+		// 🔥 [수정] 이메일 실시간 입력 제한 (경고창 추가)
+		// =========================
 
+		// 1. 이메일 아이디: 영문 대소문자, 숫자만 허용
+		$("#email_id").on("input", function() {
+			let currentVal = $(this).val();
+			
+			// 영문, 숫자가 아닌 문자가 하나라도 입력되었는지 검사
+			if (/[^a-zA-Z0-9]/.test(currentVal)) {
+				alert("이메일 아이디는 영문과 숫자만 입력 가능합니다.");
+				// 잘못 입력된 문자(한글 등)만 지우고, 원래 쓰던 영문/숫자는 그대로 복구
+				$(this).val(currentVal.replace(/[^a-zA-Z0-9]/g, ''));
+			}
+		});
+
+		// 2. 이메일 도메인: 영문 대소문자, 마침표(.)만 허용
+		$("#email_domain").on("input", function() {
+			let currentVal = $(this).val();
+			
+			// 영문, 마침표(.)가 아닌 문자가 하나라도 입력되었는지 검사
+			if (/[^a-zA-Z.]/.test(currentVal)) {
+				alert("이메일 도메인은 영문과 마침표(.)만 입력 가능합니다.");
+				// 잘못 입력된 문자만 지우고, 원래 쓰던 영문/마침표는 그대로 복구
+				$(this).val(currentVal.replace(/[^a-zA-Z.]/g, ''));
+			}
+		});
+		
+		// 3. 별명 검사 (두 단계로 분리)
+			
+			// (1) 타이핑 중: 특수문자와 공백만 실시간 차단 (자음/모음은 조합을 위해 임시 허용)
+			$("#memberNickname").on("input", function() {
+				let currentVal = $(this).val();
+				
+				// 영문, 숫자, 한글(자음/모음 포함)이 아닌 문자(특수문자, 띄어쓰기)가 들어오면
+				if (/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/.test(currentVal)) {
+					alert("별명에는 특수문자나 공백을 사용할 수 없습니다.");
+					$(this).val(currentVal.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/g, ''));
+				}
+			});
+
+			// (2) 입력 완료 후 (포커스가 벗어날 때): 단독 자음/모음이 남아있는지 최종 검사
+			$("#memberNickname").on("blur", function() {
+				let currentVal = $(this).val();
+				
+				// 완성되지 않은 자음이나 모음(ㄱ~ㅎ, ㅏ~ㅣ)이 텍스트에 섞여 있다면
+				if (/[ㄱ-ㅎㅏ-ㅣ]/.test(currentVal)) {
+					alert("별명에 자음이나 모음만 단독으로 남겨둘 수 없습니다. (예: ㅋㅋ, ㅇㄴㅁ)");
+					// 단독으로 쓰인 자음/모음만 싹 지워버림
+					$(this).val(currentVal.replace(/[ㄱ-ㅎㅏ-ㅣ]/g, ''));
+				}
+			});
+
+			// 4. 전화번호 (가운데, 끝 자리): 숫자만 허용
+			$("#phone2, #phone3").on("input", function() {
+				let currentVal = $(this).val();
+				
+				// 숫자가 아닌 문자가 하나라도 입력되었는지 검사
+				if (/[^0-9]/.test(currentVal)) {
+					alert("전화번호는 숫자만 입력 가능합니다.");
+					// 숫자가 아닌 문자를 모두 지움
+					$(this).val(currentVal.replace(/[^0-9]/g, ''));
+				}
+			});
 });

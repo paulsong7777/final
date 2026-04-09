@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.DeliveryAddress;
@@ -175,14 +176,23 @@ public class MemberController {
 	
 	// 회원가입	- 일반/사업자 분기
 	@PostMapping("/members")
-	public String insertMember(Member member, RedirectAttributes ra) {
+	public String insertMember(Member member, RedirectAttributes ra, 
+            SessionStatus sessionStatus, HttpSession session) {
 
 	    try {
+	    	// 1. DB에 회원 정보 저장
 	        memberService.insertMember(member);
+	        
+	        // 🔥 2. 해결 코드: @SessionAttributes에 의해 임시로 세션에 담긴 member 비우기
+	        sessionStatus.setComplete(); 
+	        
+	        // 🔥 3. 혹시 모를 기존 찌꺼기 세션까지 완전히 날려버림 (안전장치)
+	        session.invalidate();
+
+	        // 4. 깨끗한 상태로 로그인 폼으로 이동
 	        return "redirect:/login";
 
 	    } catch (Exception e) {
-	    	e.printStackTrace();
 	    	e.printStackTrace();
 	        ra.addFlashAttribute("error", e.getMessage());
 	        return "redirect:/members/createType";
