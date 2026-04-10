@@ -72,7 +72,7 @@ public class RoomMemberInterceptor implements HandlerInterceptor {
         }
 
         OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
-        if (orderRoom == null || orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
+        if (orderRoom == null || orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
         	if(!forRestAPI(response, handler)) {
 	            FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
 	            FlashMapManager flashMapManager = RequestContextUtils.getFlashMapManager(request);

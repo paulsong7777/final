@@ -62,19 +62,57 @@ public class RoomController {
 
     public record MemberItem(RoomParticipant roomParticipant, Member member, List<CartItem> items, Integer totalAmount) {}
 
+    private String redirectToActiveRoomIfExists(Member member, RedirectAttributes ra) {
+        OrderRoom activeRoom = orderRoomService.findActiveRoomByMember(member.getMemberIdx());
+        if (activeRoom == null) {
+            return null;
+        }
+
+        ra.addFlashAttribute("error", "이미 참여 중인 주문방이 있습니다.");
+        return "redirect:/rooms/code/" + activeRoom.getRoomCode();
+    }
+
+    private String redirectToDifferentActiveRoom(Member member, String requestedRoomCode, RedirectAttributes ra) {
+        OrderRoom activeRoom = orderRoomService.findActiveRoomByMember(member.getMemberIdx());
+        if (activeRoom == null) {
+            return null;
+        }
+        if (requestedRoomCode != null && requestedRoomCode.equals(activeRoom.getRoomCode())) {
+            return null;
+        }
+
+        ra.addFlashAttribute("error", "이미 참여 중인 다른 주문방이 있습니다.");
+        return "redirect:/rooms/code/" + activeRoom.getRoomCode();
+    }
+    
+    
+    
     @GetMapping("/rooms/new")
     public String roomCreateForm(
             Model model,
-            @RequestParam(name = "storeIdx", defaultValue = "0") int storeIdx) {
+            @RequestParam(name = "storeIdx", defaultValue = "0") int storeIdx,
+            @SessionAttribute("member") Member member,
+            RedirectAttributes ra) {
+        String activeRedirect = redirectToActiveRoomIfExists(member, ra);
+        if (activeRedirect != null) {
+            return activeRedirect;
+        }
+
         model.addAttribute("storeIdx", storeIdx);
         return "room-create";
     }
 
+    
+    
     @PostMapping("/rooms")
     public String roomCreate(
             RedirectAttributes ra,
             OrderRoom orderRoom,
             @SessionAttribute("member") Member member) {
+    	String activeRedirect = redirectToActiveRoomIfExists(member, ra);
+    	if (activeRedirect != null) {
+    	    return activeRedirect;
+    	}
         orderRoom.setLeaderMemberIdx(member.getMemberIdx());
         String code = null;
         int res = 0;
@@ -98,11 +136,15 @@ public class RoomController {
             @SessionAttribute("member") Member member) {
         OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
         if (orderRoom == null) {
+        	String activeRedirect = redirectToDifferentActiveRoom(member, roomCode, ra);
+        	if (activeRedirect != null) {
+        	    return activeRedirect;
+        	}
             ra.addFlashAttribute("error", "해당하는 방을 찾을 수 없습니다");
             return "redirect:/rooms/join";
         }
 
-        if (orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
+        if (orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
             RoomParticipant roomParticipant = new RoomParticipant();
             roomParticipant.setRoomIdx(orderRoom.getRoomIdx());
             roomParticipant.setMemberIdx(member.getMemberIdx());
@@ -192,6 +234,7 @@ public class RoomController {
     @GetMapping("/rooms/join")
     public String joinRoom(
             @RequestParam(name = "roomCode", required = false) String roomCode,
+            @SessionAttribute("member") Member member,
             RedirectAttributes ra) {
 
         if (roomCode != null && !roomCode.isBlank()) {
@@ -202,7 +245,17 @@ public class RoomController {
                 return "redirect:/main";
             }
 
+            String activeRedirect = redirectToDifferentActiveRoom(member, normalized, ra);
+            if (activeRedirect != null) {
+                return activeRedirect;
+            }
+
             return "redirect:/rooms/code/" + normalized;
+        }
+
+        String activeRedirect = redirectToActiveRoomIfExists(member, ra);
+        if (activeRedirect != null) {
+            return activeRedirect;
         }
 
         return "room-join";
@@ -257,7 +310,7 @@ public class RoomController {
                 .collect(Collectors.toMap(StoreMenu::getMenuIdx, storeMenu -> storeMenu));
 
         RoomParticipant myState =
-                orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
+                orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
 
         List<CartItem> myCartItems = groupCartItems.stream()
                 .map(groupCartItem -> new CartItem(groupCartItem, storeMenuMap.get(groupCartItem.getMenuIdx())))
@@ -281,7 +334,7 @@ public class RoomController {
             @PathVariable("room_code") String roomCode,
             @RequestAttribute("orderRoom") OrderRoom orderRoom,
             @SessionAttribute("member") Member member) {
-        RoomParticipant roomParticipant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
+        RoomParticipant roomParticipant = orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
         if (orderRoom.isJoinLocked()
                 || roomParticipant == null
                 || orderRoomService.setSelect(roomParticipant.getRoomParticipantIdx()) == 0) {
@@ -298,7 +351,7 @@ public class RoomController {
             @PathVariable("room_code") String roomCode,
             @RequestAttribute("orderRoom") OrderRoom orderRoom,
             @SessionAttribute("member") Member member) {
-        RoomParticipant roomParticipant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
+        RoomParticipant roomParticipant = orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
         if (orderRoom.isJoinLocked()
                 || roomParticipant == null
                 || orderRoomService.unselect(roomParticipant.getRoomParticipantIdx()) == 0) {
@@ -315,13 +368,13 @@ public class RoomController {
             @PathVariable("room_code") String roomCode,
             @RequestAttribute("orderRoom") OrderRoom orderRoom,
             @SessionAttribute("member") Member member) {
-        RoomParticipant roomParticipant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
+        RoomParticipant roomParticipant = orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
         if (roomParticipant == null) {
             ra.addFlashAttribute("error", "잘못된 접근입니다");
             return "redirect:/main";
         }
         if (orderRoom.getLeaderMemberIdx() == member.getMemberIdx()) {
-            ra.addFlashAttribute("error", "방장은 방을 나갈 수 없습니다");
+            ra.addFlashAttribute("error", "방장은 나갈 수 없습니다. 방 종료를 사용해 주세요.");
         } else if (orderRoomService.leave(roomParticipant.getRoomParticipantIdx()) == 0) {
             ra.addFlashAttribute("error", "방을 나가는데 실패했습니다");
         } else {
@@ -342,7 +395,7 @@ public class RoomController {
             ra.addFlashAttribute("error", "잘못된 접근입니다");
             return "redirect:/main";
         }
-        RoomParticipant targetParticipant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(), kickMemberIdx);
+        RoomParticipant targetParticipant = orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), kickMemberIdx);
         if (orderRoom.isJoinLocked()
                 || kickMemberIdx == orderRoom.getLeaderMemberIdx()
                 || targetParticipant == null
@@ -353,6 +406,24 @@ public class RoomController {
         return String.format("redirect:/rooms/code/%s", roomCode);
     }
 
+    @PostMapping("/rooms/code/{room_code}/close")
+    public String closeRoom(
+            RedirectAttributes ra,
+            @PathVariable("room_code") String roomCode,
+            @RequestAttribute("orderRoom") OrderRoom orderRoom,
+            @SessionAttribute("member") Member member) {
+        if (orderRoom.getLeaderMemberIdx() != member.getMemberIdx()) {
+            ra.addFlashAttribute("error", "잘못된 접근입니다");
+            return "redirect:/main";
+        }
+        if (orderRoomService.close(orderRoom.getRoomIdx()) == 0) {
+            ra.addFlashAttribute("error", "방을 종료하는 중 오류가 발생했습니다");
+            return String.format("redirect:/rooms/code/%s", roomCode);
+        }
+        sseService.cancelRoom(orderRoom.getRoomIdx());
+        return "redirect:/main";
+    }
+    
     @PostMapping("/rooms/code/{room_code}/cancel")
     public String cancelRoom(
             RedirectAttributes ra,
