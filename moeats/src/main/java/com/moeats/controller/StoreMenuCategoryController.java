@@ -45,7 +45,7 @@ public class StoreMenuCategoryController {
         model.addAttribute("menu", "category");
 		model.addAttribute("store", store);
 		model.addAttribute("storeMenuCategories", storeMenuCategories);
-		return "views/owner/category-list";
+		return "category/list";
 	}
 
 	// 2. 등록 폼
@@ -62,7 +62,7 @@ public class StoreMenuCategoryController {
     	
     	model.addAttribute("menu", "category-reg");
     	model.addAttribute("store", store);
-		return "views/owner/category-register";
+		return "category/write";
 	}
 
 	// 3. 등록

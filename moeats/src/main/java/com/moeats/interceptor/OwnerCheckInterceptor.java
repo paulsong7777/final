@@ -12,18 +12,32 @@ import jakarta.servlet.http.HttpSession;
 @Component
 public class OwnerCheckInterceptor implements HandlerInterceptor {
 
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+	@Override
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+	    HttpSession session = request.getSession(false);
 
-        HttpSession session = request.getSession(false);
-        
-        Member member = (Member) session.getAttribute("member");
+	    if (session == null) {
+	        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+	        return false;
+	    }
 
-        if (member.getMemberRoleType() == null || !member.getMemberRoleType().equals("OWNER")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return false;
-        }
+	    Member member = (Member) session.getAttribute("member");
 
-        return true;
-    }
+	    if (member == null) {
+	        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+	        return false;
+	    }
+
+	    if (member.getMemberRoleType() == null) {
+	        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+	        return false;
+	    }
+
+	    if (!"OWNER".equals(member.getMemberRoleType())) {
+	        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+	        return false;
+	    }
+
+	    return true;
+	}
 }

@@ -1,6 +1,10 @@
 $(function(){
 
 	function toggleSubmitBtn() {
+			// 💡 [추가된 핵심 코드] 현재 페이지에 signupForm이 없으면(즉, 정보 수정 페이지라면) 검사 로직을 무시하고 종료!
+			if ($("#signupForm").length === 0) {
+				return; 
+			}
 		    const terms = $("#agreeTerms").is(":checked");
 		    const privacy = $("#agreePrivacy").is(":checked");
 			

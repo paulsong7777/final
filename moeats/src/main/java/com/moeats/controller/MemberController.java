@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.DeliveryAddress;
@@ -76,14 +75,18 @@ public class MemberController {
 	
 	
 	
-	// 회원 수정 폼 요청
+	// 회원 수정 폼 요청	sessionMember - 등록된 회원 정보
 	@GetMapping("/members/me/edit")
-	public String updateMemberForm(@SessionAttribute(name="member", required=false) Member member
-					) {
-		if(member==null) {
+	public String updateMemberForm(@SessionAttribute(name="member", required=false) Member sessionMember
+			,Model model		) {
+		if(sessionMember==null) {
 			return "redirect:/login";
 		}
+		// ⭐ 세션의 이메일을 이용해 DB에서 '최신 회원 정보'를 다시 조회합니다.
+		Member latestMember = memberService.getMemberFromEmail(sessionMember.getMemberEmail());
 		
+		// ⭐ 조회한 최신 정보를 'member'라는 이름으로 모델에 담아 화면에 넘깁니다.
+		model.addAttribute("member", latestMember);
 		return "views/members/member-profile-edit";
 	}
 	
@@ -160,7 +163,7 @@ public class MemberController {
 
 	    // 사업자 회원이면 사업자 대시보드로 리다이렉트
 	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	        return "redirect:/owners/dashboard";
+	        return "redirect:/members/dashboard";
 	    }
 	    
 		// 만약 가려던 주소가 없었다면(그냥 로그인 버튼 누르고 들어온 경우) 메인으로 보냅니다.
@@ -176,20 +179,11 @@ public class MemberController {
 	
 	// 회원가입	- 일반/사업자 분기
 	@PostMapping("/members")
-	public String insertMember(Member member, RedirectAttributes ra, 
-            SessionStatus sessionStatus, HttpSession session) {
+	public String insertMember(Member member, RedirectAttributes ra, HttpSession session) {
 
 	    try {
-	    	// 1. DB에 회원 정보 저장
 	        memberService.insertMember(member);
-	        
-	        // 🔥 2. 해결 코드: @SessionAttributes에 의해 임시로 세션에 담긴 member 비우기
-	        sessionStatus.setComplete(); 
-	        
-	        // 🔥 3. 혹시 모를 기존 찌꺼기 세션까지 완전히 날려버림 (안전장치)
-	        session.invalidate();
-
-	        // 4. 깨끗한 상태로 로그인 폼으로 이동
+	        session.invalidate(); // ⭐ 기존 로그인 세션 제거
 	        return "redirect:/login";
 
 	    } catch (Exception e) {
@@ -209,7 +203,7 @@ public class MemberController {
 	        Store store = storeService.myStore(member.getMemberIdx());
 	        
 	        // 2. 화면(HTML)에서 사용하는 변수명인 'storeVo'로 Model에 담아 전달
-	        model.addAttribute("storeVo", store);
+	        model.addAttribute("store", store);
 
             // 💡 참고: HTML을 보면 주문 내역(orderList)도 필요로 합니다.
             // 주문 내역을 가져오는 서비스가 있다면 아래처럼 같이 넘겨주어야 실시간 주문 현황도 뜹니다.
