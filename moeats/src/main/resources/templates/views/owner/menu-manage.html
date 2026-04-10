@@ -58,6 +58,13 @@
                             </div>
 
                             <div class="flex-grow-1 overflow-hidden d-flex flex-column justify-content-center">
+	                           	<div class="mb-1">
+							        <span class="badge rounded-pill fw-normal" 
+							              style="background-color: rgba(37, 45, 89, 0.05); color: var(--mo-navy-strong); font-size: 11px; padding: 3px 8px; border: 1px solid rgba(37, 45, 89, 0.1);"
+							              th:text="${menu.categoryName ?: '미분류'}">
+							            카테고리
+							        </span>
+							    </div>
                                 <h4 class="fw-bold text-truncate mb-1 fs-6" style="color: var(--mo-navy-strong);" th:text="${menu.menuName ?: '이름 없음'}">메뉴명</h4>
                                 <div class="fw-bold fs-6" style="color: var(--mo-primary);" 
                                      th:text="${#numbers.formatInteger(menu.menuPrice ?: 0, 0, 'COMMA')} + '원'">0원</div>

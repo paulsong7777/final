@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.GroupOrder;
@@ -251,7 +252,10 @@ public class StoreController {
     @PostMapping("/owners/store")
     public String insertStore(
     		@ModelAttribute Store store,
+    		// 🚨 사진 파일을 받기 위한 MultipartFile 추가 (필요 시)
+            @RequestParam(value="storeImgFile", required=false) MultipartFile storeImgFile,
 			@SessionAttribute("member") Member member) {
+    	
         store.setOwnerMemberIdx(member.getMemberIdx());
         storeService.insertStore(store);
 

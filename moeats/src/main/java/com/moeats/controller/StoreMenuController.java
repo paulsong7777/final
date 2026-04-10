@@ -227,16 +227,22 @@ public class StoreMenuController {
     		RedirectAttributes ra,
     		@ModelAttribute StoreMenu storeMenu,
 			@SessionAttribute("member") Member member) {
-		Store store = storeService.myStore(member.getMemberIdx());
-	    if ( store==null ) {
-	    	ra.addAttribute("error", "잘못된 접근입니다");
-	    	return "redirect:/home";
-	    }
+    	// 1. 현재 로그인한 사장님의 가게 정보 조회
+        Store store = storeService.myStore(member.getMemberIdx());
+        if (store == null) {
+            ra.addFlashAttribute("error", "잘못된 접근입니다");
+            return "redirect:/home";
+        }
 
+        // 2. 🚨 핵심 수정 사항: 수정할 메뉴 객체에 사장님의 가게 번호를 세팅해줌
+        // 이 값이 없으면 서비스의 getMenu() 체크 로직에서 에러가 터집니다.
+        storeMenu.setStoreIdx(store.getStoreIdx());
+
+        // 3. 수정 권한 확인 (이미 작성하신 로직)
         StoreMenu check = storeMenuService.getMenu(store.getStoreIdx(), storeMenu.getMenuIdx());
-        if ( check==null || check.getStoreIdx()!=store.getStoreIdx() ) {
-        	ra.addAttribute("error", "잘못된 접근입니다");
-        	return "redirect:/home";
+        if (check == null || check.getStoreIdx() != store.getStoreIdx()) {
+            ra.addFlashAttribute("error", "잘못된 접근입니다");
+            return "redirect:/home";
         }
 
         storeMenuService.updateMenu(storeMenu);
