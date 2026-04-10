@@ -442,14 +442,13 @@
                     </div>
 
                     <div class="rd-actions__group" th:if="${myState.selectionStatus == 'SELECTED'}">
-                        <form class="rd-inline-form js-confirm-unselect"
-                              th:action="@{/rooms/code/{code}/unselect(code=${orderRoom.roomCode})}"
-                              method="post">
-                            <button type="submit" class="mo-btn mo-btn-primary">메뉴 수정하기</button>
-                        </form>
-                    </div>
-
-                    <p class="rd-note" th:if="${myState.selectionStatus == 'SELECTED'}">메뉴를 수정하면 내 선택 상태는 다시 선택 전으로 돌아갑니다.</p>
+					    <a class="mo-btn mo-btn-primary"
+					       th:href="@{/rooms/code/{code}/confirm(code=${orderRoom.roomCode})}">주문 확인하기</a>
+					</div>
+					
+					<p class="rd-note" th:if="${myState.selectionStatus == 'SELECTED'}">
+					    주문 확인 화면으로 다시 들어가면 내 상태는 선택 전으로 돌아가고, 선택 완료를 다시 눌러야 확정됩니다.
+					</p>
                 </div>
             </div>
         </div>

@@ -65,6 +65,28 @@ public class RoomController {
 	public record MemberItem(RoomParticipant roomParticipant, Member member, List<CartItem> items,
 			Integer totalAmount) {
 	}
+	
+	private void ensureUnselectedForEditing(OrderRoom orderRoom, Member member) {
+	    if (orderRoom == null || orderRoom.isJoinLocked()) {
+	        return;
+	    }
+	    if (!"OPEN".equals(orderRoom.getRoomStatus()) && !"SELECTING".equals(orderRoom.getRoomStatus())) {
+	        return;
+	    }
+
+	    RoomParticipant roomParticipant = orderRoomService.findJoinedRoomMember(
+	            orderRoom.getRoomIdx(),
+	            member.getMemberIdx()
+	    );
+
+	    if (roomParticipant == null || !"SELECTED".equals(roomParticipant.getSelectionStatus())) {
+	        return;
+	    }
+
+	    if (orderRoomService.unselect(roomParticipant.getRoomParticipantIdx()) > 0) {
+	        sseService.participantUpdate(orderRoom.getRoomIdx());
+	    }
+	}
 
 	private String redirectToActiveRoomIfExists(Member member, RedirectAttributes ra) {
 		OrderRoom activeRoom = orderRoomService.findActiveRoomByMember(member.getMemberIdx());
@@ -245,6 +267,8 @@ public class RoomController {
 			@RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member,
 			Model model) {
 
+		ensureUnselectedForEditing(orderRoom, member);
+		
 		List<StoreMenu> menuList = storeMenuService.menuListForUser(orderRoom.getStoreIdx());
 		Store store = storeService.getStoreByIdx(orderRoom.getStoreIdx());
 
@@ -267,6 +291,8 @@ public class RoomController {
 	public String confirmRoom(Model model, @PathVariable("room_code") String roomCode,
 			@RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member) {
 
+		ensureUnselectedForEditing(orderRoom, member);
+		
 		List<GroupCartItem> groupCartItems = groupCartItemService.findRoomMember(orderRoom.getRoomIdx(),
 				member.getMemberIdx());
 
