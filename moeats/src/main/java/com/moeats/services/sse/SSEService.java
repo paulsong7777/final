@@ -123,8 +123,8 @@ public class SSEService {
 	public SseEmitter joinRoom(int roomIdx){
 		return join(roomMap,roomIdx);
 	}
-	public SseEmitter joinOrder(int roomIdx){
-		return join(orderMap,roomIdx);
+	public SseEmitter joinOrder(int orderIdx) {
+	    return join(orderMap, orderIdx);
 	}
 	public SseEmitter joinStore(int storeIdx){
 		return join(storeMap,storeIdx);
@@ -158,23 +158,61 @@ public class SSEService {
 	            .data("cancelled")
 	    );
 	}
-	public int expireOrder(int roomIdx) {
-		return send(roomMap,roomIdx,SseEmitter.event().name("expire"));
+	public int expireOrder(int orderIdx) {
+	    return send(
+	        orderMap,
+	        orderIdx,
+	        SseEmitter.event()
+	            .name("expire")
+	            .data("expired")
+	    );
 	}
 	
-	public int payComplete(int orderIdx,int storeIdx) {
-		int res = send(orderMap,orderIdx,SseEmitter.event().name("complete"));
-		res += send(storeMap,storeIdx,SseEmitter.event().name("new").data(groupOrderService.findRecordByIdx(orderIdx)));
-		return res;
+	public int payComplete(int orderIdx, int storeIdx) {
+	    int res = send(
+	        orderMap,
+	        orderIdx,
+	        SseEmitter.event()
+	            .name("complete")
+	            .data("completed")
+	    );
+
+	    res += send(
+	        storeMap,
+	        storeIdx,
+	        SseEmitter.event()
+	            .name("new")
+	            .data(groupOrderService.findRecordByIdx(orderIdx))
+	    );
+
+	    return res;
 	}
-	public int payOrder(int orderIdx,int paymentShareIdx) {
-		return send(orderMap,orderIdx,SseEmitter.event().name("paid").data(Map.of("paymentShareIdx",paymentShareIdx)));
+	public int payOrder(int orderIdx, int paymentShareIdx) {
+	    return send(
+	        orderMap,
+	        orderIdx,
+	        SseEmitter.event()
+	            .name("paid")
+	            .data(Map.of("paymentShareIdx", paymentShareIdx))
+	    );
 	}
 	public int cancelOrder(int orderIdx) {
-		return send(orderMap,orderIdx,SseEmitter.event().name("cancel"));
+	    return send(
+	        orderMap,
+	        orderIdx,
+	        SseEmitter.event()
+	            .name("cancel")
+	            .data("cancelled")
+	    );
 	}
-	public int statusChangeOrder(int orderIdx,String status) {
-		return send(orderMap,orderIdx,SseEmitter.event().name("change").data(status));
+	public int statusChangeOrder(int orderIdx, String status) {
+	    return send(
+	        orderMap,
+	        orderIdx,
+	        SseEmitter.event()
+	            .name("change")
+	            .data(status)
+	    );
 	}
 	
 }
