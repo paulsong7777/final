@@ -57,22 +57,41 @@ public class GroupOrderService {
 	public int insert(GroupOrder groupOrder) {
 		return groupOrderMapper.insert(groupOrder);
 	}
+//	public int proceed(GroupOrder groupOrder) {
+//		if(groupOrder==null)
+//			return 0;
+//		switch(groupOrder.getOrderStatus()) {
+//		case "PAID":
+//			return accept(groupOrder.getOrderIdx());
+//		case "ACCEPTED":
+//			return prepare(groupOrder.getOrderIdx());
+//		case "PREPARING":
+//			return deliver(groupOrder.getOrderIdx());
+//		case "READY":
+//			return ready(groupOrder.getOrderIdx());
+//		case "DELIVERING":
+//			return complete(groupOrder.getOrderIdx());
+//		}
+//		return 0;
+//	}
+	// tier1에서 delivery 구현이 안되는 상황이기 때문에 간소화. 영훈
 	public int proceed(GroupOrder groupOrder) {
-		if(groupOrder==null)
-			return 0;
-		switch(groupOrder.getOrderStatus()) {
-		case "PAID":
-			return accept(groupOrder.getOrderIdx());
-		case "ACCEPTED":
-			return prepare(groupOrder.getOrderIdx());
-		case "PREPARING":
-			return deliver(groupOrder.getOrderIdx());
-		case "READY":
-			return ready(groupOrder.getOrderIdx());
-		case "DELIVERING":
-			return complete(groupOrder.getOrderIdx());
-		}
-		return 0;
+	    if (groupOrder == null) {
+	        return 0;
+	    }
+
+	    switch (groupOrder.getOrderStatus()) {
+	        case "PAID":
+	            return accept(groupOrder.getOrderIdx());
+	        case "ACCEPTED":
+	            return prepare(groupOrder.getOrderIdx());
+	        case "PREPARING":
+	            return ready(groupOrder.getOrderIdx());
+	        case "READY":
+	            return complete(groupOrder.getOrderIdx());
+	        default:
+	            return 0;
+	    }
 	}
 	
 	public int accept(int orderIdx) {
