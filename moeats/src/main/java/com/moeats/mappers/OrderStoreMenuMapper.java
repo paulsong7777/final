@@ -13,6 +13,7 @@ public interface OrderStoreMenuMapper {
 	List<StoreMenu> findAll();
 	StoreMenu findByIdx(int menuIdx);
 	List<StoreMenu> findByIdxs(Set<Integer> menuIdxs);
+	List<StoreMenu> findByIdxs2(@Param("menuIdxs") List<Integer> menuIdxs);
 	List<StoreMenu> findByStore(int storeIdx);
 	List<StoreMenu> findByName(String menuName);
 	List<StoreMenu> findByNameStore(

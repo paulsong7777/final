@@ -128,7 +128,7 @@ public class RoomController {
 		 */
 		List<GroupCartItem> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx());
 		Map<Integer, StoreMenu> storeMenuMap = menuService
-				.findByIdxs(groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()).stream()
+				.findByIdxs2(groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()).stream()
 				.collect(Collectors.toMap(StoreMenu::getMenuIdx, storeMenu -> storeMenu));
 		Map<Integer, List<CartItem>> cartItemMap = groupCartItems.stream()
 				.collect(Collectors.groupingBy(GroupCartItem::getMemberIdx, Collectors.mapping(
@@ -252,12 +252,12 @@ public class RoomController {
 	    model.addAttribute("menuList", menuList);
 	    model.addAttribute("orderRoom", orderRoom);
 
-	    return "room-cart";
+	    return "room-menuselect";
 	}
 
 	
 	
-	
+	// room-confirm 방으로 들어가는 메서드
 	// 이후는 Intercepter에서 코드를 처리함
 	@PostMapping("/rooms/code/{room_code}/confirm")
 	public String confirmRoom(
@@ -268,15 +268,22 @@ public class RoomController {
 
 		List<GroupCartItem> groupCartItems = groupCartItemService.findRoomMember(orderRoom.getRoomIdx(),member.getMemberIdx());
 		Map<Integer, StoreMenu> storeMenuMap = menuService
-				.findByIdxs(groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()).stream()
+				.findByIdxs2(groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()).stream()
 				.collect(Collectors.toMap(StoreMenu::getMenuIdx, storeMenu -> storeMenu));
 		
 		RoomParticipant myState = orderRoomService.findRoomMember(orderRoom.getRoomIdx(),member.getMemberIdx());
 		List<CartItem> myCartItems = groupCartItems.stream()
 				.map(groupCartItem -> new CartItem(groupCartItem, storeMenuMap.get(groupCartItem.getMenuIdx()))).toList();
 
-		model.addAttribute("myState", myState);
-		model.addAttribute("myCartItems", myCartItems);
+		// ✅ 추가
+	    int myCartTotal = groupCartItems.stream()
+	            .mapToInt(GroupCartItem::getItemTotalAmount)
+	            .sum();
+
+	    model.addAttribute("myState", myState);
+	    model.addAttribute("myCartItems", myCartItems);
+	    model.addAttribute("orderRoom", orderRoom); // ✅ 추가 (roomCode 표시에 필요)
+	    model.addAttribute("myCartTotal", myCartTotal); // ✅ 추가
 		
 		return "room-confirm";
 	}

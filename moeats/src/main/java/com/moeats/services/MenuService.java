@@ -15,9 +15,12 @@ import com.moeats.mappers.OrderStoreMenuMapper;
 public class MenuService {
 	@Autowired
 	OrderStoreMenuMapper storeMenuMapper;
+	
 	public StoreMenu findByIdx(int menuIdx) {
 		return storeMenuMapper.findByIdx(menuIdx);
 	}
+	
+	
 	public List<StoreMenu> findByIdxs(Collection<Integer> menuIdxs) {
 		List<StoreMenu> storeMenus;
 		if(menuIdxs.isEmpty())
@@ -32,4 +35,20 @@ public class MenuService {
 		}
 		return storeMenus;
 	}
+	
+	public List<StoreMenu> findByIdxs2(Collection<Integer> menuIdxs) {
+		List<StoreMenu> storeMenus;
+		if(menuIdxs.isEmpty())
+			storeMenus = List.of();
+		else if(menuIdxs.size()<10000)
+			storeMenus = storeMenuMapper.findByIdxs2(new ArrayList<Integer>(menuIdxs));
+		else {
+			storeMenus = new ArrayList<StoreMenu>();
+			List<Integer> menuIdxList = new ArrayList<Integer>(menuIdxs);
+			for(int i=0;i<menuIdxList.size();i+=10000)
+				storeMenus.addAll(storeMenuMapper.findByIdxs2(new ArrayList<Integer>(menuIdxList.subList(i, Math.min(i+10000,menuIdxList.size())))));
+		}
+		return storeMenus;
+	}
+	
 }
