@@ -259,6 +259,7 @@ public class RoomController {
 	
 	
 	// 이후는 Intercepter에서 코드를 처리함
+	@GetMapping("/rooms/code/{room_code}/confirm")
 	@PostMapping("/rooms/code/{room_code}/confirm")
 	public String confirmRoom(
 			Model model,
@@ -275,8 +276,15 @@ public class RoomController {
 		List<CartItem> myCartItems = groupCartItems.stream()
 				.map(groupCartItem -> new CartItem(groupCartItem, storeMenuMap.get(groupCartItem.getMenuIdx()))).toList();
 
-		model.addAttribute("myState", myState);
-		model.addAttribute("myCartItems", myCartItems);
+		// ✅ 추가
+	    int myCartTotal = groupCartItems.stream()
+	            .mapToInt(GroupCartItem::getItemTotalAmount)
+	            .sum();
+
+	    model.addAttribute("myState", myState);
+	    model.addAttribute("myCartItems", myCartItems);
+	    model.addAttribute("orderRoom", orderRoom); // ✅ 추가 (roomCode 표시에 필요)
+	    model.addAttribute("myCartTotal", myCartTotal); // ✅ 추가
 		
 		return "room-confirm";
 	}
@@ -287,6 +295,9 @@ public class RoomController {
 			@PathVariable("room_code") String roomCode,
 			@RequestAttribute("orderRoom") OrderRoom orderRoom,
 			@SessionAttribute("member") Member member) {
+		
+		System.out.println("컨트롤러 진입 성공");	
+		
 		RoomParticipant roomParticipant = orderRoomService.findRoomMember(orderRoom.getRoomIdx(),member.getMemberIdx());
 		if (	orderRoom.isJoinLocked()
 				|| roomParticipant == null

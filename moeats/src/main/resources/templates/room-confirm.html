@@ -6,79 +6,7 @@
 <head>
     <title>주문 확인</title>
     <th:block layout:fragment="pageStyles">
-        <style>
-            .rcf-wrap {
-                max-width: 860px;
-                margin: 0 auto;
-            }
-
-            .rcf-list {
-                display: grid;
-                gap: .75rem;
-            }
-
-            .rcf-item {
-                padding: 1rem;
-                border: 1px solid var(--mo-line);
-                border-radius: 18px;
-                background: #fff;
-            }
-
-            .rcf-row {
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                gap: .75rem;
-            }
-
-            .rcf-name {
-                color: var(--mo-navy-strong);
-                font-size: 1rem;
-                font-weight: 800;
-            }
-
-            .rcf-meta {
-                margin-top: .35rem;
-                color: var(--mo-text-soft);
-                font-size: .92rem;
-            }
-
-            .rcf-amount {
-                color: var(--mo-navy-strong);
-                font-size: 1rem;
-                font-weight: 800;
-                white-space: nowrap;
-            }
-
-            .rcf-total {
-                padding: 1rem 1.1rem;
-                border-radius: 18px;
-                background: var(--mo-navy-strong);
-                color: #fff;
-            }
-
-            .rcf-total__row {
-                display: flex;
-                justify-content: space-between;
-                gap: .75rem;
-                align-items: center;
-            }
-
-            .rcf-empty {
-                padding: 1.2rem;
-                border: 1px dashed rgba(42, 54, 89, .20);
-                border-radius: 18px;
-                background: rgba(42, 54, 89, .03);
-                color: var(--mo-text-soft);
-                line-height: 1.65;
-            }
-
-            .rcf-actions {
-                display: flex;
-                flex-wrap: wrap;
-                gap: .75rem;
-            }
-        </style>
+        <link rel="stylesheet" th:href="@{/css/room-confirm.css}">
     </th:block>
 </head>
 <body>
@@ -134,5 +62,12 @@
         </div>
     </section>
 </section>
+
+<th:block layout:fragment="pageScripts">
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script th:src="@{/js/room/room-confirm.js}"></script>    
+</th:block>
+
 </body>
 </html>

@@ -434,7 +434,7 @@
                            th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">메뉴 선택하기</a>
                     </div>
 
-                    <div class="rd-actions__group" th:if="${myState.selectionStatus != 'SELECTED' and !#lists.isEmpty(myCartItems)}">
+                    <div class="rd-actions__group" th:if="${myState.selectionStatus != 'SELECTED' and !#lists.isEmpty(myCartItems)}">                        
                         <a class="mo-btn mo-btn-primary"
                            th:href="@{/rooms/code/{code}/confirm(code=${orderRoom.roomCode})}">주문 확인하기</a>
                         <a class="mo-btn mo-btn-outline"
