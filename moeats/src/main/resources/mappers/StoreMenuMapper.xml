@@ -19,6 +19,12 @@
 	</delete> -->
 	
 	
+	<delete id="deleteMenu">
+    DELETE FROM store_menu 
+    WHERE store_idx = #{storeIdx} 
+      AND menu_idx = #{menuIdx}
+</delete>
+	
 	<!-- 메뉴 상태 변경 (활성, 품절, 숨김 등)-->
 	<update id="updateStatus">
 		update store_menu set
@@ -123,12 +129,35 @@
 		
 	
 	
-	<!-- 점주 - 메뉴 조회(리스트) 메인 사이드 음료 등으로 정렬-->
+	<!-- 점주 - 메뉴 조회(리스트) 메인 사이드 음료 등으로 정렬
 	<select id="menuList" resultType="StoreMenu">
 	    select *
 	    from store_menu
 	    where store_idx = #{storeIdx}
 	    order by display_order, menu_idx
+	</select>-->
+	
+	<select id="menuList" resultType="com.moeats.domain.StoreMenu">
+	    SELECT
+	        sm.menu_idx,
+	        sm.store_idx,
+	        sm.menu_category_idx,
+	        sm.menu_name,
+	        sm.menu_description,
+	        sm.menu_price,
+	        sm.menu_status,
+	        sm.display_order,
+	        sm.created_at,
+	        sm.updated_at,
+	        smc.category_name,    mi.image_url          FROM store_menu sm
+	    LEFT JOIN store_menu_category smc
+	        ON sm.menu_category_idx = smc.menu_category_idx
+	    LEFT JOIN menu_image mi
+	        ON sm.menu_idx = mi.menu_idx
+	       AND mi.is_primary = TRUE   WHERE sm.store_idx = #{storeIdx}
+	    ORDER BY
+	        COALESCE(smc.display_order, 9999), smc.menu_category_idx,
+	        sm.display_order,                  sm.menu_idx
 	</select>
 	
 	<!-- 사용자 - 메뉴 조회, 숨김메뉴 표시 안함-->
@@ -164,6 +193,7 @@
     WHERE sm.store_idx = #{storeIdx}
       AND sm.menu_status != 'HIDDEN'
     ORDER BY
+    	CASE WHEN sm.menu_status = 'AVAILABLE' THEN 1 ELSE 2 END,
         COALESCE(smc.display_order, 9999),
         smc.menu_category_idx,
         sm.display_order,

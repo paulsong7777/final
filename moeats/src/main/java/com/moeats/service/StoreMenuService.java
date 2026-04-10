@@ -16,7 +16,20 @@ public class StoreMenuService {
     @Autowired
     private StoreMenuMapper storeMenuMapper;
 
+    /**
+     * [점주] 메뉴 삭제
+     */
+    @Transactional // 🚨 여러 테이블을 건드리므로 트랜잭션 처리가 안전합니다.
+    public boolean deleteMenu(int storeIdx, int menuIdx) {
+        // 1. 이미지 테이블에서 해당 메뉴의 이미지 정보 먼저 삭제 (필요 시)
+        // storeMenuMapper.deleteMenuImages(menuIdx); 
 
+        // 2. 메뉴 삭제
+        int count = storeMenuMapper.deleteMenu(storeIdx, menuIdx);
+        
+        return count > 0;
+    }
+    
     /**
      * [점주] 메뉴 리스트 조회
      */

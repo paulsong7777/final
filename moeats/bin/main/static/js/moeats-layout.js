@@ -101,6 +101,26 @@
             }
         }, delayed ? 240 : 0);
     };
+	
+	const moveToActiveRoom = (roomCode) => {
+	        const delayed = closeMobileMenu();
+	        closeAllLayers();
+
+	        window.setTimeout(() => {
+	            window.location.href = `/rooms/code/${encodeURIComponent(roomCode)}`;
+	        }, delayed ? 240 : 0);
+	    };
+
+	    const openJoinEntry = (button) => {
+	        const activeRoomCode = button?.dataset?.moActiveRoomCode?.trim();
+
+	        if (activeRoomCode) {
+	            moveToActiveRoom(activeRoomCode);
+	            return;
+	        }
+
+	        openJoinLayer();
+	    };
 
     const openAddressLayer = () => {
         const delayed = closeMobileMenu();
@@ -207,36 +227,36 @@
 	    });
 	};;
 	
-    const bindButtons = () => {
-        document.querySelectorAll('[data-mo-open-mobile-menu]').forEach((button) => {
-            button.addEventListener('click', (event) => {
-                event.preventDefault();
-                const mobileMenu = getOffcanvasInstance(mobileMenuEl);
-                if (mobileMenu) mobileMenu.show();
-            });
-        });
+	const bindButtons = () => {
+	    document.querySelectorAll('[data-mo-open-mobile-menu]').forEach((button) => {
+	        button.addEventListener('click', (event) => {
+	            event.preventDefault();
+	            const mobileMenu = getOffcanvasInstance(mobileMenuEl);
+	            if (mobileMenu) mobileMenu.show();
+	        });
+	    });
 
-        document.querySelectorAll('[data-mo-open-login]').forEach((button) => {
-            button.addEventListener('click', (event) => {
-                event.preventDefault();
-                openLoginLayer();
-            });
-        });
+	    document.querySelectorAll('[data-mo-open-login]').forEach((button) => {
+	        button.addEventListener('click', (event) => {
+	            event.preventDefault();
+	            openLoginLayer();
+	        });
+	    });
 
-        document.querySelectorAll('[data-mo-open-join]').forEach((button) => {
-            button.addEventListener('click', (event) => {
-                event.preventDefault();
-                openJoinLayer();
-            });
-        });
+	    document.querySelectorAll('[data-mo-open-join]').forEach((button) => {
+	        button.addEventListener('click', (event) => {
+	            event.preventDefault();
+	            openJoinEntry(button);
+	        });
+	    });
 
-        document.querySelectorAll('[data-mo-open-address]').forEach((button) => {
-            button.addEventListener('click', (event) => {
-                event.preventDefault();
-                openAddressLayer();
-            });
-        });
-    };
+	    document.querySelectorAll('[data-mo-open-address]').forEach((button) => {
+	        button.addEventListener('click', (event) => {
+	            event.preventDefault();
+	            openAddressLayer();
+	        });
+	    });
+	};
 
     const bindRoomCodeInputs = () => {
         document.querySelectorAll('.mo-room-code-input').forEach((input) => {

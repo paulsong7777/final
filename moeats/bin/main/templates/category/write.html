@@ -33,7 +33,7 @@
             </div>
             
             <div class="d-flex gap-3 mt-4 pt-2" style="border-top: 1px solid var(--mo-line);">
-                <a th:href="@{/owners/store-menu-category}" class="mo-btn mo-btn-outline w-100 text-center" style="min-height: 52px; font-size: 15px;">
+                <a th:href="@{/owners/category}" class="mo-btn mo-btn-outline w-100 text-center" style="min-height: 52px; font-size: 15px;">
                     취소
                 </a>
                 <button type="button" class="mo-btn mo-btn-primary w-100" style="min-height: 52px; font-size: 15px;" onclick="submitCategory()">
@@ -67,8 +67,8 @@
         params.append('categoryName', categoryName);
 
         // 3. [경로 고정] 백엔드 StoreMenuCategoryController의 주소와 100% 일치
-        const postUrl = /*[[@{/owners/store-menu-category/write}]]*/ '/owners/store-menu-category/write';
-        const listUrl = /*[[@{/owners/store-menu-category}]]*/ '/owners/store-menu-category';
+        const postUrl = /*[[@{/owners/category/write}]]*/ '/owners/store-menu-category/write';
+        const listUrl = /*[[@{/owners/category}]]*/ '/owners/store-menu-category';
 
         try {
             // 헤더 객체 생성 (보안 토큰이 있을 경우에만 추가되도록 안전하게 처리)

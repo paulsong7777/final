@@ -51,8 +51,12 @@
 	<section layout:fragment="pageContent">
 		<div class="mo-page-container container">
 
+<<<<<<< HEAD
 			<div class="row justify-content-center">
 				<div class="col-12 col-lg-10 col-xl-8">
+=======
+                    <form id="storeCreateForm" th:action="@{/owners/store}" method="post" enctype="multipart/form-data">
+>>>>>>> b5c8d4b75795b1e13e581a382d473686ba199256
 
 					<div class="mo-section text-center mb-5">
 						<span class="mo-section-label">NEW STORE</span>
@@ -60,7 +64,27 @@
 						<p class="mo-store-card__desc mt-2">사장님의 새로운 매장을 모이츠에 등록해 보세요.</p>
 					</div>
 
+<<<<<<< HEAD
 					<div class="mo-surface-card p-4 p-md-5">
+=======
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="mo-form-label">매장명</label>
+                                <input type="text" name="storeName" class="form-control mo-form-control fw-bold" placeholder="예: 모이츠 대구본점" required>
+                            </div>
+                            
+                           <div class="col-md-6">
+					             <label class="mo-form-label">가게 카테고리</label>
+					             <select name="storeCategory" class="form-select mo-form-control fw-bold" required>
+					                 <option value="" disabled selected>카테고리를 선택하세요</option>
+					                 <option value="KOREAN">한식</option>
+					                 <option value="CHINESE">중식</option>
+					                 <option value="CHICKEN">치킨</option>
+					                 <option value="PIZZA">피자</option>
+					                 <option value="CAFE">카페/디저트</option>
+					             </select>
+					      </div>
+>>>>>>> b5c8d4b75795b1e13e581a382d473686ba199256
 
 						<div
 							class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
@@ -79,10 +103,17 @@
 								<label class="mo-form-label">매장 대표 사진 <span
 									class="text-secondary fw-normal">(드래그하여 등록 가능)</span></label>
 
+<<<<<<< HEAD
 								<div id="dropZone"
 									class="image-upload-box position-relative d-flex align-items-center justify-content-center overflow-hidden rounded-4 bg-light"
 									style="height: 260px; cursor: pointer;"
 									onclick="document.getElementById('storeImg').click()">
+=======
+                            <div class="col-md-6 mt-4">
+                                <label class="mo-form-label">매장 주소</label>
+                                <input type="text" name="storeAddress1" class="form-control mo-form-control" placeholder="대구광역시 중구..." required>
+                            </div>
+>>>>>>> b5c8d4b75795b1e13e581a382d473686ba199256
 
 									<input type="file" name="storeImgFile" id="storeImg"
 										accept="image/*" class="d-none" onchange="previewImage(this)">

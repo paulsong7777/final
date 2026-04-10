@@ -139,7 +139,8 @@
                     <div class="mo-header__user-main mo-header__user-main--desktop">
                         <button type="button"
                                 class="mo-header__address-trigger"
-                                data-mo-open-address>
+                                data-mo-open-address
+                                th:if="${!headerHasActiveRoom}">
                             <span class="mo-header__address-label"
                                   th:text="${headerDeliveryLabel != null and !#strings.isEmpty(headerDeliveryLabel) ? headerDeliveryLabel : '배송지 선택'}">
                                 배송지 선택
@@ -148,16 +149,17 @@
 
                         <button type="button"
                                 class="mo-btn mo-btn-primary mo-btn-room"
-                                data-mo-open-join>
+                                data-mo-open-join
+                                th:attr="data-mo-active-room-code=${headerActiveRoomCode}">
                             방 참여
                         </button>
 
                         <span class="mo-header__nickname">
                             <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
                         </span>
-                        
+
                         <a th:href="@{/members/me}" class="mo-btn mo-btn-outline">마이페이지</a>
-	
+
                         <form th:action="@{/logout}" method="post" class="mo-header__logout-form">
                             <button type="submit" class="mo-btn mo-btn-outline">로그아웃</button>
                         </form>
@@ -166,7 +168,8 @@
                     <div class="mo-header__user-main mo-header__user-main--mobile">
                         <button type="button"
                                 class="mo-btn mo-btn-primary mo-btn-room mo-btn-room--mobile"
-                                data-mo-open-join>
+                                data-mo-open-join
+                                th:attr="data-mo-active-room-code=${headerActiveRoomCode}">
                             방 참여
                         </button>
 
@@ -250,18 +253,27 @@
 				        </a>
 				    </div>
 	
-	                <button type="button" class="mo-mobile-menu__link" data-mo-open-address>
-	                    <span>배송지 선택</span>
-	                    <span class="mo-mobile-menu__sub"
-	                          th:text="${headerDeliveryLabel != null and !#strings.isEmpty(headerDeliveryLabel) ? headerDeliveryLabel : '현재 배송지를 설정해 주세요'}">
-	                        현재 배송지를 설정해 주세요
-	                    </span>
-	                </button>
-	
-	                <button type="button" class="mo-mobile-menu__link" data-mo-open-join>
-	                    <span>방 참여</span>
-	                    <span class="mo-mobile-menu__sub">6자리 코드로 바로 입장</span>
-	                </button>
+	                <button type="button"
+                        class="mo-mobile-menu__link"
+                        data-mo-open-address
+                        th:if="${!headerHasActiveRoom}">
+                    <span>배송지 선택</span>
+                    <span class="mo-mobile-menu__sub"
+                          th:text="${headerDeliveryLabel != null and !#strings.isEmpty(headerDeliveryLabel) ? headerDeliveryLabel : '현재 배송지를 설정해 주세요'}">
+                        현재 배송지를 설정해 주세요
+                    </span>
+                </button>
+
+                <button type="button"
+                        class="mo-mobile-menu__link"
+                        data-mo-open-join
+                        th:attr="data-mo-active-room-code=${headerActiveRoomCode}">
+                    <span>방 참여</span>
+                    <span class="mo-mobile-menu__sub"
+					      th:text="${headerHasActiveRoom ? '참여 중인 주문방으로 바로 이동' : '6자리 코드로 바로 입장'}">
+					    6자리 코드로 바로 입장
+					</span>
+                </button>
 	
 	                <a th:href="@{/members/me/addresses}" class="mo-mobile-menu__link">
 	                    <span>배송지 관리</span>

@@ -35,6 +35,9 @@ public class OrderRoomService {
 		}while(findByCode(code) != null);
 		return code;
 	}
+	public OrderRoom findActiveRoomByMember(int memberIdx) {
+        return orderRoomMapper.findActiveRoomByMember(memberIdx);
+    }
 	
 	public OrderRoom findByIdx(int roomIdx) {
 		return orderRoomMapper.findByIdx(roomIdx);
@@ -156,5 +159,22 @@ public class OrderRoomService {
 		if(orderRoom.isJoinLocked())
 			return 0;
 		return roomParticipantMapper.leave(roomParticipantIdx);
+	}
+	
+	// 활성 주문방 참가자 조회
+	public RoomParticipant findJoinedRoomMember(int roomIdx, int memberIdx) {
+	    return roomParticipantMapper.findJoinedRoomMember(roomIdx, memberIdx);
+	}
+	
+	// 결제 전 방장 룸 폭파
+	public int close(int roomIdx) {
+	    OrderRoom orderRoom = findByIdx(roomIdx);
+	    if (orderRoom == null) {
+	        return 0;
+	    }
+	    if (!("OPEN".equals(orderRoom.getRoomStatus()) || "SELECTING".equals(orderRoom.getRoomStatus()))) {
+	        return 0;
+	    }
+	    return orderRoomMapper.close(roomIdx);
 	}
 }

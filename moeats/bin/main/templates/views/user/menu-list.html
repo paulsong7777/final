@@ -476,21 +476,28 @@
 		            border-radius: 18px;
 		        }
 		    }
+		    
+		    
 		</style>
     </th:block>
 </head>
 
 <body>
 <section layout:fragment="pageContent">
-    <div class="fe02-shell"
-         th:with="
-            firstMenu=${#lists.isEmpty(menuList) ? null : menuList[0]},
-            currentStoreIdx=${firstMenu != null ? firstMenu.storeIdx : 0},
-            totalCount=${#lists.size(menuList)},
-            soldOutCount=${#aggregates.sum(menuList.![menuStatus == 'SOLD_OUT' ? 1 : 0])},
-            availableCount=${totalCount - soldOutCount}
-         "
-         th:attr="data-store-idx=${currentStoreIdx}">
+   <div class="fe02-shell"
+     th:with="
+        firstMenu=${#lists.isEmpty(menuList) ? null : menuList[0]},
+        currentStoreIdx=${store != null ? store.storeIdx : (firstMenu != null ? firstMenu.storeIdx : 0)},
+        totalCount=${#lists.size(menuList)},
+        soldOutCount=${#aggregates.sum(menuList.![menuStatus == 'SOLD_OUT' ? 1 : 0])},
+        availableCount=${totalCount - soldOutCount},
+        isRoomCart=${orderRoom != null}
+     "
+     th:attr="
+        data-store-idx=${currentStoreIdx},
+        data-room-mode=${isRoomCart},
+        data-room-code=${orderRoom != null ? orderRoom.roomCode : ''}
+     ">
 
 		<section class="fe02-store-hero">
 		   <div class="fe02-store-hero__bg"

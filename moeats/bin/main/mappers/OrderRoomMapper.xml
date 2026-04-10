@@ -2,6 +2,30 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moeats.mappers.OrderRoomMapper">
+	
+	<!-- 회원 기준 활성 주문방 1건 조회 -->
+	<select id="findActiveRoomByMember" resultType="OrderRoom">
+    SELECT o.*
+    FROM order_room o
+    JOIN room_participant rp
+      ON rp.room_idx = o.room_idx
+    WHERE rp.member_idx = #{memberIdx}
+      AND rp.left_at IS NULL
+      AND o.room_status IN ('OPEN', 'SELECTING', 'PAYMENT_PENDING')
+    ORDER BY
+      CASE o.room_status
+        WHEN 'PAYMENT_PENDING' THEN 1
+        WHEN 'SELECTING' THEN 2
+        WHEN 'OPEN' THEN 3
+        ELSE 4
+      END,
+      o.updated_at DESC,
+      o.room_idx DESC
+    LIMIT 1
+</select>
+	
+	
+	
 	<select id="findAll" resultType="OrderRoom">
 		SELECT * FROM order_room
 	</select>
@@ -63,6 +87,16 @@
 			expires_at		= NULL
 		WHERE room_idx		= #{roomIdx}
 	</update>
+	
+	<update id="close" parameterType="int">
+	    UPDATE order_room SET
+	        is_join_locked = FALSE,
+	        room_status     = 'CANCELLED',
+	        locked_at       = NULL,
+	        expires_at      = NULL
+	    WHERE room_idx      = #{roomIdx}
+	</update>
+	
 	<update id="confirm" parameterType="int">
 		UPDATE order_room SET
 			room_status		= 'ORDER_CONFIRMED',

@@ -1,22 +1,59 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Payment Representative</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-    .wrap { max-width: 720px; margin: 0 auto; background: #fff; padding: 32px; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    .path { color: #666; margin-top: 8px; }
-  </style>
+    <title>대표결제</title>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Payment Representative</h1>
-    <p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-    <p class="path">template: payment-representative</p>
-    <p><a href="/main">메인으로</a></p>
-  </div>
+<section layout:fragment="pageContent">
+    <section class="mo-section">
+        <div class="mo-surface-card">
+            <div class="mo-section-label">FE-07</div>
+            <h1 class="mo-section-title">대표결제 진행</h1>
+            <p class="text-secondary mb-4">방장이 전체 금액을 한 번에 결제합니다.</p>
+
+            <div class="d-grid gap-3">
+                <div class="p-3 rounded-4 border bg-white">
+                    <div class="small text-secondary mb-1">전체 결제 금액</div>
+                    <div class="fw-bold fs-4"
+                         th:text="${#numbers.formatInteger(payment.paymentRequestAmount, 0, 'COMMA')} + '원'">0원</div>
+                </div>
+
+                <div class="p-3 rounded-4 border bg-white">
+                    <div class="small text-secondary mb-1">참여 인원</div>
+                    <div class="fw-bold fs-5">
+                        <span th:text="${completedCount}">0</span> /
+                        <span th:text="${totalCount}">0</span>
+                    </div>
+                </div>
+
+                <form th:action="@{/orders/{orderIdx}/payment/complete(orderIdx=${orderIdx})}" method="post">
+                    <button type="submit" class="mo-btn mo-btn-primary w-100">전체 금액 결제하기</button>
+                </form>
+
+                <div class="p-3 rounded-4 border bg-white">
+                    <div class="small text-secondary mb-2">현재 결제 현황</div>
+                    <div class="d-grid gap-2">
+                        <div th:each="share : ${paymentShares}" class="d-flex justify-content-between align-items-center">
+                            <span th:text="${'참여자 ' + share.memberIdx}">참여자</span>
+                            <span class="fw-semibold" th:text="${share.shareStatus}">PENDING</span>
+                        </div>
+                    </div>
+                </div>
+
+                <a th:href="@{/orders/{orderIdx}(orderIdx=${orderIdx})}" class="mo-btn mo-btn-outline w-100">주문 상세로 이동</a>
+            </div>
+        </div>
+
+        <input type="hidden" id="orderIdx" th:value="${orderIdx}">
+        <input type="hidden" id="orderSsePageType" value="payment-representative">
+    </section>
+</section>
+
+<th:block layout:fragment="pageScripts">
+    <script th:src="@{/js/order/order-channel.js}"></script>
+</th:block>
 </body>
 </html>
