@@ -80,13 +80,48 @@
 	</select>
 	
 	<!-- 메뉴 검색 사용자용 -->
-	<select id="searchMenuForUser" resultType="StoreMenu">
+	<!-- <select id="searchMenuForUser" resultType="StoreMenu">
 	    select *
 	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_status != 'HIDDEN'
 	      and menu_name like CONCAT('%', #{keyword}, '%')
+	</select> -->
+	<!-- menuListForUser랑 동일하게, 사진때문에 바꿔봅니다.영훈 -->
+	<select id="searchMenuForUser" resultType="StoreMenu">
+	    SELECT
+	        sm.menu_idx,
+	        sm.store_idx,
+	        sm.menu_category_idx,
+	        sm.menu_name,
+	        sm.menu_description,
+	        sm.menu_price,
+	        sm.menu_status,
+	        sm.display_order,
+	        sm.created_at,
+	        sm.updated_at,
+	        smc.category_name,
+	        mi.image_url
+	    FROM store_menu sm
+	    LEFT JOIN store_menu_category smc
+	        ON sm.menu_category_idx = smc.menu_category_idx
+	    LEFT JOIN menu_image mi
+	        ON sm.menu_idx = mi.menu_idx
+	       AND mi.is_primary = TRUE
+	    WHERE sm.store_idx = #{storeIdx}
+	      AND sm.menu_status != 'HIDDEN'
+	      AND (
+	            sm.menu_name LIKE CONCAT('%', #{keyword}, '%')
+	         OR sm.menu_description LIKE CONCAT('%', #{keyword}, '%')
+	      )
+	    ORDER BY
+	        COALESCE(smc.display_order, 9999),
+	        smc.menu_category_idx,
+	        sm.display_order,
+	        sm.menu_idx
 	</select>
+		
+	
 	
 	<!-- 점주 - 메뉴 조회(리스트) 메인 사이드 음료 등으로 정렬-->
 	<select id="menuList" resultType="StoreMenu">
@@ -97,13 +132,43 @@
 	</select>
 	
 	<!-- 사용자 - 메뉴 조회, 숨김메뉴 표시 안함-->
-	<select id="menuListForUser" resultType="StoreMenu">
+	<!-- <select id="menuListForUser" resultType="StoreMenu">
 	    select *
 	    from store_menu
 	    where store_idx = #{storeIdx}
 	      and menu_status != 'HIDDEN'
 	    order by display_order, menu_idx
-	</select>
+	</select> -->
+	
+	<!-- 메뉴 이미지 살리려고 이렇게 해봅니다. 영훈 -->
+	<select id="menuListForUser" resultType="StoreMenu">
+    SELECT
+        sm.menu_idx,
+        sm.store_idx,
+        sm.menu_category_idx,
+        sm.menu_name,
+        sm.menu_description,
+        sm.menu_price,
+        sm.menu_status,
+        sm.display_order,
+        sm.created_at,
+        sm.updated_at,
+        smc.category_name,
+        mi.image_url
+    FROM store_menu sm
+    LEFT JOIN store_menu_category smc
+        ON sm.menu_category_idx = smc.menu_category_idx
+    LEFT JOIN menu_image mi
+        ON sm.menu_idx = mi.menu_idx
+       AND mi.is_primary = TRUE
+    WHERE sm.store_idx = #{storeIdx}
+      AND sm.menu_status != 'HIDDEN'
+    ORDER BY
+        COALESCE(smc.display_order, 9999),
+        smc.menu_category_idx,
+        sm.display_order,
+        sm.menu_idx
+</select>
 	
 </mapper>
 

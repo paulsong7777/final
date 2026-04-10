@@ -22,4 +22,8 @@ public class StoreMenu {
 	int displayOrder;					// 정렬순서
 	Timestamp createdAt;			// 생성시각
 	Timestamp updatedAt;			// 수정시각
+	
+	String imageUrl;
+	
+	String categoryName;
 }

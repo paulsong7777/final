@@ -2,14 +2,11 @@
     const menuList = document.getElementById('menuList');
     const searchInput = document.getElementById('menuSearchInput');
     const emptyState = document.getElementById('menuSearchEmpty');
-    const visibleCount = document.getElementById('visibleMenuCount');
-    const filterButtons = document.querySelectorAll('#menuStatusFilter .fe02-filter__btn');
     const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
 
     if (!menuList) return;
 
     const cards = Array.from(menuList.querySelectorAll('.fe02-card'));
-    let activeFilter = 'ALL';
 
     function normalize(value) {
         return String(value ?? '').trim().toLowerCase();
@@ -34,38 +31,20 @@
         return name.includes(keyword) || desc.includes(keyword);
     }
 
-    function matchesStatus(card) {
-        if (activeFilter === 'ALL') return true;
-        return (card.dataset.menuStatus || '') === activeFilter;
-    }
-
     function render() {
         const keyword = normalize(searchInput?.value);
         let visible = 0;
 
         cards.forEach((card) => {
-            const shouldShow = matchesKeyword(card, keyword) && matchesStatus(card);
+            const shouldShow = matchesKeyword(card, keyword);
             card.classList.toggle('d-none', !shouldShow);
             if (shouldShow) visible += 1;
         });
-
-        if (visibleCount) {
-            visibleCount.textContent = String(visible);
-        }
 
         if (emptyState) {
             emptyState.classList.toggle('d-none', visible > 0);
         }
     }
-
-    filterButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-            filterButtons.forEach((btn) => btn.classList.remove('is-active'));
-            button.classList.add('is-active');
-            activeFilter = button.dataset.filter || 'ALL';
-            render();
-        });
-    });
 
     if (searchInput) {
         searchInput.addEventListener('input', render);
@@ -80,17 +59,15 @@
                 return;
             }
 
-            // 추후 전역 방 생성 모달 엔진이 붙으면 그걸 우선 호출
-			if (typeof window.openCreateRoomSheet === 'function') {
-			    window.openCreateRoomSheet({
-			        storeIdx: Number(storeIdx),
-			        storeName: createRoomBtn?.dataset.storeName || '',
-			        minimumOrderAmount: createRoomBtn?.dataset.minimumOrderAmount || ''
-			    });
-			    return;
-			}
+            if (typeof window.openCreateRoomSheet === 'function') {
+                window.openCreateRoomSheet({
+                    storeIdx: Number(storeIdx),
+                    storeName: createRoomBtn?.dataset.storeName || '',
+                    minimumOrderAmount: createRoomBtn?.dataset.minimumOrderAmount || ''
+                });
+                return;
+            }
 
-            // 현재 브랜치 기준 fallback
             window.location.href = `/rooms/new?storeIdx=${encodeURIComponent(storeIdx)}`;
         });
     }

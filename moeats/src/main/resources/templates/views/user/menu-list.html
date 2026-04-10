@@ -80,24 +80,22 @@
 		    }
 		
 		    .fe02-toolbar {
-		        display: flex;
-		        flex-wrap: wrap;
-		        gap: 12px;
-		        align-items: center;
-		        justify-content: space-between;
-		        padding: 18px 20px;
-		        border-radius: 20px;
-		        background: #fff;
-		        border: 1px solid rgba(42, 54, 89, 0.08);
-		        box-shadow: var(--mo-shadow-soft);
-		    }
-		
-		    .fe02-search {
-		        position: relative;
-		        flex: 1 1 320px;
-		        min-width: 0;
-		    }
-		
+			    display: flex;
+			    align-items: center;
+			    gap: 12px;
+			    padding: 16px 18px;
+			    border-radius: 20px;
+			    background: #fff;
+			    border: 1px solid rgba(42, 54, 89, 0.08);
+			    box-shadow: var(--mo-shadow-soft);
+			}
+			
+			.fe02-search {
+			    position: relative;
+			    flex: 1 1 auto;
+			    min-width: 0;
+			}
+					
 		    .fe02-search__icon {
 		        position: absolute;
 		        top: 50%;
@@ -152,89 +150,89 @@
 		    }
 		
 		    .fe02-grid {
-		        display: grid;
-		        grid-template-columns: repeat(2, minmax(0, 1fr));
-		        gap: 16px;
-		    }
+			    display: grid;
+			    grid-template-columns: repeat(4, minmax(0, 1fr));
+			    gap: 16px;
+			}
 		
-		    .fe02-card {
-		        display: flex;
-		        gap: 16px;
-		        padding: 18px;
-		        border-radius: 20px;
-		        background: #fff;
-		        border: 1px solid rgba(42, 54, 89, 0.08);
-		        box-shadow: var(--mo-shadow-soft);
-		        transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
-		    }
+		 	.fe02-card {
+			    display: flex;
+			    flex-direction: column;
+			    gap: 12px;
+			    padding: 16px;
+			    border-radius: 20px;
+			    background: #fff;
+			    border: 1px solid rgba(42, 54, 89, 0.08);
+			    box-shadow: var(--mo-shadow-soft);
+			    transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+			    min-height: 0;
+			}
+			
+			.fe02-card__thumb {
+			    width: 100%;
+			    aspect-ratio: 1 / 1;
+			    border-radius: 16px;
+			    overflow: hidden;
+			    background: #F7F7F8;
+			    display: flex;
+			    align-items: center;
+			    justify-content: center;
+			}
+			
+			.fe02-card__thumb img {
+			    width: 100%;
+			    height: 100%;
+			    object-fit: cover;
+			    display: block;
+			}
+			
+			.fe02-card__body {
+			    flex: 1;
+			    min-width: 0;
+			}
+
+			.fe02-card__head {
+			    display: flex;
+			    align-items: flex-start;
+			    justify-content: space-between;
+			    gap: 8px;
+			}
 		
-		    .fe02-card:hover {
-		        transform: translateY(-2px);
-		        box-shadow: var(--mo-shadow-strong);
-		    }
-		
-		    .fe02-card.is-soldout {
-		        opacity: 0.78;
-		        background: rgba(255, 255, 255, 0.92);
-		    }
-		
-		    .fe02-card__thumb {
-		        width: 88px;
-		        height: 88px;
-		        flex-shrink: 0;
-		        border-radius: 18px;
-		        background:
-		            linear-gradient(135deg, rgba(255,128,0,0.12), rgba(248,94,40,0.16)),
-		            #F7F7F8;
-		        display: flex;
-		        align-items: center;
-		        justify-content: center;
-		        font-size: 28px;
-		    }
-		
-		    .fe02-card__body {
-		        flex: 1;
-		        min-width: 0;
-		    }
-		
-		    .fe02-card__head {
-		        display: flex;
-		        align-items: flex-start;
-		        justify-content: space-between;
-		        gap: 12px;
-		    }
-		
-		    .fe02-card__name {
-		        margin: 0;
-		        color: var(--mo-navy-strong);
-		        font-size: 18px;
-		        font-weight: 800;
-		        line-height: 1.3;
-		        letter-spacing: -0.02em;
-		    }
-		
-		    .fe02-card__desc {
-		        margin: 8px 0 0;
-		        color: var(--mo-text-soft);
-		        font-size: 14px;
-		        line-height: 1.6;
-		    }
-		
-		    .fe02-card__footer {
-		        display: flex;
-		        align-items: center;
-		        justify-content: space-between;
-		        gap: 12px;
-		        margin-top: 14px;
-		    }
-		
-		    .fe02-card__price {
-		        color: var(--mo-navy-strong);
-		        font-size: 18px;
-		        font-weight: 800;
-		        letter-spacing: -0.02em;
-		    }
-		
+			.fe02-card__name {
+			    margin: 0;
+			    color: var(--mo-navy-strong);
+			    font-size: 18px;
+			    font-weight: 800;
+			    line-height: 1.35;
+			    letter-spacing: -0.02em;
+			}
+			
+			.fe02-card__desc {
+			    margin: 6px 0 0;
+			    color: var(--mo-text-soft);
+			    font-size: 13px;
+			    line-height: 1.5;
+			    display: -webkit-box;
+			    -webkit-line-clamp: 2;
+			    -webkit-box-orient: vertical;
+			    overflow: hidden;
+			}
+			
+			.fe02-card__footer {
+			    display: flex;
+			    align-items: center;
+			    justify-content: space-between;
+			    gap: 10px;
+			    margin-top: 10px;
+			}
+			
+			.fe02-card__price {
+			    color: var(--mo-navy-strong);
+			    font-size: 18px;
+			    font-weight: 800;
+			    letter-spacing: -0.02em;
+			}
+			
 		    .fe02-status {
 		        display: inline-flex;
 		        align-items: center;
@@ -312,62 +310,78 @@
 		        cursor: not-allowed;
 		    }
 		
-		    @media (max-width: 991.98px) {
-		        .fe02-store-hero__title {
-		            font-size: 28px;
-		        }
-		
-		        .fe02-store-hero__meta {
-		            grid-template-columns: 1fr;
-		        }
-		
-		        .fe02-grid {
-		            grid-template-columns: 1fr;
-		        }
-		    }
-		
-		    @media (max-width: 575.98px) {
-		        .fe02-shell {
-		            padding-bottom: 96px;
-		        }
-		
-		        .fe02-store-hero,
-		        .fe02-toolbar,
-		        .fe02-card,
-		        .fe02-empty {
-		            padding: 16px;
-		        }
-		
-		        .fe02-store-hero__title {
-		            font-size: 24px;
-		        }
-		
-		        .fe02-card {
-		            gap: 12px;
-		        }
-		
-		        .fe02-card__thumb {
-		            width: 72px;
-		            height: 72px;
-		            border-radius: 16px;
-		            font-size: 24px;
-		        }
-		
-		        .fe02-card__head,
-		        .fe02-card__footer {
-		            flex-direction: column;
-		            align-items: flex-start;
-		        }
-		
-		        .fe02-order-fab {
-		            left: 16px;
-		            right: 16px;
-		            bottom: 16px;
-		            width: auto;
-		            min-width: 0;
-		            border-radius: 18px;
-		        }
-		    }
+		    @media (max-width: 1199.98px) {
+				    .fe02-grid {
+				        grid-template-columns: repeat(3, minmax(0, 1fr));
+				    }
+				}
+				
+				@media (max-width: 991.98px) {
+				    .fe02-grid {
+				        grid-template-columns: repeat(2, minmax(0, 1fr));
+				    }
+				}
+						
+		  @media (max-width: 575.98px) {
+			    .fe02-shell {
+			        padding-bottom: 96px;
+			    }
+			
+			    .fe02-store-hero,
+			    .fe02-toolbar,
+			    .fe02-empty {
+			        padding: 16px;
+			    }
+			
+			    .fe02-grid {
+			        grid-template-columns: 1fr;
+			        gap: 12px;
+			    }
+			
+			    .fe02-card {
+			        flex-direction: row;
+			        align-items: flex-start;
+			        gap: 12px;
+			        padding: 14px;
+			        border-radius: 18px;
+			    }
+			
+			    .fe02-card__thumb {
+			        width: 88px;
+			        min-width: 88px;
+			        aspect-ratio: 1 / 1;
+			        border-radius: 14px;
+			    }
+			
+			    .fe02-card__head,
+			    .fe02-card__footer {
+			        flex-direction: column;
+			        align-items: flex-start;
+			        gap: 6px;
+			    }
+			
+			    .fe02-card__name {
+			        font-size: 17px;
+			    }
+			
+			    .fe02-card__desc {
+			        font-size: 12px;
+			        -webkit-line-clamp: 1;
+			    }
+			
+			    .fe02-card__price {
+			        font-size: 16px;
+			    }
+			
+			    .fe02-order-fab {
+			        left: 16px;
+			        right: 16px;
+			        bottom: 16px;
+			        width: auto;
+			        min-width: 0;
+			        border-radius: 18px;
+			    }
+			}
 		</style>
     </th:block>
 </head>
@@ -421,25 +435,14 @@
 		</section>
 
         <section class="fe02-toolbar">
-            <div class="fe02-search">
-                <span class="fe02-search__icon">🔍</span>
-                <input type="text"
-                       id="menuSearchInput"
-                       class="form-control"
-                       placeholder="메뉴 이름 또는 설명으로 검색">
-            </div>
-
-            <div class="fe02-filter" id="menuStatusFilter">
-                <button type="button" class="fe02-filter__btn is-active" data-filter="ALL">전체</button>
-                <button type="button" class="fe02-filter__btn" data-filter="AVAILABLE">주문 가능</button>
-                <button type="button" class="fe02-filter__btn" data-filter="SOLD_OUT">품절</button>
-            </div>
-
-            <div class="fe02-summary">
-                <span class="mo-chip">노출 메뉴 <strong id="visibleMenuCount" class="ms-1"
-                                              th:text="${totalCount}">0</strong></span>
-            </div>
-        </section>
+		    <div class="fe02-search">
+		        <span class="fe02-search__icon">🔍</span>
+		        <input type="text"
+		               id="menuSearchInput"
+		               class="form-control"
+		               placeholder="메뉴 이름 또는 설명으로 검색">
+		    </div>
+		</section>
 
         <section id="menuList" class="fe02-grid">
             <article class="fe02-card"
@@ -450,7 +453,12 @@
                         data-menu-desc=${menu.menuDescription},
                         data-menu-status=${menu.menuStatus}">
 
-                <div class="fe02-card__thumb">🍽️</div>
+                <div class="fe02-card__thumb">
+				    <img th:if="${menu.imageUrl != null and !#strings.isEmpty(menu.imageUrl)}"
+				         th:src="${menu.imageUrl}"
+				         th:alt="${menu.menuName}">
+				    <span th:unless="${menu.imageUrl != null and !#strings.isEmpty(menu.imageUrl)}">🍽️</span>
+				</div>
 
                 <div class="fe02-card__body">
                     <div class="fe02-card__head">
