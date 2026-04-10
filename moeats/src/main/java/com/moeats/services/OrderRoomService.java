@@ -35,6 +35,9 @@ public class OrderRoomService {
 		}while(findByCode(code) != null);
 		return code;
 	}
+	public OrderRoom findActiveRoomByMember(int memberIdx) {
+        return orderRoomMapper.findActiveRoomByMember(memberIdx);
+    }
 	
 	public OrderRoom findByIdx(int roomIdx) {
 		return orderRoomMapper.findByIdx(roomIdx);
