@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.moeats.domain.DeliveryAddress;
 import com.moeats.domain.Store;
 import com.moeats.dto.StoreSearchCond;
+import com.moeats.dto.StoreThumbnailDto;
 import com.moeats.mapper.DeliveryAddressMapper;
 import com.moeats.mapper.MemberMapper;
 import com.moeats.mapper.StoreMapper;
@@ -25,9 +26,21 @@ public class StoreService {
     @Autowired
     private MemberMapper memberMapper;
 
+    @Autowired
+    private StoreThumbnailService storeThumbnailService;
+    
     // 주문방 생성시 가게 정보를 불러오겠음.
     public Store getStoreByIdx(int storeIdx) {
-        return storeMapper.findByStoreIdx(storeIdx);
+        Store store = storeMapper.findByStoreIdx(storeIdx);
+
+        if (store != null) {
+            StoreThumbnailDto thumbnailDto = storeThumbnailService.getStoreThumbnail((long) storeIdx);
+            if (thumbnailDto != null) {
+                store.setHeroImageUrl(thumbnailDto.getStoreThumbnailUrl());
+            }
+        }
+
+        return store;
     }
     
     

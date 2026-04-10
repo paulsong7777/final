@@ -115,7 +115,7 @@
         <div class="container">
             <div class="mo-header__inner">
 
-				<a th:href="${session.member != null and session.member.memberRoleType == 'OWNER'} ? @{/members/dashboard} : @{/}" 
+				<a th:href="${session.member != null and session.member.memberRoleType == 'OWNER'} ? @{/owners/dashboard} : @{/}" 
                    class="mo-brand" 
                    th:aria-label="${session.member != null and session.member.memberRoleType == 'OWNER'} ? 'Mo-Eats 대시보드로 이동' : 'Mo-Eats 홈으로 이동'">
                     <span class="mo-brand__symbol">M</span>
@@ -155,7 +155,9 @@
                         <span class="mo-header__nickname">
                             <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
                         </span>
-
+                        
+                        <a th:href="@{/members/me}" class="mo-btn mo-btn-outline">마이페이지</a>
+	
                         <form th:action="@{/logout}" method="post" class="mo-header__logout-form">
                             <button type="submit" class="mo-btn mo-btn-outline">로그아웃</button>
                         </form>
@@ -188,6 +190,8 @@
                         <span class="mo-header__nickname">
                             <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
                         </span>
+                        
+                        <a th:href="@{/members/me}" class="mo-btn mo-btn-outline">마이페이지</a>
 
                         <form th:action="@{/logout}" method="post" class="mo-header__logout-form">
                             <button type="submit" class="mo-btn mo-btn-outline">로그아웃</button>
@@ -237,9 +241,14 @@
 
             <div class="mo-mobile-menu__section"
                  th:if="${session.member != null and session.member.memberRoleType == 'USER'}">
-	                 <div class="mo-mobile-menu__nickname">
-	                    <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
-	                </div>
+					<div class="mo-mobile-menu__nickname d-flex justify-content-between align-items-center">
+				        <div>
+				            <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
+				        </div>
+				        <a th:href="@{/members/me}" class="mo-btn mo-btn-outline" style="min-height: 28px; padding: 0 10px; font-size: 11px;">
+				            마이페이지
+				        </a>
+				    </div>
 	
 	                <button type="button" class="mo-mobile-menu__link" data-mo-open-address>
 	                    <span>배송지 선택</span>
@@ -263,9 +272,14 @@
             <div class="mo-mobile-menu__section"
                  th:if="${session.member != null and session.member.memberRoleType == 'OWNER'}">
                  
-                <div class="mo-mobile-menu__nickname">
-                    <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
-                </div>
+				<div class="mo-mobile-menu__nickname d-flex justify-content-between align-items-center">
+			        <div>
+			            <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
+			        </div>
+			        <a th:href="@{/members/me}" class="mo-btn mo-btn-outline" style="min-height: 28px; padding: 0 10px; font-size: 11px;">
+			            마이페이지
+			        </a>
+			    </div>
 
                 <div class="mo-mobile-menu__link mo-mobile-menu__link--static" style="border-bottom: 1px solid #eee; padding-bottom: 1.25rem; margin-bottom: 1rem;">
                     <span>점주 계정</span>
@@ -275,16 +289,16 @@
                 <div class="mo-mobile-menu__group mb-4">
                     <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">DASHBOARD & ORDERS</div>
                     
-                    <a th:href="@{/members/dashboard}" class="mo-mobile-menu__link" th:classappend="${menu == 'dash'} ? 'is-active'">
+                    <a th:href="@{/owners/dashboard}" class="mo-mobile-menu__link" th:classappend="${menu == 'dash'} ? 'is-active'">
                         <span><i class="bi bi-speedometer2 me-2"></i>대시보드(신규)</span>
                     </a>
                     <a th:href="@{/owners/dashboard-map}" class="mo-mobile-menu__link" th:classappend="${menu == 'dash-map'} ? 'is-active'">
                         <span><i class="bi bi-map me-2"></i>대시보드(지도)</span>
                     </a>
-                    <a th:href="@{/owner/order/detail}" class="mo-mobile-menu__link" th:classappend="${menu == 'order-detail'} ? 'is-active'">
+                    <a th:href="@{/owners/order/detail}" class="mo-mobile-menu__link" th:classappend="${menu == 'order-detail'} ? 'is-active'">
                         <span><i class="bi bi-search me-2"></i>주문 상세 조회</span>
                     </a>
-                    <a th:href="@{/owner/order/list}" class="mo-mobile-menu__link" th:classappend="${menu == 'order-list'} ? 'is-active'">
+                    <a th:href="@{/owners/order/list}" class="mo-mobile-menu__link" th:classappend="${menu == 'order-list'} ? 'is-active'">
                         <span><i class="bi bi-receipt me-2"></i>현재 주문 내역</span>
                     </a>
                 </div>
@@ -292,10 +306,10 @@
                 <div class="mo-mobile-menu__group mb-4">
                     <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">STORE MANAGEMENT</div>
                     
-                    <a th:href="@{/owner/store/new}" class="mo-mobile-menu__link" th:classappend="${menu == 'store-new'} ? 'is-active'">
+                    <a th:href="@{/owners/store/new}" class="mo-mobile-menu__link" th:classappend="${menu == 'store-new'} ? 'is-active'">
                         <span><i class="bi bi-shop me-2"></i>신규 매장 등록</span>
                     </a>
-                    <a th:href="@{/owner/store/setting}" class="mo-mobile-menu__link" th:classappend="${menu == 'store'} ? 'is-active'">
+                    <a th:href="@{/owners/store/edit}" class="mo-mobile-menu__link" th:classappend="${menu == 'store'} ? 'is-active'">
                         <span><i class="bi bi-pencil-square me-2"></i>매장 정보 수정</span>
                     </a>
                 </div>
@@ -306,22 +320,22 @@
                     <a th:href="@{/owners/all-image}" class="mo-mobile-menu__link" th:classappend="${menu == 'all-img'} ? 'is-active'">
                         <span><i class="bi bi-images me-2"></i>통합 이미지 보관함</span>
                     </a>
-                    <a th:href="@{/owner/menu/register}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-reg'} ? 'is-active'">
+                    <a th:href="@{/owners/menu/new}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-reg'} ? 'is-active'">
                         <span><i class="bi bi-plus-square me-2"></i>신규 메뉴 등록</span>
                     </a>
-                    <a th:href="@{/owner/menu/edit}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-edit'} ? 'is-active'">
+                    <a th:href="@{/owners/menu}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-edit'} ? 'is-active'">
                         <span><i class="bi bi-pencil-fill me-2"></i>메뉴 수정</span>
                     </a>
-                    <a th:href="@{/owner/menu/management}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-mgmt'} ? 'is-active'">
+                    <a th:href="@{/owners/menu}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-mgmt'} ? 'is-active'">
                         <span><i class="bi bi-toggle-on me-2"></i>메뉴 품절 관리</span>
                     </a>
-                    <a th:href="@{/owners/store-menu-category}" class="mo-mobile-menu__link" th:classappend="${menu == 'category'} ? 'is-active'">
+                    <a th:href="@{/owners/category}" class="mo-mobile-menu__link" th:classappend="${menu == 'category'} ? 'is-active'">
                         <span><i class="bi bi-tags me-2"></i>카테고리 설정</span>
                     </a>
-                    <a th:href="@{/owners/store-menu-category/write}" class="mo-mobile-menu__link" th:classappend="${menu == 'category-reg'} ? 'is-active'">
+                    <a th:href="@{/owners/category/write}" class="mo-mobile-menu__link" th:classappend="${menu == 'category-reg'} ? 'is-active'">
                         <span><i class="bi bi-plus-circle-dotted me-2"></i>신규 카테고리 등록</span>
                     </a>
-                    <a th:href="@{/owner/review/management}" class="mo-mobile-menu__link" th:classappend="${menu == 'review'} ? 'is-active'">
+                    <a th:href="@{/owners/review/management}" class="mo-mobile-menu__link" th:classappend="${menu == 'review'} ? 'is-active'">
                         <span><i class="bi bi-chat-right-text me-2"></i>리뷰 답변 관리</span>
                     </a>
                 </div>

@@ -1,139 +1,212 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/default}">
 <head>
 
-    <title>신규 매장 등록 - Mo-Eats</title>
-    <style>
-        /* HTML 클래스로 대체할 수 없는 상태 제어(Hover, Checked) 및 특수 효과용 최소 CSS */
-        .image-upload-box { transition: all 0.2s ease; border: 2px dashed var(--mo-line-strong); }
-        .image-upload-box:hover, .image-upload-box.dragover { border-color: var(--mo-primary); background-color: rgba(255, 128, 0, 0.04) !important; }
-        
-        .holiday-chip-label { transition: all 0.2s ease; border: 1px solid var(--mo-line-strong); cursor: pointer; }
-        .holiday-chip-input:checked + .holiday-chip-label { background: var(--mo-primary) !important; border-color: var(--mo-primary); color: #fff !important; box-shadow: 0 4px 12px rgba(255, 128, 0, 0.24); }
-        .holiday-chip-input:disabled + .holiday-chip-label { opacity: 0.5; cursor: not-allowed; background: #f1f1f1 !important; border-color: var(--mo-line); }
-        .all-year-input:checked + .holiday-chip-label { background: var(--mo-navy-strong) !important; border-color: var(--mo-navy-strong); color: #fff !important; box-shadow: 0 4px 12px rgba(37, 45, 89, 0.24); }
+<title>신규 매장 등록 - Mo-Eats</title>
+<style>
+/* HTML 클래스로 대체할 수 없는 상태 제어(Hover, Checked) 및 특수 효과용 최소 CSS */
+.image-upload-box {
+	transition: all 0.2s ease;
+	border: 2px dashed var(--mo-line-strong);
+}
 
-    </style>
+.image-upload-box:hover, .image-upload-box.dragover {
+	border-color: var(--mo-primary);
+	background-color: rgba(255, 128, 0, 0.04) !important;
+}
+
+.holiday-chip-label {
+	transition: all 0.2s ease;
+	border: 1px solid var(--mo-line-strong);
+	cursor: pointer;
+}
+
+.holiday-chip-input:checked+.holiday-chip-label {
+	background: var(--mo-primary) !important;
+	border-color: var(--mo-primary);
+	color: #fff !important;
+	box-shadow: 0 4px 12px rgba(255, 128, 0, 0.24);
+}
+
+.holiday-chip-input:disabled+.holiday-chip-label {
+	opacity: 0.5;
+	cursor: not-allowed;
+	background: #f1f1f1 !important;
+	border-color: var(--mo-line);
+}
+
+.all-year-input:checked+.holiday-chip-label {
+	background: var(--mo-navy-strong) !important;
+	border-color: var(--mo-navy-strong);
+	color: #fff !important;
+	box-shadow: 0 4px 12px rgba(37, 45, 89, 0.24);
+}
+</style>
 </head>
 
 <body>
 
-<section layout:fragment="pageContent">
-    <div class="mo-page-container container">
-        
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-10 col-xl-8">
-                
-                <div class="mo-section text-center mb-5">
-                    <span class="mo-section-label">NEW STORE</span>
-                    <h2 class="mo-section-title">신규 매장 등록</h2>
-                    <p class="mo-store-card__desc mt-2">사장님의 새로운 매장을 모이츠에 등록해 보세요.</p>
-                </div>
+	<section layout:fragment="pageContent">
+		<div class="mo-page-container container">
 
-                <div class="mo-surface-card p-4 p-md-5">
-                    
-                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-                        <h3 class="mo-store-card__title m-0 fs-5">매장 정보 입력</h3>
-                        <a th:href="@{/members/dashboard}" class="text-decoration-none fw-bold text-secondary" style="font-size: 13px;">
-                            <i class="bi bi-arrow-left me-1"></i> 이전으로
-                        </a>
-                    </div>
+			<div class="row justify-content-center">
+				<div class="col-12 col-lg-10 col-xl-8">
 
-                    <form id="storeCreateForm" th:action="@{/owner/store/new}" method="post" enctype="multipart/form-data">
+					<div class="mo-section text-center mb-5">
+						<span class="mo-section-label">NEW STORE</span>
+						<h2 class="mo-section-title">신규 매장 등록</h2>
+						<p class="mo-store-card__desc mt-2">사장님의 새로운 매장을 모이츠에 등록해 보세요.</p>
+					</div>
 
-                        <div class="mb-5">
-                            <label class="mo-form-label">매장 대표 사진 <span class="text-secondary fw-normal">(드래그하여 등록 가능)</span></label>
-                            
-                            <div id="dropZone" class="image-upload-box position-relative d-flex align-items-center justify-content-center overflow-hidden rounded-4 bg-light" 
-                                 style="height: 260px; cursor: pointer;" 
-                                 onclick="document.getElementById('storeImg').click()">
-                                
-                                <input type="file" name="storeImgFile" id="storeImg" accept="image/*" class="d-none" onchange="previewImage(this)">
-                                
-                                <div id="uploadContent" class="text-center">
-                                    <div class="mb-2" style="font-size: 48px; opacity: 0.8;">🏪</div>
-                                    <h4 class="fw-bold fs-6 mb-1" style="color: var(--mo-navy-strong);">사진을 드래그하거나 클릭하여 등록하세요</h4>
-                                    <p class="text-secondary mb-0" style="font-size: 13px;">매장을 가장 잘 나타내는 사진을 올려주세요.</p>
-                                </div>
-                                
-                                <div id="imagePreview" class="position-absolute top-0 start-0 w-100 h-100 d-none z-1" style="background-color: var(--mo-bg);">
-                                    <img id="previewImg" src="" alt="미리보기" class="w-100 h-100 object-fit-cover">
-                                    <div class="position-absolute bottom-0 end-0 m-3 px-3 py-2 text-white fw-bold rounded-3" 
-                                         style="background: rgba(37, 45, 89, 0.75); font-size: 13px;">
-                                        <i class="bi bi-pencil-fill me-1"></i> 사진 변경
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+					<div class="mo-surface-card p-4 p-md-5">
 
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <label class="mo-form-label">매장명</label>
-                                <input type="text" name="storeName" class="form-control mo-form-control fw-bold" placeholder="예: 모이츠 대구본점" required>
-                            </div>
+						<div
+							class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+							<h3 class="mo-store-card__title m-0 fs-5">매장 정보 입력</h3>
+							<a th:href="@{/members/dashboard}"
+								class="text-decoration-none fw-bold text-secondary"
+								style="font-size: 13px;"> <i class="bi bi-arrow-left me-1"></i>
+								이전으로
+							</a>
+						</div>
 
-                            <div class="col-md-6">
-                                <label class="mo-form-label">영업 상태</label>
-                                <select name="storeStatus" class="form-select mo-form-control fw-bold">
-                                    <option value="OPEN" selected>영업 중 (주문 가능)</option>
-                                    <option value="CLOSED">영업 종료 (준비 중)</option>
-                                    <option value="BREAK">브레이크 타임</option>
-                                </select>
-                            </div>
+						<form id="storeCreateForm" th:action="@{/owners/store}"
+							method="post" enctype="multipart/form-data">
 
-                            <div class="col-12 mt-5">
-                                <label class="mo-form-label mb-3">휴무일 설정 (중복 선택 가능)</label>
-                                
-                                <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-                                    <input type="checkbox" name="holidays" id="day-none" value="연중무휴" class="d-none holiday-chip-input all-year-input" onchange="toggleAllYear(this)">
-                                    <label for="day-none" class="holiday-chip-label d-inline-flex align-items-center justify-content-center px-3 bg-white text-secondary fw-bold rounded-pill" style="height: 42px;">
-                                        <i class="bi bi-calendar-check me-1"></i> 연중무휴
-                                    </label>
-                                    
-                                    <div style="width: 1px; height: 20px; background: var(--mo-line-strong); margin: 0 8px;"></div>
-                                    
-                                    <th:block th:each="day : ${#strings.arraySplit('월,화,수,목,금,토,일', ',')}">
-                                        <input type="checkbox" name="holidays" th:id="${'day-' + day}" th:value="${day}" class="d-none holiday-chip-input day-checkbox">
-                                        <label th:for="${'day-' + day}" class="holiday-chip-label d-inline-flex align-items-center justify-content-center px-3 bg-white text-secondary fw-bold rounded-pill" style="height: 42px;" th:text="${day}"></label>
-                                    </th:block>
-                                </div>
-                                
-                                <input type="text" name="customHoliday" id="customHoliday" class="form-control mo-form-control" placeholder="기타 휴무 직접 입력 (예: 매월 셋째주 일요일, 금일 휴업 등)">
-                            </div>
+							<div class="mb-5">
+								<label class="mo-form-label">매장 대표 사진 <span
+									class="text-secondary fw-normal">(드래그하여 등록 가능)</span></label>
 
-                            <div class="col-md-6 mt-4">
-                                <label class="mo-form-label">연락처</label>
-                                <input type="text" name="storePhone" class="form-control mo-form-control" placeholder="053-000-0000" required>
-                            </div>
+								<div id="dropZone"
+									class="image-upload-box position-relative d-flex align-items-center justify-content-center overflow-hidden rounded-4 bg-light"
+									style="height: 260px; cursor: pointer;"
+									onclick="document.getElementById('storeImg').click()">
 
-                            <div class="col-md-6 mt-4">
-                                <label class="mo-form-label">매장 주소</label>
-                                <input type="text" name="storeAddress" class="form-control mo-form-control" placeholder="대구광역시 중구..." required>
-                            </div>
+									<input type="file" name="storeImgFile" id="storeImg"
+										accept="image/*" class="d-none" onchange="previewImage(this)">
 
-                            <div class="col-12 mt-4">
-                                <label class="mo-form-label">매장 소개</label>
-                                <textarea name="storeDescription" rows="5" class="form-control mo-form-control pt-3" style="resize: none;" placeholder="사장님의 매장을 멋지게 소개해 주세요."></textarea>
-                            </div>
-                        </div>
+									<div id="uploadContent" class="text-center">
+										<div class="mb-2" style="font-size: 48px; opacity: 0.8;">🏪</div>
+										<h4 class="fw-bold fs-6 mb-1"
+											style="color: var(--mo-navy-strong);">사진을 드래그하거나 클릭하여
+											등록하세요</h4>
+										<p class="text-secondary mb-0" style="font-size: 13px;">매장을
+											가장 잘 나타내는 사진을 올려주세요.</p>
+									</div>
 
-                        <div class="mt-5 pt-3 border-top">
-                            <button type="submit" class="mo-btn mo-btn-primary w-100 fs-6 py-2" style="min-height: 52px;">
-                                <i class="bi bi-check-lg me-2"></i> 매장 등록 완료
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+									<div id="imagePreview"
+										class="position-absolute top-0 start-0 w-100 h-100 d-none z-1"
+										style="background-color: var(--mo-bg);">
+										<img id="previewImg" src="" alt="미리보기"
+											class="w-100 h-100 object-fit-cover">
+										<div
+											class="position-absolute bottom-0 end-0 m-3 px-3 py-2 text-white fw-bold rounded-3"
+											style="background: rgba(37, 45, 89, 0.75); font-size: 13px;">
+											<i class="bi bi-pencil-fill me-1"></i> 사진 변경
+										</div>
+									</div>
+								</div>
+							</div>
 
-<th:block layout:fragment="pageScripts">
-    <script th:inline="javascript">
+							<div class="row g-4">
+								<div class="col-md-6">
+									<label class="mo-form-label">매장명</label> <input type="text"
+										name="storeName" class="form-control mo-form-control fw-bold"
+										placeholder="예: 모이츠 대구본점" required>
+								</div>
+
+								<div class="col-md-6">
+									<label class="mo-form-label">가게 카테고리</label> <select
+										name="storeCategory"
+										class="form-select mo-form-control fw-bold" required>
+										<option value="" disabled selected>카테고리를 선택하세요</option>
+										<option value="KOREAN">한식</option>
+										<option value="CHINESE">중식</option>
+										<option value="CHICKEN">치킨</option>
+										<option value="PIZZA">피자</option>
+										<option value="CAFE">카페/디저트</option>
+									</select>
+								</div>
+
+
+								<div class="col-md-6">
+									<label class="mo-form-label">영업 상태</label> <select
+										name="storeStatus" class="form-select mo-form-control fw-bold">
+										<option value="OPEN" selected>영업 중 (주문 가능)</option>
+										<option value="CLOSED">영업 종료 (준비 중)</option>
+										<option value="BREAK">브레이크 타임</option>
+									</select>
+								</div>
+
+								<div class="col-12 mt-5">
+									<label class="mo-form-label mb-3">휴무일 설정 (중복 선택 가능)</label>
+
+									<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+										<input type="checkbox" name="holidays" id="day-none"
+											value="연중무휴" class="d-none holiday-chip-input all-year-input"
+											onchange="toggleAllYear(this)"> <label for="day-none"
+											class="holiday-chip-label d-inline-flex align-items-center justify-content-center px-3 bg-white text-secondary fw-bold rounded-pill"
+											style="height: 42px;"> <i
+											class="bi bi-calendar-check me-1"></i> 연중무휴
+										</label>
+
+										<div
+											style="width: 1px; height: 20px; background: var(--mo-line-strong); margin: 0 8px;"></div>
+
+										<th:block
+											th:each="day : ${#strings.arraySplit('월,화,수,목,금,토,일', ',')}">
+											<input type="checkbox" name="holidays"
+												th:id="${'day-' + day}" th:value="${day}"
+												class="d-none holiday-chip-input day-checkbox">
+											<label th:for="${'day-' + day}"
+												class="holiday-chip-label d-inline-flex align-items-center justify-content-center px-3 bg-white text-secondary fw-bold rounded-pill"
+												style="height: 42px;" th:text="${day}"></label>
+										</th:block>
+									</div>
+
+									<input type="text" name="customHoliday" id="customHoliday"
+										class="form-control mo-form-control"
+										placeholder="기타 휴무 직접 입력 (예: 매월 셋째주 일요일, 금일 휴업 등)">
+								</div>
+
+								<div class="col-md-6 mt-4">
+									<label class="mo-form-label">연락처</label> <input type="text"
+										name="storePhone" class="form-control mo-form-control"
+										placeholder="053-000-0000" required>
+								</div>
+
+								<div class="col-md-6 mt-4">
+									<label class="mo-form-label">매장 주소</label> <input type="text"
+										name="storeAddress" class="form-control mo-form-control"
+										placeholder="대구광역시 중구..." required>
+								</div>
+
+								<div class="col-12 mt-4">
+									<label class="mo-form-label">매장 소개</label>
+									<textarea name="storeDescription" rows="5"
+										class="form-control mo-form-control pt-3"
+										style="resize: none;" placeholder="사장님의 매장을 멋지게 소개해 주세요."></textarea>
+								</div>
+							</div>
+
+							<div class="mt-5 pt-3 border-top">
+								<button type="submit"
+									class="mo-btn mo-btn-primary w-100 fs-6 py-2"
+									style="min-height: 52px;">
+									<i class="bi bi-check-lg me-2"></i> 매장 등록 완료
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<th:block layout:fragment="pageScripts">
+		<script th:inline="javascript">
         /*<![CDATA[*/
         // 연중무휴 선택 시 나머지 체크박스 및 직접입력 비활성화
         function toggleAllYear(checkbox) {
@@ -199,6 +272,6 @@
 
         /*]]>*/
     </script>
-</th:block>
+	</th:block>
 </body>
 </html>

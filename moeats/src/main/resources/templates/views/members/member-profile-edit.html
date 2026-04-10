@@ -1,311 +1,240 @@
 <!DOCTYPE html>
-
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layout/default}">
-
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+	
 <head>
-
-<meta charset="UTF-8">
-
-<title>회원 정보 수정</title>
-
-<style>
-body {
-	font-family: Arial, sans-serif;
-	background: #f7f7f7;
-}
-
-.form-label {
-	font-weight: bold;
-}
-</style>
-
+    <meta charset="UTF-8">
+    <title>Mo-Eats 회원 정보 수정</title>
+    <style>
+        /* 가짜 비활성화 스타일 (비밀번호 확인 전까지 수정 버튼 비활성화 용도) */
+        .fake-disabled {
+            background-color: #e9ecef !important;
+            border-color: #e9ecef !important;
+            color: #adb5bd !important;
+            cursor: not-allowed !important;
+        }
+    </style>
 </head>
 
-<body>
-
-	<div layout:fragment="pageContent" class="container">
-
-
-
-		<div class="row my-5" id="global-content">
-
-			<div class="col">
-
-				<div class="row my-3 text-center">
-
-					<div class="col">
-
-						<h2 class="fs-3 fw-bold">회원 정보 수정</h2>
-
-					</div>
-
-				</div>
-
-
-
-				<div class="modal fade" id="passwordResultModal" tabindex="-1"
-					aria-hidden="true">
-
-					<div class="modal-dialog modal-dialog-centered">
-
-						<div class="modal-content">
-
-							<div class="modal-header"
-								style="background-color: #252D59; color: white;">
-
-								<h5 class="modal-title">보안 확인</h5>
-
-								<button type="button" class="btn-close btn-close-white"
-									data-bs-dismiss="modal"></button>
-
-							</div>
-
-
-						</div>
-
-					</div>
-
-				</div>
-
-
-
-				<form th:action="@{/members/me/edit}" method="post"
-					id="memberUpdateForm">
-
-					<div class="row mt-5 mb-3">
-
-						<div class="col-8 offset-2">
-
-							<label class="form-label">* 이 름 : </label> <input type="text"
-								class="form-control" name="memberNickname"
-								th:value="${session.member.memberNickname}" readonly>
-
-						</div>
-
-					</div>
-
-
-
-					<div class="row my-3">
-
-						<div class="col-8 offset-2">
-
-							<label class="form-label">* 아이디 : </label> <input type="text"
-								class="form-control" name="memberEmail"
-								th:value="${session.member.memberEmail}" readonly>
-
-						</div>
-
-					</div>
-
-
-
-					<div class="row my-3">
-
-						<div class="col-8 offset-2">
-
-							<label class="form-label">* 기존 비밀번호 : </label>
-
-							<div class="d-flex gap-2">
-
-								<input type="password" class="form-control"
-									name="memberPassword" id="memberPassword">
-
-								<button type="button" class="btn btn-warning" id="btnPassCheck"
-									style="white-space: nowrap;">비밀번호 확인</button>
-
-							</div>
-
-						</div>
-
-					</div>
-
-
-
-					<div class="row my-3">
-
-						<div class="col-8 offset-2">
-
-							<label for="pass1" class="form-label">* 새 비밀번호 : </label> <input
-								type="password" class="form-control" name="pass1" id="pass1">
-
-						</div>
-
-					</div>
-
-					<div class="row my-3">
-
-						<div class="col-8 offset-2">
-
-							<label for="pass2" class="form-label">* 새 비밀번호 확인 : </label> <input
-								type="password" class="form-control" name="pass2" id="pass2">
-
-						</div>
-
-					</div>
-
-
-
-					<div class="row my-3">
-
-						<div class="col-8 offset-2">
-
-							<label for="address1" class="form-label">* 자택주소 : </label> <input
-								type="text" class="form-control" name="address1" id="address1"
-								readonly>
-
-						</div>
-
-					</div>
-
-					<div class="row my-3">
-
-						<div class="col-8 offset-2">
-
-							<label for="address2" class="form-label">상세주소 : </label> <input
-								type="text" class="form-control" name="address2" id="address2">
-
-						</div>
-
-					</div>
-
-
-
-					<div class="row my-3">
-
-						<div class="col-8 offset-2">
-
-							<label class="form-label">* 휴 대 폰 : </label>
-
-							<div class="input-group">
-
-								<select class="form-select" name="phoneFirst"
-									style="max-width: 100px;">
-
-									<option
-										th:selected="${session.member.memberPhone.split('-')[0] == '010'}">010</option>
-
-									<option
-										th:selected="${session.member.memberPhone.split('-')[0] == '011'}">011</option>
-
-								</select> <input type="text" class="form-control" name="memberPhone"
-									th:value="${session.member.memberPhone}">
-
-							</div>
-
-						</div>
-
-					</div>
-
-
-
-					<div class="row my-5">
-
-						<div class="col-8 offset-2 text-center">
-
-							<button type="submit" class="btn btn-primary btn-lg w-100">정보
-
-								수정하기</button>
-
-						</div>
-
-					</div>
-
-				</form>
-
-			</div>
-
-		</div>
-
-
-
-
-
-		<th:block layout:fragment="pageScripts">
-
-			<script
-				src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-			<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-			<script
-				src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-
-
-
-			<script th:src="@{/js/member.js}"></script>
-
-			<script th:inline="javascript">
-				$(function() {
-
-					$("#btnPassCheck")
-
-							.on(
-
-									"click",
-
-									function() {
-
-										const password = $("#memberPassword")
-
-										.val();
-
-										if (!password) {
-
-											showModal("기존 비밀번호를 입력해주세요.");
-
-											return;
-
-										}
-
-										/* [임시 테스트 모드]
-
-										 서버가 없으므로 AJAX를 실행하지 않고,
-
-										 성공(true) 상황을 가정해서 바로 모달을 띄웁니다.
-
-										 */
-
-										console.log("테스트 모드: 서버 없이 모달을 띄웁니다.");
-
-										// 이 부분을 true로 두면 성공 모달, false로 두면 실패 모달이 뜹니다.
-
-										const fakeResponse = {
-
-											isValid : true
-
-										};
-
-										if (fakeResponse.isValid) {
-
-											showModal('<span style="color: #252D59;">✔️ (테스트) 확인되었습니다.</span>');
-
-											$("#memberPassword").prop(
-
-											"readonly", true);
-
-											$("#btnPassCheck").prop("disabled",
-
-											true).text("확인완료");
-
-										} else {
-
-											showModal('<span style="color: #dc3545;">❌ (테스트) 비밀번호가 틀렸습니다.</span>');
-
-											$("#memberPassword").val("")
-
-											.focus();
-
-										}
-
-									});
-
-				});
-			</script>
-	</div>
-
-</body>
-
+<section layout:fragment="pageContent">
+    
+    <div class="mo-page-container container" style="max-width: 680px; margin: 0 auto;">
+		
+        <div class="mo-section" style="text-align: center; margin-bottom: 32px;">
+            <span class="mo-section-label">Edit Profile</span>
+            <h2 class="mo-section-title">회원 정보 수정</h2>
+            <p class="mo-helper-text mt-2">회원님의 소중한 정보를 안전하게 관리하세요.</p>
+        </div>
+		
+        <div class="mo-surface-card">
+            <form th:action="@{/members/me/edit}" method="post" id="memberUpdateForm">
+                
+                <div class="mb-4">
+                    <label class="mo-form-label">* 이 름</label>
+                    <input type="text" class="form-control mo-form-control" name="memberNickname" th:value="${session.member.memberNickname}" readonly style="background-color: var(--mo-bg); color: var(--mo-text-soft);">
+                </div>
+
+                <div class="mb-4">
+                    <label class="mo-form-label">* 아이디 (이메일)</label>
+                    <input type="text" class="form-control mo-form-control" name="memberEmail" th:value="${session.member.memberEmail}" readonly style="background-color: var(--mo-bg); color: var(--mo-text-soft);">
+                </div>
+
+                <div class="mb-4">
+                    <label class="mo-form-label">* 기존 비밀번호</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="password" class="form-control mo-form-control" name="memberPassword" id="memberPassword" style="flex: 1;" placeholder="기존 비밀번호를 입력하세요">
+                        <button type="button" class="mo-btn mo-btn-outline" id="btnPassCheck" style="white-space: nowrap;">비밀번호 확인</button>
+                    </div>
+                </div>
+                
+                <hr style="border-color: var(--mo-line); margin: 32px 0;">
+
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label for="pass1" class="mo-form-label">새 비밀번호</label>
+                        <input type="password" class="form-control mo-form-control" name="pass1" id="pass1" placeholder="변경할 비밀번호">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="pass2" class="mo-form-label">새 비밀번호 확인</label>
+                        <input type="password" class="form-control mo-form-control" name="pass2" id="pass2" placeholder="비밀번호 다시 입력">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="phone2" class="mo-form-label">* 휴대폰</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="hidden" id="originPhone" th:value="${session.member.memberPhone}">
+                        <input type="text" name="phone1" id="phone1" maxlength="3" class="form-control mo-form-control text-center" style="width: 90px;">
+                        <span style="color: var(--mo-line-strong); font-weight: 700;">-</span>
+                        <input type="text" name="phone2" id="phone2" maxlength="4" class="form-control mo-form-control text-center" style="flex: 1;">
+                        <span style="color: var(--mo-line-strong); font-weight: 700;">-</span>
+                        <input type="text" name="phone3" id="phone3" maxlength="4" class="form-control mo-form-control text-center" style="flex: 1;">
+                    </div>
+                    <input type="hidden" name="memberPhone" id="memberPhone">
+                </div>
+                
+                <div class="d-flex justify-content-center align-items-center gap-2 mt-5">
+                    <input type="button" th:onclick="@{|location.href='/members/me'|}" value="취 소" class="mo-btn mo-btn-plain">
+                    <button type="submit" class="mo-btn mo-btn-primary fake-disabled" id="submitBtn" style="min-width: 140px;">정보 수정하기</button>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade mo-auth-modal" id="passwordResultModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content mo-modal-card" style="border: none;">
+                <div class="mo-modal-card__header d-flex justify-content-between align-items-center pb-2">
+                    <div>
+                        <span class="mo-modal-card__eyebrow">Security Check</span>
+                        <h5 class="mo-modal-card__title mt-1" style="font-size: 20px;">보안 확인</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="mo-modal-card__footer pt-4 pb-4 text-center">
+                    <p id="modalMessage" style="font-size: 15px; font-weight: 700; margin: 0; color: var(--mo-navy-strong);"></p>
+                </div>
+                <div class="px-4 pb-4">
+                    <button type="button" class="mo-btn mo-btn-primary w-100" data-bs-dismiss="modal">확 인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<th:block layout:fragment="pageScripts">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script th:src="@{/js/member.js}"></script>
+
+    <script th:inline="javascript">
+        $(function() {
+            
+        	// 1. 기존 전화번호 분리 세팅
+        	const originPhone = $("#originPhone").val();
+
+        	if(originPhone) {
+        	    if(originPhone.includes("-")) {
+        	        // 1) 하이픈(-)이 포함된 경우 (010-1234-5678)
+        	        const phoneParts = originPhone.split("-");
+        	        if(phoneParts.length === 3){
+        	            $("#phone1").val(phoneParts[0]);
+        	            $("#phone2").val(phoneParts[1]);
+        	            $("#phone3").val(phoneParts[2]);
+        	        }
+        	    } else if(originPhone.length >= 10) {
+        	        // 2) 하이픈 없이 숫자만 있는 경우 (01012345678)
+        	        $("#phone1").val(originPhone.substring(0, 3)); // 010
+        	        if(originPhone.length === 11) { // 11자리
+        	            $("#phone2").val(originPhone.substring(3, 7));
+        	            $("#phone3").val(originPhone.substring(7, 11));
+        	        } else { // 10자리 (예전 번호)
+        	            $("#phone2").val(originPhone.substring(3, 6));
+        	            $("#phone3").val(originPhone.substring(6, 10));
+        	        }
+        	    }
+        	}
+        	
+            // 2. 전화번호 실시간 입력 제한 (숫자만 입력 및 경고창)
+            $("#phone1, #phone2, #phone3").on("input", function() {
+                let currentVal = $(this).val();
+                if (/[^0-9]/.test(currentVal)) {
+                    alert("전화번호는 숫자만 입력 가능합니다.");
+                    $(this).val(currentVal.replace(/[^0-9]/g, ''));
+                }
+            });
+
+            // 모달 띄우기 함수
+            function showModal(msg) {
+                $("#modalMessage").html(msg);
+                $("#passwordResultModal").modal("show");
+            }
+
+            // 3. 기존 비밀번호 확인 로직
+            $("#btnPassCheck").on("click", function() {
+                const password = $("#memberPassword").val();
+
+                if (!password) {
+                    showModal("기존 비밀번호를 입력해주세요.");
+                    $("#memberPassword").focus();
+                    return;
+                }
+
+                /* [임시 테스트 모드] 서버 연동 시에는 이 부분을 ajax로 변경하세요 */
+                const fakeResponse = { isValid: true };
+
+                if (fakeResponse.isValid) {
+                    showModal('<span style="color: #28a745;">✔️ 인증되었습니다. 정보를 수정하실 수 있습니다.</span>');
+                    
+                    $("#memberPassword").prop("readonly", true).css("background-color", "var(--mo-bg)");
+                    $("#btnPassCheck").prop("disabled", true)
+                                      .text("확인완료")
+                                      .removeClass("mo-btn-outline")
+                                      .addClass("mo-btn-plain")
+                                      .css("color", "#28a745");
+                    
+                    $("#submitBtn").removeClass("fake-disabled");
+                } else {
+                    showModal('<span style="color: #dc3545;">❌ 비밀번호가 틀렸습니다. 다시 확인해주세요.</span>');
+                    $("#memberPassword").val("").focus();
+                }
+            });
+
+            // 4. 폼 제출 시 유효성 검사
+            $("#memberUpdateForm").on("submit", function(e) {
+                // 기존 비밀번호 인증 여부 확인
+                if ($("#submitBtn").hasClass("fake-disabled")) {
+                    e.preventDefault();
+                    showModal("먼저 기존 비밀번호 확인을 진행해주세요.");
+                    $("#memberPassword").focus();
+                    return false;
+                }
+
+                // 새 비밀번호 유효성 검사 (입력한 경우에만 체크)
+                const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
+                const pass1 = $("#pass1").val().trim();
+                const pass2 = $("#pass2").val().trim();
+
+                if (pass1 !== "") {
+                    if (!passwordRegex.test(pass1)) {
+                        e.preventDefault();
+                        alert("새 비밀번호는 8~20자, 대소문자/숫자/특수문자를 포함해야 합니다.");
+                        $("#pass1").focus();
+                        return false;
+                    }
+                    if (pass1 !== pass2) {
+                        e.preventDefault();
+                        alert("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+                        $("#pass2").focus();
+                        return false;
+                    }
+                }
+
+                // 전화번호 유효성 검사
+                const p1 = $("#phone1").val().trim();
+                const p2 = $("#phone2").val().trim();
+                const p3 = $("#phone3").val().trim();
+
+                if(p1.length !== 3 || p2.length !== 4 || p3.length !== 4){
+                    e.preventDefault();
+                    alert("전화번호 형식을 확인해주세요 (예: 010-1234-5678)");
+                    return false;
+                }
+
+                if(!/^\d+$/.test(p1+p2+p3)){
+                    e.preventDefault();
+                    alert("전화번호는 숫자만 입력해주세요");
+                    return false;
+                }
+
+                // 유효성 검사 통과 시 히든 input에 전화번호 병합하여 저장
+                $("#memberPhone").val(p1 + "-" + p2 + "-" + p3);
+            });
+        });
+    </script>
+</th:block>
 </html>

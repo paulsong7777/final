@@ -17,7 +17,7 @@
 			where menu_category_idx = #{menuCategoryIdx}
 	</select>
 	
-	<select id="getCategoryByStoreIdx" resultType="StoreMenuCategory">
+	<select id="getCategoryByStore" resultType="StoreMenuCategory">
 		select * from store_menu_category
 			where store_idx = #{storeIdx}
 	</select>

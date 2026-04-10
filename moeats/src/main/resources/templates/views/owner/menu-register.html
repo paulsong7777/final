@@ -30,7 +30,7 @@
                 <div class="mo-surface-card p-4 p-md-5">
                     
                     <div class="mb-4 pb-3 border-bottom">
-                        <a th:href="@{/owner/menu/management}" class="text-decoration-none fw-bold" style="color: var(--mo-text-soft);">
+                        <a th:href="@{/owners/menu/management}" class="text-decoration-none fw-bold" style="color: var(--mo-text-soft);">
                             <i class="bi bi-arrow-left me-1"></i> 목록으로 돌아가기
                         </a>
                     </div>
@@ -140,7 +140,7 @@
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             try {
-                const response = await fetch('/owner/category/register_proc', {
+                const response = await fetch('/owners/category/register_proc', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -190,7 +190,7 @@
             const formData = new FormData(form);
 
             try {
-                const response = await fetch('/owner/menu/register', { 
+                const response = await fetch('/owners/menu/register', { 
                     method: 'POST',
                     headers: { ...(header && { [header]: token }) },
                     body: formData
@@ -198,7 +198,7 @@
 
                 if (response.ok) {
                     alert("성공적으로 등록되었습니다.");
-                    location.href = '/owner/menu/management'; 
+                    location.href = '/owners/menu/management'; 
                 } else {
                     alert("등록 실패");
                     submitBtn.disabled = false;

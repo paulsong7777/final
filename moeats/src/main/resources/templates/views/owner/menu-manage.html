@@ -1,37 +1,4 @@
 <!DOCTYPE html>
-<<<<<<< HEAD
-<html lang="ko" xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layout/default}">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Owner Menu Manage</title>
-<style>
-body {
-	font-family: Arial, sans-serif;
-	margin: 40px;
-	background: #f7f7f7;
-}
-
-.wrap {
-	max-width: 720px;
-	margin: 0 auto;
-	background: #fff;
-	padding: 32px;
-	border-radius: 16px;
-}
-
-h1 {
-	margin-top: 0;
-}
-
-.path {
-	color: #666;
-	margin-top: 8px;
-}
-</style>
-=======
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -39,118 +6,17 @@ h1 {
 <head>
     <title>메뉴 목록 및 품절 관리 - Mo-Eats</title>
     <style>
-        /* 상태 변화 및 애니메이션을 위한 필수 CSS */
         .mo-menu-card { transition: all 0.3s ease; }
         .mo-menu-card.is-soldout { background-color: #f9fafb !important; border-color: var(--mo-line-strong) !important; }
-        
         .mo-menu-img { transition: filter 0.3s ease; }
         .mo-menu-img.is-soldout { filter: grayscale(100%) blur(1px); }
-        
-        .mo-soldout-badge {
-            background: rgba(37, 45, 89, 0.85);
-            padding: 4px 10px;
-            font-size: 12px;
-            font-weight: 800;
-        }
-        
-        /* 스위치 커스텀 (Mo-Eats 브랜드 컬러 적용) */
+        .mo-soldout-badge { background: rgba(37, 45, 89, 0.85); padding: 4px 10px; font-size: 12px; font-weight: 800; }
         .form-check-input:checked { background-color: var(--mo-primary); border-color: var(--mo-primary); }
-        
         .fade-out { opacity: 0; transform: scale(0.95); transition: 0.3s ease; }
     </style>
->>>>>>> f912c3bdcbaa730126e1afc9ed59c4958613a12e
 </head>
 
 <body>
-<<<<<<< HEAD
-	<div class="wrap">
-		<h1>Owner Menu Manage</h1>
-		<p>현재 통합 브랜치 백엔드 검증용 최소 화면입니다.</p>
-		<p class="path">template: views/owner/menu-manage</p>
-		<p>
-			<a href="/main">메인으로</a>
-		</p>
-	</div>
-
-<body>
-	<main layout:fragment="content" class="py-4">
-    <div
-			class="card shadow-sm border-0 mx-auto rounded-4 bg-white edit-card-limit">
-        <div class="card-body p-4 p-md-5">
-            
-            <div
-					class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 pb-3">
-                <h2 class="fw-bold mb-0 text-navy">
-						<i class="bi bi-shop-window me-2 text-orange"></i>내 매장 정보</h2>
-                
-                <a th:href="@{/owners/store-manage/edit}"
-						class="btn btn-moeats px-4 rounded-pill shadow-sm">
-                    <i class="bi bi-pencil-square me-1"></i> 정보 수정
-                </a>
-            </div>
-
-            <div class="mb-5 text-center">
-                <div
-						class="rounded-4 overflow-hidden border shadow-sm position-relative"
-						style="height: 300px;">
-                    <img
-							th:src="${storeVo != null and storeVo['storeImg'] != null ? storeVo['storeImg'] : 'https://via.placeholder.com/800/FF8000/FFFFFF?text=MoEats+Store'}"
-							class="w-100 h-100 preview-img" alt="매장 대표 이미지">
-                    
-                    <div class="position-absolute top-0 end-0 m-3">
-                        <span
-								th:if="${storeVo != null and storeVo['storeStatus'] == 'OPEN'}"
-								class="badge bg-success px-4 py-2 rounded-pill fs-6 shadow">영업 중</span>
-                        <span
-								th:if="${storeVo != null and storeVo['storeStatus'] == 'CLOSED'}"
-								class="badge bg-danger px-4 py-2 rounded-pill fs-6 shadow">영업 종료</span>
-                        <span
-								th:if="${storeVo != null and storeVo['storeStatus'] == 'BREAK'}"
-								class="badge bg-warning text-dark px-4 py-2 rounded-pill fs-6 shadow">브레이크 타임</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <label
-							class="small fw-bold text-secondary text-uppercase d-block mb-1">매장명</label>
-                    <p class="fs-4 fw-bold text-navy"
-							th:text="${storeVo != null ? storeVo['storeName'] : '등록된 이름이 없습니다.'}">매장명</p>
-                </div>
-                <div class="col-md-6">
-                    <label
-							class="small fw-bold text-secondary text-uppercase d-block mb-1">연락처</label>
-                    <p class="fs-4 fw-bold text-navy"
-							th:text="${storeVo != null ? storeVo['storePhone'] : '번호 미등록'}">010-0000-0000</p>
-                </div>
-                
-                <div class="col-12 border-top pt-4">
-                    <label
-							class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 주소</label>
-                    <p class="fs-5 text-dark"
-							th:text="${storeVo != null ? storeVo['storeAddress'] : '주소 정보가 없습니다.'}">매장 주소</p>
-                </div>
-
-                <div class="col-12 border-top pt-4">
-                    <label
-							class="small fw-bold text-secondary text-uppercase d-block mb-1">매장 소개</label>
-                    <div class="p-3 bg-light rounded-3">
-                        <p class="mb-0 text-secondary"
-								style="white-space: pre-line;"
-								th:text="${storeVo != null ? storeVo['storeDescription'] : '사장님의 정성스러운 소개글을 기다리고 있어요.'}">
-                           매장 소개 내용
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-center mt-5">
-                <a th:href="@{/members/dashboard}"
-						class="btn btn-outline-secondary px-5 py-2 rounded-pill fw-bold">
-                    <i class="bi bi-house-door me-1"></i> 대시보드로 이동
-                </a>
-=======
 <section layout:fragment="pageContent">
     <div class="mo-page-container container" style="max-width: 1200px;">
         
@@ -163,7 +29,7 @@ h1 {
                     </h2>
                     <p class="mo-helper-text mt-2 mb-0">등록된 메뉴의 판매 상태와 정보를 한눈에 관리하세요.</p>
                 </div>
-                <a th:href="@{/owners/menu/write}" class="mo-btn mo-btn-primary rounded-pill px-4" style="min-height: 48px;">
+                <a th:href="@{/owners/menu/new}" class="mo-btn mo-btn-primary rounded-pill px-4" style="min-height: 48px;">
                     <i class="bi bi-plus-lg me-2"></i> 신규 메뉴 등록
                 </a>
             </div>
@@ -180,11 +46,11 @@ h1 {
                         
                         <div class="d-flex gap-3 mb-3">
                             <div class="position-relative flex-shrink-0 overflow-hidden rounded-3 border" style="width: 84px; height: 84px; border-color: rgba(42, 54, 89, 0.08) !important;">
-                                <img th:id="|menu-img-${menu.menuIdx}|"
-                                     th:src="${menu.menuImg ?: 'https://via.placeholder.com/150/FF8000/FFFFFF?text=No+Image'}" 
-                                     class="mo-menu-img w-100 h-100 object-fit-cover"
-                                     th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? 'is-soldout' : ''"
-                                     alt="메뉴이미지">
+							<img th:id="|menu-img-${menu.menuIdx}|"
+							     th:src="${menu.imageUrl != null and menu.imageUrl != ''} ? ${menu.imageUrl} : 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=No+Image'" 
+							     class="mo-menu-img w-100 h-100 object-fit-cover"
+							     th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? 'is-soldout' : ''"
+							     alt="메뉴이미지">
                                 
                                 <div th:id="|soldout-badge-${menu.menuIdx}|" 
                                      class="mo-soldout-badge position-absolute top-50 start-50 translate-middle text-white rounded-2"
@@ -192,7 +58,13 @@ h1 {
                             </div>
 
                             <div class="flex-grow-1 overflow-hidden d-flex flex-column justify-content-center">
-                                <span class="fw-bold text-secondary mb-1" style="font-size: 11px; letter-spacing: 0.02em;" th:text="${menu.menuCategoryName ?: '일반'}">카테고리</span>
+	                           	<div class="mb-1">
+							        <span class="badge rounded-pill fw-normal" 
+							              style="background-color: rgba(37, 45, 89, 0.05); color: var(--mo-navy-strong); font-size: 11px; padding: 3px 8px; border: 1px solid rgba(37, 45, 89, 0.1);"
+							              th:text="${menu.categoryName ?: '미분류'}">
+							            카테고리
+							        </span>
+							    </div>
                                 <h4 class="fw-bold text-truncate mb-1 fs-6" style="color: var(--mo-navy-strong);" th:text="${menu.menuName ?: '이름 없음'}">메뉴명</h4>
                                 <div class="fw-bold fs-6" style="color: var(--mo-primary);" 
                                      th:text="${#numbers.formatInteger(menu.menuPrice ?: 0, 0, 'COMMA')} + '원'">0원</div>
@@ -214,7 +86,7 @@ h1 {
 
                             <div class="d-flex gap-2">
                                 <button class="mo-btn mo-btn-outline rounded-3 border-secondary-subtle" style="min-height: 34px; padding: 0 14px; font-size: 13px;" 
-                                        th:onclick="|location.href='/owners/menu/' + [[${menu.menuIdx}]] + '/edit'|">수정</button>
+                                        th:onclick="|location.href='/owners/menu/edit?menuIdx=' + [[${menu.menuIdx}]]|">수정</button>
                                 <button class="mo-btn mo-btn-plain rounded-3 text-danger fw-bold" style="min-height: 34px; padding: 0 12px; font-size: 13px;" 
                                         th:onclick="handleDeleteMenu([[${menu.menuIdx}]])">삭제</button>
                             </div>
@@ -228,43 +100,21 @@ h1 {
                     <div class="mb-2" style="font-size: 64px;">📋</div>
                     <h3 class="mo-empty-state__title mb-3 fs-4">등록된 메뉴가 없습니다</h3>
                     <p class="mo-empty-state__desc mb-4 fw-bold">사장님의 맛있는 메뉴를 등록하여 가게를 채워주세요!</p>
-                    <a th:href="@{/owners/menu/write}" class="mo-btn mo-btn-primary rounded-pill px-5" style="min-height: 52px; font-size: 16px;">
+                    <a th:href="@{/owners/menu/new}" class="mo-btn mo-btn-primary rounded-pill px-5" style="min-height: 52px; font-size: 16px;">
                         <i class="bi bi-plus-lg me-2"></i> 첫 메뉴 등록하기
                     </a>
                 </div>
->>>>>>> f912c3bdcbaa730126e1afc9ed59c4958613a12e
             </div>
 
         </div>
     </div>
-<<<<<<< HEAD
-</main>
-
-<th:block layout:fragment="script">
-    <script th:inline="javascript">
-					/*<![CDATA[*/
-					// 조회 페이지이므로 단순 활성 메뉴 표시 로직 등 추가 가능
-					/*]]>*/
-				</script>
-</th:block>
-  
-</body>
-
-
-</html>
-=======
 </section>
 
 <th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
         /*<![CDATA[*/
-        
-        /**
-         * [AJAX] 품절 상태 토글 처리
-         */
         async function handleToggleSoldOut(idx, isChecked) {
             if(!idx) return;
-
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
             const nextStatus = isChecked ? 'AVAILABLE' : 'SOLD_OUT';
@@ -276,10 +126,7 @@ h1 {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         ...(header && { [header]: token })
                     },
-                    body: new URLSearchParams({
-                        menuIdx: idx,
-                        menuStatus: nextStatus
-                    })
+                    body: new URLSearchParams({ menuIdx: idx, menuStatus: nextStatus })
                 });
 
                 if(response.ok) {
@@ -290,68 +137,52 @@ h1 {
                     
                     if(isChecked) {
                         card.classList.remove('is-soldout');
-                        img.classList.remove('is-soldout');
-                        badge.style.display = "none";
+                        if(img) img.classList.remove('is-soldout');
+                        if(badge) badge.style.display = "none";
                         label.innerText = "판매중";
                         label.className = "form-check-label fw-bold text-success";
                     } else {
                         card.classList.add('is-soldout');
-                        img.classList.add('is-soldout');
-                        badge.style.display = "block";
-                        label.innerText = "품절중";
+                        if(img) img.classList.add('is-soldout');
+                        if(badge) badge.style.display = "block";
+                        label.innerText = "품절";
                         label.className = "form-check-label fw-bold text-danger";
                     }
                 } else {
                     alert("상태 변경에 실패했습니다.");
                     location.reload(); 
                 }
-            } catch(e) {
-                console.error("Fetch Error:", e);
-                alert("통신 중 오류가 발생했습니다.");
-            }
+            } catch(e) { alert("통신 중 오류가 발생했습니다."); }
         }
 
-        /**
-         * [AJAX] 메뉴 삭제 처리
-         */
         async function handleDeleteMenu(idx) {
             if(!idx) return;
             if(!confirm("정말로 이 메뉴를 완전히 삭제하시겠습니까?\n삭제 후에는 복구가 불가능합니다.")) return;
-
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             try {
-                const response = await fetch(`/owners/menu/${idx}/delete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(header && { [header]: token })
-                    }
-                });
-                
+            	const response = await fetch(`/owners/menu/delete`, {
+            	    method: 'POST',
+            	    headers: {
+            	        'Content-Type': 'application/x-www-form-urlencoded', // 이 부분 확인
+            	        ...(header && { [header]: token })
+            	    },
+            	    body: new URLSearchParams({ menuIdx: idx }) // body 데이터 확인
+            	});
                 if(response.ok) {
                     const wrapper = document.getElementById(`menu-wrapper-${idx}`);
                     if(wrapper) {
                         wrapper.classList.add('fade-out');
-                        setTimeout(() => {
-                            wrapper.remove();
-                            if(document.querySelectorAll('#menu-grid > div[id^="menu-wrapper"]').length === 0) {
-                                location.reload();
-                            }
-                        }, 300);
+                        setTimeout(() => location.reload(), 300);
                     }
                 } else {
-                    alert("삭제 처리에 실패했습니다.");
+                    alert("삭제 처리에 실패했습니다. (백엔드에 삭제 기능이 있는지 확인하세요!)");
                 }
-            } catch(e) {
-                console.error("Delete Error:", e);
-                alert("삭제 통신 중 오류가 발생했습니다.");
-            }
+            } catch(e) { alert("삭제 통신 중 오류가 발생했습니다."); }
         }
         /*]]>*/
     </script>
 </th:block>
 </body>
 </html>
->>>>>>> f912c3bdcbaa730126e1afc9ed59c4958613a12e

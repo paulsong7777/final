@@ -34,6 +34,12 @@ public class Store {
     private Timestamp createdAt;           // 생성 시각
     private Timestamp updatedAt;           // 수정 시각
 
+
+    // 가게상세 페이지 상단 히어로용 대표 이미지(썸네일)
+    private String heroImageUrl;
+
 }
+
+
 
 
