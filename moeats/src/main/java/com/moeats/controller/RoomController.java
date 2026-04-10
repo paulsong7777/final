@@ -414,8 +414,7 @@ public class RoomController {
 
 	@PostMapping("/rooms/code/{room_code}/checkout")
 	public String checkout(RedirectAttributes ra, @PathVariable("room_code") String roomCode,
-			@RequestParam(defaultValue = "0") int representativeMemberIdx,
-			@RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member) {
+	        @RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member) {
 		if (orderRoom.getLeaderMemberIdx() != member.getMemberIdx()) {
 			ra.addFlashAttribute("error", "잘못된 접근입니다");
 			return String.format("redirect:/rooms/code/%s", roomCode);

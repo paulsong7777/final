@@ -41,9 +41,8 @@ public class SSEService {
 	                .name("connect")
 	                .data("connected")
 	        );
-	    } catch (IOException e) {
+	    } catch (IOException | IllegalStateException e) {
 	        removeEmitter(map, idx, sseEmitter);
-	        sseEmitter.complete();
 	    }
 
 	    return sseEmitter;
@@ -92,9 +91,8 @@ public class SSEService {
 	        try {
 	            sseEmitter.send(message);
 	            sent++;
-	        } catch (IOException e) {
-	            sseEmitter.complete();
-	            emitters.remove(sseEmitter);
+	        } catch (IOException | IllegalStateException e) {
+	            removeEmitter(map, idx, sseEmitter);
 	        }
 	    }
 
