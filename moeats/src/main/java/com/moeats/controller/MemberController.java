@@ -50,6 +50,16 @@ public class MemberController {
 		return memberService.getMemberFromEmail(memberEmail) == null;
 	}
 	
+	// 비밀번호 실시간 확인 AJAX용
+	@PostMapping("/members/password-check")
+	@ResponseBody
+	public boolean checkPasswordAjax(
+	        @RequestParam("memberPassword") String memberPassword,
+	        @SessionAttribute("member") Member loginUser) {
+	    
+	    // 서비스의 isPassCheck를 호출하여 DB의 암호화된 비번과 비교
+	    return memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
+	}
 	
 	// 회원 수정
 	@PostMapping("/members/me/edit")
@@ -59,18 +69,22 @@ public class MemberController {
 			@SessionAttribute("member") Member loginUser,
 			@RequestParam("memberPassword") String memberPassword) {
 		
-		boolean isPassCheck = memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
-		
-		if(!isPassCheck) {
-			model.addAttribute("error", "비밀번호를 확인해주세요.");
-			model.addAttribute("member", member);
-			return "views/members/member-profile-edit";
-		}
-		
-		member.setMemberIdx(loginUser.getMemberIdx());
-		memberService.updateMember(member);
-		
-		return "redirect:/members/me";
+		// 1. 현재 비밀번호(oldPassword)가 DB와 일치하는지 먼저 검사
+	    boolean isPassCheck = memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
+	    
+	    if(!isPassCheck) {
+	        // ❌ 틀렸을 경우: 다시 수정 페이지로 보내면서 에러 메시지 전달
+	        ra.addFlashAttribute("error", "현재 비밀번호가 일치하지 않습니다.");
+	        return "redirect:/members/me/edit";
+	    }
+	    
+	    // 2. 맞았을 경우: 정보 업데이트 진행
+	    // (이때 member 객체 안의 memberPassword는 '새로 변경할 비밀번호'가 담겨 있어야 함)
+	    member.setMemberIdx(loginUser.getMemberIdx());
+	    memberService.updateMember(member);
+	    
+	    ra.addFlashAttribute("message", "정보가 수정되었습니다.");
+	    return "redirect:/members/me";
 	}
 	
 	

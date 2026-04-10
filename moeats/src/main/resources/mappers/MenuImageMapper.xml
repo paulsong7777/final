@@ -68,7 +68,10 @@
 	
 	<!-- 메뉴 이미지 전체 조회 -->
 	<select id="imageList" resultType="MenuImage">
-		select * from menu_image
+	    SELECT mi.*
+	    FROM menu_image mi  JOIN store_menu m ON mi.menu_idx = m.menu_idx
+	    WHERE m.store_idx = #{storeIdx}
+	    ORDER BY mi.menu_image_idx DESC
 	</select>
 	
 </mapper>

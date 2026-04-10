@@ -475,7 +475,35 @@
 		            min-width: 0;
 		            border-radius: 18px;
 		        }
+		        
 		    }
+	        /* 품절 상품 카드 스타일 */
+			.fe02-card.is-soldout {
+			    opacity: 0.6; /* 전체적으로 투명하게 */
+			    filter: grayscale(1); /* 흑백 처리 */
+			    background: #f8f9fa; /* 배경을 살짝 더 어둡게 */
+			    cursor: not-allowed;
+			    border-color: rgba(0, 0, 0, 0.05) !important;
+			}
+			
+			/* 품절 시 썸네일 이미지 위에 '품절' 텍스트를 띄우고 싶다면 추가 */
+			.fe02-card.is-soldout .fe02-card__thumb {
+			    position: relative;
+			}
+			
+			.fe02-card.is-soldout .fe02-card__thumb::after {
+			    content: "품절";
+			    position: absolute;
+			    inset: 0;
+			    background: rgba(0, 0, 0, 0.4);
+			    color: #fff;
+			    display: flex;
+			    align-items: center;
+			    justify-content: center;
+			    font-weight: 800;
+			    font-size: 14px;
+			    z-index: 1;
+			}
 		</style>
     </th:block>
 </head>
@@ -625,7 +653,47 @@
 </section>
 
 <th:block layout:fragment="pageScripts">
-    <script th:src="@{/js/store/menu-list.js}"></script>
+    <script th:src="@{/js/store/menu-list.js}">
+    	
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('menuSearchInput');
+        const menuItems = document.querySelectorAll('.fe02-card');
+        const emptyState = document.getElementById('menuSearchEmpty');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const keyword = e.target.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                menuItems.forEach(item => {
+                    const name = item.getAttribute('data-menu-name').toLowerCase();
+                    const desc = item.getAttribute('data-menu-desc').toLowerCase();
+                    const status = item.getAttribute('data-menu-status');
+
+                    // 검색어 포함 여부 확인
+                    if (name.includes(keyword) || desc.includes(keyword)) {
+                        item.classList.remove('d-none');
+                        visibleCount++;
+                        
+                        // ✨ 추가 로직: 품절 상태라면 스타일을 다시 한번 확인 (is-soldout 클래스 유지)
+                        if (status === 'SOLD_OUT') {
+                            item.classList.add('is-soldout');
+                        }
+                    } else {
+                        item.classList.add('d-none');
+                    }
+                });
+
+                // 결과 없음 화면 제어
+                if (visibleCount === 0) {
+                    emptyState.classList.remove('d-none');
+                } else {
+                    emptyState.classList.add('d-none');
+                }
+            });
+        }
+    });
+    </script>
 </th:block>
 </body>
 </html>

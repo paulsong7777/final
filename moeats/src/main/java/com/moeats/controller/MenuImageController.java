@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,8 +14,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.moeats.domain.Member;
 import com.moeats.domain.MenuImage;
+import com.moeats.domain.Store;
 import com.moeats.service.MenuImageService;
+import com.moeats.service.StoreService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/owners")
@@ -22,6 +28,19 @@ public class MenuImageController {
 	
 	@Autowired
 	private MenuImageService menuImageService;
+	@Autowired
+	private StoreService storeService;
+	
+	@ModelAttribute("store")
+	public Store getStore(HttpSession session) {
+	    // 세션에서 직접 멤버 객체를 꺼내옵니다.
+	    Member member = (Member) session.getAttribute("member");
+	    
+	    if (member != null && "OWNER".equals(member.getMemberRoleType())) {
+	        return storeService.myStore(member.getMemberIdx());
+	    }
+	    return null;
+	}
 	
 	// 이미지 삭제
 	@PostMapping("/menus/{menuIdx}/images/{menuImageIdx}/delete")
@@ -105,13 +124,21 @@ public class MenuImageController {
 		return "views/owner/menu-image-manage"; 
 	}
 	
-	//	이미지 전체조회 (관리자용 등)
+	// 이미지 전체조회 (점주 본인의 가게 사진만 필터링)
 		@GetMapping("/all-image")
-		public String imageList(Model model) {
+		public String imageList(Model model, @ModelAttribute("store") Store store) {
 			
-			// 🟢 서비스 메서드 (모든 사진)
-			List<MenuImage> allImages = menuImageService.imageList();
+			// 1. store가 null이 아니면(가게 등록된 점주면) 해당 storeIdx의 이미지만 가져옴
+			// 2. store가 null이면 빈 리스트를 반환하여 에러 방지
+			List<MenuImage> allImages;
+			if (store != null) {
+				allImages = menuImageService.imageList(store.getStoreIdx());
+			} else {
+				allImages = java.util.Collections.emptyList();
+			}
+			
 			model.addAttribute("allImages", allImages);
+			model.addAttribute("menu", "all-img"); // 사이드바 활성화를 위한 메뉴 키값
 			
 			return "views/owner/all-image-list"; 
 		}

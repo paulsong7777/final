@@ -51,9 +51,8 @@ public class MenuImageService {
 	};
 	
 	// 메뉴 이미지 전체 조회
-	public List<MenuImage> imageList(){
-		
-		return menuImageMapper.imageList();
-	};
+	public List<MenuImage> imageList(int storeIdx) { // ✨ int storeIdx 추가
+	    return menuImageMapper.imageList(storeIdx);
+	}
 	
 }

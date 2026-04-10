@@ -43,6 +43,16 @@ public class StoreController {
             List.of("PAID", "ACCEPTED", "PREPARING", "READY", "COMPLETED");
 //    private final List<String> ORDER_STATUSES = List.of("PAID","ACCEPTED","PREPARING","READY","DELIVERING","COMPLETED");
     
+    
+    @ModelAttribute("store")
+    public Store getStore(@SessionAttribute(name = "member", required = false) Member member) {
+        if (member != null && "OWNER".equals(member.getMemberRoleType())) {
+            return storeService.myStore(member.getMemberIdx());
+        }
+        return null;
+    }
+    
+    
     // 가게 전체 조회
     @GetMapping("/stores")
     @ResponseBody
@@ -220,6 +230,7 @@ public class StoreController {
     public String updateStore(
     		RedirectAttributes ra,
     		@ModelAttribute Store store,
+    		@RequestParam(value = "redirectUrl", defaultValue = "/owners/store") String redirectUrl, // ✨ 추가
 			@SessionAttribute("member") Member member) {
     	Store check = storeService.myStore(member.getMemberIdx());
     	if ( check==null || check.getStoreIdx()!=store.getStoreIdx() ) {
@@ -228,7 +239,7 @@ public class StoreController {
     	}
         store.setOwnerMemberIdx(member.getMemberIdx());
         storeService.updateStore(store);
-        return "redirect:/owners/store";
+        return "redirect:" + redirectUrl; // ✨ 고정 URL 대신 파라미터 변수로 리다이렉트
     }
 
     // 가게 정보 수정 폼
@@ -236,6 +247,7 @@ public class StoreController {
     public String updateStore(
     		RedirectAttributes ra,
     		Model model,
+    		@RequestParam(value = "redirectUrl", defaultValue = "/owners/store") String redirectUrl, // ✨ 추가
 			@SessionAttribute("member") Member member) {
     	Store store = storeService.myStore(member.getMemberIdx());
     	if ( store==null ) {
@@ -245,6 +257,7 @@ public class StoreController {
 
         model.addAttribute("menu", "store");
         model.addAttribute("store", store);
+        model.addAttribute("redirectUrl", redirectUrl); // ✨ 추가 (View로 전달)
         return "views/owner/store-edit";
     }
 

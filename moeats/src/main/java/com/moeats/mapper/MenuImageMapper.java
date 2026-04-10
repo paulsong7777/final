@@ -31,5 +31,5 @@ public interface MenuImageMapper {
 	public List<MenuImage> imageByIdx(int menuIdx);
 	
 	// 메뉴 이미지 전체 조회
-	public List<MenuImage> imageList();
+	public List<MenuImage> imageList(@Param("storeIdx") int storeIdx);
 }
