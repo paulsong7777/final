@@ -23,7 +23,7 @@
 
                 <div class="mo-surface-card p-4 p-md-5">
                     
-                    <input type="hidden" id="categoryIdx" th:value="${category['categoryIdx']}">
+                    <input type="hidden" id="categoryIdx" th:value="${category.menuCategoryIdx}">
                     
                     <div class="mb-5">
                         <label for="categoryName" class="mo-form-label">
@@ -32,7 +32,7 @@
                         <input type="text" 
                                id="categoryName" 
                                class="form-control mo-form-control fw-bold" 
-                               th:value="${category['categoryName']}" 
+                               th:value="${category.categoryName}" 
                                placeholder="수정할 명칭을 입력하세요"
                                maxlength="20"
                                autocomplete="off">
@@ -70,17 +70,13 @@
             return;
         }
 
-        // 1. 보안 메타태그 추출
         const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
         const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
 
-        // 2. 파라미터 세팅
         const params = new URLSearchParams();
-        params.append('categoryIdx', idx);
         params.append('categoryName', name);
 
         try {
-            // 헤더 조립 (CSRF 토큰이 있을 경우에만 안전하게 추가)
             const fetchHeaders = {
                 'Content-Type': 'application/x-www-form-urlencoded'
             };
@@ -88,18 +84,17 @@
                 fetchHeaders[header] = token;
             }
 
-            // 3. 서버 요청
-            const response = await fetch('/owners/store-menu-category/edit_proc', {
+            // 3. 컨트롤러의 @PostMapping("/{menuCategoryIdx}/edit") 에 맞게 주소 변경
+            const response = await fetch(`/owners/category/${idx}/edit`, {
                 method: 'POST',
                 headers: fetchHeaders,
                 body: params
             });
 
-            // 4. 응답 처리
             if (response.ok) {
                 alert("성공적으로 수정되었습니다.");
-                // 수정 완료 후 다시 상세 페이지로 이동
-                location.href = "/owners/store-menu-category/detail?categoryIdx=" + idx;
+                // 4. 수정 완료 후 이동할 상세 페이지 주소를 컨트롤러 @GetMapping("/{menuCategoryIdx}") 에 맞게 변경
+                location.href = `/owners/category/${idx}`;
             } else {
                 alert("수정 실패 (오류 코드: " + response.status + ")");
             }
