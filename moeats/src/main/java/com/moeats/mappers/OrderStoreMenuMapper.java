@@ -12,7 +12,7 @@ import com.moeats.domain.StoreMenu;
 public interface OrderStoreMenuMapper {
 	List<StoreMenu> findAll();
 	StoreMenu findByIdx(int menuIdx);
-	List<StoreMenu> findByIdxs(Set<Integer> menuIdxs);
+	List<StoreMenu> findByIdxs(@Param("menuIdxs") Set<Integer> menuIdxs);
 	List<StoreMenu> findByStore(int storeIdx);
 	List<StoreMenu> findByName(String menuName);
 	List<StoreMenu> findByNameStore(
