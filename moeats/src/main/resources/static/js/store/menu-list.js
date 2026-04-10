@@ -50,27 +50,27 @@
         searchInput.addEventListener('input', render);
     }
 
-    if (createRoomBtn) {
-        createRoomBtn.addEventListener('click', () => {
-            const storeIdx = getStoreIdx();
+	if (createRoomBtn) {
+	    createRoomBtn.addEventListener('click', () => {
+	        const storeIdx = getStoreIdx();
 
-            if (!storeIdx) {
-                window.alert('가게 정보가 없어 주문방 생성으로 이동할 수 없습니다.');
-                return;
-            }
+	        if (!storeIdx) {
+	            window.alert('가게 정보가 없어 주문방 생성으로 이동할 수 없습니다.');
+	            return;
+	        }
 
-            if (typeof window.openCreateRoomSheet === 'function') {
-                window.openCreateRoomSheet({
-                    storeIdx: Number(storeIdx),
-                    storeName: createRoomBtn?.dataset.storeName || '',
-                    minimumOrderAmount: createRoomBtn?.dataset.minimumOrderAmount || ''
-                });
-                return;
-            }
+	        if (typeof window.openCreateRoomSheet === 'function') {
+	            window.openCreateRoomSheet({
+	                storeIdx: Number(storeIdx),
+	                storeName: createRoomBtn?.dataset.storeName || '',
+	                minimumOrderAmount: createRoomBtn?.dataset.minimumOrderAmount || ''
+	            });
+	            return;
+	        }
 
-            window.location.href = `/rooms/new?storeIdx=${encodeURIComponent(storeIdx)}`;
-        });
-    }
+	        window.location.href = `/rooms/new?storeIdx=${encodeURIComponent(storeIdx)}`;
+	    });
+	}
 
     render();
 })();
