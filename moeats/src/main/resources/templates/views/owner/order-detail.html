@@ -23,15 +23,15 @@
         
         /* 주문 단계별 Mo-Eats 브랜드 컬러 매핑 */
         .mo-step-active-accepted { background-color: var(--mo-primary); color: #fff; border-color: var(--mo-primary); box-shadow: 0 8px 20px rgba(255, 128, 0, 0.25); }
-        .mo-step-active-cooking { background-color: var(--mo-accent); color: #fff; border-color: var(--mo-accent); box-shadow: 0 8px 20px rgba(248, 94, 40, 0.25); }
-        .mo-step-active-delivering { background-color: var(--mo-navy); color: #fff; border-color: var(--mo-navy); box-shadow: 0 8px 20px rgba(42, 54, 89, 0.25); }
+        .mo-step-active-PREPARING { background-color: var(--mo-accent); color: #fff; border-color: var(--mo-accent); box-shadow: 0 8px 20px rgba(248, 94, 40, 0.25); }
+        .mo-step-active-READY { background-color: var(--mo-navy); color: #fff; border-color: var(--mo-navy); box-shadow: 0 8px 20px rgba(42, 54, 89, 0.25); }
         .mo-step-active-completed { background-color: var(--mo-navy-strong); color: #fff; border-color: var(--mo-navy-strong); box-shadow: 0 8px 20px rgba(37, 45, 89, 0.35); }
     </style>
 </head>
 
 <body>
 <section layout:fragment="pageContent">
-    <div class="mo-page-container container" th:with="safeOrder=${orderRoom ?: (order ?: {}) }">
+    <div class="mo-page-container container" th:with="safeOrder=orderRecord.groupOrder">
         
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
@@ -46,17 +46,17 @@
                     <div class="row text-center mo-step-container mb-5 pt-3">
                         <div class="mo-step-line"></div>
                         
-                        <div class="col-3" th:each="status : ${ {'ACCEPTED', 'COOKING', 'DELIVERING', 'COMPLETED'} }">
+                        <div class="col-3" th:each="status : ${ {'ACCEPTED', 'PREPARING', 'READY', 'COMPLETED'} }">
                             <div class="mo-step-circle bg-white text-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2 fs-5"
                                  th:classappend="${safeOrder.roomStatus == status ? 
                                     (status == 'ACCEPTED' ? 'mo-step-active-accepted' : 
-                                    (status == 'COOKING' ? 'mo-step-active-cooking' : 
-                                    (status == 'DELIVERING' ? 'mo-step-active-delivering' : 'mo-step-active-completed'))) : ''}">
-                                <i class="bi" th:classappend="${status == 'ACCEPTED' ? 'bi-check-lg' : (status == 'COOKING' ? 'bi-fire' : (status == 'DELIVERING' ? 'bi-truck' : 'bi-flag-fill'))}"></i>
+                                    (status == 'PREPARING' ? 'mo-step-active-PREPARING' : 
+                                    (status == 'READY' ? 'mo-step-active-READY' : 'mo-step-active-completed'))) : ''}">
+                                <i class="bi" th:classappend="${status == 'ACCEPTED' ? 'bi-check-lg' : (status == 'PREPARING' ? 'bi-fire' : (status == 'READY' ? 'bi-truck' : 'bi-flag-fill'))}"></i>
                             </div>
                             <div class="fw-bold" style="font-size: 13px;"
                                  th:classappend="${safeOrder.roomStatus == status ? 'text-dark' : 'text-muted'}"
-                                 th:text="${status == 'ACCEPTED' ? '접수완료' : (status == 'COOKING' ? '조리중' : (status == 'DELIVERING' ? '배달중' : '배달완료'))}">상태</div>
+                                 th:text="${status == 'ACCEPTED' ? '접수완료' : (status == 'PREPARING' ? '조리중' : (status == 'READY' ? '배달중' : '배달완료'))}">상태</div>
                         </div>
                     </div>
 
@@ -67,18 +67,18 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-center pt-1">
                             <span class="mo-form-label mb-0">매장 이름</span>
-                            <span class="fw-bold" style="font-size: 15px; color: var(--mo-navy-strong);" th:text="${safeOrder.storeName}">매장명</span>
+                            <span class="fw-bold" style="font-size: 15px; color: var(--mo-navy-strong);" th:text="${store.storeName}">매장명</span>
                         </div>
                     </div>
 
                     <div class="d-flex flex-column gap-3">
                         <button type="button" th:if="${safeOrder.roomStatus == 'ACCEPTED'}" class="mo-btn mo-btn-primary w-100 py-2 fs-6" style="min-height: 52px;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COOKING')">🔥 조리 시작하기</button>
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'PREPARING')">🔥 조리 시작하기</button>
                         
-                        <button type="button" th:if="${safeOrder.roomStatus == 'COOKING'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy); color: #fff; min-height: 52px;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'DELIVERING')">🚚 배달 시작하기</button>
+                        <button type="button" th:if="${safeOrder.roomStatus == 'PREPARING'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy); color: #fff; min-height: 52px;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'READY')">🚚 배달 시작하기</button>
                         
-                        <button type="button" th:if="${safeOrder.roomStatus == 'DELIVERING'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff; min-height: 52px;"
+                        <button type="button" th:if="${safeOrder.roomStatus == 'READY'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff; min-height: 52px;"
                                 th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">🏁 배달 완료처리</button>
                         
                         <div th:if="${safeOrder.roomStatus == 'COMPLETED'}" class="p-3 text-center rounded-3 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy-strong);">
@@ -124,7 +124,7 @@
 
             // 부드러운 전환을 위해 0.6초 대기 후 이동 (토스트 노출 시간 확보)
             setTimeout(() => {
-                location.href = `/owner/order/status_move?roomIdx=${roomIdx}&nextStatus=${nextStatus}`;
+                location.href = `/owners/order/status_update?roomIdx=${roomIdx}&nextStatus=${nextStatus}`;
             }, 600);
         }
         /*]]>*/
