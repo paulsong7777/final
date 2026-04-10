@@ -40,26 +40,29 @@
 		FROM group_cart_item WHERE room_idx = #{roomIdx} AND item_status = 'ACTIVE'
 		GROUP BY menu_idx
 	</select>
-	<insert id="insert" parameterType="GroupCartItem">
-		INSERT INTO group_cart_item(
-			room_idx,
-			member_idx,
-			menu_idx,
-			item_quantity,
-			base_amount,
-			option_extra_amount,
-			item_total_amount,
-			item_status
-		) VALUES (
-			#{roomIdx},
-			#{memberIdx},
-			#{menuIdx},
-			#{itemQuantity},
-			#{baseAmount},
-			#{optionExtraAmount},
-			#{itemTotalAmount},
-			'ACTIVE'
-		)
+	<insert id="insert"
+	        parameterType="GroupCartItem"
+	        useGeneratedKeys="true"
+	        keyProperty="cartItemIdx">
+	    INSERT INTO group_cart_item(
+	        room_idx,
+	        member_idx,
+	        menu_idx,
+	        item_quantity,
+	        base_amount,
+	        option_extra_amount,
+	        item_total_amount,
+	        item_status
+	    ) VALUES (
+	        #{roomIdx},
+	        #{memberIdx},
+	        #{menuIdx},
+	        #{itemQuantity},
+	        #{baseAmount},
+	        #{optionExtraAmount},
+	        #{itemTotalAmount},
+	        'ACTIVE'
+	    )
 	</insert>
 	<update id="update" parameterType="GroupCartItem">
 		UPDATE group_cart_item SET

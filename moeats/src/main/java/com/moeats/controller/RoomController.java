@@ -3,6 +3,8 @@ package com.moeats.controller;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
+import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.moeats.domain.Store;
+import com.moeats.service.StoreService;
 import com.moeats.domain.GroupCartItem;
 import com.moeats.domain.GroupOrder;
 import com.moeats.domain.Member;
@@ -33,6 +37,8 @@ import com.moeats.timer.OrderRoomTimer;
 @Controller
 public class RoomController {
 
+	@Autowired
+	StoreService storeService;
 	@Autowired
 	OrderMemberQueryService memberService;
 	@Autowired
@@ -249,36 +255,91 @@ public class RoomController {
 	        Model model) {
 
 	    List<StoreMenu> menuList = storeMenuService.menuListForUser(orderRoom.getStoreIdx());
-	    model.addAttribute("menuList", menuList);
-	    model.addAttribute("orderRoom", orderRoom);
+	    Store store = storeService.getStoreByIdx(orderRoom.getStoreIdx());
 
-	    return "room-cart";
+	    Map<Integer, GroupCartItem> myCartItemMap = groupCartItemService
+	            .findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx())
+	            .stream()
+	            .collect(Collectors.toMap(
+	                    GroupCartItem::getMenuIdx,
+	                    Function.identity(),
+	                    (left, right) -> left,
+	                    LinkedHashMap::new
+	            ));
+
+	    int myCartTotal = myCartItemMap.values().stream()
+	            .mapToInt(GroupCartItem::getItemTotalAmount)
+	            .sum();
+
+	    model.addAttribute("menuList", menuList);
+	    model.addAttribute("store", store);
+	    model.addAttribute("orderRoom", orderRoom);
+	    model.addAttribute("myCartItemMap", myCartItemMap);
+	    model.addAttribute("myCartTotal", myCartTotal);
+
+	    return "views/user/menu-list";
 	}
 
 	
 	
 	
 	// 이후는 Intercepter에서 코드를 처리함
-	@PostMapping("/rooms/code/{room_code}/confirm")
+//	@PostMapping("/rooms/code/{room_code}/confirm")
+//	public String confirmRoom(
+//			Model model,
+//			@PathVariable("room_code") String roomCode,
+//			@RequestAttribute("orderRoom") OrderRoom orderRoom,
+//			@SessionAttribute("member") Member member) {
+//
+//		List<GroupCartItem> groupCartItems = groupCartItemService.findRoomMember(orderRoom.getRoomIdx(),member.getMemberIdx());
+//		Map<Integer, StoreMenu> storeMenuMap = menuService
+//				.findByIdxs(groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()).stream()
+//				.collect(Collectors.toMap(StoreMenu::getMenuIdx, storeMenu -> storeMenu));
+//		
+//		RoomParticipant myState = orderRoomService.findRoomMember(orderRoom.getRoomIdx(),member.getMemberIdx());
+//		List<CartItem> myCartItems = groupCartItems.stream()
+//				.map(groupCartItem -> new CartItem(groupCartItem, storeMenuMap.get(groupCartItem.getMenuIdx()))).toList();
+//
+//		model.addAttribute("myState", myState);
+//		model.addAttribute("myCartItems", myCartItems);
+//		
+//		return "room-confirm";
+//	}
+	
+	@GetMapping("/rooms/code/{room_code}/confirm")
 	public String confirmRoom(
-			Model model,
-			@PathVariable("room_code") String roomCode,
-			@RequestAttribute("orderRoom") OrderRoom orderRoom,
-			@SessionAttribute("member") Member member) {
+	        Model model,
+	        @PathVariable("room_code") String roomCode,
+	        @RequestAttribute("orderRoom") OrderRoom orderRoom,
+	        @SessionAttribute("member") Member member) {
 
-		List<GroupCartItem> groupCartItems = groupCartItemService.findRoomMember(orderRoom.getRoomIdx(),member.getMemberIdx());
-		Map<Integer, StoreMenu> storeMenuMap = menuService
-				.findByIdxs(groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList()).stream()
-				.collect(Collectors.toMap(StoreMenu::getMenuIdx, storeMenu -> storeMenu));
-		
-		RoomParticipant myState = orderRoomService.findRoomMember(orderRoom.getRoomIdx(),member.getMemberIdx());
-		List<CartItem> myCartItems = groupCartItems.stream()
-				.map(groupCartItem -> new CartItem(groupCartItem, storeMenuMap.get(groupCartItem.getMenuIdx()))).toList();
+	    List<GroupCartItem> groupCartItems =
+	            groupCartItemService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
 
-		model.addAttribute("myState", myState);
-		model.addAttribute("myCartItems", myCartItems);
-		
-		return "room-confirm";
+	    Map<Integer, StoreMenu> storeMenuMap = menuService
+	            .findByIdxs(groupCartItems.stream().map(GroupCartItem::getMenuIdx).toList())
+	            .stream()
+	            .collect(Collectors.toMap(StoreMenu::getMenuIdx, storeMenu -> storeMenu));
+
+	    RoomParticipant myState =
+	            orderRoomService.findRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
+
+	    List<CartItem> myCartItems = groupCartItems.stream()
+	            .map(groupCartItem -> new CartItem(
+	                    groupCartItem,
+	                    storeMenuMap.get(groupCartItem.getMenuIdx())))
+	            .toList();
+
+	    int myCartTotal = myCartItems.stream()
+	            .mapToInt(item -> item.groupCartItem().getItemTotalAmount())
+	            .sum();
+
+	    model.addAttribute("orderRoom", orderRoom);
+	    model.addAttribute("myState", myState);
+	    model.addAttribute("myCartItems", myCartItems);
+	    model.addAttribute("myCartTotal", myCartTotal);
+
+	    return "room-confirm";
 	}
 	
 	@PostMapping("/rooms/code/{room_code}/select")
