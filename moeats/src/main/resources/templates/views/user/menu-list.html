@@ -17,18 +17,18 @@
 		        padding-bottom: 120px;
 		    }
 		
-		    .fe02-store-hero {
-		        position: relative;
-		        overflow: hidden;
-		        min-height: 280px;
-		        padding: 28px;
-		        border-radius: 28px;
-		        background: #fff;
-		        border: 1px solid rgba(42, 54, 89, 0.08);
-		        box-shadow: var(--mo-shadow-soft);
-		        display: flex;
-		        align-items: flex-end;
-		    }
+		 .fe02-store-hero {
+			    position: relative;
+			    overflow: hidden;
+			    min-height: 236px;
+			    padding: 22px 24px;
+			    border-radius: 24px;
+			    background: #fff;
+			    border: 1px solid rgba(42, 54, 89, 0.08);
+			    box-shadow: var(--mo-shadow-soft);
+			    display: flex;
+			    align-items: flex-end;
+			}
 		
 		    .fe02-store-hero__bg {
 		        position: absolute;
@@ -48,68 +48,91 @@
 		    }
 		
 		    .fe02-store-hero__content {
-		        position: relative;
-		        z-index: 1;
-		        width: 100%;
-		        max-width: 760px;
-		    }
+			    position: relative;
+			    z-index: 1;
+			    width: 100%;
+			    max-width: 640px;
+			}
+					
+		   .fe02-store-hero__eyebrow {
+			    color: #FFD7B0;
+			    font-size: 11px;
+			    font-weight: 800;
+			    letter-spacing: 0.12em;
+			    text-transform: uppercase;
+			}
 		
-		    .fe02-store-hero__eyebrow {
-		        color: #FFD7B0;
-		        font-size: 12px;
-		        font-weight: 800;
-		        letter-spacing: 0.14em;
-		        text-transform: uppercase;
-		    }
+			.fe02-store-hero__title {
+			    margin: 8px 0 0;
+			    color: #fff;
+			    font-size: 32px;
+			    font-weight: 800;
+			    line-height: 1.08;
+			    letter-spacing: -0.03em;
+			}
+			
+			.fe02-store-hero__desc {
+			    margin: 8px 0 0;
+			    color: rgba(255, 255, 255, 0.92);
+			    font-size: 13px;
+			    line-height: 1.38;
+			    max-width: 420px;
+			}
 		
-		    .fe02-store-hero__title {
-		        margin: 12px 0 0;
-		        color: #fff;
-		        font-size: 40px;
-		        font-weight: 800;
-		        line-height: 1.15;
-		        letter-spacing: -0.03em;
-		    }
-		
-		    .fe02-store-hero__desc {
-		        margin: 12px 0 0;
-		        color: rgba(255, 255, 255, 0.92);
-		        font-size: 15px;
-		        line-height: 1.65;
-		        max-width: 560px;
-		    }
-		
-		    .fe02-store-hero__meta {
-		        display: flex;
-		        flex-wrap: wrap;
-		        gap: 12px;
-		        margin-top: 20px;
-		    }
-		
-		    .fe02-store-hero__meta-item {
-		        min-width: 170px;
-		        padding: 14px 16px;
-		        border-radius: 18px;
-		        background: rgba(255, 255, 255, 0.88);
-		        backdrop-filter: blur(8px);
-		        border: 1px solid rgba(255, 255, 255, 0.25);
-		    }
-		
-		    .fe02-store-hero__meta-label {
-		        display: block;
-		        margin-bottom: 4px;
-		        color: var(--mo-text-soft);
-		        font-size: 11px;
-		        font-weight: 700;
-		    }
-		
-		    .fe02-store-hero__meta-value {
-		        color: var(--mo-navy-strong);
-		        font-size: 15px;
-		        font-weight: 800;
-		        line-height: 1.45;
-		        word-break: keep-all;
-		    }
+			.fe02-store-hero__meta {
+			    display: flex;
+			    flex-wrap: wrap;
+			    gap: 8px;
+			    margin-top: 10px;
+			    align-items: stretch;
+			}
+			
+			.fe02-store-hero__meta-item {
+			    min-width: 0;
+			    height: 52px;
+			    padding: 6px 12px;
+			    border-radius: 12px;
+			    background: rgba(255, 255, 255, 0.90);
+			    backdrop-filter: blur(8px);
+			    border: 1px solid rgba(255, 255, 255, 0.24);
+			    display: flex;
+			    flex-direction: column;
+			    justify-content: center;
+			}
+			
+			.fe02-store-hero__meta-item--minimum {
+			    flex: 0 0 116px;
+			    max-width: 116px;
+			}
+			
+			.fe02-store-hero__meta-item--address {
+			    flex: 0 1 380px;
+			    max-width: 380px;
+			}
+			
+			.fe02-store-hero__meta-label {
+			    display: block;
+			    margin-bottom: 2px;
+			    color: var(--mo-text-soft);
+			    font-size: 8px;
+			    font-weight: 700;
+			    line-height: 1.1;
+			}
+			
+			.fe02-store-hero__meta-value {
+			    color: var(--mo-navy-strong);
+			    font-size: 11px;
+			    font-weight: 800;
+			    line-height: 1.2;
+			    word-break: keep-all;
+			}
+			
+			.fe02-store-hero__meta-value--address {
+			    display: block;
+			    white-space: nowrap;
+			    overflow: hidden;
+			    text-overflow: ellipsis;
+			}
 		
 		    .fe02-toolbar {
 		        display: flex;
@@ -293,64 +316,83 @@
 		        }
 		    }
 		
-		    @media (max-width: 991.98px) {
-		        .fe02-store-hero {
-		            min-height: 240px;
-		            padding: 22px;
-		        }
-		
-		        .fe02-store-hero__title {
-		            font-size: 32px;
-		        }
-		
-		        .fe02-grid {
-		            grid-template-columns: repeat(2, minmax(0, 1fr));
-		        }
+		   @media (max-width: 991.98px) {
+		    .fe02-store-hero {
+		        min-height: 214px;
+		        padding: 18px 20px;
 		    }
+		
+		    .fe02-store-hero__title {
+		        font-size: 28px;
+		    }
+		
+		    .fe02-grid {
+		        grid-template-columns: repeat(2, minmax(0, 1fr));
+		    }
+		}
 		
 		    @media (max-width: 575.98px) {
 		        .fe02-shell {
-		            padding-bottom: 96px;
-		        }
+			        padding-bottom: 96px;
+			    }
+			
+			    .fe02-store-hero {
+			        min-height: 188px;
+			        padding: 14px 16px;
+			        border-radius: 22px;
+			    }
+			
+			    .fe02-store-hero__title {
+			        font-size: 24px;
+			        line-height: 1.06;
+			    }
+			
+			    .fe02-store-hero__desc {
+			        margin-top: 6px;
+			        font-size: 12px;
+			        line-height: 1.32;
+			        max-width: none;
+			    }
+			
+			    .fe02-store-hero__meta {
+			        gap: 6px;
+			        margin-top: 8px;
+			    }
+			
+			    .fe02-store-hero__meta-item {
+			        height: 46px;
+			        padding: 5px 10px;
+			        border-radius: 10px;
+			    }
+			
+			    .fe02-store-hero__meta-item--minimum {
+			        flex: 0 0 102px;
+			        max-width: 102px;
+			    }
+			
+			    .fe02-store-hero__meta-item--address {
+			        flex: 1 1 0;
+			        max-width: none;
+			    }
+			
+			    .fe02-store-hero__meta-label {
+			        font-size: 7px;
+			        margin-bottom: 2px;
+			    }
+			
+			    .fe02-store-hero__meta-value {
+			        font-size: 10px;
+			        line-height: 1.18;
+			    }
 		
-		        .fe02-store-hero {
-		            min-height: 210px;
-		            padding: 18px;
-		            border-radius: 24px;
-		        }
-		
-		        .fe02-store-hero__title {
-		            font-size: 26px;
-		        }
-		
-		        .fe02-store-hero__desc {
-		            font-size: 13px;
-		            line-height: 1.5;
-		            max-width: none;
-		        }
-		
-		        .fe02-store-hero__meta {
-		            gap: 8px;
-		            margin-top: 14px;
-		        }
-		
-		        .fe02-store-hero__meta-item {
-		            min-width: 0;
-		            flex: 1 1 calc(50% - 4px);
-		            padding: 10px 12px;
-		            border-radius: 14px;
-		        }
-		
-		        .fe02-store-hero__meta-label {
-		            font-size: 10px;
-		            margin-bottom: 3px;
-		        }
-		
-		        .fe02-store-hero__meta-value {
-		            font-size: 13px;
-		            line-height: 1.4;
-		        }
-		
+				.fe02-store-hero__meta-value--address {
+			        white-space: normal;
+			        overflow: hidden;
+			        text-overflow: unset;
+			        display: -webkit-box;
+			        -webkit-line-clamp: 2;
+			        -webkit-box-orient: vertical;
+			        }
 		        .fe02-toolbar,
 		        .fe02-empty {
 		            padding: 16px;
@@ -451,11 +493,15 @@
          th:attr="data-store-idx=${currentStoreIdx}">
 
 		<section class="fe02-store-hero">
-		    <div class="fe02-store-hero__bg"
-		         th:style="${store != null and store.heroImageUrl != null and !#strings.isEmpty(store.heroImageUrl)}
-		                   ? 'background-image:url(''' + store.heroImageUrl + ''');'
-		                   : 'background-image:linear-gradient(135deg, #252D59 0%, #2A3659 45%, #FF8000 100%);'">
-		    </div>
+		   <div class="fe02-store-hero__bg"
+			     th:if="${store != null and store.heroImageUrl != null and !#strings.isEmpty(store.heroImageUrl)}"
+			     th:style="|background-image:url('${store.heroImageUrl}');|">
+			</div>
+			
+			<div class="fe02-store-hero__bg"
+			     th:unless="${store != null and store.heroImageUrl != null and !#strings.isEmpty(store.heroImageUrl)}"
+			     style="background-image:linear-gradient(135deg, #252D59 0%, #2A3659 45%, #FF8000 100%);">
+			</div>
 		
 		    <div class="fe02-store-hero__content">
 		        <div class="fe02-store-hero__eyebrow">가게 상세 페이지</div>
@@ -471,26 +517,26 @@
 		        </p>
 		
 		        <div class="fe02-store-hero__meta">
-		            <div class="fe02-store-hero__meta-item">
-		                <span class="fe02-store-hero__meta-label">최소주문금액</span>
-		                <strong class="fe02-store-hero__meta-value"
-		                        th:text="${store != null ? #numbers.formatInteger(store.minimumOrderAmount, 1, 'COMMA') + '원' : '정보 없음'}">
-		                    0원
-		                </strong>
-		            </div>
-		
-		            <div class="fe02-store-hero__meta-item">
-		                <span class="fe02-store-hero__meta-label">가게 주소</span>
-		                <strong class="fe02-store-hero__meta-value">
-		                    <span th:text="${store != null and store.storeAddress1 != null ? store.storeAddress1 : '주소 정보 없음'}">
-		                        주소
-		                    </span>
-		                    <span th:if="${store != null and store.storeAddress2 != null and !#strings.isEmpty(store.storeAddress2)}">
-		                        &nbsp;<span th:text="${store.storeAddress2}">상세주소</span>
-		                    </span>
-		                </strong>
-		            </div>
-		        </div>
+				    <div class="fe02-store-hero__meta-item fe02-store-hero__meta-item--minimum">
+				        <span class="fe02-store-hero__meta-label">최소주문금액</span>
+				        <strong class="fe02-store-hero__meta-value"
+				                th:text="${store != null ? #numbers.formatInteger(store.minimumOrderAmount, 1, 'COMMA') + '원' : '정보 없음'}">
+				            0원
+				        </strong>
+				    </div>
+				
+				    <div class="fe02-store-hero__meta-item fe02-store-hero__meta-item--address">
+				        <span class="fe02-store-hero__meta-label">가게 주소</span>
+				        <strong class="fe02-store-hero__meta-value fe02-store-hero__meta-value--address">
+				            <span th:text="${store != null and store.storeAddress1 != null ? store.storeAddress1 : '주소 정보 없음'}">
+				                주소
+				            </span>
+				            <span th:if="${store != null and store.storeAddress2 != null and !#strings.isEmpty(store.storeAddress2)}">
+				                &nbsp;<span th:text="${store.storeAddress2}">상세주소</span>
+				            </span>
+				        </strong>
+				    </div>
+				</div>
 		    </div>
 		</section>
 
@@ -557,7 +603,7 @@
         <div id="menuSearchEmpty" class="fe02-empty d-none">
             <div class="fe02-empty__icon">🍽️</div>
             <h2 class="fe02-empty__title">조건에 맞는 메뉴가 없습니다</h2>
-            <p class="fe02-empty__desc">검색어 또는 상태 필터를 바꿔 다시 확인해 주세요.</p>
+            <p class="fe02-empty__desc">검색어를 바꿔 다시 확인해 주세요.</p>
         </div>
 
         <div th:if="${#lists.isEmpty(menuList)}" class="fe02-empty">
