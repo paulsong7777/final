@@ -200,7 +200,7 @@ public class StoreController {
             @RequestParam("storeIdx") int storeIdx,
             @RequestParam("storeStatus") String storeStatus,
             @RequestParam(value = "redirectUrl", defaultValue = "/owners/store") String redirectUrl,
-            @SessionAttribute("member") Member member) {
+            @SessionAttribute(name = "member") Member member) {
 
         Store store = storeService.myStore(member.getMemberIdx());
         if (store == null) {

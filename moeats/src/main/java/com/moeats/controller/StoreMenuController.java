@@ -127,6 +127,25 @@ public class StoreMenuController {
         
         return "views/owner/menu-manage";
     }
+    
+    @PostMapping("/owners/menu/delete")
+    @ResponseBody
+    public Map<String, Object> deleteMenu(
+            @RequestParam("menuIdx") int menuIdx, 
+            @SessionAttribute("member") Member member) {
+        
+        // 1. 현재 로그인한 점주의 가게 정보 확인
+        Store store = storeService.myStore(member.getMemberIdx());
+        if (store == null) {
+            return Map.of("result", false, "message", "가게 정보가 없습니다.");
+        }
+
+        // 2. 보안 체크: 삭제하려는 메뉴가 진짜 이 사장님 가게 메뉴인지 확인 후 삭제
+        // (이 로직은 서비스에서 처리하는 것이 안전합니다)
+        boolean isDeleted = storeMenuService.deleteMenu(store.getStoreIdx(), menuIdx);
+        
+        return Map.of("result", isDeleted);
+    }
 
 
     // 메뉴 등록
@@ -159,6 +178,13 @@ public class StoreMenuController {
 	    	return Map.of("result",false);
 	    }
 	    storeMenu.setStoreIdx(store.getStoreIdx()); // 강제 세팅
+	    
+	    // [임시 테스트용] 실제 파일 저장 대신 인터넷 이미지 주소를 강제로 넣음
+	    // -----------------------------------------------------------
+	 // 🚨 조건문 밖으로 뺐습니다. 무조건 값이 들어가야 함!
+	    storeMenu.setImageUrl("https://placehold.jp/24/ff8000/ffffff/200x200.png?text=TEST_SAVE");
+	    
+	    System.out.println("저장하려는 이미지 경로: " + storeMenu.getImageUrl()); // 콘솔 출력 확인용
 	    
 	    // TODO 파일 받아서 저장하기
         storeMenuService.insertMenu(storeMenu);
@@ -222,9 +248,9 @@ public class StoreMenuController {
     @PostMapping("/owners/menu/status")
     @ResponseBody
     public Map updateStatus(
-            @RequestParam int menuIdx,
-            @RequestParam String menuStatus,
-			@SessionAttribute("member") Member member) {
+    		@RequestParam(name = "menuIdx") int menuIdx, 
+    	    @RequestParam(name = "menuStatus") String menuStatus, 
+    	    @SessionAttribute(name = "member") Member member) {
 		Store store = storeService.myStore(member.getMemberIdx());
 	    if ( store==null ) {
 	    	return Map.of("result",false);

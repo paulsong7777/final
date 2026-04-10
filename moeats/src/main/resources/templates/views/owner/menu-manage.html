@@ -6,23 +6,12 @@
 <head>
     <title>메뉴 목록 및 품절 관리 - Mo-Eats</title>
     <style>
-        /* 상태 변화 및 애니메이션을 위한 필수 CSS */
         .mo-menu-card { transition: all 0.3s ease; }
         .mo-menu-card.is-soldout { background-color: #f9fafb !important; border-color: var(--mo-line-strong) !important; }
-        
         .mo-menu-img { transition: filter 0.3s ease; }
         .mo-menu-img.is-soldout { filter: grayscale(100%) blur(1px); }
-        
-        .mo-soldout-badge {
-            background: rgba(37, 45, 89, 0.85);
-            padding: 4px 10px;
-            font-size: 12px;
-            font-weight: 800;
-        }
-        
-        /* 스위치 커스텀 (Mo-Eats 브랜드 컬러 적용) */
+        .mo-soldout-badge { background: rgba(37, 45, 89, 0.85); padding: 4px 10px; font-size: 12px; font-weight: 800; }
         .form-check-input:checked { background-color: var(--mo-primary); border-color: var(--mo-primary); }
-        
         .fade-out { opacity: 0; transform: scale(0.95); transition: 0.3s ease; }
     </style>
 </head>
@@ -40,7 +29,7 @@
                     </h2>
                     <p class="mo-helper-text mt-2 mb-0">등록된 메뉴의 판매 상태와 정보를 한눈에 관리하세요.</p>
                 </div>
-                <a th:href="@{/owners/menu/write}" class="mo-btn mo-btn-primary rounded-pill px-4" style="min-height: 48px;">
+                <a th:href="@{/owners/menu/new}" class="mo-btn mo-btn-primary rounded-pill px-4" style="min-height: 48px;">
                     <i class="bi bi-plus-lg me-2"></i> 신규 메뉴 등록
                 </a>
             </div>
@@ -57,11 +46,11 @@
                         
                         <div class="d-flex gap-3 mb-3">
                             <div class="position-relative flex-shrink-0 overflow-hidden rounded-3 border" style="width: 84px; height: 84px; border-color: rgba(42, 54, 89, 0.08) !important;">
-                                <img th:id="|menu-img-${menu.menuIdx}|"
-                                     th:src="${menu.menuImg ? '' : 'https://via.placeholder.com/150/FF8000/FFFFFF?text=No+Image'}" 
-                                     class="mo-menu-img w-100 h-100 object-fit-cover"
-                                     th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? 'is-soldout' : ''"
-                                     alt="메뉴이미지">
+							<img th:id="|menu-img-${menu.menuIdx}|"
+							     th:src="${menu.imageUrl != null and menu.imageUrl != ''} ? ${menu.imageUrl} : 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=No+Image'" 
+							     class="mo-menu-img w-100 h-100 object-fit-cover"
+							     th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? 'is-soldout' : ''"
+							     alt="메뉴이미지">
                                 
                                 <div th:id="|soldout-badge-${menu.menuIdx}|" 
                                      class="mo-soldout-badge position-absolute top-50 start-50 translate-middle text-white rounded-2"
@@ -69,7 +58,6 @@
                             </div>
 
                             <div class="flex-grow-1 overflow-hidden d-flex flex-column justify-content-center">
-                                <span class="fw-bold text-secondary mb-1" style="font-size: 11px; letter-spacing: 0.02em;" th:text="${menu.menuCategoryName ?: '일반'}">카테고리</span>
                                 <h4 class="fw-bold text-truncate mb-1 fs-6" style="color: var(--mo-navy-strong);" th:text="${menu.menuName ?: '이름 없음'}">메뉴명</h4>
                                 <div class="fw-bold fs-6" style="color: var(--mo-primary);" 
                                      th:text="${#numbers.formatInteger(menu.menuPrice ?: 0, 0, 'COMMA')} + '원'">0원</div>
@@ -91,7 +79,7 @@
 
                             <div class="d-flex gap-2">
                                 <button class="mo-btn mo-btn-outline rounded-3 border-secondary-subtle" style="min-height: 34px; padding: 0 14px; font-size: 13px;" 
-                                        th:onclick="|location.href='/owners/menu/' + [[${menu.menuIdx}]] + '/edit'|">수정</button>
+                                        th:onclick="|location.href='/owners/menu/edit?menuIdx=' + [[${menu.menuIdx}]]|">수정</button>
                                 <button class="mo-btn mo-btn-plain rounded-3 text-danger fw-bold" style="min-height: 34px; padding: 0 12px; font-size: 13px;" 
                                         th:onclick="handleDeleteMenu([[${menu.menuIdx}]])">삭제</button>
                             </div>
@@ -105,7 +93,7 @@
                     <div class="mb-2" style="font-size: 64px;">📋</div>
                     <h3 class="mo-empty-state__title mb-3 fs-4">등록된 메뉴가 없습니다</h3>
                     <p class="mo-empty-state__desc mb-4 fw-bold">사장님의 맛있는 메뉴를 등록하여 가게를 채워주세요!</p>
-                    <a th:href="@{/owners/menu/write}" class="mo-btn mo-btn-primary rounded-pill px-5" style="min-height: 52px; font-size: 16px;">
+                    <a th:href="@{/owners/menu/new}" class="mo-btn mo-btn-primary rounded-pill px-5" style="min-height: 52px; font-size: 16px;">
                         <i class="bi bi-plus-lg me-2"></i> 첫 메뉴 등록하기
                     </a>
                 </div>
@@ -118,13 +106,8 @@
 <th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
         /*<![CDATA[*/
-        
-        /**
-         * [AJAX] 품절 상태 토글 처리
-         */
         async function handleToggleSoldOut(idx, isChecked) {
             if(!idx) return;
-
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
             const nextStatus = isChecked ? 'AVAILABLE' : 'SOLD_OUT';
@@ -136,10 +119,7 @@
                         'Content-Type': 'application/x-www-form-urlencoded',
                         ...(header && { [header]: token })
                     },
-                    body: new URLSearchParams({
-                        menuIdx: idx,
-                        menuStatus: nextStatus
-                    })
+                    body: new URLSearchParams({ menuIdx: idx, menuStatus: nextStatus })
                 });
 
                 if(response.ok) {
@@ -150,64 +130,49 @@
                     
                     if(isChecked) {
                         card.classList.remove('is-soldout');
-                        img.classList.remove('is-soldout');
-                        badge.style.display = "none";
+                        if(img) img.classList.remove('is-soldout');
+                        if(badge) badge.style.display = "none";
                         label.innerText = "판매중";
                         label.className = "form-check-label fw-bold text-success";
                     } else {
                         card.classList.add('is-soldout');
-                        img.classList.add('is-soldout');
-                        badge.style.display = "block";
-                        label.innerText = "품절중";
+                        if(img) img.classList.add('is-soldout');
+                        if(badge) badge.style.display = "block";
+                        label.innerText = "품절";
                         label.className = "form-check-label fw-bold text-danger";
                     }
                 } else {
                     alert("상태 변경에 실패했습니다.");
                     location.reload(); 
                 }
-            } catch(e) {
-                console.error("Fetch Error:", e);
-                alert("통신 중 오류가 발생했습니다.");
-            }
+            } catch(e) { alert("통신 중 오류가 발생했습니다."); }
         }
 
-        /**
-         * [AJAX] 메뉴 삭제 처리
-         */
         async function handleDeleteMenu(idx) {
             if(!idx) return;
             if(!confirm("정말로 이 메뉴를 완전히 삭제하시겠습니까?\n삭제 후에는 복구가 불가능합니다.")) return;
-
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             try {
-                const response = await fetch(`/owners/menu/${idx}/delete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(header && { [header]: token })
-                    }
-                });
-                
+            	const response = await fetch(`/owners/menu/delete`, {
+            	    method: 'POST',
+            	    headers: {
+            	        'Content-Type': 'application/x-www-form-urlencoded', // 이 부분 확인
+            	        ...(header && { [header]: token })
+            	    },
+            	    body: new URLSearchParams({ menuIdx: idx }) // body 데이터 확인
+            	});
                 if(response.ok) {
                     const wrapper = document.getElementById(`menu-wrapper-${idx}`);
                     if(wrapper) {
                         wrapper.classList.add('fade-out');
-                        setTimeout(() => {
-                            wrapper.remove();
-                            if(document.querySelectorAll('#menu-grid > div[id^="menu-wrapper"]').length === 0) {
-                                location.reload();
-                            }
-                        }, 300);
+                        setTimeout(() => location.reload(), 300);
                     }
                 } else {
-                    alert("삭제 처리에 실패했습니다.");
+                    alert("삭제 처리에 실패했습니다. (백엔드에 삭제 기능이 있는지 확인하세요!)");
                 }
-            } catch(e) {
-                console.error("Delete Error:", e);
-                alert("삭제 통신 중 오류가 발생했습니다.");
-            }
+            } catch(e) { alert("삭제 통신 중 오류가 발생했습니다."); }
         }
         /*]]>*/
     </script>
