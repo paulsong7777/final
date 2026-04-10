@@ -86,7 +86,7 @@ public class StoreMenuCategoryController {
 	public String detail(
 			RedirectAttributes ra,
 			Model model,
-			@PathVariable int menuCategoryIdx,
+			@PathVariable("menuCategoryIdx") int menuCategoryIdx,
 			@SessionAttribute("member") Member member) {
     	Store store = storeService.myStore(member.getMemberIdx());
     	if ( store==null ) {
@@ -105,7 +105,7 @@ public class StoreMenuCategoryController {
 	public String editForm(
 			RedirectAttributes ra,
 			Model model,
-			@PathVariable int menuCategoryIdx,
+			@PathVariable("menuCategoryIdx") int menuCategoryIdx,
 			@SessionAttribute("member") Member member) {
     	Store store = storeService.myStore(member.getMemberIdx());
     	if ( store==null ) {
@@ -124,7 +124,7 @@ public class StoreMenuCategoryController {
 	@PostMapping("/{menuCategoryIdx}/edit")
 	public String update(
 			RedirectAttributes ra,
-			@PathVariable int menuCategoryIdx,
+			@PathVariable("menuCategoryIdx") int menuCategoryIdx,
 			@ModelAttribute StoreMenuCategory category,
 			@SessionAttribute("member") Member member) {
     	Store store = storeService.myStore(member.getMemberIdx());
@@ -139,13 +139,14 @@ public class StoreMenuCategoryController {
 		
 		storeMenuCategoryService.updateCategory(category);
 
-		return "redirect:/owners/store-menu-category";
+		return "redirect:/owners/category";
 	}
 
 	// 7. 삭제
 	@PostMapping("/{menuCategoryIdx}/delete")
+	@ResponseBody
 	public Map delete(
-			@PathVariable int menuCategoryIdx,
+			@PathVariable("menuCategoryIdx") int menuCategoryIdx,
 			@SessionAttribute("member") Member member) {
     	Store store = storeService.myStore(member.getMemberIdx());
     	StoreMenuCategory check = storeMenuCategoryService.getCategory(menuCategoryIdx);

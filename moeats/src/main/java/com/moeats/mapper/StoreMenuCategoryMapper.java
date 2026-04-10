@@ -20,7 +20,9 @@ public interface StoreMenuCategoryMapper {
 	// 등록
 	int insertCategory(StoreMenuCategory category);
 
-	// 조회
-	StoreMenuCategory getCategory(int menuCategoryIdx);
-	List<StoreMenuCategory> getCategoryByStore(int storeIdx);
+    // 단건 조회
+    StoreMenuCategory getCategory(@Param("menuCategoryIdx") int menuCategoryIdx);
+    
+    // 특정 가게의 전체 카테고리 조회
+    List<StoreMenuCategory> getCategoryByStore(@Param("storeIdx") int storeIdx);
 }

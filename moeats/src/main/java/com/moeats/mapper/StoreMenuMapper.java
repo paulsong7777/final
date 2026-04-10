@@ -14,7 +14,15 @@ public interface StoreMenuMapper {
      * [점주] 메뉴 리스트 조회
      */
     List<StoreMenu> menuList(@Param("storeIdx") int storeIdx);
-
+    
+    
+    /**
+     * 메뉴 삭제
+     * @param storeIdx 사장님의 가게 번호 (보안 체크용)
+     * @param menuIdx 삭제할 메뉴 번호
+     * @return 삭제된 행의 개수
+     */
+    int deleteMenu(@Param("storeIdx") int storeIdx, @Param("menuIdx") int menuIdx);
 
     /**
      * [사용자] 메뉴 리스트 조회 (HIDDEN 제외)
