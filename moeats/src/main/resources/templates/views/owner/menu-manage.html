@@ -58,7 +58,7 @@
                         <div class="d-flex gap-3 mb-3">
                             <div class="position-relative flex-shrink-0 overflow-hidden rounded-3 border" style="width: 84px; height: 84px; border-color: rgba(42, 54, 89, 0.08) !important;">
                                 <img th:id="|menu-img-${menu.menuIdx}|"
-                                     th:src="${menu.menuImg ?: 'https://via.placeholder.com/150/FF8000/FFFFFF?text=No+Image'}" 
+                                     th:src="${menu.menuImg ? '' : 'https://via.placeholder.com/150/FF8000/FFFFFF?text=No+Image'}" 
                                      class="mo-menu-img w-100 h-100 object-fit-cover"
                                      th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? 'is-soldout' : ''"
                                      alt="메뉴이미지">

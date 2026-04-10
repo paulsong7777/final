@@ -75,14 +75,18 @@ public class MemberController {
 	
 	
 	
-	// 회원 수정 폼 요청
+	// 회원 수정 폼 요청	sessionMember - 등록된 회원 정보
 	@GetMapping("/members/me/edit")
-	public String updateMemberForm(@SessionAttribute(name="member", required=false) Member member
-					) {
-		if(member==null) {
+	public String updateMemberForm(@SessionAttribute(name="member", required=false) Member sessionMember
+			,Model model		) {
+		if(sessionMember==null) {
 			return "redirect:/login";
 		}
+		// ⭐ 세션의 이메일을 이용해 DB에서 '최신 회원 정보'를 다시 조회합니다.
+		Member latestMember = memberService.getMemberFromEmail(sessionMember.getMemberEmail());
 		
+		// ⭐ 조회한 최신 정보를 'member'라는 이름으로 모델에 담아 화면에 넘깁니다.
+		model.addAttribute("member", latestMember);
 		return "views/members/member-profile-edit";
 	}
 	
@@ -175,14 +179,14 @@ public class MemberController {
 	
 	// 회원가입	- 일반/사업자 분기
 	@PostMapping("/members")
-	public String insertMember(Member member, RedirectAttributes ra) {
+	public String insertMember(Member member, RedirectAttributes ra, HttpSession session) {
 
 	    try {
 	        memberService.insertMember(member);
+	        session.invalidate(); // ⭐ 기존 로그인 세션 제거
 	        return "redirect:/login";
 
 	    } catch (Exception e) {
-	    	e.printStackTrace();
 	    	e.printStackTrace();
 	        ra.addFlashAttribute("error", e.getMessage());
 	        return "redirect:/members/createType";
@@ -199,7 +203,7 @@ public class MemberController {
 	        Store store = storeService.myStore(member.getMemberIdx());
 	        
 	        // 2. 화면(HTML)에서 사용하는 변수명인 'storeVo'로 Model에 담아 전달
-	        model.addAttribute("storeVo", store);
+	        model.addAttribute("store", store);
 
             // 💡 참고: HTML을 보면 주문 내역(orderList)도 필요로 합니다.
             // 주문 내역을 가져오는 서비스가 있다면 아래처럼 같이 넘겨주어야 실시간 주문 현황도 뜹니다.

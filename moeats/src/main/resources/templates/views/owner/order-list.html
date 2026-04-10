@@ -88,17 +88,17 @@
                     <tbody class="text-center" id="orderTableBody">
                         
                         <th:block th:if="${not #lists.isEmpty(orderList)}">
-                            <tr th:each="order, stat : ${orderList}" th:data-room-idx="${order.roomIdx ?: 0}" class="order-row">
+                            <tr th:each="order, stat : ${orderList}" th:data-room-idx="${order.groupOrder.roomIdx ?: 0}" class="order-row">
                                 <td class="ps-4 text-start text-muted small row-num" th:text="${stat.count}">1</td>
-                                <td style="color: var(--mo-text-soft); font-weight: 700;" th:text="${order.createdAt != null ? #dates.format(order.createdAt, 'HH:mm') : '00:00'}">00:00</td>
+                                <td style="color: var(--mo-text-soft); font-weight: 700;" th:text="${order.groupOrder.createdAt != null ? #dates.format(order.groupOrder.createdAt, 'HH:mm') : '00:00'}">00:00</td>
                                 <td>
                                     <span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;" 
-                                          th:text="${'ROOM-' + (order.roomIdx ?: 0)}">ORD-001</span>
+                                          th:text="${'ROOM-' + (order.groupOrder.roomIdx ?: 0)}">ORD-001</span>
                                 </td>
-                                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;" th:text="${order.storeName ?: 'MoEats 매장'}">매장명</td>
-                                <td class="text-end fw-bold" style="color: var(--mo-text-soft);" th:text="${order.roomStatus}">WAITING</td>
+                                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;" th:text="${store.storeName ?: 'MoEats 매장'}">매장명</td>
+                                <td class="text-end fw-bold" style="color: var(--mo-text-soft);" th:text="${order.groupOrder.orderStatus}">WAITING</td>
                                 <td class="status-cell">
-                                    <div th:switch="${order.roomStatus}">
+                                    <div th:switch="${order.groupOrder.orderStatus}">
                                         <span th:case="'WAITING'" class="mo-badge mo-badge--waiting">대기중</span>
                                         <span th:case="'ACCEPTED'" class="mo-badge mo-badge--accepted">접수완료</span>
                                         <span th:case="'COOKING'" class="mo-badge mo-badge--cooking">조리중</span>
@@ -108,7 +108,7 @@
                                     </div>
                                 </td>
                                 <td class="pe-4">
-                                    <a th:href="@{/owners/order/detail(roomIdx=${order.roomIdx ?: 0})}" 
+                                    <a th:href="@{/owners/order/detail(roomIdx=${order.groupOrder.roomIdx ?: 0})}" 
                                        class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
                                 </td>
                             </tr>
@@ -155,16 +155,16 @@
             const tbody = document.getElementById('orderTableBody');
             const emptyRow = document.getElementById('emptyRow');
             orders.forEach((order) => {
-                let existingRow = document.querySelector(`tr[data-room-idx="${order.roomIdx}"]`);
+                let existingRow = document.querySelector(`tr[data-room-idx="${order.groupOrder.roomIdx}"]`);
                 if (existingRow) {
                     const statusCell = existingRow.querySelector('.status-cell');
-                    const newBadge = getStatusBadgeHtml(order.roomStatus);
+                    const newBadge = getStatusBadgeHtml(order.groupOrder.orderStatus);
                     if (statusCell.innerHTML.trim() !== newBadge.trim()) {
                         statusCell.innerHTML = newBadge;
                         
                         // 현재 상태 컬럼 텍스트도 같이 업데이트
                         const statusTextCell = existingRow.querySelector('td:nth-child(5)');
-                        if(statusTextCell) statusTextCell.innerText = order.roomStatus;
+                        if(statusTextCell) statusTextCell.innerText = order.groupOrder.orderStatus;
 
                         // 상태 변경 시 시각적 효과 (반짝임 - Mo-Eats 오렌지 톤)
                         existingRow.style.backgroundColor = 'rgba(255, 128, 0, 0.08)';
@@ -180,17 +180,17 @@
 
         function prependNewOrderRow(tbody, order) {
             const newRow = document.createElement('tr');
-            newRow.setAttribute('data-room-idx', order.roomIdx);
+            newRow.setAttribute('data-room-idx', order.groupOrder.roomIdx);
             newRow.className = 'order-row';
             newRow.innerHTML = `
                 <td class="ps-4 text-start text-muted small row-num">-</td>
                 <td style="color: var(--mo-text-soft); font-weight: 700;">방금 전</td>
-                <td><span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;">ROOM-${order.roomIdx}</span></td>
-                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;">${order.storeName || 'MoEats 매장'}</td>
-                <td class="text-end fw-bold" style="color: var(--mo-text-soft);">${order.roomStatus}</td>
-                <td class="status-cell">${getStatusBadgeHtml(order.roomStatus)}</td>
+                <td><span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;">ROOM-${order.groupOrder.roomIdx}</span></td>
+                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;">${store.storeName || 'MoEats 매장'}</td>
+                <td class="text-end fw-bold" style="color: var(--mo-text-soft);">${order.groupOrder.orderStatus}</td>
+                <td class="status-cell">${getStatusBadgeHtml(order.groupOrder.orderStatus)}</td>
                 <td class="pe-4">
-                    <a href="/owners/order/detail?roomIdx=${order.roomIdx}" 
+                    <a href="/owners/order/detail?roomIdx=${order.groupOrder.roomIdx}" 
                        class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
                 </td>
             `;
