@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (expiresAtMs > 0 && countdownTargets.length > 0) {
             let timerId = null;
 
-            const handleCountdownExpired = function () {
+           /* const handleCountdownExpired = function () {
                 if (countdownHandled) {
                     return;
                 }
@@ -65,32 +65,36 @@ document.addEventListener('DOMContentLoaded', function () {
                 ) {
                     window.location.href = '/orders/' + orderIdx;
                 }
-            };
+            };*/
 
-            const renderCountdown = function () {
-                const remainingMs = expiresAtMs - Date.now();
+			const renderCountdown = function () {
+			    const remainingMs = expiresAtMs - Date.now();
 
-				if (remainingMs <= 0) {
-				    window.clearInterval(timerId);
+			    if (remainingMs <= 0) {
+			        if (timerId) {
+			            window.clearInterval(timerId);
+			        }
 
-				    countdownTargets.forEach(function (target) {
-				        target.textContent = '00:00';
-				    });
+			        countdownTargets.forEach(function (target) {
+			            target.textContent = '00:00';
+			        });
 
-				    if (countdownHandled) {
-				        return;
-				    }
-				    countdownHandled = true;
+			        if (countdownHandled) {
+			            return;
+			        }
+			        countdownHandled = true;
 
-				    return;
-				}
+			        // 여기서는 이동하지 않는다.
+			        // 실제 만료 이동은 SSE expire 이벤트가 처리한다.
+			        return;
+			    }
 
-                const remainingText = formatRemaining(remainingMs);
+			    const remainingText = formatRemaining(remainingMs);
 
-                countdownTargets.forEach(function (target) {
-                    target.textContent = remainingText;
-                });
-            };
+			    countdownTargets.forEach(function (target) {
+			        target.textContent = remainingText;
+			    });
+			};
 
             renderCountdown();
             timerId = window.setInterval(renderCountdown, 1000);

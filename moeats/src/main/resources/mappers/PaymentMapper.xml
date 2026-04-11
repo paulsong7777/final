@@ -17,12 +17,6 @@
 	        useGeneratedKeys="true"
 	        keyProperty="paymentIdx"
 	        keyColumn="payment_idx">
-	    <selectKey keyProperty="paymentExpiresAt"
-	               resultType="java.sql.Timestamp"
-	               order="BEFORE">
-	        SELECT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE
-	    </selectKey>
-	
 	    INSERT INTO payment(
 	        order_idx,
 	        payment_mode,
