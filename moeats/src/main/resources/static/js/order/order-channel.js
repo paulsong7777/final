@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const orderIdx = orderIdxInput ? orderIdxInput.value : '';
     const pageType = pageTypeInput ? pageTypeInput.value : '';
 
+    let countdownHandled = false;
+
+	let navigationLocked = false;
+		
     document.querySelectorAll('form[data-payment-complete-form="true"]').forEach(function (form) {
         form.addEventListener('submit', function (event) {
             if (form.dataset.submitting === 'true') {
@@ -36,25 +40,65 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (expiresAtMs > 0 && countdownTargets.length > 0) {
             let timerId = null;
+
+            const handleCountdownExpired = function () {
+                if (countdownHandled) {
+                    return;
+                }
+                countdownHandled = true;
+
+                countdownTargets.forEach(function (target) {
+                    target.textContent = '00:00';
+                });
+
+                if (timerId) {
+                    window.clearInterval(timerId);
+                }
+
+                // 무한 새로고침 금지
+                // FE-07에서는 1회만 주문 상세로 이동
+                if (
+                    orderIdx &&
+                    (pageType === 'payment-individual'
+                        || pageType === 'payment-representative'
+                        || pageType === 'payment-wait')
+                ) {
+                    window.location.href = '/orders/' + orderIdx;
+                }
+            };
+
             const renderCountdown = function () {
                 const remainingMs = expiresAtMs - Date.now();
+
+				if (remainingMs <= 0) {
+				    window.clearInterval(timerId);
+
+				    countdownTargets.forEach(function (target) {
+				        target.textContent = '00:00';
+				    });
+
+				    if (countdownHandled) {
+				        return;
+				    }
+				    countdownHandled = true;
+
+				    return;
+				}
+
                 const remainingText = formatRemaining(remainingMs);
 
                 countdownTargets.forEach(function (target) {
                     target.textContent = remainingText;
                 });
-
-                if (remainingMs <= 0) {
-                    window.clearInterval(timerId);
-                    window.location.reload();
-                }
             };
 
             renderCountdown();
             timerId = window.setInterval(renderCountdown, 1000);
 
             window.addEventListener('beforeunload', function () {
-                window.clearInterval(timerId);
+                if (timerId) {
+                    window.clearInterval(timerId);
+                }
             }, { once: true });
         }
     }
@@ -77,31 +121,41 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('[order-channel] connected', event.data);
     });
 
-    eventSource.addEventListener('paid', function (event) {
-        console.log('[order-channel] paid', event.data);
+	eventSource.addEventListener('paid', function (event) {
+	    console.log('[order-channel] paid', event.data);
 
-        if (pageType === 'payment-individual'
-            || pageType === 'payment-representative'
-            || pageType === 'payment-wait') {
-            window.location.reload();
-        }
-    });
+	    if (pageType === 'payment-wait') {
+	        window.location.reload();
+	    }
+	});
 
     eventSource.addEventListener('complete', function (event) {
         console.log('[order-channel] complete', event.data);
-        window.location.href = '/orders/' + orderIdx;
+		if (navigationLocked) {
+		    return;
+		}
+		navigationLocked = true;
+		window.location.href = '/orders/' + orderIdx;
     });
 
     eventSource.addEventListener('cancel', function (event) {
         console.log('[order-channel] cancel', event.data);
         alert('결제가 취소되었습니다.');
-        window.location.href = '/orders/' + orderIdx;
+		if (navigationLocked) {
+		    return;
+		}
+		navigationLocked = true;
+		window.location.href = '/orders/' + orderIdx;
     });
 
     eventSource.addEventListener('expire', function (event) {
         console.log('[order-channel] expire', event.data);
         alert('결제 시간이 만료되었습니다.');
-        window.location.href = '/orders/' + orderIdx;
+		if (navigationLocked) {
+		    return;
+		}
+		navigationLocked = true;
+		window.location.href = '/orders/' + orderIdx;
     });
 
     eventSource.addEventListener('change', function (event) {
@@ -112,7 +166,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        window.location.href = '/orders/' + orderIdx;
+		if (navigationLocked) {
+		    return;
+		}
+		navigationLocked = true;
+		window.location.href = '/orders/' + orderIdx;
     });
 
     eventSource.onerror = function (event) {
