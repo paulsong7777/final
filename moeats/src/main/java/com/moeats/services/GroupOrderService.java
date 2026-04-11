@@ -57,6 +57,9 @@ public class GroupOrderService {
 	public int insert(GroupOrder groupOrder) {
 		return groupOrderMapper.insert(groupOrder);
 	}
+	public int pay(int orderIdx) {
+		return groupOrderMapper.pay(orderIdx);
+	}
 //	public int proceed(GroupOrder groupOrder) {
 //		if(groupOrder==null)
 //			return 0;

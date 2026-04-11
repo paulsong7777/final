@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -15,14 +15,14 @@
 
             <p class="text-secondary mb-4"
                th:text="${groupOrder.paymentMode == 'REPRESENTATIVE'}
-                        ? '방장의 대표결제가 진행 중입니다. 완료되면 자동으로 주문 상세로 이동합니다.'
-                        : '다른 참여자의 결제를 기다리는 중입니다. 전원 완료되면 자동으로 주문 상세로 이동합니다.'">
-                결제 대기 문구
+                        ? '방장이 대표 결제를 진행 중입니다. 결제가 끝나면 자동으로 주문 상세로 이동합니다.'
+                        : '다른 참여자의 결제를 기다리는 중입니다. 전원이 완료되면 자동으로 주문 상세로 이동합니다.'">
+                결제 대기 안내
             </p>
 
             <div class="d-grid gap-3">
                 <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-1">완료 인원</div>
+                    <div class="small text-secondary mb-1">결제 완료 인원</div>
                     <div class="fw-bold fs-4">
                         <span th:text="${completedCount}">0</span> /
                         <span th:text="${totalCount}">0</span>
@@ -30,16 +30,18 @@
                 </div>
 
                 <div class="p-3 rounded-4 border bg-white" th:if="${payment.paymentExpiresAt != null}">
-                    <div class="small text-secondary mb-1">결제 만료 시각</div>
-                    <div class="fw-bold" th:text="${payment.paymentExpiresAt}">만료시각</div>
+                    <div class="small text-secondary mb-1">남은 시간</div>
+                    <div class="fw-bold fs-4" data-payment-countdown>05:00</div>
+                    <div class="small text-secondary mt-2">시간이 지나면 결제가 만료됩니다.</div>
                 </div>
 
                 <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-2">현재 결제 현황</div>
+                    <div class="small text-secondary mb-2">현재 결제 상태</div>
                     <div class="d-grid gap-2">
                         <div th:each="share : ${paymentShares}" class="d-flex justify-content-between align-items-center">
-                            <span th:text="${'참여자 ' + share.memberIdx}">참여자</span>
-                            <span class="fw-semibold" th:text="${share.shareStatus}">PENDING</span>
+                            <span th:text="${share.memberIdx == session.member.memberIdx} ? '나' : (memberNameMap[share.memberIdx] != null ? memberNameMap[share.memberIdx] : '참여자')">참여자</span>
+                            <span class="fw-semibold"
+                                  th:text="${share.shareStatus == 'PAID_SELF'} ? '결제 완료' : (${share.shareStatus == 'PAID_BY_REPRESENTATIVE'} ? '대표 결제 완료' : (${share.shareStatus == 'CANCELLED'} ? '취소됨' : '결제 대기'))">결제 대기</span>
                         </div>
                     </div>
                 </div>
@@ -50,6 +52,7 @@
 
         <input type="hidden" id="orderIdx" th:value="${orderIdx}">
         <input type="hidden" id="orderSsePageType" value="payment-wait">
+        <input type="hidden" id="paymentExpiresAtMs" th:if="${payment.paymentExpiresAt != null}" th:value="${payment.paymentExpiresAt.time}">
     </section>
 </section>
 

@@ -1,9 +1,63 @@
 document.addEventListener('DOMContentLoaded', function () {
     const orderIdxInput = document.getElementById('orderIdx');
     const pageTypeInput = document.getElementById('orderSsePageType');
+    const expiresAtInput = document.getElementById('paymentExpiresAtMs');
 
     const orderIdx = orderIdxInput ? orderIdxInput.value : '';
     const pageType = pageTypeInput ? pageTypeInput.value : '';
+
+    document.querySelectorAll('form[data-payment-complete-form="true"]').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (form.dataset.submitting === 'true') {
+                event.preventDefault();
+                return;
+            }
+
+            form.dataset.submitting = 'true';
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = '결제 처리 중...';
+            }
+        });
+    });
+
+    function formatRemaining(ms) {
+        const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        return minutes + ':' + seconds;
+    }
+
+    if (expiresAtInput) {
+        const expiresAtMs = Number(expiresAtInput.value || 0);
+        const countdownTargets = document.querySelectorAll('[data-payment-countdown]');
+
+        if (expiresAtMs > 0 && countdownTargets.length > 0) {
+            let timerId = null;
+            const renderCountdown = function () {
+                const remainingMs = expiresAtMs - Date.now();
+                const remainingText = formatRemaining(remainingMs);
+
+                countdownTargets.forEach(function (target) {
+                    target.textContent = remainingText;
+                });
+
+                if (remainingMs <= 0) {
+                    window.clearInterval(timerId);
+                    window.location.reload();
+                }
+            };
+
+            renderCountdown();
+            timerId = window.setInterval(renderCountdown, 1000);
+
+            window.addEventListener('beforeunload', function () {
+                window.clearInterval(timerId);
+            }, { once: true });
+        }
+    }
 
     if (!orderIdx) {
         console.log('[order-channel] skipped');

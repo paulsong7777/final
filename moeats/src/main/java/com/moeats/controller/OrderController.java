@@ -24,6 +24,7 @@ import com.moeats.services.GroupOrderService;
 import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.OrderRoomService;
 import com.moeats.services.PaymentService;
+import com.moeats.services.TransactionService;
 import com.moeats.services.sse.SSEService;
 import com.moeats.timer.OrderRoomTimer;
 
@@ -47,6 +48,9 @@ public class OrderController {
 
     @Autowired
     OrderRoomTimer orderRoomTimer;
+
+    @Autowired
+    TransactionService transactionService;
 
     @GetMapping("/orders/{order_idx}")
     public String orderDetail(
@@ -204,20 +208,38 @@ public class OrderController {
 
         int paymentShareIdx = paymentShare.getPaymentShareIdx();
 
-        if (paymentService.paySelf(paymentShareIdx) == 0) {
+        if ("REPRESENTATIVE".equals(payment.getPaymentMode())
+                && member.getMemberIdx() != groupOrder.getLeaderMemberIdx()) {
+            ra.addFlashAttribute("error", "잘못된 접근입니다");
+            return "redirect:/main";
+        }
+
+        if ("PAID".equals(payment.getPaymentStatus())) {
+            return String.format("redirect:/orders/%d", orderIdx);
+        }
+
+        if (!"PENDING".equals(paymentShare.getShareStatus())) {
+            return "INDIVIDUAL".equals(payment.getPaymentMode())
+                    ? String.format("redirect:/orders/%d/payment/wait", orderIdx)
+                    : String.format("redirect:/orders/%d", orderIdx);
+        }
+
+        if (!transactionService.completePayment(groupOrder, payment, paymentShare)) {
+            Payment currentPayment = paymentService.findByOrder(orderIdx);
+            PaymentShare currentShare = paymentService.findShareByIdx(paymentShareIdx);
+            if (currentPayment != null && "PAID".equals(currentPayment.getPaymentStatus())) {
+                return String.format("redirect:/orders/%d", orderIdx);
+            }
+            if (currentShare != null && !"PENDING".equals(currentShare.getShareStatus())) {
+                return "INDIVIDUAL".equals(payment.getPaymentMode())
+                        ? String.format("redirect:/orders/%d/payment/wait", orderIdx)
+                        : String.format("redirect:/orders/%d", orderIdx);
+            }
             ra.addFlashAttribute("error", "결제 중 오류가 발생했습니다 관리자에게 연락해주십시오");
             return String.format("redirect:/orders/%d/payment", orderIdx);
         }
 
         if ("REPRESENTATIVE".equals(payment.getPaymentMode())) {
-            if (member.getMemberIdx() != groupOrder.getLeaderMemberIdx()) {
-                ra.addFlashAttribute("error", "잘못된 접근입니다");
-                return "redirect:/main";
-            }
-
-            paymentShare = paymentService.findShareByIdx(paymentShareIdx);
-            paymentService.paidByRepresentative(payment.getPaymentIdx(), paymentShare.getPaidAt());
-
             orderRoomTimer.stop(orderIdx);
             sseService.payOrder(orderIdx, paymentShareIdx);
             sseService.payComplete(orderIdx, groupOrder.getStoreIdx());
@@ -254,6 +276,9 @@ public class OrderController {
         model.addAttribute("payment", payment);
         model.addAttribute("paymentShare", paymentShare);
         model.addAttribute("paymentShares", paymentShares);
+        model.addAttribute("memberNameMap", memberService.findByIdxs(
+                paymentShares.stream().map(PaymentShare::getMemberIdx).toList()).stream()
+                .collect(Collectors.toMap(Member::getMemberIdx, Member::getMemberNickname)));
         model.addAttribute("completedCount", completedCount);
         model.addAttribute("totalCount", paymentShares.size());
     }

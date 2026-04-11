@@ -16,6 +16,7 @@ import com.moeats.domain.OrderDelivery;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.Payment;
 import com.moeats.domain.PaymentShare;
+import com.moeats.domain.RoomParticipant;
 import com.moeats.services.sse.SSEService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -222,5 +223,40 @@ public int revertToSelect(OrderRoom orderRoom) {
 		result += orderRoomService.expire(groupOrder.getRoomIdx());
 		sseService.expireOrder(orderIdx);
 		return result;
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public boolean completePayment(GroupOrder groupOrder, Payment payment, PaymentShare paymentShare) {
+		if (groupOrder == null || payment == null || paymentShare == null) {
+			return false;
+		}
+
+		if (paymentService.paySelf(paymentShare.getPaymentShareIdx()) == 0) {
+			return false;
+		}
+
+		RoomParticipant roomParticipant = orderRoomService.findRoomMember(
+				groupOrder.getRoomIdx(),
+				paymentShare.getMemberIdx());
+		if (roomParticipant != null && "UNPAID".equals(roomParticipant.getPaymentStatus())) {
+			orderRoomService.pay(roomParticipant.getRoomParticipantIdx());
+		}
+
+		if ("REPRESENTATIVE".equals(payment.getPaymentMode())) {
+			PaymentShare paidShare = paymentService.findShareByIdx(paymentShare.getPaymentShareIdx());
+			paymentService.paidByRepresentative(payment.getPaymentIdx(), paidShare.getPaidAt());
+
+			orderRoomService.findByRoom(groupOrder.getRoomIdx()).stream()
+					.filter(participant -> "UNPAID".equals(participant.getPaymentStatus()))
+					.forEach(participant -> orderRoomService.pay(participant.getRoomParticipantIdx()));
+		}
+
+		if (paymentService.findPaymentPending(payment.getPaymentIdx()).isEmpty()) {
+			paymentService.pay(payment.getPaymentIdx());
+			groupOrderService.pay(groupOrder.getOrderIdx());
+			orderRoomService.confirm(groupOrder.getRoomIdx());
+		}
+
+		return true;
 	}
 }
