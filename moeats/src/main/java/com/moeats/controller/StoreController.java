@@ -20,6 +20,8 @@ import com.moeats.domain.GroupOrder;
 import com.moeats.domain.Member;
 import com.moeats.domain.Store;
 import com.moeats.dto.StoreSearchCond;
+import com.moeats.geo.GeoPoint;
+import com.moeats.geo.GeoService;
 import com.moeats.service.StoreService;
 import com.moeats.services.GroupOrderService;
 import com.moeats.services.GroupOrderService.GroupOrderRecord;
@@ -36,6 +38,8 @@ public class StoreController {
     private GroupOrderService groupOrderService;
     @Autowired
     private SSEService sseService;
+    @Autowired
+    private GeoService geoService;
     
     private final String COMPLETED = "COMPLETED";
  // tier1에서 delivery 구현이 안되는 상황이기 때문에 간소화. 영훈
@@ -230,21 +234,40 @@ public class StoreController {
     
     
 
-    // 가게 정보 수정
+ // 가게 정보 수정
     @PostMapping("/owners/store/edit")
     public String updateStore(
-    		RedirectAttributes ra,
-    		@ModelAttribute Store store,
-    		@RequestParam(value = "redirectUrl", defaultValue = "/owners/store") String redirectUrl, // ✨ 추가
-			@SessionAttribute("member") Member member) {
-    	Store check = storeService.myStore(member.getMemberIdx());
-    	if ( check==null || check.getStoreIdx()!=store.getStoreIdx() ) {
-    		ra.addFlashAttribute("error", "잘못된 접근입니다");
-    		return "redirect:/home";
-    	}
+            RedirectAttributes ra,
+            @ModelAttribute Store store,
+            @RequestParam(value = "redirectUrl", defaultValue = "/owners/store") String redirectUrl, // ✨ 추가
+            @SessionAttribute("member") Member member) {
+        
+        // 1. 기존 가게 정보 조회 및 권한 체크
+        Store check = storeService.myStore(member.getMemberIdx());
+        if ( check==null || check.getStoreIdx()!=store.getStoreIdx() ) {
+            ra.addFlashAttribute("error", "잘못된 접근입니다");
+            return "redirect:/home";
+        }
+        
+        // 💡 2. [핵심] 주소가 변경되었을 수 있으므로 GeoService를 통해 좌표 다시 계산
+        if (store.getStoreAddress1() != null && !store.getStoreAddress1().isBlank()) {
+            try {
+                GeoPoint point = geoService.getLatLng(store.getStoreAddress1());
+                store.setLatitude(point.getLat());
+                store.setLongitude(point.getLng());
+                log.info("수정된 주소 좌표 변환 성공: 위도 {}, 경도 {}", point.getLat(), point.getLng());
+            } catch (Exception e) {
+                log.error("수정된 주소 좌표 변환 실패: {}", store.getStoreAddress1(), e);
+                // 변환 실패 시, 안전하게 기존(check) 좌표를 그대로 유지하도록 세팅
+                store.setLatitude(check.getLatitude());
+                store.setLongitude(check.getLongitude());
+            }
+        }
+        
         store.setOwnerMemberIdx(member.getMemberIdx());
         storeService.updateStore(store);
-        return "redirect:" + redirectUrl; // ✨ 고정 URL 대신 파라미터 변수로 리다이렉트
+        
+        return "redirect:" + redirectUrl; 
     }
 
     // 가게 정보 수정 폼
@@ -269,7 +292,7 @@ public class StoreController {
     // 가게 등록
     @PostMapping("/owners/store")
     public String insertStore(
-            @ModelAttribute("store") Store store, // ✨ "store"라고 이름을 명시해줍니다.
+            @ModelAttribute("store") Store store, 
             @RequestParam(value="storeImgFile", required=false) MultipartFile storeImgFile,
             @SessionAttribute("member") Member member) {
         
@@ -279,7 +302,24 @@ public class StoreController {
         
         store.setOwnerMemberIdx(member.getMemberIdx());
         
-        // 만약 여기서 null이 출력된다면 1단계의 HTML name 속성이 틀린 것입니다.
+        // 💡 2. [핵심] DB 저장 전, GeoService를 호출하여 주소를 좌표로 변환!
+        if (store.getStoreAddress1() != null && !store.getStoreAddress1().isBlank()) {
+            try {
+                // 도로명 주소(storeAddress1)를 넘겨서 좌표를 받아옴
+                GeoPoint point = geoService.getLatLng(store.getStoreAddress1());
+                
+                // 변환된 위도/경도를 store 객체에 세팅 (HTML에서 넘어온 서울 좌표를 덮어씌움)
+                store.setLatitude(point.getLat());
+                store.setLongitude(point.getLng());
+                
+                log.info("좌표 변환 성공: 위도 {}, 경도 {}", point.getLat(), point.getLng());
+            } catch (Exception e) {
+                // 주소 변환 실패 시 로그 기록 (대구 등지에서 못 찾는 주소일 경우 대비)
+                log.error("주소 좌표 변환 실패: {}", store.getStoreAddress1(), e);
+            }
+        }
+        
+        // 올바른 좌표가 세팅된 store를 DB에 저장
         storeService.insertStore(store);
 
         return "redirect:/owners/store";
