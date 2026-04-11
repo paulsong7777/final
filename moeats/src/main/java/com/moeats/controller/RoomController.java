@@ -34,6 +34,10 @@ import com.moeats.services.TransactionService;
 import com.moeats.services.sse.SSEService;
 import com.moeats.timer.OrderRoomTimer;
 
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
 @Controller
 public class RoomController {
 
@@ -427,8 +431,17 @@ public class RoomController {
 		try {
 			res = transactionService.beginPayment(orderRoom);
 		} catch (Exception e) {
-			ra.addFlashAttribute("error", "오류가 발생하여 결제화면으로 넘어가지 못했습니다");
-			return String.format("redirect:/rooms/code/%s", roomCode);
+		    log.error(
+		        "checkout failed. roomCode={}, roomIdx={}, roomStatus={}, leaderMemberIdx={}, selectedDeliveryAddressIdx={}",
+		        roomCode,
+		        orderRoom.getRoomIdx(),
+		        orderRoom.getRoomStatus(),
+		        orderRoom.getLeaderMemberIdx(),
+		        orderRoom.getSelectedDeliveryAddressIdx(),
+		        e
+		    );
+		    ra.addFlashAttribute("error", "오류가 발생하여 결제화면으로 넘어가지 못했습니다");
+		    return String.format("redirect:/rooms/code/%s", roomCode);
 		}
 		GroupOrder groupOrder = (GroupOrder) res.get("groupOrder");
 		orderRoomTimer.start(groupOrder.getOrderIdx(), orderRoom.getExpiresAt());
