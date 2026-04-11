@@ -1,32 +1,30 @@
 $(function(){
 
 	function toggleSubmitBtn() {
-			// 💡 [추가된 핵심 코드] 현재 페이지에 signupForm이 없으면(즉, 정보 수정 페이지라면) 검사 로직을 무시하고 종료!
-			if ($("#signupForm").length === 0) {
-				return; 
-			}
-		    const terms = $("#agreeTerms").is(":checked");
-		    const privacy = $("#agreePrivacy").is(":checked");
-			
-			const email = $("#email_id").val().trim();
-			const domain = $("#email_domain").val().trim();
-			const pw = $("#memberPassword").val().trim();
-			const pw2 = $("#memberPassword1").val().trim();
-			const nick = $("#memberNickname").val().trim();
-			const p1 = $("#phone1").val().trim();
-			const p2 = $("#phone2").val().trim();
-			const p3 = $("#phone3").val().trim();
+	    if ($("#signupForm").length === 0) return;
 
-			const allFilled =
-			    email && domain && pw && pw2 && nick && p1 && p2 && p3;
+	    const terms = $("#agreeTerms").is(":checked");
+	    const privacy = $("#agreePrivacy").is(":checked");
 
-			// 💡 핵심 변경점: disabled 속성 대신 클래스를 조작합니다.
-			if (terms && privacy && allFilled) {
-			    $("#submitBtn").removeClass("fake-disabled"); // 파란색으로 활성화!
-			} else {
-			    $("#submitBtn").addClass("fake-disabled"); // 회색 + 마우스 X 표시
-			}
-		}
+	    const email = $("#email_id").val().trim();
+	    const domain = $("#email_domain").val().trim();
+	    const pw = $("#memberPassword").val().trim();
+	    const pw2 = $("#memberPassword1").val().trim();
+	    const nick = $("#memberNickname").val().trim();
+	    const p1 = $("#phone1").val().trim();
+	    const p2 = $("#phone2").val().trim();
+	    const p3 = $("#phone3").val().trim();
+
+	    const isIdCheck = $("#isIdCheck").val() === "true";
+
+	    const allFilled = email && domain && pw && pw2 && nick && p1 && p2 && p3;
+
+	    if (terms && privacy && allFilled && isIdCheck) {
+	        $("#submitBtn").removeClass("fake-disabled");
+	    } else {
+	        $("#submitBtn").addClass("fake-disabled");
+	    }
+	}
 
 	// 전체 동의
 	$("#agreeAll").on("change", function(){
@@ -146,6 +144,7 @@ $(function(){
 
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
 	const nicknameRegex = /^[가-힣a-zA-Z0-9]{1,10}$/;
+	const emailIdRegex = /^[a-zA-Z0-9]{5,20}$/;
 	
     // 회원정보 수정
     $("#updateForm").on("submit", function(){
@@ -204,15 +203,10 @@ $(function(){
             return false;
         }
 
-        if(emailId.length < 5){
-            alert("이메일 아이디는 5자 이상 입력해주세요");
-            return false;
-        }
-
-        if(!/^[a-zA-Z0-9]+$/.test(emailId)){
-            alert("이메일 아이디는 영문과 숫자만 가능합니다.");
-            return false;
-        }
+		if(!emailIdRegex.test(emailId)){
+		    alert("이메일 아이디는 영문/숫자 조합 5~20자로 입력해주세요.");
+		    return false;
+		}
 
         if(emailDomain === ""){
             alert("이메일 도메인을 선택해주세요");
@@ -286,14 +280,18 @@ $(function(){
 
 		// 1. 이메일 아이디: 영문 대소문자, 숫자만 허용
 		$("#email_id").on("input", function() {
-			let currentVal = $(this).val();
-			
-			// 영문, 숫자가 아닌 문자가 하나라도 입력되었는지 검사
-			if (/[^a-zA-Z0-9]/.test(currentVal)) {
-				alert("이메일 아이디는 영문과 숫자만 입력 가능합니다.");
-				// 잘못 입력된 문자(한글 등)만 지우고, 원래 쓰던 영문/숫자는 그대로 복구
-				$(this).val(currentVal.replace(/[^a-zA-Z0-9]/g, ''));
-			}
+		    let val = $(this).val();
+
+		    // 영문/숫자만 허용
+		    val = val.replace(/[^a-zA-Z0-9]/g, '');
+
+		    // 20자 제한
+		    if(val.length > 20){
+		        alert("이메일 아이디는 최대 20자까지 가능합니다.");
+		        val = val.substring(0, 20);
+		    }
+
+		    $(this).val(val);
 		});
 
 		// 2. 이메일 도메인: 영문 대소문자, 마침표(.)만 허용

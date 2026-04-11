@@ -154,7 +154,7 @@
                 $("#passwordResultModal").modal("show");
             }
 
-            // 3. 기존 비밀번호 확인 로직
+        	 // 3. 기존 비밀번호 확인 로직 (AJAX 연동)
             $("#btnPassCheck").on("click", function() {
                 const password = $("#memberPassword").val();
 
@@ -164,24 +164,34 @@
                     return;
                 }
 
-                /* [임시 테스트 모드] 서버 연동 시에는 이 부분을 ajax로 변경하세요 */
-                const fakeResponse = { isValid: true };
-
-                if (fakeResponse.isValid) {
-                    showModal('<span style="color: #28a745;">✔️ 인증되었습니다. 정보를 수정하실 수 있습니다.</span>');
-                    
-                    $("#memberPassword").prop("readonly", true).css("background-color", "var(--mo-bg)");
-                    $("#btnPassCheck").prop("disabled", true)
-                                      .text("확인완료")
-                                      .removeClass("mo-btn-outline")
-                                      .addClass("mo-btn-plain")
-                                      .css("color", "#28a745");
-                    
-                    $("#submitBtn").removeClass("fake-disabled");
-                } else {
-                    showModal('<span style="color: #dc3545;">❌ 비밀번호가 틀렸습니다. 다시 확인해주세요.</span>');
-                    $("#memberPassword").val("").focus();
-                }
+                // 서버로 비밀번호 확인 요청
+                $.ajax({
+                    url: "/members/password-check", // 비밀번호 확인용 전용 경로 (아래 2번 참고)
+                    type: "POST",
+                    data: { memberPassword: password },
+                    success: function(res) {
+                        // res가 true(일치) 또는 false(불일치)로 온다고 가정
+                        if (res === true) {
+                            showModal('<span style="color: #28a745;">✔️ 인증되었습니다. 정보를 수정하실 수 있습니다.</span>');
+                            
+                            $("#memberPassword").prop("readonly", true).css("background-color", "var(--mo-bg)");
+                            $("#btnPassCheck").prop("disabled", true)
+                                              .text("확인완료")
+                                              .removeClass("mo-btn-outline")
+                                              .addClass("mo-btn-plain")
+                                              .css("color", "#28a745");
+                            
+                            $("#submitBtn").removeClass("fake-disabled"); // 버튼 활성화
+                        } else {
+                            showModal('<span style="color: #dc3545;">❌ 비밀번호가 틀렸습니다. 다시 확인해주세요.</span>');
+                            $("#memberPassword").val("").focus();
+                            $("#submitBtn").addClass("fake-disabled"); // 버튼 다시 비활성화
+                        }
+                    },
+                    error: function() {
+                        alert("서버 통신 중 오류가 발생했습니다.");
+                    }
+                });
             });
 
             // 4. 폼 제출 시 유효성 검사

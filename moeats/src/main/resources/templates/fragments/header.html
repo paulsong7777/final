@@ -184,19 +184,37 @@
 			        </a>
 			    </div>
 
-                <div class="mo-mobile-menu__link mo-mobile-menu__link--static" style="border-bottom: 1px solid #eee; padding-bottom: 1.25rem; margin-bottom: 1rem;">
-                    <span>점주 계정</span>
-                    <span class="mo-mobile-menu__sub">주문 처리와 매장 관리 전용 메뉴를 사용합니다.</span>
-                </div>
+				<div class="mo-mobile-menu__link mo-mobile-menu__link--static" style="border-bottom: 1px solid #eee; padding-bottom: 1.25rem; margin-bottom: 1rem;">
+				    <div style="font-size: 16px; font-weight: 800; color: var(--mo-navy-strong); margin-bottom: 6px;">
+				        <span th:text="${session.member.memberNickname}">닉네임</span>님의 
+				        <span th:if="${store != null}" th:text="${store.storeName}" style="color: var(--mo-primary);">가게명</span>
+				        <span th:unless="${store != null}" style="color: #999; font-weight: 500; font-size: 14px;">매장(미등록)</span>
+				    </div>
+				    
+				    <div class="mo-mobile-menu__sub" style="font-size: 12px; color: var(--mo-text-soft); line-height: 1.4;">
+				        <th:block th:if="${store != null}">
+				            <span th:if="${store.storeStatus == 'ACTIVE' or store.storeStatus == 'OPEN'}">
+				                🔥 오늘도 주문 대박 나시길 응원합니다!
+				            </span>
+				            <span th:if="${store.storeStatus == 'INACTIVE' or store.storeStatus == 'CLOSED'}">
+				                💤 현재 영업 준비 중입니다. 시작할 준비가 되셨나요?
+				            </span>
+				            <span th:if="${store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK'}">
+				                ☕ 잠시 쉬어가는 브레이크 타임입니다.
+				            </span>
+				        </th:block>
+				        
+				        <th:block th:unless="${store != null}">
+				            ✨ 사장님의 소중한 매장을 등록하고 모이츠와 함께하세요!
+				        </th:block>
+				    </div>
+				</div>
 
                 <div class="mo-mobile-menu__group mb-4">
                     <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">DASHBOARD & ORDERS</div>
                     
                     <a th:href="@{/owners/dashboard}" class="mo-mobile-menu__link" th:classappend="${menu == 'dash'} ? 'is-active'">
                         <span><i class="bi bi-speedometer2 me-2"></i>대시보드(신규)</span>
-                    </a>
-                    <a th:href="@{/owners/dashboard-map}" class="mo-mobile-menu__link" th:classappend="${menu == 'dash-map'} ? 'is-active'">
-                        <span><i class="bi bi-map me-2"></i>대시보드(지도)</span>
                     </a>
                     <a th:href="@{/owners/order/detail}" class="mo-mobile-menu__link" th:classappend="${menu == 'order-detail'} ? 'is-active'">
                         <span><i class="bi bi-search me-2"></i>주문 상세 조회</span>
@@ -209,38 +227,28 @@
                 <div class="mo-mobile-menu__group mb-4">
                     <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">STORE MANAGEMENT</div>
                     
-                    <a th:href="@{/owners/store/new}" class="mo-mobile-menu__link" th:classappend="${menu == 'store-new'} ? 'is-active'">
-                        <span><i class="bi bi-shop me-2"></i>신규 매장 등록</span>
-                    </a>
-                    <a th:href="@{/owners/store/edit}" class="mo-mobile-menu__link" th:classappend="${menu == 'store'} ? 'is-active'">
-                        <span><i class="bi bi-pencil-square me-2"></i>매장 정보 수정</span>
-                    </a>
-                </div>
+					<a th:if="${store == null}" th:href="@{/owners/store/new}" class="mo-mobile-menu__link" th:classappend="${menu == 'store-new'} ? 'is-active'">
+				        <span><i class="bi bi-shop me-2"></i>신규 매장 등록</span>
+				    </a>
+	                <a th:if="${store != null}" th:href="@{/owners/store}" class="mo-mobile-menu__link" th:classappend="${menu == 'store'} ? 'is-active'">
+	       				<span><i class="bi bi-shop-window me-2"></i>내 매장 관리</span> </a>
+	                </div>
 
                 <div class="mo-mobile-menu__group mb-4">
                     <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">MENUS & REVIEWS</div>
                     
-                    <a th:href="@{/owners/all-image}" class="mo-mobile-menu__link" th:classappend="${menu == 'all-img'} ? 'is-active'">
-                        <span><i class="bi bi-images me-2"></i>통합 이미지 보관함</span>
-                    </a>
-                    <a th:href="@{/owners/menu/new}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-reg'} ? 'is-active'">
-                        <span><i class="bi bi-plus-square me-2"></i>신규 메뉴 등록</span>
-                    </a>
                     <a th:href="@{/owners/menu}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-edit'} ? 'is-active'">
-                        <span><i class="bi bi-pencil-fill me-2"></i>메뉴 수정</span>
-                    </a>
-                    <a th:href="@{/owners/menu}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-mgmt'} ? 'is-active'">
-                        <span><i class="bi bi-toggle-on me-2"></i>메뉴 품절 관리</span>
+                        <span><i class="bi bi-pencil-fill me-2"></i>매장 메뉴 관리</span>
                     </a>
                     <a th:href="@{/owners/category}" class="mo-mobile-menu__link" th:classappend="${menu == 'category'} ? 'is-active'">
-                        <span><i class="bi bi-tags me-2"></i>카테고리 설정</span>
-                    </a>
-                    <a th:href="@{/owners/category/write}" class="mo-mobile-menu__link" th:classappend="${menu == 'category-reg'} ? 'is-active'">
-                        <span><i class="bi bi-plus-circle-dotted me-2"></i>신규 카테고리 등록</span>
+                        <span><i class="bi bi-tags me-2"></i>카테고리 관리</span>
                     </a>
                     <a th:href="@{/owners/review/management}" class="mo-mobile-menu__link" th:classappend="${menu == 'review'} ? 'is-active'">
                         <span><i class="bi bi-chat-right-text me-2"></i>리뷰 답변 관리</span>
                     </a>
+					<!-- <a th:href="@{/owners/all-image}" class="mo-mobile-menu__link" th:classappend="${menu == 'all-img'} ? 'is-active'">
+                        <span><i class="bi bi-images me-2"></i>통합 이미지 보관함</span>
+                    </a>  -->
                 </div>
 
                 <div class="mo-mobile-menu__group mb-2">

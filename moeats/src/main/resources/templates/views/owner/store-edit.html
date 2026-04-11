@@ -5,25 +5,19 @@
       layout:decorate="~{layout/default}">
 <head>
     <title>매장 정보 수정 - Mo-Eats</title>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <style>
-        /* HTML로 대체할 수 없는 상태(Hover, Checked) 제어용 최소 CSS */
         .image-upload-box { transition: all 0.2s ease; border: 2px dashed var(--mo-line-strong); }
         .image-upload-box:hover, .image-upload-box.dragover { border-color: var(--mo-primary); background-color: rgba(255, 128, 0, 0.04) !important; }
         
         .upload-overlay { opacity: 0; transition: 0.3s ease; background: rgba(37, 45, 89, 0.5); }
         .image-upload-box:hover .upload-overlay { opacity: 1; }
-        
-        .holiday-chip-label { transition: all 0.2s ease; border: 1px solid var(--mo-line-strong); cursor: pointer; }
-        .holiday-chip-input:checked + .holiday-chip-label { background: var(--mo-primary) !important; border-color: var(--mo-primary); color: #fff !important; box-shadow: 0 4px 12px rgba(255, 128, 0, 0.24); }
-        .holiday-chip-input:disabled + .holiday-chip-label { opacity: 0.5; cursor: not-allowed; background: #f1f1f1 !important; }
-        .all-year-input:checked + .holiday-chip-label { background: var(--mo-navy-strong) !important; border-color: var(--mo-navy-strong); color: #fff !important; box-shadow: 0 4px 12px rgba(37, 45, 89, 0.24); }
     </style>
 </head>
 
 <body>
 <section layout:fragment="pageContent">
     <div class="mo-page-container container">
-        
         <div class="row justify-content-center">
             <div class="col-12 col-lg-10 col-xl-8">
                 
@@ -37,98 +31,78 @@
                     
                     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
                         <h3 class="mo-store-card__title m-0 fs-5">상세 정보 입력</h3>
-                        <a th:href="@{/owners/dashboard-map}" class="text-decoration-none fw-bold text-secondary" style="font-size: 13px;">
-                            <i class="bi bi-arrow-left me-1"></i> 이전으로
-                        </a>
+						<a th:href="${redirectUrl}" class="text-decoration-none fw-bold text-secondary" style="font-size: 13px;">
+						    <i class="bi bi-arrow-left me-1"></i> 이전으로
+						</a>
                     </div>
 
-                    <form id="storeUpdateForm" th:action="@{/owners/store/update}" method="post" enctype="multipart/form-data">
+                    <form id="storeUpdateForm" th:action="@{/owners/store/edit}" method="post" enctype="multipart/form-data">
                         
-                        <input type="hidden" name="storeIdx" th:value="${storeVo != null ? storeVo['storeIdx'] : 0}">
+                        <input type="hidden" name="storeIdx" th:value="${store?.storeIdx ?: 0}">
+                        <input type="hidden" name="longitude" id="longitude" th:value="${store?.longitude ?: 126.9780}">
+                        <input type="hidden" name="latitude" id="latitude" th:value="${store?.latitude ?: 37.5665}">
+                        <input type="hidden" name="storeStatus" th:value="${store?.storeStatus ?: 'ACTIVE'}">
+                        
+                        <input type="hidden" name="redirectUrl" th:value="${redirectUrl}">
 
-                        <div class="mb-5">
-                            <label class="mo-form-label">매장 대표 사진 <span class="text-secondary fw-normal">(드래그하여 교체 가능)</span></label>
-                            
-                            <div id="dropZone" class="image-upload-box position-relative d-flex align-items-center justify-content-center overflow-hidden rounded-4 bg-light" 
-                                 style="height: 260px; cursor: pointer;" 
-                                 onclick="document.getElementById('storeImg').click()">
-                                
-                                <input type="file" name="storeImgFile" id="storeImg" accept="image/*" class="d-none" onchange="previewImage(this)">
-                                
-                                <div id="uploadContent" class="text-center" th:classappend="${storeVo != null and storeVo['storeImg'] != null} ? 'd-none' : ''">
-                                    <div class="mb-2" style="font-size: 48px; opacity: 0.8;">🏪</div>
-                                    <h4 class="fw-bold fs-6 mb-1" style="color: var(--mo-navy-strong);">사진을 드래그하거나 클릭하여 교체하세요</h4>
-                                    <p class="text-secondary mb-0" style="font-size: 13px;">매장을 가장 잘 나타내는 사진을 올려주세요.</p>
-                                </div>
-                                
-                                <div id="imagePreview" class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center z-1" 
-                                     style="background-color: var(--mo-bg);"
-                                     th:classappend="${storeVo == null or storeVo['storeImg'] == null} ? 'd-none' : ''">
-                                    <img id="previewImg" th:src="${storeVo != null ? storeVo['storeImg'] : ''}" alt="미리보기" class="w-100 h-100 object-fit-cover">
-                                    <div class="upload-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-6">
-                                        <span><i class="bi bi-arrow-repeat me-2"></i>사진 교체하기</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="mo-form-label">매장명</label>
-                                <input type="text" name="storeName" th:value="${storeVo != null ? storeVo['storeName'] : ''}" 
-                                       class="form-control mo-form-control fw-bold" required>
+                                <input type="text" name="storeName" th:value="${store?.storeName}" class="form-control mo-form-control fw-bold" required>
                             </div>
-
+                            
                             <div class="col-md-6">
-                                <label class="mo-form-label">영업 상태</label>
-                                <select name="storeStatus" class="form-select mo-form-control fw-bold">
-                                    <option value="OPEN" th:selected="${storeVo != null and storeVo['storeStatus'] == 'OPEN'}">영업 중 (주문 가능)</option>
-                                    <option value="CLOSED" th:selected="${storeVo != null and storeVo['storeStatus'] == 'CLOSED'}">영업 종료 (준비 중)</option>
-                                    <option value="BREAK" th:selected="${storeVo != null and storeVo['storeStatus'] == 'BREAK'}">브레이크 타임</option>
+                                <label class="mo-form-label">가게 카테고리</label>
+                                <select name="storeCategory" class="form-select mo-form-control fw-bold" required>
+                                    <option value="" disabled>선택하세요</option>
+                                    <option value="KOREAN" th:selected="${store?.storeCategory == 'KOREAN'}">한식</option>
+                                    <option value="CHINESE" th:selected="${store?.storeCategory == 'CHINESE'}">중식</option>
+                                    <option value="CHICKEN" th:selected="${store?.storeCategory == 'CHICKEN'}">치킨</option>
+                                    <option value="PIZZA" th:selected="${store?.storeCategory == 'PIZZA'}">피자/양식</option>
+                                    <option value="CAFE" th:selected="${store?.storeCategory == 'CAFE'}">카페/디저트</option>
                                 </select>
                             </div>
 
-                            <div class="col-12 mt-5">
-                                <label class="mo-form-label mb-3">휴무일 설정 (중복 선택 가능)</label>
-                                
-                                <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-                                    <input type="checkbox" name="holidays" id="day-none" value="연중무휴" class="d-none holiday-chip-input all-year-input" 
-                                           th:checked="${storeVo != null and storeVo['holidays'] == '연중무휴'}" onchange="toggleAllYear(this)">
-                                    <label for="day-none" class="holiday-chip-label d-inline-flex align-items-center justify-content-center px-3 bg-white text-secondary fw-bold rounded-pill" style="height: 42px;">
-                                        <i class="bi bi-calendar-check me-1"></i> 연중무휴
-                                    </label>
-                                    
-                                    <div style="width: 1px; height: 20px; background: var(--mo-line-strong); margin: 0 8px;"></div>
-                                    
-                                    <th:block th:each="day : ${#strings.arraySplit('월,화,수,목,금,토,일', ',')}">
-                                        <input type="checkbox" name="holidays" th:id="${'day-' + day}" th:value="${day}" 
-                                               class="d-none holiday-chip-input day-checkbox"
-                                               th:checked="${storeVo != null and storeVo['holidays'] != null and storeVo['holidays'].contains(day)}">
-                                        <label th:for="${'day-' + day}" class="holiday-chip-label d-inline-flex align-items-center justify-content-center px-3 bg-white text-secondary fw-bold rounded-pill" style="height: 42px;" th:text="${day}"></label>
-                                    </th:block>
+                            <div class="col-12 mt-4">
+                                <label class="mo-form-label">매장 주소</label>
+                                <div class="input-group mb-2">
+                                    <input type="text" name="storeAddress1" id="storeAddress1" th:value="${store?.storeAddress1}" class="form-control mo-form-control" placeholder="주소 검색을 이용해 주세요" readonly required>
+                                    <button class="mo-btn mo-btn-outline px-3" type="button" onclick="execDaumPostcode()">주소 검색</button>
                                 </div>
-                                
-                                <input type="text" name="customHoliday" id="customHoliday" 
-                                       th:value="${storeVo != null ? storeVo['customHoliday'] : ''}"
-                                       class="form-control mo-form-control" placeholder="기타 휴무 직접 입력 (예: 매월 셋째주 일요일 등)">
+                                <input type="text" name="storeAddress2" id="storeAddress2" th:value="${store?.storeAddress2}" class="form-control mo-form-control" placeholder="상세 주소를 입력하세요 (건물명, 동/호수 등)" required>
                             </div>
 
                             <div class="col-md-6 mt-4">
                                 <label class="mo-form-label">연락처</label>
-                                <input type="text" name="storePhone" th:value="${storeVo != null ? storeVo['storePhone'] : ''}" 
-                                       class="form-control mo-form-control" placeholder="053-000-0000" required>
+                                <input type="text" name="storePhone" th:value="${store?.storePhone}" class="form-control mo-form-control" placeholder="053-000-0000" required>
                             </div>
 
                             <div class="col-md-6 mt-4">
-                                <label class="mo-form-label">매장 주소</label>
-                                <input type="text" name="storeAddress" th:value="${storeVo != null ? storeVo['storeAddress'] : ''}" 
-                                       class="form-control mo-form-control" required>
+                                <label class="mo-form-label">최소 주문 금액</label>
+                                <input type="number" name="minimumOrderAmount" th:value="${store?.minimumOrderAmount ?: 0}" class="form-control mo-form-control" min="0">
+                            </div>
+
+                            <div class="col-md-6 mt-4">
+                                <label class="mo-form-label">배달 가능 여부</label>
+                                <select name="supportsDelivery" class="form-select mo-form-control">
+                                    <option value="true" th:selected="${store?.supportsDelivery == true}">가능</option>
+                                    <option value="false" th:selected="${store?.supportsDelivery == false}">불가능</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mt-4">
+                                <label class="mo-form-label">현장 식사 가능 여부</label>
+                                <select name="supportsOnsite" class="form-select mo-form-control">
+                                    <option value="true" th:selected="${store?.supportsOnsite == true}">가능</option>
+                                    <option value="false" th:selected="${store?.supportsOnsite == false}">불가능</option>
+                                </select>
                             </div>
 
                             <div class="col-12 mt-4">
                                 <label class="mo-form-label">매장 소개</label>
-                                <textarea name="storeDescription" rows="5" class="form-control mo-form-control pt-3" style="resize: none;" 
-                                          th:text="${storeVo != null ? storeVo['storeDescription'] : ''}"></textarea>
+                                <textarea name="storeDescription" rows="5" class="form-control mo-form-control pt-3" style="resize: none;" placeholder="사장님의 매장을 소개해 주세요." th:text="${store?.storeDescription}"></textarea>
                             </div>
                         </div>
 
@@ -139,7 +113,6 @@
                         </div>
                     </form>
                 </div>
-
             </div>
         </div>
     </div>
@@ -148,23 +121,18 @@
 <th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // 연중무휴 선택 시 나머지 체크박스 및 직접입력 비활성화
-        function toggleAllYear(checkbox) {
-            const dayCheckboxes = document.querySelectorAll('.day-checkbox');
-            const customInput = document.getElementById('customHoliday');
-            if (checkbox.checked) {
-                dayCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
-                customInput.value = "";
-                customInput.disabled = true;
-                customInput.placeholder = "연중무휴 시 입력 불가";
-            } else {
-                dayCheckboxes.forEach(cb => { cb.disabled = false; });
-                customInput.disabled = false;
-                customInput.placeholder = "기타 휴무 직접 입력 (예: 매월 셋째주 일요일 등)";
-            }
+        // 1. 카카오 주소 API 함수
+        function execDaumPostcode() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    var addr = data.roadAddress; 
+                    document.getElementById("storeAddress1").value = addr;
+                    document.getElementById("storeAddress2").focus();
+                }
+            }).open();
         }
 
-        // 이미지 드래그 앤 드롭 및 미리보기 로직
+        // 2. 이미지 미리보기 및 드래그 앤 드롭
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('storeImg');
 
@@ -196,14 +164,53 @@
             }
         });
 
-        // 페이지 로드 시 '연중무휴' 상태 체크하여 UI 초기화
-        window.onload = function() {
-            const allYearCb = document.getElementById('day-none');
-            if(allYearCb && allYearCb.checked) toggleAllYear(allYearCb);
-        };
+        // 3. 유효성 검사 (연락처, 매장명)
+        document.querySelector('input[name="storePhone"]').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9-]/g, '');
+            const hyphenCount = (this.value.match(/-/g) || []).length;
+            if (hyphenCount > 2) {
+                alert("전화번호 형식이 올바르지 않습니다.\n예: 000-0000-0000");
+                const lastIndex = this.value.lastIndexOf('-');
+                this.value = this.value.substring(0, lastIndex) + this.value.substring(lastIndex + 1);
+            }
+            if (this.value.length > 15) {
+                alert("전화번호 형식이 올바르지 않습니다.\n예: 000-0000-0000");
+                this.value = this.value.substring(0, 15);
+            }
+        });
 
-        // 폼 전송 전 확인 창
-        document.getElementById('storeUpdateForm').onsubmit = function() {
+        document.querySelector('input[name="storeName"]').addEventListener('blur', function(e) {
+            const nameRegex = /^[a-zA-Z0-9가-힣\s]*$/;
+            if (this.value.trim() !== "" && !nameRegex.test(this.value)) {
+                alert("매장명은 영어, 숫자, 완성된 한글만 입력 가능합니다.");
+                this.value = this.value.replace(/[^a-zA-Z0-9가-힣\s]/g, '');
+            }
+        });
+
+        // 4. 폼 제출 시 최종 확인
+        document.getElementById('storeUpdateForm').onsubmit = function(e) {
+            const storeName = this.storeName.value;
+            const storePhone = this.storePhone.value;
+            const nameFinalRegex = /^[a-zA-Z0-9가-힣\s]+$/;
+
+            if (!nameFinalRegex.test(storeName)) {
+                alert("매장명을 올바른 형식(영어, 숫자, 완성된 한글)으로 입력해 주세요.");
+                this.storeName.focus();
+                return false;
+            }
+
+            const finalHyphenCount = (storePhone.match(/-/g) || []).length;
+            if (finalHyphenCount > 2) {
+                alert("전화번호 형식이 올바르지 않습니다.\n예: 000-0000-0000");
+                this.storePhone.focus();
+                return false;
+            }
+
+            if (!this.storeAddress1.value) {
+                alert("주소 검색을 통해 매장 주소를 입력해 주세요.");
+                return false;
+            }
+
             return confirm("입력하신 정보로 매장 정보를 수정하시겠습니까?");
         };
         /*]]>*/
