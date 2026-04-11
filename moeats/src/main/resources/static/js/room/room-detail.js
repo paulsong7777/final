@@ -1,19 +1,16 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const roomCodeInput = document.getElementById('roomCode');
-    const roomStatusInput = document.getElementById('roomStatus');
     const copyButton = document.querySelector('.js-copy-room-code');
+    const root = document.getElementById('roomDetailRoot');
 
-	const root = document.getElementById('roomDetailRoot');
-	const roomCode = root ? root.dataset.roomCode || '' : '';
-	const roomStatus = root ? root.dataset.roomStatus || '' : '';
+    const roomCode = root ? root.dataset.roomCode || '' : '';
+    const roomStatus = root ? root.dataset.roomStatus || '' : '';
+
     console.log('[room-detail] loaded', { roomCode, roomStatus });
 
     if (copyButton) {
         copyButton.addEventListener('click', async function () {
             const copiedRoomCode = this.dataset.roomCode || '';
-            if (!copiedRoomCode) {
-                return;
-            }
+            if (!copiedRoomCode) return;
 
             try {
                 await navigator.clipboard.writeText(copiedRoomCode);
@@ -21,6 +18,48 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
                 window.prompt('방 코드를 직접 복사해주세요.', copiedRoomCode);
             }
+        });
+    }
+
+    let eventSource = null;
+
+    function closeRoomEventSource() {
+        if (eventSource) {
+            try {
+                eventSource.close();
+            } catch (e) {
+                console.warn('[room-detail] close ignored', e);
+            }
+            eventSource = null;
+        }
+    }
+
+    function bindConfirm(selector, messageBuilder) {
+        document.querySelectorAll(selector).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (form.dataset.submitting === 'true') {
+                    return;
+                }
+
+                const message = typeof messageBuilder === 'function'
+                    ? messageBuilder(form)
+                    : '계속하시겠습니까?';
+
+                if (!window.confirm(message)) {
+                    event.preventDefault();
+                    return;
+                }
+
+                event.preventDefault();
+                form.dataset.submitting = 'true';
+
+                closeRoomEventSource();
+
+                // SSE 연결 정리 시간을 아주 짧게 준 뒤 submit
+                window.setTimeout(function () {
+                    form.submit();
+                }, 60);
+            });
         });
     }
 
@@ -44,8 +83,6 @@ document.addEventListener('DOMContentLoaded', function () {
     bindConfirm('.js-confirm-cancel', function () {
         return '주문방을 종료하시겠습니까? 종료 후에는 다시 되돌릴 수 없습니다.';
     });
-
-    let eventSource = null;
 
     if (roomCode && ['OPEN', 'SELECTING', 'PAYMENT_PENDING'].includes(roomStatus)) {
         const subscribeUrl = '/rooms/code/' + roomCode + '/subscribe';
@@ -72,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 const data = JSON.parse(event.data);
                 if (data && data.orderIdx) {
+                    closeRoomEventSource();
                     window.location.href = '/orders/' + data.orderIdx + '/payment';
                     return;
                 }
@@ -84,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         eventSource.addEventListener('cancel', function (event) {
             console.log('[room-detail] cancel', event.data);
+            closeRoomEventSource();
             alert('주문방이 종료되었습니다.');
             window.location.href = '/main';
         });
@@ -93,25 +132,9 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         window.addEventListener('beforeunload', function () {
-            if (eventSource) {
-                eventSource.close();
-            }
+            closeRoomEventSource();
         });
     } else {
         console.log('[room-detail] SSE skipped');
     }
 });
-
-function bindConfirm(selector, messageBuilder) {
-    document.querySelectorAll(selector).forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-            const message = typeof messageBuilder === 'function'
-                ? messageBuilder(form)
-                : '계속하시겠습니까?';
-
-            if (!window.confirm(message)) {
-                event.preventDefault();
-            }
-        });
-    });
-}
