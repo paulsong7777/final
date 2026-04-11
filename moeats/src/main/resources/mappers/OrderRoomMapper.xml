@@ -47,21 +47,23 @@
 		SELECT * FROM order_room WHERE created_at &lt; CURRENT_TIMESTAMP - INTERVAL 1 DAY
 	</select>
 	<insert id="insert" parameterType="OrderRoom">
-		INSERT INTO order_room(
-			leader_member_idx,
-			store_idx,
-			room_code,
-			order_mode,
-			payment_mode,
-			room_status
-		) VALUES (
-			#{leaderMemberIdx},
-			#{storeIdx},
-			#{roomCode},
-			#{orderMode},
-			#{paymentMode},
-			'OPEN'
-		)
+	    INSERT INTO order_room(
+	        leader_member_idx,
+	        store_idx,
+	        selected_delivery_address_idx,
+	        room_code,
+	        order_mode,
+	        payment_mode,
+	        room_status
+	    ) VALUES (
+	        #{leaderMemberIdx},
+	        #{storeIdx},
+	        #{selectedDeliveryAddressIdx},
+	        #{roomCode},
+	        #{orderMode},
+	        #{paymentMode},
+	        'OPEN'
+	    )
 	</insert>
 	<update id="menuSelect" parameterType="OrderRoom">
 		UPDATE order_room SET

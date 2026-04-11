@@ -11,25 +11,28 @@
 	<select id="findByOrder" resultType="Payment">
 		SELECT * FROM payment WHERE order_idx = #{orderIdx}
 	</select>
-	<insert id="insert" parameterType="Payment">
-		<selectKey keyProperty="paymentExpiresAt" order="BEFORE">
-			SELECT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE FROM DUAL
-		</selectKey>
-		INSERT INTO payment(
-			order_idx,
-			payment_mode,
-			payment_request_amount,
-			payment_paid_amount,
-			payment_status,
-			payment_expires_at
-		) VALUES (
-			#{orderIdx},
-			#{paymentMode},
-			#{paymentRequestAmount},
-			0,
-			'READY',
-			#{paymentExpiresAt}
-		)
+	<insert id="insert"
+	        parameterType="Payment"
+	        useGeneratedKeys="true"
+	        keyProperty="paymentIdx">
+	    <selectKey keyProperty="paymentExpiresAt" order="BEFORE">
+	        SELECT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE FROM DUAL
+	    </selectKey>
+	    INSERT INTO payment(
+	        order_idx,
+	        payment_mode,
+	        payment_request_amount,
+	        payment_paid_amount,
+	        payment_status,
+	        payment_expires_at
+	    ) VALUES (
+	        #{orderIdx},
+	        #{paymentMode},
+	        #{paymentRequestAmount},
+	        0,
+	        'READY',
+	        #{paymentExpiresAt}
+	    )
 	</insert>
 	<update id="payAmount">
 		<selectKey keyColumn="paymentPaidAmount" order="BEFORE">
