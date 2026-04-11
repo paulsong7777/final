@@ -176,7 +176,7 @@ public class RoomController {
 				ra.addFlashAttribute("error", "더이상 방에 참여할 수 없습니다");
 				return "redirect:/rooms/join";
 			}
-			sseService.participantUpdate(orderRoom.getRoomIdx());
+			safeRoomSse("participantUpdate", () -> sseService.participantUpdate(orderRoom.getRoomIdx()));
 		}
 
 		List<GroupCartItem> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx());
@@ -445,7 +445,18 @@ public class RoomController {
 		}
 		GroupOrder groupOrder = (GroupOrder) res.get("groupOrder");
 		orderRoomTimer.start(groupOrder.getOrderIdx(), orderRoom.getExpiresAt());
-		sseService.beginOrder(orderRoom.getRoomIdx(), groupOrder.getOrderIdx());
+		safeRoomSse("beginOrder", () -> sseService.beginOrder(orderRoom.getRoomIdx(), groupOrder.getOrderIdx()));
 		return String.format("redirect:/orders/%d/payment", groupOrder.getOrderIdx());
 	}
+	
+	private void safeRoomSse(String action, Runnable task) {
+	    try {
+	        task.run();
+	    } catch (Exception e) {
+	        log.warn("SSE push skipped. action={}", action, e);
+	    }
+	}
+	
+	
+	
 }

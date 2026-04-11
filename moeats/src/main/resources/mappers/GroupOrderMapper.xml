@@ -17,7 +17,7 @@
 	<select id="findActive" resultType="GroupOrder">
 		SELECT * FROM group_order WHERE order_status = 'ACTIVE'
 	</select>
-	<!-- <insert id="insert"
+	<insert id="insert"
 	        parameterType="GroupOrder"
 	        useGeneratedKeys="true"
 	        keyProperty="orderIdx">
@@ -38,33 +38,10 @@
 	        'PAYMENT_PENDING',
 	        #{orderTotalAmount}
 	    )
-	</insert> -->
-	
-	
-	<insert id="insert"
-	        parameterType="Payment"
-	        useGeneratedKeys="true"
-	        keyProperty="paymentIdx"
-	        keyColumn="payment_idx">
-	    <selectKey keyProperty="paymentExpiresAt" order="BEFORE">
-	        SELECT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE FROM DUAL
-	    </selectKey>
-	    INSERT INTO payment(
-	        order_idx,
-	        payment_mode,
-	        payment_request_amount,
-	        payment_paid_amount,
-	        payment_status,
-	        payment_expires_at
-	    ) VALUES (
-	        #{orderIdx},
-	        #{paymentMode},
-	        #{paymentRequestAmount},
-	        0,
-	        'READY',
-	        #{paymentExpiresAt}
-	    )
 	</insert>
+	
+	
+	
 	
 	<update id="pay" parameterType="int">
 		UPDATE group_order SET

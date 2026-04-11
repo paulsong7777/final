@@ -98,13 +98,22 @@ public class TransactionService {
 	        payment.getPaymentRequestAmount()
 	    );
 
+	    Timestamp expiresAt = Timestamp.from(java.time.Instant.now().plus(java.time.Duration.ofMinutes(5)));
+	    payment.setPaymentExpiresAt(expiresAt);
 	    paymentService.insert(payment);
 
-	    log.info(
-	        "payment inserted paymentIdx={}, orderIdx={}",
-	        payment.getPaymentIdx(),
-	        payment.getOrderIdx()
-	    );
+	 // insert 직후 DB에서 다시 읽어서 실제 payment_idx 확보
+	 payment = paymentService.findByOrder(groupOrder.getOrderIdx());
+
+	 if (payment == null || payment.getPaymentIdx() <= 0) {
+	     throw new IllegalStateException("payment 생성 후 payment_idx 조회 실패");
+	 }
+
+	 log.info(
+	     "payment inserted paymentIdx={}, orderIdx={}",
+	     payment.getPaymentIdx(),
+	     payment.getOrderIdx()
+	 );
 
 	    List<PaymentShare> paymentShares = new ArrayList<>();
 	    if (isRepresentative) {
@@ -155,7 +164,8 @@ public class TransactionService {
 	        log.info("orderDelivery inserted orderIdx={}", orderDelivery.getOrderIdx());
 	    }
 
-	    Timestamp expiresAt = payment.getPaymentExpiresAt();
+	    orderRoomService.paymentPend(orderRoom.getRoomIdx(), expiresAt);
+	    orderRoom.setExpiresAt(expiresAt);
 
 	    log.info(
 	        "before paymentPend roomIdx={}, expiresAt={}",
@@ -163,8 +173,7 @@ public class TransactionService {
 	        expiresAt
 	    );
 
-	    orderRoomService.paymentPend(orderRoom.getRoomIdx(), expiresAt);
-	    orderRoom.setExpiresAt(expiresAt);
+
 
 	    log.info(
 	        "beginPayment success roomIdx={}, orderIdx={}, paymentIdx={}",

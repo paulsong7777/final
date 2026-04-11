@@ -11,13 +11,18 @@
 	<select id="findByOrder" resultType="Payment">
 		SELECT * FROM payment WHERE order_idx = #{orderIdx}
 	</select>
+		
 	<insert id="insert"
 	        parameterType="Payment"
 	        useGeneratedKeys="true"
-	        keyProperty="paymentIdx">
-	    <selectKey keyProperty="paymentExpiresAt" order="BEFORE">
-	        SELECT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE FROM DUAL
+	        keyProperty="paymentIdx"
+	        keyColumn="payment_idx">
+	    <selectKey keyProperty="paymentExpiresAt"
+	               resultType="java.sql.Timestamp"
+	               order="BEFORE">
+	        SELECT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE
 	    </selectKey>
+	
 	    INSERT INTO payment(
 	        order_idx,
 	        payment_mode,
@@ -34,6 +39,7 @@
 	        #{paymentExpiresAt}
 	    )
 	</insert>
+		
 	<update id="payAmount">
 		<selectKey keyColumn="paymentPaidAmount" order="BEFORE">
 			SELECT payment_paid_amount + #{paymentPaidAmount} FROM payment WHERE payment_idx = #{paymentIdx}

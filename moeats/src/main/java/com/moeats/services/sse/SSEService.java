@@ -128,23 +128,32 @@ public class SSEService {
 		return join(storeMap,storeIdx);
 	}
 	
-	public int beginOrder(int roomIdx, int orderIdx) {
-	    return send(
-	        roomMap,
-	        roomIdx,
-	        SseEmitter.event()
-	            .name("to_order")
-	            .data(Map.of("orderIdx", orderIdx))
-	    );
-	}
 	public int participantUpdate(int roomIdx) {
-	    return send(
-	        roomMap,
-	        roomIdx,
-	        SseEmitter.event()
-	            .name("participantUpdate")
-	            .data("updated")
-	    );
+	    try {
+	        return send(
+	            roomMap,
+	            roomIdx,
+	            SseEmitter.event()
+	                .name("participantUpdate")
+	                .data("updated")
+	        );
+	    } catch (Exception e) {
+	        return 0;
+	    }
+	}
+
+	public int beginOrder(int roomIdx, int orderIdx) {
+	    try {
+	        return send(
+	            roomMap,
+	            roomIdx,
+	            SseEmitter.event()
+	                .name("to_order")
+	                .data(Map.of("orderIdx", orderIdx))
+	        );
+	    } catch (Exception e) {
+	        return 0;
+	    }
 	}
 
 	public int cancelRoom(int roomIdx) {
