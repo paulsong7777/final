@@ -3,20 +3,26 @@ package com.moeats.services;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.moeats.domain.DeliveryAddress;
+import com.moeats.domain.GroupCartItem;
 import com.moeats.domain.GroupOrder;
+import com.moeats.domain.GroupOrderItem;
 import com.moeats.domain.OrderDelivery;
 import com.moeats.domain.OrderRoom;
 import com.moeats.domain.Payment;
 import com.moeats.domain.PaymentShare;
 import com.moeats.domain.RoomParticipant;
+import com.moeats.domain.StoreMenu;
+import com.moeats.mappers.GroupOrderItemMapper;
 import com.moeats.services.sse.SSEService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +40,10 @@ public class TransactionService {
 	GroupCartItemService groupCartItemService;
 	@Autowired
 	OrderMemberQueryService memberService;
+	@Autowired
+	MenuService menuService;
+	@Autowired
+	GroupOrderItemMapper groupOrderItemMapper;
 	
 	@Autowired
 	SSEService sseService;
@@ -89,6 +99,7 @@ public class TransactionService {
 	    groupOrderService.insert(groupOrder);
 
 	    log.info("groupOrder inserted orderIdx={}", groupOrder.getOrderIdx());
+	    insertSnapshotItems(groupOrder, orderRoom);
 
 	    Payment payment = Payment.from(groupOrder);
 
@@ -145,9 +156,22 @@ public class TransactionService {
 	    });
 
 	    if (!isRepresentative) {
-	        paymentShares.stream()
-	            .filter(paymentShare -> paymentShare.getShareAmount() == 0)
-	            .forEach(paymentShare -> paymentService.paySelf(paymentShare.getPaymentShareIdx()));
+	    	for (PaymentShare paymentShare : paymentShares) {
+	    		if (paymentShare.getShareAmount() != 0) {
+	    			continue;
+	    		}
+	    		PaymentShare savedShare = paymentService.findPaymentMember(payment.getPaymentIdx(), paymentShare.getMemberIdx());
+	    		if (savedShare != null && paymentService.paySelf(savedShare.getPaymentShareIdx()) > 0) {
+	    			RoomParticipant roomParticipant = orderRoomService.findRoomMember(
+	    					orderRoom.getRoomIdx(),
+	    					savedShare.getMemberIdx());
+	    			if (roomParticipant != null && "UNPAID".equals(roomParticipant.getPaymentStatus())) {
+	    				orderRoomService.pay(roomParticipant.getRoomParticipantIdx());
+	    			}
+	    			paymentShare.setPaymentShareIdx(savedShare.getPaymentShareIdx());
+	    			paymentShare.setShareStatus("PAID_SELF");
+	    		}
+	    	}
 	    }
 
 	    OrderDelivery orderDelivery = null;
@@ -188,6 +212,48 @@ public class TransactionService {
 	    map.put("paymentShares", paymentShares);
 	    map.put("orderDelivery", orderDelivery);
 	    return map;
+	}
+
+	private void insertSnapshotItems(GroupOrder groupOrder, OrderRoom orderRoom) {
+		Set<Integer> activeMemberIdxs = new HashSet<>();
+		for (RoomParticipant roomParticipant : orderRoomService.findByRoom(orderRoom.getRoomIdx())) {
+			activeMemberIdxs.add(roomParticipant.getMemberIdx());
+		}
+
+		List<GroupCartItem> activeCartItems = new ArrayList<>();
+		for (GroupCartItem groupCartItem : groupCartItemService.findByRoom(orderRoom.getRoomIdx())) {
+			if (activeMemberIdxs.contains(groupCartItem.getMemberIdx())) {
+				activeCartItems.add(groupCartItem);
+			}
+		}
+
+		Map<Integer, StoreMenu> storeMenuMap = new HashMap<>();
+		List<Integer> menuIdxs = activeCartItems.stream()
+				.map(GroupCartItem::getMenuIdx)
+				.distinct()
+				.toList();
+		for (StoreMenu storeMenu : menuService.findByIdxs(menuIdxs)) {
+			storeMenuMap.put(storeMenu.getMenuIdx(), storeMenu);
+		}
+
+		for (GroupCartItem groupCartItem : activeCartItems) {
+			StoreMenu storeMenu = storeMenuMap.get(groupCartItem.getMenuIdx());
+			if (storeMenu == null) {
+				throw new IllegalStateException("snapshot menu not found: " + groupCartItem.getMenuIdx());
+			}
+
+			GroupOrderItem groupOrderItem = new GroupOrderItem();
+			groupOrderItem.setOrderIdx(groupOrder.getOrderIdx());
+			groupOrderItem.setMemberIdx(groupCartItem.getMemberIdx());
+			groupOrderItem.setMenuIdx(groupCartItem.getMenuIdx());
+			groupOrderItem.setMenuNameSnapshot(storeMenu.getMenuName());
+			groupOrderItem.setMenuPriceSnapshot(storeMenu.getMenuPrice());
+			groupOrderItem.setItemQuantity(groupCartItem.getItemQuantity());
+			groupOrderItem.setBaseAmount(groupCartItem.getBaseAmount());
+			groupOrderItem.setOptionExtraAmount(groupCartItem.getOptionExtraAmount());
+			groupOrderItem.setItemTotalAmount(groupCartItem.getItemTotalAmount());
+			groupOrderItemMapper.insert(groupOrderItem);
+		}
 	}
 @Transactional(rollbackFor=Exception.class)
 public int revertToSelect(OrderRoom orderRoom) {
@@ -231,7 +297,16 @@ public int revertToSelect(OrderRoom orderRoom) {
 			return false;
 		}
 
+		Payment currentPayment = paymentService.findByOrder(groupOrder.getOrderIdx());
+		if (currentPayment != null && "READY".equals(currentPayment.getPaymentStatus())) {
+			paymentService.progress(payment.getPaymentIdx());
+		}
+
 		if (paymentService.paySelf(paymentShare.getPaymentShareIdx()) == 0) {
+			return false;
+		}
+		PaymentShare paidShare = paymentService.findShareByIdx(paymentShare.getPaymentShareIdx());
+		if (paidShare == null || paymentService.payAmount(payment.getPaymentIdx(), paidShare.getShareAmount()) == 0) {
 			return false;
 		}
 
@@ -243,7 +318,6 @@ public int revertToSelect(OrderRoom orderRoom) {
 		}
 
 		if ("REPRESENTATIVE".equals(payment.getPaymentMode())) {
-			PaymentShare paidShare = paymentService.findShareByIdx(paymentShare.getPaymentShareIdx());
 			paymentService.paidByRepresentative(payment.getPaymentIdx(), paidShare.getPaidAt());
 
 			orderRoomService.findByRoom(groupOrder.getRoomIdx()).stream()

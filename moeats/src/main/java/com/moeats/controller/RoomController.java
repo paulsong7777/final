@@ -427,6 +427,22 @@ public class RoomController {
 			ra.addFlashAttribute("error", "아직 선택이 완료되지 않은 참여자가 있습니다");
 			return String.format("redirect:/rooms/code/%s", roomCode);
 		}
+		Store store = storeService.getStoreByIdx(orderRoom.getStoreIdx());
+		if (store == null) {
+			ra.addFlashAttribute("error", "가게 정보를 찾을 수 없습니다");
+			return String.format("redirect:/rooms/code/%s", roomCode);
+		}
+		int activeRoomAmount = groupCartItemService.findRoomAmount(orderRoom.getRoomIdx());
+		boolean hasActiveCart = groupCartItemService.findRoomMemberAmount(orderRoom.getRoomIdx()).stream()
+				.anyMatch(groupCartItem -> groupCartItem.getItemTotalAmount() > 0);
+		if (!hasActiveCart || activeRoomAmount <= 0) {
+			ra.addFlashAttribute("error", "활성 참여자의 주문이 없어 결제를 진행할 수 없습니다");
+			return String.format("redirect:/rooms/code/%s", roomCode);
+		}
+		if (activeRoomAmount < store.getMinimumOrderAmount()) {
+			ra.addFlashAttribute("error", "최소주문금액을 충족해야 결제를 진행할 수 있습니다");
+			return String.format("redirect:/rooms/code/%s", roomCode);
+		}
 		Map<String, Object> res;
 		try {
 			res = transactionService.beginPayment(orderRoom);

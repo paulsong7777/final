@@ -10,7 +10,7 @@
         .mo-step-container { position: relative; }
         .mo-step-line { 
             position: absolute; 
-            top: 26px; left: 12.5%; width: 75%; height: 4px; 
+            top: 26px; left: 10%; width: 80%; height: 4px; 
             background-color: var(--mo-line); z-index: 0; 
             border-radius: 2px;
         }
@@ -22,9 +22,10 @@
         }
         
         /* 주문 단계별 Mo-Eats 브랜드 컬러 매핑 */
+        .mo-step-active-paid { background-color: var(--mo-primary); color: #fff; border-color: var(--mo-primary); box-shadow: 0 8px 20px rgba(255, 128, 0, 0.25); }
         .mo-step-active-accepted { background-color: var(--mo-primary); color: #fff; border-color: var(--mo-primary); box-shadow: 0 8px 20px rgba(255, 128, 0, 0.25); }
-        .mo-step-active-PREPARING { background-color: var(--mo-accent); color: #fff; border-color: var(--mo-accent); box-shadow: 0 8px 20px rgba(248, 94, 40, 0.25); }
-        .mo-step-active-READY { background-color: var(--mo-navy); color: #fff; border-color: var(--mo-navy); box-shadow: 0 8px 20px rgba(42, 54, 89, 0.25); }
+        .mo-step-active-preparing { background-color: var(--mo-accent); color: #fff; border-color: var(--mo-accent); box-shadow: 0 8px 20px rgba(248, 94, 40, 0.25); }
+        .mo-step-active-ready { background-color: var(--mo-navy); color: #fff; border-color: var(--mo-navy); box-shadow: 0 8px 20px rgba(42, 54, 89, 0.25); }
         .mo-step-active-completed { background-color: var(--mo-navy-strong); color: #fff; border-color: var(--mo-navy-strong); box-shadow: 0 8px 20px rgba(37, 45, 89, 0.35); }
     </style>
 </head>
@@ -46,17 +47,18 @@
                     <div class="row text-center mo-step-container mb-5 pt-3">
                         <div class="mo-step-line"></div>
                         
-                        <div class="col-3" th:each="status : ${ {'ACCEPTED', 'PREPARING', 'READY', 'COMPLETED'} }">
+                        <div class="col" th:each="status : ${ {'PAID', 'ACCEPTED', 'PREPARING', 'READY', 'COMPLETED'} }">
                             <div class="mo-step-circle bg-white text-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2 fs-5"
-                                 th:classappend="${safeOrder.roomStatus == status ? 
+                                 th:classappend="${safeOrder.orderStatus == status ? 
+                                    (status == 'PAID' ? 'mo-step-active-paid' : 
                                     (status == 'ACCEPTED' ? 'mo-step-active-accepted' : 
-                                    (status == 'PREPARING' ? 'mo-step-active-PREPARING' : 
-                                    (status == 'READY' ? 'mo-step-active-READY' : 'mo-step-active-completed'))) : ''}">
-                                <i class="bi" th:classappend="${status == 'ACCEPTED' ? 'bi-check-lg' : (status == 'PREPARING' ? 'bi-fire' : (status == 'READY' ? 'bi-truck' : 'bi-flag-fill'))}"></i>
+                                    (status == 'PREPARING' ? 'mo-step-active-preparing' : 
+                                    (status == 'READY' ? 'mo-step-active-ready' : 'mo-step-active-completed')))) : ''}">
+                                <i class="bi" th:classappend="${status == 'PAID' ? 'bi-credit-card' : (status == 'ACCEPTED' ? 'bi-check-lg' : (status == 'PREPARING' ? 'bi-fire' : (status == 'READY' ? 'bi-box-seam' : 'bi-flag-fill')))}"></i>
                             </div>
                             <div class="fw-bold" style="font-size: 13px;"
-                                 th:classappend="${safeOrder.roomStatus == status ? 'text-dark' : 'text-muted'}"
-                                 th:text="${status == 'ACCEPTED' ? '접수완료' : (status == 'PREPARING' ? '조리중' : (status == 'READY' ? '배달중' : '배달완료'))}">상태</div>
+                                 th:classappend="${safeOrder.orderStatus == status ? 'text-dark' : 'text-muted'}"
+                                 th:text="${status == 'PAID' ? '결제완료' : (status == 'ACCEPTED' ? '접수완료' : (status == 'PREPARING' ? '조리중' : (status == 'READY' ? '준비완료' : '주문완료')))}">상태</div>
                         </div>
                     </div>
 
@@ -72,17 +74,20 @@
                     </div>
 
                     <div class="d-flex flex-column gap-3">
-                        <button type="button" th:if="${safeOrder.roomStatus == 'ACCEPTED'}" class="mo-btn mo-btn-primary w-100 py-2 fs-6" style="min-height: 52px;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'PREPARING')">🔥 조리 시작하기</button>
+                        <button type="button" th:if="${safeOrder.orderStatus == 'PAID'}" class="mo-btn mo-btn-primary w-100 py-2 fs-6" style="min-height: 52px;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'ACCEPTED')">접수하기</button>
                         
-                        <button type="button" th:if="${safeOrder.roomStatus == 'PREPARING'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy); color: #fff; min-height: 52px;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'READY')">🚚 배달 시작하기</button>
+                        <button type="button" th:if="${safeOrder.orderStatus == 'ACCEPTED'}" class="mo-btn mo-btn-primary w-100 py-2 fs-6" style="min-height: 52px;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'PREPARING')">조리 시작하기</button>
                         
-                        <button type="button" th:if="${safeOrder.roomStatus == 'READY'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff; min-height: 52px;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">🏁 배달 완료처리</button>
+                        <button type="button" th:if="${safeOrder.orderStatus == 'PREPARING'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy); color: #fff; min-height: 52px;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'READY')">준비 완료 처리</button>
                         
-                        <div th:if="${safeOrder.roomStatus == 'COMPLETED'}" class="p-3 text-center rounded-3 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy-strong);">
-                            고객에게 배달이 완료된 주문입니다.
+                        <button type="button" th:if="${safeOrder.orderStatus == 'READY'}" class="mo-btn w-100 py-2 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff; min-height: 52px;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">주문 완료 처리</button>
+
+                        <div th:if="${safeOrder.orderStatus == 'COMPLETED'}" class="p-3 text-center rounded-3 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy-strong);">
+                            완료된 주문입니다.
                         </div>
 
                         <div class="text-center mt-2 border-top pt-3">
@@ -113,19 +118,34 @@
 <th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // 기존에 잘 작동하던 URL 이동 방식 유지
-        function moveStatus(roomIdx, nextStatus) {
+        async function moveStatus(roomIdx, nextStatus) {
             const toastEl = document.getElementById('statusToast');
             if (toastEl) {
-                // 토스트 띄우기
                 const bsToast = new bootstrap.Toast(toastEl);
                 bsToast.show();
             }
 
-            // 부드러운 전환을 위해 0.6초 대기 후 이동 (토스트 노출 시간 확보)
-            setTimeout(() => {
-                location.href = `/owners/order/status_update?roomIdx=${roomIdx}&nextStatus=${nextStatus}`;
-            }, 600);
+            try {
+                const response = await fetch('/owners/order/status_update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        roomIdx: roomIdx,
+                        nextStatus: nextStatus
+                    })
+                });
+                const data = await response.json();
+
+                if (!response.ok || !data.result) {
+                    throw new Error('status update failed');
+                }
+
+                window.location.href = `/owners/order/detail?roomIdx=${roomIdx}`;
+            } catch (error) {
+                alert('주문 상태 변경에 실패했습니다.');
+            }
         }
         /*]]>*/
     </script>
