@@ -80,43 +80,45 @@
 				</div>
 				
 				<th:block th:if="${store != null}">
-					<div class="mo-address-item" style="border-color: rgba(42, 54, 89, 0.15);">
-						<div class="mo-address-item__head">
-							<div class="d-flex align-items-center gap-2">
-								<span class="mo-address-item__label" style="font-size: 18px;" th:text="${store.storeName}"></span>
-								
-								<span th:if="${store.storeStatus == 'ACTIVE' or store.storeStatus == 'OPEN'}" class="mo-address-item__badge" style="background: rgba(40, 167, 69, 0.1); color: #28a745; margin: 0;">영업중</span>
-								<span th:if="${store.storeStatus == 'INACTIVE' or store.storeStatus == 'CLOSED'}" class="mo-address-item__badge" style="background: rgba(107, 114, 128, 0.1); color: #6B7280; margin: 0;">영업 종료</span>
-								<span th:if="${store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK'}" class="mo-address-item__badge" style="background: rgba(255, 193, 7, 0.1); color: #d39e00; margin: 0;">브레이크 타임</span>
-							</div>
-						</div>
-						<div class="mo-address-item__text mb-4" th:text="${store.storeAddress1 + (store.storeAddress2 != null ? ' ' + store.storeAddress2 : '')}"></div>
-						
-						<div class="d-flex flex-wrap gap-2">
-							<input type="button" th:onclick="|location.href='@{/owners/store/edit(redirectUrl='/members/me')}'|" value="정보 수정" class="mo-btn mo-btn-outline" style="flex: 1; min-width: 100px;">
-							
-							<form th:if="${store.storeStatus == 'INACTIVE' or store.storeStatus == 'CLOSED' or store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 100px;">
-								<input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
-								<input type="hidden" name="storeStatus" value="ACTIVE" />
-								<input type="hidden" name="redirectUrl" value="/members/me" />
-								<button type="submit" class="mo-btn mo-btn-primary w-100" th:text="${store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK' ? '영업 재개' : '영업 시작'}">영업 시작</button>
-							</form>
-							
-							<form th:if="${store.storeStatus == 'ACTIVE' or store.storeStatus == 'OPEN'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 100px;">
-								<input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
-								<input type="hidden" name="storeStatus" value="PAUSED" />
-								<input type="hidden" name="redirectUrl" value="/members/me" />
-								<button type="submit" class="mo-btn w-100" style="background: #FFC107; color: var(--mo-navy-strong); border: none; font-weight: 700;">브레이크</button>
-							</form>
-
-							<form th:if="${store.storeStatus == 'ACTIVE' or store.storeStatus == 'OPEN' or store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 100px;">
-								<input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
-								<input type="hidden" name="storeStatus" value="INACTIVE" />
-								<input type="hidden" name="redirectUrl" value="/members/me" />
-								<button type="submit" class="mo-btn w-100" style="background: #6B7280; color: #fff; border: none;">영업 종료</button>
-							</form>
-						</div>
-					</div>
+				    <div class="mo-address-item" style="border-color: rgba(42, 54, 89, 0.15); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#fafafa'" onmouseout="this.style.backgroundColor='transparent'">
+				        
+				        <div style="cursor: pointer;" th:onclick="|location.href='@{/owners/store}'|">
+				            <div class="mo-address-item__head">
+				                <div class="d-flex align-items-center gap-2">
+				                    <span class="mo-address-item__label" style="font-size: 18px;" th:text="${store.storeName}"></span>
+				                    
+				                    <span th:if="${store.storeStatus == 'ACTIVE' or store.storeStatus == 'OPEN'}" class="mo-address-item__badge" style="background: rgba(40, 167, 69, 0.1); color: #28a745; margin: 0;">영업중</span>
+				                    <span th:if="${store.storeStatus == 'INACTIVE' or store.storeStatus == 'CLOSED'}" class="mo-address-item__badge" style="background: rgba(107, 114, 128, 0.1); color: #6B7280; margin: 0;">영업 종료</span>
+				                    <span th:if="${store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK'}" class="mo-address-item__badge" style="background: rgba(255, 193, 7, 0.1); color: #d39e00; margin: 0;">브레이크 타임</span>
+				                </div>
+				            </div>
+				            <div class="mo-address-item__text mb-4" th:text="${store.storeAddress1 + (store.storeAddress2 != null ? ' ' + store.storeAddress2 : '')}"></div>
+				        </div>
+				        <div class="d-flex flex-wrap gap-2">
+				            <input type="button" th:onclick="|location.href='@{/owners/store/edit(redirectUrl='/members/me')}'|" value="정보 수정" class="mo-btn mo-btn-outline" style="flex: 1; min-width: 100px;">
+				            
+				            <form th:if="${store.storeStatus == 'INACTIVE' or store.storeStatus == 'CLOSED' or store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 100px;">
+				                <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
+				                <input type="hidden" name="storeStatus" value="ACTIVE" />
+				                <input type="hidden" name="redirectUrl" value="/members/me" />
+				                <button type="submit" class="mo-btn mo-btn-primary w-100" th:text="${store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK' ? '영업 재개' : '영업 시작'}">영업 시작</button>
+				            </form>
+				            
+				            <form th:if="${store.storeStatus == 'ACTIVE' or store.storeStatus == 'OPEN'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 100px;">
+				                <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
+				                <input type="hidden" name="storeStatus" value="PAUSED" />
+				                <input type="hidden" name="redirectUrl" value="/members/me" />
+				                <button type="submit" class="mo-btn w-100" style="background: #FFC107; color: var(--mo-navy-strong); border: none; font-weight: 700;">브레이크</button>
+				            </form>
+				
+				            <form th:if="${store.storeStatus == 'ACTIVE' or store.storeStatus == 'OPEN' or store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 100px;">
+				                <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
+				                <input type="hidden" name="storeStatus" value="INACTIVE" />
+				                <input type="hidden" name="redirectUrl" value="/members/me" />
+				                <button type="submit" class="mo-btn w-100" style="background: #6B7280; color: #fff; border: none;">영업 종료</button>
+				            </form>
+				        </div>
+				    </div>
 				</th:block>
 				
 				<th:block th:if="${store == null}">

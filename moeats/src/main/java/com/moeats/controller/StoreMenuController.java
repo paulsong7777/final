@@ -2,6 +2,7 @@ package com.moeats.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,6 +21,7 @@ import com.moeats.domain.Member;
 import com.moeats.domain.Store;
 import com.moeats.domain.StoreMenu;
 import com.moeats.domain.StoreMenuCategory;
+import com.moeats.service.MenuImageService;
 import com.moeats.service.StoreMenuCategoryService;
 import com.moeats.service.StoreMenuService;
 import com.moeats.service.StoreService;
@@ -31,8 +33,13 @@ public class StoreMenuController {
     @Autowired
     private StoreMenuService storeMenuService;
     @Autowired
+    private MenuImageService menuImageService;
+    @Autowired
     private StoreMenuCategoryService storeMenuCategoryService;
 
+    // 파일이 저장될 기본 폴더 경로 (C드라이브에 이 폴더를 꼭 만들어주세요!)
+    private final String UPLOAD_DIR = "C:/moeats_uploads/";
+    
     /**
      * =========================
      * 👤 사용자용 (고객) - 비회원, 고객 전부 사용
@@ -56,12 +63,9 @@ public class StoreMenuController {
 	/*
 	 * @GetMapping("/stores/{storeIdx}/menu") public String
 	 * menuListForUser(@PathVariable("storeIdx") int storeIdx, Model model) {
-	 * 
-	 * List<StoreMenu> menuList = storeMenuService.menuListForUser(storeIdx);
-	 * 
-	 * model.addAttribute("menuList", menuList);
-	 * 
-	 * return "views/user/menu-list"; }
+	 * * List<StoreMenu> menuList = storeMenuService.menuListForUser(storeIdx);
+	 * * model.addAttribute("menuList", menuList);
+	 * * return "views/user/menu-list"; }
 	 */
 
 
@@ -86,18 +90,13 @@ public class StoreMenuController {
 	/*
 	 * @GetMapping("/stores/{storeIdx}/menu/search") public String
 	 * searchMenuForUser(
-	 * 
-	 * @PathVariable("storeIdx") int storeIdx,
-	 * 
-	 * @RequestParam String keyword, Model model) {
-	 * 
-	 * List<StoreMenu> menuList = storeMenuService.searchMenuForUser(storeIdx,
+	 * * @PathVariable("storeIdx") int storeIdx,
+	 * * @RequestParam String keyword, Model model) {
+	 * * List<StoreMenu> menuList = storeMenuService.searchMenuForUser(storeIdx,
 	 * keyword);
-	 * 
-	 * model.addAttribute("menuList", menuList); model.addAttribute("keyword",
+	 * * model.addAttribute("menuList", menuList); model.addAttribute("keyword",
 	 * keyword);
-	 * 
-	 * return "views/user/menu-list"; }
+	 * * return "views/user/menu-list"; }
 	 */
 
 
@@ -134,16 +133,17 @@ public class StoreMenuController {
             @RequestParam("menuIdx") int menuIdx, 
             @SessionAttribute("member") Member member) {
         
-        // 1. 현재 로그인한 점주의 가게 정보 확인
         Store store = storeService.myStore(member.getMemberIdx());
-        if (store == null) {
-            return Map.of("result", false, "message", "가게 정보가 없습니다.");
+        if (store == null) return Map.of("result", false, "message", "가게 정보가 없습니다.");
+
+        try {
+            // 🚨 수정: deleteImage가 아니라 deleteImagesByMenuIdx를 호출해야 합니다!
+            menuImageService.deleteImagesByMenuIdx(menuIdx); 
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        // 2. 보안 체크: 삭제하려는 메뉴가 진짜 이 사장님 가게 메뉴인지 확인 후 삭제
-        // (이 로직은 서비스에서 처리하는 것이 안전합니다)
         boolean isDeleted = storeMenuService.deleteMenu(store.getStoreIdx(), menuIdx);
-        
         return Map.of("result", isDeleted);
     }
 
@@ -166,32 +166,58 @@ public class StoreMenuController {
     	return "views/owner/menu-register";
     }
     
+ // ✨ 메뉴 등록 (파일 업로드 처리 추가 및 순서 변경)
     @PostMapping("/owners/menu")
     @ResponseBody
     public Map insertMenu(
-    		@ModelAttribute StoreMenu storeMenu,
-    		@RequestParam(value="menuFile", required=false) MultipartFile menuFile,
-			@SessionAttribute("member") Member member) {
-		Store store = storeService.myStore(member.getMemberIdx());
-		StoreMenuCategory storeMenuCategory = storeMenuCategoryService.getCategory(storeMenu.getMenuCategoryIdx());
-	    if ( store==null || storeMenuCategory==null || storeMenuCategory.getStoreIdx()!=store.getStoreIdx() ) {
-	    	return Map.of("result",false);
-	    }
-	    storeMenu.setStoreIdx(store.getStoreIdx()); // 강제 세팅
-	    
-	    // [임시 테스트용] 실제 파일 저장 대신 인터넷 이미지 주소를 강제로 넣음
-	    // -----------------------------------------------------------
-	 // 🚨 조건문 밖으로 뺐습니다. 무조건 값이 들어가야 함!
-	    storeMenu.setImageUrl("https://placehold.jp/24/ff8000/ffffff/200x200.png?text=TEST_SAVE");
-	    
-	    System.out.println("저장하려는 이미지 경로: " + storeMenu.getImageUrl()); // 콘솔 출력 확인용
-	    
-	    // TODO 파일 받아서 저장하기
+            @ModelAttribute StoreMenu storeMenu,
+            @RequestParam(value="menuFile", required=false) MultipartFile menuFile,
+            @SessionAttribute("member") Member member) {
+        
+        Store store = storeService.myStore(member.getMemberIdx());
+        StoreMenuCategory storeMenuCategory = storeMenuCategoryService.getCategory(storeMenu.getMenuCategoryIdx());
+        
+        if (store == null || storeMenuCategory == null || storeMenuCategory.getStoreIdx() != store.getStoreIdx()) {
+            return Map.of("result", false);
+        }
+        storeMenu.setStoreIdx(store.getStoreIdx());
+
+        // 1. 메뉴 정보를 DB에 먼저 저장
         storeMenuService.insertMenu(storeMenu);
-        return Map.of("result",true);
+
+        // 2. 파일이 업로드된 경우, menu_image 테이블에 사진 정보를 따로 저장
+        if (menuFile != null && !menuFile.isEmpty()) {
+            String originalName = menuFile.getOriginalFilename();
+            String savedName = java.util.UUID.randomUUID().toString() + "_" + originalName; 
+            
+            try {
+                // 실제 파일 복사
+                java.io.File dest = new java.io.File(UPLOAD_DIR + savedName);
+                menuFile.transferTo(dest);
+                
+                // 별도의 MenuImage 객체를 만들어서 DB에 INSERT
+                com.moeats.domain.MenuImage menuImage = new com.moeats.domain.MenuImage();
+                menuImage.setMenuIdx(storeMenu.getMenuIdx());     
+                menuImage.setImageUrl("/uploads/" + savedName);   
+                
+                // 🚨 오류나던 부분 수정 + 기획 반영: 
+                // 대표사진 여부를 우선 false로 둡니다. (만약 빨간줄 나면 setIsPrimary(false) 또는 setIsPrimary("N")으로 변경)
+                menuImage.setPrimary(true); 
+                
+                menuImage.setDisplayOrder(1);                     
+                
+                menuImageService.insertImage(menuImage); 
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+                return Map.of("result", false, "message", "파일 업로드 중 오류가 발생했습니다.");
+            }
+        }
+        
+        return Map.of("result", true);
     }
     
-    // 메뉴 수정
+ // 메뉴 수정 폼
     @GetMapping("/owners/menu/edit")
     public String updateMenuForm(
             RedirectAttributes ra,
@@ -208,11 +234,10 @@ public class StoreMenuController {
         StoreMenu storeMenu = storeMenuService.getMenu(store.getStoreIdx(), menuIdx);
         if (storeMenu == null || storeMenu.getStoreIdx() != store.getStoreIdx()) {
             ra.addFlashAttribute("error", "잘못된 접근입니다");
-            return "redirect:/owners/menu";
+            return "redirect:/owners/menu"; // 🚨 잘못된 접근 시 메뉴 목록으로 돌려보냅니다.
         }
 
-        List<StoreMenuCategory> storeMenuCategories =
-                storeMenuCategoryService.getCategoryByStore(store.getStoreIdx());
+        List<StoreMenuCategory> storeMenuCategories = storeMenuCategoryService.getCategoryByStore(store.getStoreIdx());
 
         model.addAttribute("menu", "menu-edit");
         model.addAttribute("store", store);
@@ -222,33 +247,62 @@ public class StoreMenuController {
         return "views/owner/menu-edit";
     }
     
+ // ✨ 메뉴 수정 (새 사진 업로드 시 DB 누락 문제 해결)
     @PostMapping("/owners/menu/edit")
     public String updateMenu(
-    		RedirectAttributes ra,
-    		@ModelAttribute StoreMenu storeMenu,
-			@SessionAttribute("member") Member member) {
-    	// 1. 현재 로그인한 사장님의 가게 정보 조회
+            RedirectAttributes ra,
+            @ModelAttribute StoreMenu storeMenu,
+            @RequestParam(value="menuFile", required=false) MultipartFile menuFile, 
+            @SessionAttribute("member") Member member){
+        
         Store store = storeService.myStore(member.getMemberIdx());
         if (store == null) {
-            ra.addFlashAttribute("error", "잘못된 접근입니다");
-            return "redirect:/home";
+            ra.addFlashAttribute("error", "가게가 없습니다.");
+            return "redirect:/owners/store/new"; 
         }
 
-        // 2. 🚨 핵심 수정 사항: 수정할 메뉴 객체에 사장님의 가게 번호를 세팅해줌
-        // 이 값이 없으면 서비스의 getMenu() 체크 로직에서 에러가 터집니다.
         storeMenu.setStoreIdx(store.getStoreIdx());
 
-        // 3. 수정 권한 확인 (이미 작성하신 로직)
         StoreMenu check = storeMenuService.getMenu(store.getStoreIdx(), storeMenu.getMenuIdx());
         if (check == null || check.getStoreIdx() != store.getStoreIdx()) {
             ra.addFlashAttribute("error", "잘못된 접근입니다");
-            return "redirect:/home";
+            return "redirect:/owners/menu"; 
         }
 
+     // 🚨 메뉴 수정 로직 수행 (StoreMenu에는 텍스트 정보만 들어감)
         storeMenuService.updateMenu(storeMenu);
 
+        // 사진이 새로 업로드 된 경우에만 MenuImage 갤러리에 추가해줍니다.
+        if (menuFile != null && !menuFile.isEmpty()) {
+            String originalName = menuFile.getOriginalFilename();
+            String savedName = UUID.randomUUID().toString() + "_" + originalName; 
+            
+            try {
+                java.io.File dest = new java.io.File(UPLOAD_DIR + savedName);
+                menuFile.transferTo(dest);
+                
+                // 🚨 [핵심 해결] 새 사진을 대표로 넣기 전에, 이 메뉴의 기존 사진들의 '대표' 자격을 모두 뺏어옵니다!
+                menuImageService.clearPrimaryImage(storeMenu.getMenuIdx());
+                
+                com.moeats.domain.MenuImage menuImage = new com.moeats.domain.MenuImage();
+                menuImage.setMenuIdx(storeMenu.getMenuIdx());
+                menuImage.setImageUrl("/uploads/" + savedName);
+                
+                // 이제 이 새 사진만 유일한 '대표 사진'이 됩니다.
+                menuImage.setPrimary(true); 
+                menuImage.setDisplayOrder(1);
+                
+                menuImageService.insertImage(menuImage);
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+                ra.addFlashAttribute("error", "파일 업로드 실패");
+                return "redirect:/owners/menu/edit?menuIdx=" + storeMenu.getMenuIdx();
+            }
+        }
+
         return "redirect:/owners/menu";
-    }
+        }
     
     // 메뉴 상태 변경 (AJAX 추천)
     @PostMapping("/owners/menu/status")

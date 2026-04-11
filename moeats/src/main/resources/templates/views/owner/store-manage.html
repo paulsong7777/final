@@ -18,99 +18,93 @@
 
         <div class="mo-surface-card" style="padding: 32px 24px;">
 
-            <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 1px solid var(--mo-line);">
+            <div class="d-flex justify-content-between align-items-center mb-5 pb-3" style="border-bottom: 1px solid var(--mo-line);">
                 <h3 class="mo-store-card__title m-0" style="font-size: 20px;">매장 상세 정보</h3>
                 <a th:href="@{/owners/store/edit(redirectUrl='/owners/store')}" class="mo-btn mo-btn-primary" style="min-height: 38px; padding: 0 16px; font-size: 13px;">
                     <i class="bi bi-pencil-square me-2"></i> 정보 수정
                 </a>
             </div>
 
-            <div class="mb-5 position-relative" style="border-radius: var(--mo-radius-xl); overflow: hidden; height: 300px; border: 1px solid rgba(42, 54, 89, 0.08);">
-                <img th:src="${store?.heroImageUrl != null ? store.heroImageUrl : 'https://via.placeholder.com/800/FF8000/FFFFFF?text=Mo-Eats+Store'}" 
-                     class="w-100 h-100" style="object-fit: cover;" alt="매장 대표 이미지">
+            <div class="d-flex align-items-center flex-wrap gap-3 mb-5">
+                <p style="font-size: 28px; font-weight: 800; color: var(--mo-navy-strong); margin: 0;" 
+                   th:text="${store?.storeName ?: '등록된 이름이 없습니다.'}">매장명</p>
                 
-                <div class="position-absolute" style="top: 16px; right: 16px;">
+                <div>
                     <span th:if="${store?.storeStatus == 'ACTIVE' or store?.storeStatus == 'OPEN'}" 
-                          class="mo-chip" style="background: rgba(40, 167, 69, 0.95); color: #fff; border: none; font-weight: 800; font-size: 13px; padding: 0 16px; min-height: 34px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                          class="mo-chip" style="background: rgba(40, 167, 69, 0.95); color: #fff; border: none; font-weight: 800; font-size: 13px; padding: 6px 16px; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);">
                         영업 중
                     </span>
                     <span th:if="${store?.storeStatus == 'INACTIVE' or store?.storeStatus == 'CLOSED'}" 
-                          class="mo-chip" style="background: rgba(220, 53, 69, 0.95); color: #fff; border: none; font-weight: 800; font-size: 13px; padding: 0 16px; min-height: 34px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                          class="mo-chip" style="background: rgba(220, 53, 69, 0.95); color: #fff; border: none; font-weight: 800; font-size: 13px; padding: 6px 16px; box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);">
                         영업 종료
                     </span>
                     <span th:if="${store?.storeStatus == 'PAUSED' or store?.storeStatus == 'BREAK'}" 
-                          class="mo-chip" style="background: rgba(255, 193, 7, 0.95); color: var(--mo-navy-strong); border: none; font-weight: 800; font-size: 13px; padding: 0 16px; min-height: 34px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                          class="mo-chip" style="background: rgba(255, 193, 7, 0.95); color: var(--mo-navy-strong); border: none; font-weight: 800; font-size: 13px; padding: 6px 16px; box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2);">
                         브레이크 타임
                     </span>
                 </div>
             </div>
 
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <label class="mo-form-label">매장명</label>
-                    <p style="font-size: 22px; font-weight: 800; color: var(--mo-navy-strong); margin: 0;" 
-                       th:text="${store?.storeName ?: '등록된 이름이 없습니다.'}">매장명</p>
-                </div>
-                
-                <div class="col-md-6">
-                    <label class="mo-form-label">연락처</label>
-                    <p style="font-size: 22px; font-weight: 800; color: var(--mo-navy-strong); margin: 0;" 
-                       th:text="${store?.storePhone ?: '번호 미등록'}">010-0000-0000</p>
-                </div>
-                
-                <div class="col-12 mt-5 pt-4" style="border-top: 1px solid var(--mo-line);">
-                    <label class="mo-form-label">매장 주소</label>
-                    <p style="font-size: 16px; color: var(--mo-text); font-weight: 500; margin: 0;">
+            <div class="row g-4 mb-5 pb-4" style="border-bottom: 1px solid var(--mo-line);">
+                <div class="col-md-7">
+                    <label class="mo-form-label" style="color: var(--mo-text-soft); font-size: 13px; margin-bottom: 8px;">매장 주소</label>
+                    <p style="font-size: 16px; color: var(--mo-navy-strong); font-weight: 600; margin: 0; line-height: 1.5;">
                         <span th:text="${store?.storeAddress1 ?: '주소 정보가 없습니다.'}">기본 주소</span>
                         <span th:text="${store?.storeAddress2 ?: ''}">상세 주소</span>
                     </p>
                 </div>
+                
+                <div class="col-md-5">
+                    <label class="mo-form-label" style="color: var(--mo-text-soft); font-size: 13px; margin-bottom: 8px;">연락처</label>
+                    <p style="font-size: 18px; font-weight: 800; color: var(--mo-navy-strong); margin: 0;" 
+                       th:text="${store?.storePhone ?: '번호 미등록'}">010-0000-0000</p>
+                </div>
+            </div>
 
-                <div class="col-12 mt-4">
-                    <label class="mo-form-label">매장 소개</label>
-                    <div style="background: #fafafa; border: 1px solid var(--mo-line); border-radius: 12px; padding: 20px;">
-                        <p style="font-size: 15px; color: var(--mo-text-soft); line-height: 1.6; margin: 0; white-space: pre-line;" 
-                           th:text="${store?.storeDescription ?: '사장님의 정성스러운 소개글을 기다리고 있어요.'}">
-                           매장 소개 내용
-                        </p>
-                    </div>
+            <div class="col-12 mb-4">
+                <label class="mo-form-label" style="color: var(--mo-text-soft); font-size: 13px; margin-bottom: 8px;">매장 소개</label>
+                <div style="background: #fafafa; border: 1px solid var(--mo-line); border-radius: 12px; padding: 20px;">
+                    <p style="font-size: 15px; color: var(--mo-text-soft); line-height: 1.6; margin: 0; white-space: pre-line;" 
+                       th:text="${store?.storeDescription ?: '사장님의 정성스러운 소개글을 기다리고 있어요.'}">
+                       매장 소개 내용
+                    </p>
                 </div>
             </div>
 
             <div class="text-center mt-5 pt-3">
-				<div class="d-flex justify-content-center flex-wrap gap-2 mt-5 pt-3">
-                <a th:href="@{/owners/dashboard}" class="mo-btn mo-btn-outline d-flex align-items-center justify-content-center" style="flex: 1; min-width: 140px; max-width: 200px; padding: 0 16px; min-height: 48px; font-size: 14px; border-radius: 999px;">
-                    <i class="bi bi-house-door me-2"></i> 대시보드
-                </a>
+                <div class="d-flex justify-content-center flex-wrap gap-2">
+                    <a th:href="@{/owners/dashboard}" class="mo-btn mo-btn-outline d-flex align-items-center justify-content-center" style="flex: 1; min-width: 140px; max-width: 200px; padding: 0 16px; min-height: 48px; font-size: 14px; border-radius: 999px;">
+                        <i class="bi bi-house-door me-2"></i> 대시보드
+                    </a>
 
-                <form th:if="${store?.storeStatus == 'INACTIVE' or store?.storeStatus == 'CLOSED' or store?.storeStatus == 'PAUSED' or store?.storeStatus == 'BREAK'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 140px; max-width: 200px;">
-                    <input type="hidden" name="storeIdx" th:value="${store?.storeIdx}" />
-                    <input type="hidden" name="storeStatus" value="ACTIVE" />
-                    <input type="hidden" name="redirectUrl" value="/owners/store" />
-                    <button type="submit" class="mo-btn mo-btn-primary w-100 d-flex align-items-center justify-content-center" style="min-height: 48px; font-size: 14px; border-radius: 999px;">
-                        <i class="bi bi-play-fill me-1 fs-5"></i>
-                        <span th:text="${store?.storeStatus == 'PAUSED' or store?.storeStatus == 'BREAK' ? '영업 재개' : '영업 시작'}">영업 시작</span>
-                    </button>
-                </form>
+                    <form th:if="${store?.storeStatus == 'INACTIVE' or store?.storeStatus == 'CLOSED' or store?.storeStatus == 'PAUSED' or store?.storeStatus == 'BREAK'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 140px; max-width: 200px;">
+                        <input type="hidden" name="storeIdx" th:value="${store?.storeIdx}" />
+                        <input type="hidden" name="storeStatus" value="ACTIVE" />
+                        <input type="hidden" name="redirectUrl" value="/owners/store" />
+                        <button type="submit" class="mo-btn mo-btn-primary w-100 d-flex align-items-center justify-content-center" style="min-height: 48px; font-size: 14px; border-radius: 999px;">
+                            <i class="bi bi-play-fill me-1 fs-5"></i>
+                            <span th:text="${store?.storeStatus == 'PAUSED' or store?.storeStatus == 'BREAK' ? '영업 재개' : '영업 시작'}">영업 시작</span>
+                        </button>
+                    </form>
 
-                <form th:if="${store?.storeStatus == 'ACTIVE' or store?.storeStatus == 'OPEN'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 140px; max-width: 200px;">
-                    <input type="hidden" name="storeIdx" th:value="${store?.storeIdx}" />
-                    <input type="hidden" name="storeStatus" value="PAUSED" />
-                    <input type="hidden" name="redirectUrl" value="/owners/store" />
-                    <button type="submit" class="mo-btn w-100 d-flex align-items-center justify-content-center" style="background: #FFC107; color: var(--mo-navy-strong); border: none; min-height: 48px; font-size: 14px; border-radius: 999px; font-weight: 700;">
-                        <i class="bi bi-pause-fill me-1 fs-5"></i> 브레이크 타임
-                    </button>
-                </form>
+                    <form th:if="${store?.storeStatus == 'ACTIVE' or store?.storeStatus == 'OPEN'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 140px; max-width: 200px;">
+                        <input type="hidden" name="storeIdx" th:value="${store?.storeIdx}" />
+                        <input type="hidden" name="storeStatus" value="PAUSED" />
+                        <input type="hidden" name="redirectUrl" value="/owners/store" />
+                        <button type="submit" class="mo-btn w-100 d-flex align-items-center justify-content-center" style="background: #FFC107; color: var(--mo-navy-strong); border: none; min-height: 48px; font-size: 14px; border-radius: 999px; font-weight: 700;">
+                            <i class="bi bi-pause-fill me-1 fs-5"></i> 브레이크 타임
+                        </button>
+                    </form>
 
-                <form th:if="${store?.storeStatus == 'ACTIVE' or store?.storeStatus == 'OPEN' or store?.storeStatus == 'PAUSED' or store?.storeStatus == 'BREAK'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 140px; max-width: 200px;">
-                    <input type="hidden" name="storeIdx" th:value="${store?.storeIdx}" />
-                    <input type="hidden" name="storeStatus" value="INACTIVE" />
-                    <input type="hidden" name="redirectUrl" value="/owners/store" />
-                    <button type="submit" class="mo-btn w-100 d-flex align-items-center justify-content-center" style="background: #6B7280; color: #fff; border: none; min-height: 48px; font-size: 14px; border-radius: 999px;">
-                        <i class="bi bi-stop-fill me-1 fs-5"></i> 영업 종료
-                    </button>
-                </form>
-            </div>
+                    <form th:if="${store?.storeStatus == 'ACTIVE' or store?.storeStatus == 'OPEN' or store?.storeStatus == 'PAUSED' or store?.storeStatus == 'BREAK'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 140px; max-width: 200px;">
+                        <input type="hidden" name="storeIdx" th:value="${store?.storeIdx}" />
+                        <input type="hidden" name="storeStatus" value="INACTIVE" />
+                        <input type="hidden" name="redirectUrl" value="/owners/store" />
+                        <button type="submit" class="mo-btn w-100 d-flex align-items-center justify-content-center" style="background: #6B7280; color: #fff; border: none; min-height: 48px; font-size: 14px; border-radius: 999px;">
+                            <i class="bi bi-stop-fill me-1 fs-5"></i> 영업 종료
+                        </button>
+                    </form>
+                </div>
             </div>
 
         </div>

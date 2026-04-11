@@ -13,6 +13,16 @@
 -->
 <mapper namespace="com.moeats.mapper.MenuImageMapper" >
 	
+	<delete id="deleteImagesByMenuIdx" parameterType="int">
+	    DELETE FROM menu_image
+	    WHERE menu_idx = #{menuIdx}
+	</delete>
+	
+	<update id="clearPrimaryImage" parameterType="int">
+	    UPDATE menu_image
+	    SET is_primary = FALSE
+	    WHERE menu_idx = #{menuIdx}
+	</update>
 	
 	<!-- 메뉴 삭제 -->
 	<delete id="deleteImage" parameterType="int">

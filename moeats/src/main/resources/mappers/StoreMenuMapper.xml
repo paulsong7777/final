@@ -68,11 +68,19 @@
 	</insert>
 	
 	<!-- “이 메뉴가 내 가게 것 맞냐?” 확인하는 필수 메서드 -->
-	<select id="findByMenuIdx" resultType="StoreMenu">
-	    select *
-	    from store_menu
-	    where store_idx = #{storeIdx}
-	      and menu_idx = #{menuIdx}
+	<select id="findByMenuIdx" resultType="com.moeats.domain.StoreMenu">
+	    SELECT
+	        sm.*,
+	        smc.category_name,
+	        mi.image_url
+	    FROM store_menu sm
+	    LEFT JOIN store_menu_category smc
+	        ON sm.menu_category_idx = smc.menu_category_idx
+	    LEFT JOIN menu_image mi
+	        ON sm.menu_idx = mi.menu_idx
+	       AND mi.is_primary = TRUE
+	    WHERE sm.store_idx = #{storeIdx}
+	      AND sm.menu_idx = #{menuIdx}
 	</select>
 	
 	<!-- 메뉴 검색 점주

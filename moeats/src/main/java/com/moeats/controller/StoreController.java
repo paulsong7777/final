@@ -47,9 +47,14 @@ public class StoreController {
     @ModelAttribute("store")
     public Store getStore(@SessionAttribute(name = "member", required = false) Member member) {
         if (member != null && "OWNER".equals(member.getMemberRoleType())) {
-            return storeService.myStore(member.getMemberIdx());
+            Store store = storeService.myStore(member.getMemberIdx());
+            if (store != null) {
+                return store;
+            }
         }
-        return null;
+        // 💡 핵심 수정: null 대신 '빈 Store 객체'를 반환해야
+        // 스프링이 사용자가 폼에 입력한 데이터를 이 객체에 차곡차곡 담아줍니다!
+        return new Store();
     }
     
     
@@ -264,12 +269,17 @@ public class StoreController {
     // 가게 등록
     @PostMapping("/owners/store")
     public String insertStore(
-    		@ModelAttribute Store store,
-    		// 🚨 사진 파일을 받기 위한 MultipartFile 추가 (필요 시)
+            @ModelAttribute("store") Store store, // ✨ "store"라고 이름을 명시해줍니다.
             @RequestParam(value="storeImgFile", required=false) MultipartFile storeImgFile,
-			@SessionAttribute("member") Member member) {
-    	
+            @SessionAttribute("member") Member member) {
+        
+        if (store == null) {
+            store = new Store(); 
+        }
+        
         store.setOwnerMemberIdx(member.getMemberIdx());
+        
+        // 만약 여기서 null이 출력된다면 1단계의 HTML name 속성이 틀린 것입니다.
         storeService.insertStore(store);
 
         return "redirect:/owners/store";

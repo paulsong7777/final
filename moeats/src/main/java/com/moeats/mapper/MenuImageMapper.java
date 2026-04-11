@@ -10,6 +10,10 @@ import com.moeats.domain.MenuImage;
 @Mapper
 public interface MenuImageMapper {
 	
+	void deleteImagesByMenuIdx(int menuIdx);
+	
+	// Mapper 인터페이스와 Service에 각각 추가
+	void clearPrimaryImage(int menuIdx);
 	
 	// 메뉴 사진 삭제
 	public void deleteImage(int menuImageIdx);

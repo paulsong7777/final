@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -191,21 +192,25 @@ public class MemberController {
 		return "views/members/login";
 	}
 	
-	// 회원가입	- 일반/사업자 분기
-	@PostMapping("/members")
-	public String insertMember(Member member, RedirectAttributes ra, HttpSession session) {
+	// 회원가입 - 일반/사업자 분기
+		@PostMapping("/members")
+		public String insertMember(@ModelAttribute("newMember") Member member, RedirectAttributes ra, HttpSession session) {
+	        // 💡 @ModelAttribute("newMember")를 붙여서
+	        // 스프링이 이 객체를 "member"가 아닌 "newMember"로 인식하게 만듭니다.
+	        // 이렇게 하면 @SessionAttributes("member")가 반응하지 않습니다!
 
-	    try {
-	        memberService.insertMember(member);
-	        session.invalidate(); // ⭐ 기존 로그인 세션 제거
-	        return "redirect:/login";
+			try {
+				memberService.insertMember(member);
 
-	    } catch (Exception e) {
-	    	e.printStackTrace();
-	        ra.addFlashAttribute("error", e.getMessage());
-	        return "redirect:/members/createType";
-	    }
-	}
+				session.invalidate(); // ⭐ 기존 로그인 세션 제거
+
+				return "redirect:/login";
+
+			} catch (Exception e) {
+				ra.addFlashAttribute("error", e.getMessage());
+				return "redirect:/members/createType";
+			}
+		}
 	
 	// 통합 대시보드 분기(역할분기 일반/사업자)
 	@GetMapping("/members/dashboard")
