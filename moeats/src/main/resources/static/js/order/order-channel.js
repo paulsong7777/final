@@ -41,32 +41,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (expiresAtMs > 0 && countdownTargets.length > 0) {
             let timerId = null;
 
-           /* const handleCountdownExpired = function () {
-                if (countdownHandled) {
-                    return;
-                }
-                countdownHandled = true;
-
-                countdownTargets.forEach(function (target) {
-                    target.textContent = '00:00';
-                });
-
-                if (timerId) {
-                    window.clearInterval(timerId);
-                }
-
-                // 무한 새로고침 금지
-                // FE-07에서는 1회만 주문 상세로 이동
-                if (
-                    orderIdx &&
-                    (pageType === 'payment-individual'
-                        || pageType === 'payment-representative'
-                        || pageType === 'payment-wait')
-                ) {
-                    window.location.href = '/orders/' + orderIdx;
-                }
-            };*/
-
 			const renderCountdown = function () {
 			    const remainingMs = expiresAtMs - Date.now();
 
