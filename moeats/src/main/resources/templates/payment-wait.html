@@ -39,7 +39,7 @@
                     <div class="small text-secondary mb-2">현재 결제 상태</div>
                     <div class="d-grid gap-2">
                         <div th:each="share : ${paymentShares}" class="d-flex justify-content-between align-items-center">
-                            <span th:text="${share.memberIdx == session.member.memberIdx} ? '나' : (memberNameMap[share.memberIdx] != null ? memberNameMap[share.memberIdx] : '참여자')">참여자</span>
+                            <span th:text="${share.memberIdx == session.member.memberIdx ? '나' : (memberNameMap[share.memberIdx] != null ? memberNameMap[share.memberIdx] : '참여자')}">참여자</span>
                             <span class="fw-semibold"
                                   th:text="${share.shareStatus == 'PAID_SELF'} ? '결제 완료' : (${share.shareStatus == 'PAID_BY_REPRESENTATIVE'} ? '대표 결제 완료' : (${share.shareStatus == 'CANCELLED'} ? '취소됨' : '결제 대기'))">결제 대기</span>
                         </div>

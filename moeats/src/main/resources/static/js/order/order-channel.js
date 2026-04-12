@@ -7,9 +7,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const pageType = pageTypeInput ? pageTypeInput.value : '';
 
     let countdownHandled = false;
+    let navigationLocked = false;
 
-	let navigationLocked = false;
-		
     document.querySelectorAll('form[data-payment-complete-form="true"]').forEach(function (form) {
         form.addEventListener('submit', function (event) {
             if (form.dataset.submitting === 'true') {
@@ -41,34 +40,32 @@ document.addEventListener('DOMContentLoaded', function () {
         if (expiresAtMs > 0 && countdownTargets.length > 0) {
             let timerId = null;
 
-			const renderCountdown = function () {
-			    const remainingMs = expiresAtMs - Date.now();
+            const renderCountdown = function () {
+                const remainingMs = expiresAtMs - Date.now();
 
-			    if (remainingMs <= 0) {
-			        if (timerId) {
-			            window.clearInterval(timerId);
-			        }
+                if (remainingMs <= 0) {
+                    if (timerId) {
+                        window.clearInterval(timerId);
+                    }
 
-			        countdownTargets.forEach(function (target) {
-			            target.textContent = '00:00';
-			        });
+                    countdownTargets.forEach(function (target) {
+                        target.textContent = '00:00';
+                    });
 
-			        if (countdownHandled) {
-			            return;
-			        }
-			        countdownHandled = true;
+                    if (countdownHandled) {
+                        return;
+                    }
+                    countdownHandled = true;
 
-			        // 여기서는 이동하지 않는다.
-			        // 실제 만료 이동은 SSE expire 이벤트가 처리한다.
-			        return;
-			    }
+                    return;
+                }
 
-			    const remainingText = formatRemaining(remainingMs);
+                const remainingText = formatRemaining(remainingMs);
 
-			    countdownTargets.forEach(function (target) {
-			        target.textContent = remainingText;
-			    });
-			};
+                countdownTargets.forEach(function (target) {
+                    target.textContent = remainingText;
+                });
+            };
 
             renderCountdown();
             timerId = window.setInterval(renderCountdown, 1000);
@@ -99,41 +96,43 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('[order-channel] connected', event.data);
     });
 
-	eventSource.addEventListener('paid', function (event) {
-	    console.log('[order-channel] paid', event.data);
+    eventSource.addEventListener('paid', function (event) {
+        console.log('[order-channel] paid', event.data);
 
-	    if (pageType === 'payment-wait') {
-	        window.location.reload();
-	    }
-	});
+        if (pageType === 'payment-wait'
+            || pageType === 'payment-individual'
+            || pageType === 'payment-representative') {
+            window.location.reload();
+        }
+    });
 
     eventSource.addEventListener('complete', function (event) {
         console.log('[order-channel] complete', event.data);
-		if (navigationLocked) {
-		    return;
-		}
-		navigationLocked = true;
-		window.location.href = '/orders/' + orderIdx;
+        if (navigationLocked) {
+            return;
+        }
+        navigationLocked = true;
+        window.location.href = '/orders/' + orderIdx;
     });
 
     eventSource.addEventListener('cancel', function (event) {
         console.log('[order-channel] cancel', event.data);
         alert('결제가 취소되었습니다.');
-		if (navigationLocked) {
-		    return;
-		}
-		navigationLocked = true;
-		window.location.href = '/orders/' + orderIdx;
+        if (navigationLocked) {
+            return;
+        }
+        navigationLocked = true;
+        window.location.href = '/orders/' + orderIdx;
     });
 
     eventSource.addEventListener('expire', function (event) {
         console.log('[order-channel] expire', event.data);
         alert('결제 시간이 만료되었습니다.');
-		if (navigationLocked) {
-		    return;
-		}
-		navigationLocked = true;
-		window.location.href = '/orders/' + orderIdx;
+        if (navigationLocked) {
+            return;
+        }
+        navigationLocked = true;
+        window.location.href = '/orders/' + orderIdx;
     });
 
     eventSource.addEventListener('change', function (event) {
@@ -144,11 +143,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-		if (navigationLocked) {
-		    return;
-		}
-		navigationLocked = true;
-		window.location.href = '/orders/' + orderIdx;
+        if (navigationLocked) {
+            return;
+        }
+        navigationLocked = true;
+        window.location.href = '/orders/' + orderIdx;
     });
 
     eventSource.onerror = function (event) {

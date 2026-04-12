@@ -7,6 +7,10 @@
     <title>주문방 상세</title>
     <th:block layout:fragment="pageStyles">
         <style>
+            .rd-page-shell {
+                padding-bottom: 24px;
+            }
+
             .rd-grid {
                 display: grid;
                 gap: 1rem;
@@ -264,6 +268,10 @@
                 background: var(--mo-line);
             }
 
+            .rd-mobile-sticky {
+                display: none;
+            }
+
             @media (min-width: 768px) {
                 .rd-meta-grid {
                     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -276,13 +284,133 @@
                     align-items: start;
                 }
             }
+
+            @media (max-width: 575.98px) {
+                .rd-page-shell {
+                    padding-bottom: 116px;
+                }
+
+                .rd-grid {
+                    gap: 12px;
+                }
+
+                .rd-grid-left,
+                .rd-grid-right {
+                    display: contents;
+                }
+
+                .rd-section-card--participants { order: 1; }
+                .rd-section-card--mycart { order: 2; }
+                .rd-section-card--checkout { order: 3; }
+                .rd-section-card--others { order: 4; }
+
+                .rd-title {
+                    font-size: 1.45rem;
+                    line-height: 1.2;
+                }
+
+                .rd-subtitle {
+                    font-size: .93rem;
+                    line-height: 1.55;
+                }
+
+                .rd-meta-card {
+                    padding: .9rem;
+                    border-radius: 16px;
+                }
+
+                .rd-code-box,
+                .rd-participant-head,
+                .rd-other-head,
+                .rd-cart-row {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .rd-code {
+                    justify-content: center;
+                    width: 100%;
+                    letter-spacing: .12em;
+                }
+
+                .rd-amount {
+                    white-space: normal;
+                    text-align: right;
+                }
+
+                .rd-actions__group {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: .55rem;
+                }
+
+                .rd-actions__group .mo-btn,
+                .rd-actions__group form,
+                .rd-actions__group form .mo-btn {
+                    width: 100%;
+                }
+
+                .rd-note {
+                    font-size: .86rem;
+                    line-height: 1.55;
+                }
+
+                .rd-mobile-sticky {
+                    position: fixed;
+                    left: 16px;
+                    right: 16px;
+                    bottom: 16px;
+                    z-index: 1040;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    padding: 14px 16px;
+                    border-radius: 20px;
+                    background: rgba(37, 45, 89, 0.96);
+                    color: #fff;
+                    box-shadow: 0 18px 40px rgba(22, 28, 46, 0.24);
+                }
+
+                .rd-mobile-sticky__meta {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+                    min-width: 0;
+                }
+
+                .rd-mobile-sticky__count {
+                    font-size: 12px;
+                    font-weight: 700;
+                    opacity: .82;
+                }
+
+                .rd-mobile-sticky__amount {
+                    font-size: 18px;
+                    font-weight: 800;
+                    letter-spacing: -0.02em;
+                }
+
+                .rd-mobile-sticky__action,
+                .rd-mobile-sticky__action form,
+                .rd-mobile-sticky__action .mo-btn {
+                    width: 100%;
+                }
+
+                .rd-mobile-sticky__action {
+                    min-width: 138px;
+                    display: flex;
+                    justify-content: flex-end;
+                }
+            }
         </style>
     </th:block>
 </head>
 <body>
 <section layout:fragment="pageContent"
-					id="roomDetailRoot"
-        			 th:attr="data-room-code=${orderRoom.roomCode}, data-room-status=${orderRoom.roomStatus}">
+         id="roomDetailRoot"
+         class="rd-page-shell"
+         th:attr="data-room-code=${orderRoom.roomCode}, data-room-status=${orderRoom.roomStatus}">
     <section class="mo-section">
         <div class="mo-surface-card rd-hero">
             <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
@@ -340,7 +468,7 @@
 
     <section class="mo-section rd-grid">
         <div class="rd-grid-left">
-            <div class="mo-surface-card rd-section-card">
+            <div class="mo-surface-card rd-section-card rd-section-card--participants">
                 <div class="mo-section-head">
                     <div>
                         <div class="mo-section-label">Participants</div>
@@ -396,7 +524,7 @@
                 </div>
             </div>
 
-            <div class="mo-surface-card rd-section-card mt-3">
+            <div class="mo-surface-card rd-section-card rd-section-card--mycart mt-3">
                 <div class="mo-section-head">
                     <div>
                         <div class="mo-section-label">My Cart</div>
@@ -429,28 +557,28 @@
                 </div>
 
                 <div class="rd-actions mt-3" th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
-				    <div class="rd-actions__group" th:if="${myState.selectionStatus != 'SELECTED'}">
-				        <a class="mo-btn mo-btn-primary"
-				           th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">주문 확인하기</a>
-				    </div>
-				
-				    <div class="rd-actions__group" th:if="${myState.selectionStatus == 'SELECTED'}">
-				        <form class="rd-inline-form"
-				              th:action="@{/rooms/code/{code}/unselect(code=${orderRoom.roomCode})}"
-				              method="post">
-				            <button type="submit" class="mo-btn mo-btn-primary">주문 확인하기</button>
-				        </form>
-				    </div>
-				
-				    <p class="rd-note" th:if="${myState.selectionStatus == 'SELECTED'}">
-				        주문 확인하기를 누르면 선택 전 상태로 돌아간 뒤 확인 화면으로 이동합니다.
-				    </p>
-				</div>
+                    <div class="rd-actions__group" th:if="${myState.selectionStatus != 'SELECTED'}">
+                        <a class="mo-btn mo-btn-primary"
+                           th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">주문 확인하기</a>
+                    </div>
+
+                    <div class="rd-actions__group" th:if="${myState.selectionStatus == 'SELECTED'}">
+                        <form class="rd-inline-form"
+                              th:action="@{/rooms/code/{code}/unselect(code=${orderRoom.roomCode})}"
+                              method="post">
+                            <button type="submit" class="mo-btn mo-btn-primary">주문 확인하기</button>
+                        </form>
+                    </div>
+
+                    <p class="rd-note" th:if="${myState.selectionStatus == 'SELECTED'}">
+                        주문 확인하기를 누르면 선택 전 상태로 돌아간 뒤 확인 화면으로 이동합니다.
+                    </p>
+                </div>
             </div>
         </div>
 
         <div class="rd-grid-right">
-            <div class="mo-surface-card rd-section-card">
+            <div class="mo-surface-card rd-section-card rd-section-card--others">
                 <div class="mo-section-head">
                     <div>
                         <div class="mo-section-label">Others</div>
@@ -485,7 +613,7 @@
                 </div>
             </div>
 
-            <div class="mo-surface-card rd-section-card mt-3">
+            <div class="mo-surface-card rd-section-card rd-section-card--checkout mt-3">
                 <div class="mo-section-head">
                     <div>
                         <div class="mo-section-label">Checkout</div>
@@ -504,40 +632,38 @@
                     </div>
                 </div>
 
-
                 <div class="rd-actions mt-3" th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
-	                <div th:if="${isLeader}">
-					    <div class="rd-actions__group">
-					        <form class="rd-inline-form js-confirm-checkout"
-					              th:if="${allSelected}"
-					              th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
-					              method="post">
-					            <button type="submit" class="mo-btn mo-btn-primary">결제 진행하기</button>
-					        </form>
-					
-					        <button type="button"
-					                class="mo-btn mo-btn-primary"
-					                th:unless="${allSelected}"
-					                disabled>결제 진행하기</button>
-					
-					        <form class="rd-inline-form js-confirm-cancel"
-					              th:action="@{/rooms/code/{code}/close(code=${orderRoom.roomCode})}"
-					              method="post">
-					            <button type="submit" class="mo-btn mo-btn-outline">방 종료</button>
-					        </form>
-					    </div>
-					
-					    <p class="rd-note mt-2" th:unless="${allSelected}">아직 선택 완료되지 않은 참여자가 있어 결제 단계로 넘어갈 수 없습니다.</p>
-					</div>
-	
-	                    <div th:unless="${isLeader}">
-	                        <p class="rd-note">방장이 모든 참여자 선택 완료를 확인한 뒤 결제를 시작합니다.</p>
-	                        <form class="rd-inline-form js-confirm-leave mt-2"
-	                              th:action="@{/rooms/code/{code}/leave(code=${orderRoom.roomCode})}"
-	                              method="post">
-	                            <button type="submit" class="mo-btn mo-btn-outline">방 나가기</button>
-	                        </form>
-	                    </div>
+                    <div th:if="${isLeader}">
+                        <div class="rd-actions__group">
+                            <form class="rd-inline-form js-confirm-checkout"
+                                  th:if="${allSelected}"
+                                  th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
+                                  method="post">
+                                <button type="submit" class="mo-btn mo-btn-primary">결제 진행하기</button>
+                            </form>
+
+                            <button type="button"
+                                    class="mo-btn mo-btn-primary"
+                                    th:unless="${allSelected}"
+                                    disabled>결제 진행하기</button>
+
+                            <form class="rd-inline-form js-confirm-cancel"
+                                  th:action="@{/rooms/code/{code}/close(code=${orderRoom.roomCode})}"
+                                  method="post">
+                                <button type="submit" class="mo-btn mo-btn-outline">방 종료</button>
+                            </form>
+                        </div>
+
+                        <p class="rd-note mt-2" th:unless="${allSelected}">아직 선택 완료되지 않은 참여자가 있어 결제 단계로 넘어갈 수 없습니다.</p>
+                    </div>
+
+                    <div th:unless="${isLeader}">
+                        <p class="rd-note">방장이 모든 참여자 선택 완료를 확인한 뒤 결제를 시작합니다.</p>
+                        <form class="rd-inline-form js-confirm-leave mt-2"
+                              th:action="@{/rooms/code/{code}/leave(code=${orderRoom.roomCode})}"
+                              method="post">
+                            <button type="submit" class="mo-btn mo-btn-outline">방 나가기</button>
+                        </form>
                     </div>
                 </div>
 
@@ -551,7 +677,37 @@
             </div>
         </div>
     </section>
+
+    <div class="rd-mobile-sticky"
+         th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
+        <div class="rd-mobile-sticky__meta">
+            <span class="rd-mobile-sticky__count">
+                선택 완료 <span th:text="${completedCount}">0</span>/<span th:text="${participantCount}">0</span>
+            </span>
+            <strong class="rd-mobile-sticky__amount"
+                    th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')} + '원'">0원</strong>
+        </div>
+
+        <div class="rd-mobile-sticky__action" th:if="${isLeader}">
+            <form class="rd-inline-form js-confirm-checkout"
+                  th:if="${allSelected}"
+                  th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
+                  method="post">
+                <button type="submit" class="mo-btn mo-btn-primary">결제 진행</button>
+            </form>
+
+            <button type="button"
+                    class="mo-btn mo-btn-primary"
+                    th:unless="${allSelected}"
+                    disabled>결제 대기</button>
+        </div>
+
+        <div class="rd-mobile-sticky__action" th:unless="${isLeader}">
+            <button type="button" class="mo-btn mo-btn-outline" disabled>방장 진행 대기</button>
+        </div>
+    </div>
 </section>
+
 <th:block layout:fragment="pageScripts">
     <script th:src="@{/js/room/room-detail.js}"></script>
 </th:block>
