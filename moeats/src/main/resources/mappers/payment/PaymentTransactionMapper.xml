@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moeats.mapper.PaymentTransactionMapper">
+
+    <resultMap id="paymentTransactionMap" type="com.moeats.domain.PaymentTransaction">
+        <id property="paymentTransactionIdx" column="payment_transaction_idx"/>
+        <result property="paymentIdx" column="payment_idx"/>
+        <result property="paymentShareIdx" column="payment_share_idx"/>
+        <result property="memberIdx" column="member_idx"/>
+        <result property="attemptNo" column="attempt_no"/>
+        <result property="provider" column="provider"/>
+        <result property="transactionType" column="transaction_type"/>
+        <result property="merchantOrderId" column="merchant_order_id"/>
+        <result property="providerPaymentKey" column="provider_payment_key"/>
+        <result property="providerMethod" column="provider_method"/>
+        <result property="currency" column="currency"/>
+        <result property="requestAmount" column="request_amount"/>
+        <result property="approvedAmount" column="approved_amount"/>
+        <result property="cancelledAmount" column="cancelled_amount"/>
+        <result property="transactionStatus" column="transaction_status"/>
+        <result property="idempotencyKey" column="idempotency_key"/>
+        <result property="requestedAt" column="requested_at"/>
+        <result property="approvedAt" column="approved_at"/>
+        <result property="cancelledAt" column="cancelled_at"/>
+        <result property="expiredAt" column="expired_at"/>
+        <result property="failedAt" column="failed_at"/>
+        <result property="failCode" column="fail_code"/>
+        <result property="failMessage" column="fail_message"/>
+        <result property="rawResponse" column="raw_response"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <resultMap id="checkoutTargetMap" type="com.moeats.domain.TossCheckoutTarget">
+        <result property="paymentIdx" column="payment_idx"/>
+        <result property="paymentShareIdx" column="payment_share_idx"/>
+        <result property="orderIdx" column="order_idx"/>
+        <result property="roomIdx" column="room_idx"/>
+        <result property="memberIdx" column="member_idx"/>
+        <result property="paymentMode" column="payment_mode"/>
+        <result property="paymentStatus" column="payment_status"/>
+        <result property="shareStatus" column="share_status"/>
+        <result property="amount" column="amount"/>
+        <result property="orderName" column="order_name"/>
+        <result property="paymentExpiresAt" column="payment_expires_at"/>
+    </resultMap>
+
+    <select id="selectRepresentativeTarget" resultMap="checkoutTargetMap">
+        SELECT
+            p.payment_idx,
+            p.order_idx,
+            go.room_idx,
+            go.leader_member_idx AS member_idx,
+            p.payment_mode,
+            p.payment_status,
+            p.payment_request_amount AS amount,
+            CONCAT('Mo-Eats 대표결제 #', p.payment_idx) AS order_name,
+            p.payment_expires_at
+        FROM payment p
+        JOIN group_order go ON go.order_idx = p.order_idx
+        WHERE p.payment_idx = #{paymentIdx}
+          AND p.payment_mode = 'REPRESENTATIVE'
+          AND p.payment_status IN ('READY', 'IN_PROGRESS')
+    </select>
+
+    <select id="selectIndividualTarget" resultMap="checkoutTargetMap">
+        SELECT
+            p.payment_idx,
+            ps.payment_share_idx,
+            p.order_idx,
+            go.room_idx,
+            ps.member_idx,
+            p.payment_mode,
+            p.payment_status,
+            ps.share_status,
+            ps.share_amount AS amount,
+            CONCAT('Mo-Eats 각자결제 #', ps.payment_share_idx) AS order_name,
+            p.payment_expires_at
+        FROM payment_share ps
+        JOIN payment p ON p.payment_idx = ps.payment_idx
+        JOIN group_order go ON go.order_idx = p.order_idx
+        WHERE ps.payment_share_idx = #{paymentShareIdx}
+          AND p.payment_mode = 'INDIVIDUAL'
+          AND p.payment_status IN ('READY', 'IN_PROGRESS')
+    </select>
+
+    <select id="selectNextRepresentativeAttemptNo" resultType="int">
+        SELECT COALESCE(MAX(attempt_no), 0) + 1
+        FROM payment_transaction
+        WHERE payment_idx = #{paymentIdx}
+          AND transaction_type = 'REPRESENTATIVE'
+    </select>
+
+    <select id="selectNextIndividualAttemptNo" resultType="int">
+        SELECT COALESCE(MAX(attempt_no), 0) + 1
+        FROM payment_transaction
+        WHERE payment_share_idx = #{paymentShareIdx}
+          AND transaction_type = 'INDIVIDUAL'
+    </select>
+
+    <insert id="insertPaymentTransaction" parameterType="com.moeats.domain.PaymentTransaction"
+            useGeneratedKeys="true" keyProperty="paymentTransactionIdx">
+        INSERT INTO payment_transaction (
+            payment_idx,
+            payment_share_idx,
+            member_idx,
+            attempt_no,
+            provider,
+            transaction_type,
+            merchant_order_id,
+            currency,
+            request_amount,
+            cancelled_amount,
+            transaction_status,
+            idempotency_key
+        ) VALUES (
+            #{paymentIdx},
+            #{paymentShareIdx},
+            #{memberIdx},
+            #{attemptNo},
+            #{provider},
+            #{transactionType},
+            #{merchantOrderId},
+            #{currency},
+            #{requestAmount},
+            #{cancelledAmount},
+            #{transactionStatus},
+            #{idempotencyKey}
+        )
+    </insert>
+
+    <select id="selectByMerchantOrderId" resultMap="paymentTransactionMap">
+        SELECT *
+        FROM payment_transaction
+        WHERE merchant_order_id = #{merchantOrderId}
+        LIMIT 1
+    </select>
+
+    <update id="markTransactionInProgress">
+        UPDATE payment_transaction
+        SET transaction_status = 'IN_PROGRESS',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_transaction_idx = #{paymentTransactionIdx}
+          AND transaction_status IN ('READY', 'FAILED')
+    </update>
+
+    <update id="markTransactionDone">
+        UPDATE payment_transaction
+        SET provider_payment_key = #{providerPaymentKey},
+            provider_method = #{providerMethod},
+            approved_amount = #{approvedAmount},
+            transaction_status = 'DONE',
+            approved_at = CURRENT_TIMESTAMP,
+            raw_response = #{rawResponse},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_transaction_idx = #{paymentTransactionIdx}
+    </update>
+
+    <update id="markTransactionFailed">
+        UPDATE payment_transaction
+        SET transaction_status = 'FAILED',
+            fail_code = #{failCode},
+            fail_message = #{failMessage},
+            raw_response = #{rawResponse},
+            failed_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_transaction_idx = #{paymentTransactionIdx}
+    </update>
+
+    <update id="markTransactionExpiredByPayment">
+        UPDATE payment_transaction
+        SET transaction_status = CASE
+                                     WHEN transaction_status = 'DONE' THEN transaction_status
+                                     WHEN transaction_status = 'CANCELLED' THEN transaction_status
+                                     ELSE 'EXPIRED'
+                                 END,
+            expired_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_idx = #{paymentIdx}
+    </update>
+
+    <update id="markTransactionCancelPending">
+        UPDATE payment_transaction
+        SET transaction_status = 'CANCEL_PENDING',
+            fail_message = #{failMessage},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_transaction_idx = #{paymentTransactionIdx}
+    </update>
+
+    <update id="markTransactionCancelled">
+        UPDATE payment_transaction
+        SET transaction_status = 'CANCELLED',
+            cancelled_amount = #{cancelledAmount},
+            cancelled_at = CURRENT_TIMESTAMP,
+            raw_response = #{rawResponse},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_transaction_idx = #{paymentTransactionIdx}
+    </update>
+
+    <update id="markAllSharesPaidByRepresentative">
+        UPDATE payment_share
+        SET share_status = 'PAID_BY_REPRESENTATIVE',
+            paid_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_idx = #{paymentIdx}
+    </update>
+
+    <update id="markSharePaidSelf">
+        UPDATE payment_share
+        SET share_status = 'PAID_SELF',
+            paid_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_share_idx = #{paymentShareIdx}
+    </update>
+
+    <update id="markPendingSharesCancelled">
+        UPDATE payment_share
+        SET share_status = 'CANCELLED',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_idx = #{paymentIdx}
+          AND share_status = 'PENDING'
+    </update>
+
+    <select id="countPendingShares" resultType="int">
+        SELECT COUNT(*)
+        FROM payment_share
+        WHERE payment_idx = #{paymentIdx}
+          AND share_status = 'PENDING'
+    </select>
+
+    <select id="selectPaidAmount" resultType="int">
+        SELECT COALESCE(SUM(share_amount), 0)
+        FROM payment_share
+        WHERE payment_idx = #{paymentIdx}
+          AND share_status IN ('PAID_SELF', 'PAID_BY_REPRESENTATIVE')
+    </select>
+
+    <update id="markRoomParticipantsPaidByPayment">
+        UPDATE room_participant rp
+        JOIN group_order go ON go.room_idx = rp.room_idx
+        JOIN payment p ON p.order_idx = go.order_idx
+        SET rp.payment_status = 'PAID',
+            rp.updated_at = CURRENT_TIMESTAMP
+        WHERE p.payment_idx = #{paymentIdx}
+    </update>
+
+    <update id="markRoomParticipantPaidByShare">
+        UPDATE room_participant rp
+        JOIN payment_share ps ON ps.member_idx = rp.member_idx
+        JOIN payment p ON p.payment_idx = ps.payment_idx
+        JOIN group_order go ON go.order_idx = p.order_idx AND go.room_idx = rp.room_idx
+        SET rp.payment_status = 'PAID',
+            rp.updated_at = CURRENT_TIMESTAMP
+        WHERE ps.payment_share_idx = #{paymentShareIdx}
+    </update>
+
+    <update id="updatePaymentProgress">
+        UPDATE payment
+        SET payment_status = #{paymentStatus},
+            payment_paid_amount = #{paidAmount},
+            paid_at = CASE WHEN #{paymentStatus} = 'PAID' THEN CURRENT_TIMESTAMP ELSE paid_at END,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_idx = #{paymentIdx}
+    </update>
+
+    <update id="updatePaymentCancelled">
+        UPDATE payment
+        SET payment_status = 'CANCELLED',
+            cancelled_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payment_idx = #{paymentIdx}
+    </update>
+
+    <update id="updateGroupOrderPaidByPayment">
+        UPDATE group_order go
+        JOIN payment p ON p.order_idx = go.order_idx
+        SET go.order_status = 'PAID',
+            go.payment_confirmed_at = CURRENT_TIMESTAMP,
+            go.updated_at = CURRENT_TIMESTAMP
+        WHERE p.payment_idx = #{paymentIdx}
+    </update>
+
+    <update id="updateGroupOrderCancelledByPayment">
+        UPDATE group_order go
+        JOIN payment p ON p.order_idx = go.order_idx
+        SET go.order_status = 'CANCELLED',
+            go.cancelled_at = CURRENT_TIMESTAMP,
+            go.updated_at = CURRENT_TIMESTAMP
+        WHERE p.payment_idx = #{paymentIdx}
+    </update>
+
+    <update id="updateOrderRoomConfirmedByPayment">
+        UPDATE order_room orr
+        JOIN group_order go ON go.room_idx = orr.room_idx
+        JOIN payment p ON p.order_idx = go.order_idx
+        SET orr.room_status = 'ORDER_CONFIRMED',
+            orr.updated_at = CURRENT_TIMESTAMP
+        WHERE p.payment_idx = #{paymentIdx}
+    </update>
+
+    <update id="updateOrderRoomExpiredByPayment">
+        UPDATE order_room orr
+        JOIN group_order go ON go.room_idx = orr.room_idx
+        JOIN payment p ON p.order_idx = go.order_idx
+        SET orr.room_status = 'EXPIRED',
+            orr.updated_at = CURRENT_TIMESTAMP
+        WHERE p.payment_idx = #{paymentIdx}
+    </update>
+
+    <select id="selectExpiredIndividualPaymentIds" resultType="long">
+        SELECT p.payment_idx
+        FROM payment p
+        WHERE p.payment_mode = 'INDIVIDUAL'
+          AND p.payment_status IN ('READY', 'IN_PROGRESS')
+          AND p.payment_expires_at IS NOT NULL
+          AND p.payment_expires_at < CURRENT_TIMESTAMP
+          AND EXISTS (
+                SELECT 1
+                FROM payment_share ps
+                WHERE ps.payment_idx = p.payment_idx
+                  AND ps.share_status = 'PENDING'
+          )
+    </select>
+
+    <select id="selectDoneTransactionsByPayment" resultMap="paymentTransactionMap">
+        SELECT *
+        FROM payment_transaction
+        WHERE payment_idx = #{paymentIdx}
+          AND transaction_status = 'DONE'
+          AND provider_payment_key IS NOT NULL
+    </select>
+
+</mapper>
