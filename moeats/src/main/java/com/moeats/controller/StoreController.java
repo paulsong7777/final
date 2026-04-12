@@ -2,6 +2,7 @@ package com.moeats.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,7 @@ import com.moeats.geo.GeoService;
 import com.moeats.service.StoreService;
 import com.moeats.services.GroupOrderService;
 import com.moeats.services.GroupOrderService.GroupOrderRecord;
+import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.sse.SSEService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +42,9 @@ public class StoreController {
     private SSEService sseService;
     @Autowired
     private GeoService geoService;
+    
+    @Autowired
+    private OrderMemberQueryService orderMemberQueryService;
     
     private final String COMPLETED = "COMPLETED";
  // tier1에서 delivery 구현이 안되는 상황이기 때문에 간소화. 영훈
@@ -82,6 +87,14 @@ public class StoreController {
 	    }
 	    List<GroupOrderRecord> groupOrderList = groupOrderService.findRecordByStore(store.getStoreIdx());
         
+	    // 방장들의 Nickname을 맵으로 추출
+	    Map<Integer, String> leaderNameMap = orderMemberQueryService.findByIdxs(
+	        groupOrderList.stream().map(r -> r.groupOrder().getLeaderMemberIdx()).toList()
+	    ).stream().collect(Collectors.toMap(Member::getMemberIdx, Member::getMemberNickname));
+
+	    model.addAttribute("leaderNameMap", leaderNameMap);
+	    model.addAttribute("orderList", groupOrderList);
+	    
 	    model.addAttribute("menu", "dash");
 	    model.addAttribute("store", store);
 	    model.addAttribute("orderList", groupOrderList);
@@ -108,38 +121,57 @@ public class StoreController {
 	
 	@GetMapping("/owners/order/detail")
 	public String orderDetail(
-	        RedirectAttributes ra,
-	        Model model,
-	        @RequestParam(name = "roomIdx", defaultValue = "0") int roomIdx,
-	        @SessionAttribute("member") Member member) {
+            RedirectAttributes ra,
+            Model model,
+            @RequestParam(name = "roomIdx", defaultValue = "0") int roomIdx,
+            @SessionAttribute("member") Member member) {
 
-	    Store store = storeService.myStore(member.getMemberIdx());
-	    if (store == null) {
-	        ra.addFlashAttribute("error", "가게가 없습니다");
-	        return "redirect:/owners/store/new";
-	    }
+        Store store = storeService.myStore(member.getMemberIdx());
+        if (store == null) {
+            ra.addFlashAttribute("error", "가게가 없습니다");
+            return "redirect:/owners/store/new";
+        }
 
-	    if (roomIdx == 0) {
-	        ra.addFlashAttribute("error", "잘못된 주문 번호입니다");
-	        return "redirect:/owners/dashboard";
-	    }
+        if (roomIdx == 0) {
+            ra.addFlashAttribute("error", "잘못된 주문 번호입니다");
+            return "redirect:/owners/dashboard";
+        }
 
-	    GroupOrder groupOrder = groupOrderService.findByRoom(roomIdx);
-	    if (groupOrder == null
-	            || groupOrder.getStoreIdx() != store.getStoreIdx()
-	            || !ORDER_STATUSES.contains(groupOrder.getOrderStatus())) {
-	        ra.addFlashAttribute("error", "잘못된 주문 번호입니다");
-	        return "redirect:/owners/dashboard";
-	    }
+        GroupOrder groupOrder = groupOrderService.findByRoom(roomIdx);
+        if (groupOrder == null
+                || groupOrder.getStoreIdx() != store.getStoreIdx()
+                || !ORDER_STATUSES.contains(groupOrder.getOrderStatus())) {
+            ra.addFlashAttribute("error", "잘못된 주문 번호입니다");
+            return "redirect:/owners/dashboard";
+        }
 
-	    GroupOrderService.GroupOrderRecord orderRecord =
-	            groupOrderService.findRecordByIdx(groupOrder.getOrderIdx());
+        GroupOrderService.GroupOrderRecord orderRecord =
+                groupOrderService.findRecordByIdx(groupOrder.getOrderIdx());
 
-	    model.addAttribute("menu", "order-detail");
-	    model.addAttribute("store", store);
-	    model.addAttribute("orderRecord", orderRecord);
-	    return "views/owner/order-detail";
-	}
+        // 🌟 [핵심] 주문한 사람들의 닉네임을 가져와서 화면으로 넘겨주는 로직 🌟
+        try {
+            List<Integer> memberIdxList = orderRecord.groupOrderItems().stream()
+                    .map(com.moeats.domain.GroupOrderItem::getMemberIdx)
+                    .distinct()
+                    .toList();
+
+            Map<Integer, String> memberNameMap = orderMemberQueryService.findByIdxs(memberIdxList).stream()
+                    .collect(Collectors.toMap(Member::getMemberIdx, Member::getMemberNickname));
+
+            model.addAttribute("memberNameMap", memberNameMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // 	orderDetail 메서드 내부
+        Member leader = orderMemberQueryService.findByIdxs(List.of(groupOrder.getLeaderMemberIdx())).get(0);
+        model.addAttribute("leader", leader);
+
+        model.addAttribute("menu", "order-detail");
+        model.addAttribute("store", store);
+        model.addAttribute("orderRecord", orderRecord);
+        return "views/owner/order-detail";
+    }
     // 3차 디버깅 결과 터질 위험요소 발견. ViewOwnerController 삭제로 보강 필요하다 판단.
 //    @PostMapping("/order/status_update")
 //    @ResponseBody
@@ -364,5 +396,17 @@ public class StoreController {
     	log.info("미구현");
         model.addAttribute("menu", "report");
         return "views/owner/sales-report";
+    }
+    
+    @GetMapping("/owners/order/api/list")
+    @ResponseBody
+    public List<GroupOrderService.GroupOrderRecord> orderListApi(
+            @SessionAttribute("member") Member member) {
+        Store store = storeService.myStore(member.getMemberIdx());
+        if (store == null) return List.of();
+        
+        // DB에서 주문 목록을 가져옵니다. 
+        // (정렬은 이전에 XML에서 수정한 대로 미완료 주문 우선으로 나옵니다.)
+        return groupOrderService.findRecordByStore(store.getStoreIdx());
     }
 }

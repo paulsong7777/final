@@ -57,35 +57,74 @@
                         <th:block th:if="${not #lists.isEmpty(orderList)}">
                             
                             <div th:each="order : ${orderList}" 
-                                 class="mo-address-item mb-3 bg-white p-4 border rounded-4 shadow-sm" 
-                                 th:data-idx="${order.groupOrder.roomIdxorder}"
-                                 onclick="handleCardClick(event, this)"
-                                 style="cursor: pointer; transition: transform 0.2s ease;">
-                                
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="mo-badge border-0 rounded-pill px-2 py-1 fw-bold" style="background: var(--mo-bg); color: var(--mo-text-soft); font-size: 11px;" th:text="${order['orderCode'] ?: 'ROOM-' + order.groupOrder.roomIdxorder}">코드</span>
-                                    
-                                    <div th:switch="${order.groupOrder.orderStatus}">
-                                        <span th:case="'PAID'" class="fw-bold fs-6 text-danger">결제확인</span>
-                                        <span th:case="'ACCEPTED'" class="fw-bold fs-6" style="color: var(--mo-primary);">접수완료</span>
-                                        <span th:case="'PREPARING'" class="fw-bold fs-6 text-success">준비 중</span>
-                                        <span th:case="'READY'" class="fw-bold fs-6 text-info">배달 중</span>
-                                        <span th:case="COMPLETED" class="fw-bold fs-6 text-secondary">배달완료</span>
-                                    </div>
-                                </div>
-
-                                <h4 class="fw-bold mb-2 text-truncate" style="color: var(--mo-navy-strong); font-size: 18px;" th:text="${order['orderMenu'] ?: '신규 주문'}">메뉴명</h4>
-                                
-                                <div class="text-secondary mb-4 text-truncate" style="font-size: 14px;">
-                                    <i class="bi bi-geo-alt-fill me-1 text-primary"></i> 
-                                    <span th:text="${order.orderDelivery.deliveryAddress1 ?: '주소 정보 없음'}">배달 주소</span>
-                                </div>
-
-                                <button type="button" class="mo-btn mo-btn-primary w-100 rounded-3 shadow-sm" style="min-height: 42px;" 
-                                        th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdxorder}]], 'ACCEPTED')">
-                                    주문 접수하기
-                                </button>
-                            </div>
+							     class="mo-address-item mb-3 bg-white p-4 border rounded-4 shadow-sm" 
+							     th:data-idx="${order.groupOrder.roomIdx}"
+							     onclick="handleCardClick(event, this)"
+							     style="cursor: pointer; transition: transform 0.2s ease;">
+							    
+							    <div class="d-flex justify-content-between align-items-center mb-3">
+								    <div class="fw-bold" style="font-size: 14px; color: var(--mo-text-soft);">
+								        <div class="mb-1">
+								            주문번호 <span class="ms-1" style="color: var(--mo-primary); font-size: 16px;" th:text="${order.groupOrder.orderIdx}">3</span>
+								            <span class="ms-2 text-dark" th:text="'| ' + ${leaderNameMap[order.groupOrder.leaderMemberIdx]} + ' 님'">| 홍길동 님</span>
+								        </div>
+								        
+										<div class="mt-2 fw-bold" style="font-size: 15px; color: var(--mo-navy-strong);">
+										    주문시각 : 
+										    <span th:with="targetDate=${order.groupOrder.paymentConfirmedAt ?: order.groupOrder.createdAt}"
+										          th:text="${#temporals.format(targetDate.toLocalDateTime().plusHours(9), 'yyyy-MM-dd HH:mm:ss')}">
+										        13:15:24
+										    </span>
+										</div>
+								    </div>
+								    
+								    <div th:switch="${order.groupOrder.orderStatus}">
+								        <span th:case="'PAID'" class="fw-bold fs-6 text-danger">결제확인</span>
+								        <span th:case="'ACCEPTED'" class="fw-bold fs-6" style="color: var(--mo-primary);">접수완료</span>
+								        <span th:case="'PREPARING'" class="fw-bold fs-6 text-success">조리 중</span>
+								        <span th:case="'READY'" class="fw-bold fs-6 text-info">배달 중</span>
+								        <span th:case="COMPLETED" class="fw-bold fs-6 text-secondary">배달완료</span>
+								    </div>
+								</div>
+							
+							    <h4 class="fw-bold mb-2 text-truncate" style="color: var(--mo-navy-strong); font-size: 18px;" 
+							        th:text="${!order.groupOrderItems.isEmpty() ? order.groupOrderItems[0].menuNameSnapshot + (order.groupOrderItems.size() > 1 ? ' 외 ' + (order.groupOrderItems.size() - 1) + '건' : '') : '신규 주문'}">
+							        메뉴명
+							    </h4>
+							    
+							    <div class="text-secondary mb-4" style="font-size: 14px; line-height: 1.4;">
+							        <i class="bi bi-geo-alt-fill me-1 text-primary"></i> 
+							        <span class="fw-bold text-dark">배달 주소 :</span>
+							        <span th:text="${order.orderDelivery.deliveryAddress1}">지번/도로명 주소</span>
+							        <span th:if="${order.orderDelivery.deliveryAddress2 != null}" th:text="${' ' + order.orderDelivery.deliveryAddress2}">상세주소</span>
+							    </div>
+							
+							    <th:block th:switch="${order.groupOrder.orderStatus}">
+							        <button th:case="'PAID'" type="button" class="mo-btn mo-btn-primary w-100 rounded-3 shadow-sm fw-bold" style="min-height: 42px;" 
+							                th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'ACCEPTED')">
+							            주문 접수하기
+							        </button>
+							        
+							        <button th:case="'ACCEPTED'" type="button" class="btn w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px; background-color: #ff9800;" 
+							                th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'PREPARING')">
+							            조리 시작하기
+							        </button>
+							        
+							        <button th:case="'PREPARING'" type="button" class="btn btn-success w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" 
+							                th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'READY')">
+							            배달 시작하기
+							        </button>
+							        
+							        <button th:case="'READY'" type="button" class="btn btn-info w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" 
+							                th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'COMPLETED')">
+							            배달 완료처리
+							        </button>
+							        
+							        <button th:case="'COMPLETED'" type="button" class="btn btn-secondary w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" disabled>
+							            처리가 완료된 주문입니다
+							        </button>
+							    </th:block>
+							</div>
                         </th:block>
                         
                         <div th:if="${#lists.isEmpty(orderList)}" class="mo-empty-state mo-empty-state--compact h-100 border-0 shadow-none bg-transparent">
@@ -158,7 +197,8 @@
                 });
 
                 if(response.ok) {
-                    location.href = '/owner/order/detail?roomIdx=' + roomIdx;
+                	// 옵션 1: 대시보드 화면에 그대로 남아서 변경된 상태를 바로 확인하고 싶을 때 (추천!)
+                    location.reload();
                 } else {
                     alert("처리 중 오류가 발생했습니다.");
                     btn.disabled = false;

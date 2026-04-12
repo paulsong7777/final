@@ -275,71 +275,79 @@ $(function(){
     });
 	
 	// =========================
-		// 🔥 [수정] 이메일 실시간 입력 제한 (경고창 추가)
-		// =========================
+	// 🔥 [수정] 모바일(천지인) 호환을 위한 입력 제한 및 유효성 검사
+	// =========================
 
-		// 1. 이메일 아이디: 영문 대소문자, 숫자만 허용
-		$("#email_id").on("input", function() {
-		    let val = $(this).val();
+	let isComposing = false; // 한글 조합 중인지 체크하는 플래그
 
-		    // 영문/숫자만 허용
-		    val = val.replace(/[^a-zA-Z0-9]/g, '');
+	// 한글 조합 시작
+	$("#memberNickname, #email_id, #email_domain").on("compositionstart", function() {
+	    isComposing = true;
+	});
 
-		    // 20자 제한
-		    if(val.length > 20){
-		        alert("이메일 아이디는 최대 20자까지 가능합니다.");
-		        val = val.substring(0, 20);
-		    }
+	// 한글 조합 완료
+	$("#memberNickname, #email_id, #email_domain").on("compositionend", function() {
+	    isComposing = false;
+	    // 조합이 끝난 직후에 한번 검사를 트리거합니다.
+	    $(this).trigger("input");
+	});
 
-		    $(this).val(val);
-		});
+	// 1. 이메일 아이디: 영문 대소문자, 숫자만 허용 (한글 입력 시 튕겨냄)
+	$("#email_id").on("input", function() {
+	    if (isComposing) return; // 조합 중이면 대기
 
-		// 2. 이메일 도메인: 영문 대소문자, 마침표(.)만 허용
-		$("#email_domain").on("input", function() {
-			let currentVal = $(this).val();
-			
-			// 영문, 마침표(.)가 아닌 문자가 하나라도 입력되었는지 검사
-			if (/[^a-zA-Z.]/.test(currentVal)) {
-				alert("이메일 도메인은 영문과 마침표(.)만 입력 가능합니다.");
-				// 잘못 입력된 문자만 지우고, 원래 쓰던 영문/마침표는 그대로 복구
-				$(this).val(currentVal.replace(/[^a-zA-Z.]/g, ''));
-			}
-		});
-		
-		// 3. 별명 검사 (두 단계로 분리)
-			
-			// (1) 타이핑 중: 특수문자와 공백만 실시간 차단 (자음/모음은 조합을 위해 임시 허용)
-			$("#memberNickname").on("input", function() {
-				let currentVal = $(this).val();
-				
-				// 영문, 숫자, 한글(자음/모음 포함)이 아닌 문자(특수문자, 띄어쓰기)가 들어오면
-				if (/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/.test(currentVal)) {
-					alert("별명에는 특수문자나 공백을 사용할 수 없습니다.");
-					$(this).val(currentVal.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/g, ''));
-				}
-			});
+	    let val = $(this).val();
+	    let originalVal = val;
+	    val = val.replace(/[^a-zA-Z0-9]/g, ''); // 영문/숫자 외 제거
 
-			// (2) 입력 완료 후 (포커스가 벗어날 때): 단독 자음/모음이 남아있는지 최종 검사
-			$("#memberNickname").on("blur", function() {
-				let currentVal = $(this).val();
-				
-				// 완성되지 않은 자음이나 모음(ㄱ~ㅎ, ㅏ~ㅣ)이 텍스트에 섞여 있다면
-				if (/[ㄱ-ㅎㅏ-ㅣ]/.test(currentVal)) {
-					alert("별명에 자음이나 모음만 단독으로 남겨둘 수 없습니다. (예: ㅋㅋ, ㅇㄴㅁ)");
-					// 단독으로 쓰인 자음/모음만 싹 지워버림
-					$(this).val(currentVal.replace(/[ㄱ-ㅎㅏ-ㅣ]/g, ''));
-				}
-			});
+	    if (originalVal !== val) {
+	        // 한글이나 특수문자를 쳤을 때만 (경고창 대신 자연스럽게 지워짐)
+	        $(this).val(val);
+	    }
 
-			// 4. 전화번호 (가운데, 끝 자리): 숫자만 허용
-			$("#phone2, #phone3").on("input", function() {
-				let currentVal = $(this).val();
-				
-				// 숫자가 아닌 문자가 하나라도 입력되었는지 검사
-				if (/[^0-9]/.test(currentVal)) {
-					alert("전화번호는 숫자만 입력 가능합니다.");
-					// 숫자가 아닌 문자를 모두 지움
-					$(this).val(currentVal.replace(/[^0-9]/g, ''));
-				}
-			});
+	    if (val.length > 20) {
+	        alert("이메일 아이디는 최대 20자까지 가능합니다.");
+	        $(this).val(val.substring(0, 20));
+	    }
+	});
+
+	// 2. 이메일 도메인: 영문 대소문자, 마침표(.)만 허용
+	$("#email_domain").on("input", function() {
+	    if (isComposing) return;
+
+	    let currentVal = $(this).val();
+	    if (/[^a-zA-Z.]/.test(currentVal)) {
+	        // alert 창은 UX를 해칠 수 있으므로, 모바일 환경에서는 
+	        // 텍스트를 바로 치환해주는 방식이 더 안전합니다.
+	        $(this).val(currentVal.replace(/[^a-zA-Z.]/g, ''));
+	    }
+	});
+
+	// 3. 별명 검사 (천지인 완벽 호환)
+	// (1) 타이핑 중: 특수문자와 공백만 실시간 차단
+	$("#memberNickname").on("input", function() {
+	    if (isComposing) return; // 'ㄱ', 'ㅏ' 치는 동안에는 절대 건드리지 않음
+
+	    let currentVal = $(this).val();
+	    if (/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/.test(currentVal)) {
+	        $(this).val(currentVal.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/g, ''));
+	    }
+	});
+
+	// (2) 입력 완료 후 (포커스가 벗어날 때): 단독 자음/모음 검사
+	$("#memberNickname").on("blur", function() {
+	    let currentVal = $(this).val();
+	    if (/[ㄱ-ㅎㅏ-ㅣ]/.test(currentVal)) {
+	        alert("별명에 자음이나 모음만 단독으로 남겨둘 수 없습니다. (예: ㅋㅋ, ㅇㄴㅁ)");
+	        $(this).val(currentVal.replace(/[ㄱ-ㅎㅏ-ㅣ]/g, ''));
+	    }
+	});
+
+	// 4. 전화번호: 숫자만 허용 (전화번호는 한글 조합 이슈가 없으므로 그대로 유지)
+	$("#phone2, #phone3").on("input", function() {
+	    let currentVal = $(this).val();
+	    if (/[^0-9]/.test(currentVal)) {
+	        $(this).val(currentVal.replace(/[^0-9]/g, ''));
+	    }
+	});
 });

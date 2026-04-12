@@ -2,6 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moeats.mappers.GroupOrderMapper">
+	
+	<select id="findByMember" resultType="GroupOrder">
+	    SELECT DISTINCT 
+	        go.*, 
+	        s.store_name as storeName  FROM group_order go
+	    JOIN group_order_item goi ON go.order_idx = goi.order_idx
+	    JOIN store s ON go.store_idx = s.store_idx  WHERE goi.member_idx = #{memberIdx}
+	      AND NOT go.order_status IN ('PAYMENT_PENDING', 'CANCELLED')
+	    ORDER BY go.payment_confirmed_at DESC, go.created_at DESC
+	    LIMIT 5
+	</select>
+	
 	<select id="findAll" resultType="GroupOrder">
 		SELECT * FROM group_order
 	</select>
@@ -12,7 +24,18 @@
 		SELECT * FROM group_order WHERE room_idx = #{roomIdx}
 	</select>
 	<select id="findByStore" resultType="GroupOrder">
-		SELECT * FROM group_order WHERE store_idx = #{StoreIdx} AND NOT order_status IN ('PAYMENT_PENDING','CANCELLED')
+	    SELECT * FROM group_order 
+	    WHERE store_idx = #{StoreIdx} 
+	      AND NOT order_status IN ('PAYMENT_PENDING','CANCELLED')
+	    ORDER BY 
+	        <!-- /* 1순위: 주문 완료(COMPLETED)된 항목은 무조건 뒤로(1), 나머지는 앞으로(0) */ -->
+	        CASE WHEN order_status = 'COMPLETED' THEN 1 ELSE 0 END ASC,
+	        
+	        <!-- /* 2순위: 최근 주문 시각(payment_confirmed_at)이 가장 위로 올라오게 */ -->
+	        payment_confirmed_at DESC,
+	        
+	        <!-- /* 3순위: 만약 결제시각이 없다면 생성일시 기준 최근순 */ -->
+	        created_at DESC
 	</select>
 	<select id="findActive" resultType="GroupOrder">
 		SELECT * FROM group_order WHERE order_status = 'ACTIVE'

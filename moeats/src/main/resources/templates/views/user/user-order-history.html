@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layout/default}">
+<head>
+    <title>나의 최근 주문 내역</title>
+	 <style>
+	 	/* 내가 주문한 메뉴 행 강조 */
+		.menu-item-row.is-me {
+		    background: rgba(255, 128, 0, 0.08); 
+		    margin: 0 -8px; 
+		    padding: 6px 8px;
+		    border-radius: 6px;
+		}
+		
+		/* '나' 표시 태그 */
+		.me-label {
+		    background: var(--mo-primary) !important;
+		    color: #fff !important;
+		    box-shadow: 0 2px 4px rgba(255, 128, 0, 0.2);
+		}
+	    
+        /* 카드 전체 슬림화 */
+	    .mo-history-item {
+	        padding: 18px 22px !important;
+	        margin-bottom: 16px !important;
+	        border-radius: 16px !important;
+	        border: 1px solid rgba(42, 54, 89, 0.08) !important;
+	        background: #fff;
+	    }
+	    
+	    /* 상단 요약 라인 */
+	    .history-head {
+	        display: flex;
+	        justify-content: space-between;
+	        align-items: center;
+	        font-size: 12px;
+	        margin-bottom: 12px;
+	        color: var(--mo-text-soft);
+	    }
+	
+	    /* 메인 정보 (가게명) */
+	    .history-store {
+	        font-size: 18px;
+	        font-weight: 800;
+	        color: var(--mo-navy-strong);
+	        margin-bottom: 14px;
+	    }
+	
+	    /* 메뉴 및 주문자 목록 */
+	    .history-menu-list {
+	        background: #f8f9fa;
+	        border-radius: 10px;
+	        padding: 12px 16px;
+	        margin-bottom: 14px;
+	    }
+	    .menu-item-row {
+	        display: flex;
+	        justify-content: space-between;
+            align-items: center;
+	        margin-bottom: 8px;
+	    }
+        .menu-item-row:last-child {
+            margin-bottom: 0;
+        }
+
+	    .order-member {
+	        font-size: 11px;
+	        color: var(--mo-primary);
+	        font-weight: 700;
+	        background: rgba(255, 128, 0, 0.1);
+	        padding: 3px 8px;
+	        border-radius: 4px;
+            min-width: 48px;
+            text-align: center;
+	    }
+	
+	    /* 배송지 정보 */
+	    .history-address {
+	        font-size: 12px;
+	        color: #666;
+	        margin-bottom: 16px;
+	    }
+	
+	    /* 하단 가격 라인 */
+	    .history-footer {
+	        display: flex;
+	        justify-content: space-between;
+	        align-items: flex-end;
+	        border-top: 1px dashed #ddd;
+	        padding-top: 14px;
+	    }
+	</style>
+</head>
+
+<body>
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container py-5">
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+
+                <div class="position-relative text-center mb-4 pb-2">
+                    <span class="mo-section-label">ORDER LIST</span>
+                    <h2 class="mo-section-title mb-0" style="font-size: 24px;">주문 전체 내역</h2>
+                    
+                    <a href="/members/me" class="position-absolute bottom-0 end-0 mo-btn mo-btn-outline d-flex align-items-center" 
+                       style="min-height: 28px; padding: 0 10px; font-size: 12px; border-radius: 8px; color: var(--mo-text-soft); border-color: #ddd;">
+                        <i class="bi bi-house-door me-1"></i>돌아가기
+                    </a>
+                </div>
+                
+                <div th:each="record : ${orderList}" class="mo-history-item shadow-sm" th:with="safeOrder=${record.groupOrder}">
+    
+                    <div class="history-head">
+				        <span th:text="${#temporals.format((safeOrder.paymentConfirmedAt ?: safeOrder.createdAt).toLocalDateTime().plusHours(9), 'yyyy-MM-dd HH:mm')}">날짜</span>
+				        
+                        <span class="fw-bold" style="color: var(--mo-primary);" 
+                              th:text="${safeOrder.orderStatus == 'PAID' ? '결제완료' : 
+                                        (safeOrder.orderStatus == 'ACCEPTED' ? '조리중' : 
+                                        (safeOrder.orderStatus == 'READY' ? '배달중' : 
+                                        (safeOrder.orderStatus == 'COMPLETED' ? '배달완료' : safeOrder.orderStatus)))}">상태</span>
+				    </div>
+				
+                    <div class="history-store" th:text="${safeOrder.storeName}">가게이름</div>
+				
+                    <div class="history-menu-list">
+						<div th:each="item : ${record.groupOrderItems}" 
+						     class="menu-item-row"
+						     th:classappend="${session.member.memberIdx == item.memberIdx} ? 'is-me' : ''">
+						    
+                            <div class="d-flex flex-column justify-content-center">
+						        <span class="fw-bold" style="font-size: 14px; color: var(--mo-navy);" th:text="${item.menuNameSnapshot}">메뉴명</span>
+						        <span class="text-secondary mt-1" style="font-size: 11px;" 
+                                      th:text="${#numbers.formatInteger(item.itemTotalAmount / item.itemQuantity, 0, 'COMMA')} + '원 × ' + ${item.itemQuantity} + '개'">
+                                    단가 × 수량
+                                </span>
+						    </div>
+						    
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold" style="color: #333; font-size: 14px;" th:text="${#numbers.formatInteger(item.itemTotalAmount, 0, 'COMMA')} + '원'">0원</span>
+                                <span class="order-member" 
+                                      th:classappend="${session.member.memberIdx == item.memberIdx} ? 'me-label' : ''"
+                                      th:text="${session.member.memberIdx == item.memberIdx} ? '나' : (${item.memberNickname ?: '유저#' + item.memberIdx})">
+                                    별명
+                                </span>
+                            </div>
+						</div>
+				    </div>
+				
+                    <div class="history-address">
+				        <i class="bi bi-geo-alt-fill text-secondary"></i>
+				        <span th:text="${record.orderDelivery != null ? record.orderDelivery.deliveryAddress1+ ' ' + (record.orderDelivery.deliveryAddress2 ?: '') : '주소 없음'}">배송지 정보</span>
+				    </div>
+				
+                    <div class="history-footer"
+                         th:with="myItems=${record.groupOrderItems.?[memberIdx == __${session.member.memberIdx}__]},
+                                  myTotal=${#lists.isEmpty(myItems) ? 0 : #aggregates.sum(myItems.![itemTotalAmount])}">
+				        
+                        <div class="d-flex flex-column justify-content-end">
+                            <div class="fs-5 fw-bold" style="color: var(--mo-primary);">
+                                내 결제 금액 <span th:text="${#numbers.formatInteger(myTotal, 0, 'COMMA')}">0</span>원
+                            </div>
+                            <div class="text-secondary small fw-bold mt-1">
+                                총 결제 금액 <span th:text="${#numbers.formatInteger(safeOrder.orderTotalAmount, 0, 'COMMA')}">0</span>원
+                            </div>
+                        </div>
+
+				    </div>
+				</div>
+
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

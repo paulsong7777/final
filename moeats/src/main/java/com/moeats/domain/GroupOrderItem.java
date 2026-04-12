@@ -18,4 +18,7 @@ public class GroupOrderItem {
 	int itemTotalAmount;
 	Timestamp createdAt;
 	Timestamp updatedAt;
+	
+	// 🌟 이 필드를 추가해야 서비스에서 별명을 담아줄 수 있습니다!
+    private String memberNickname;
 }
