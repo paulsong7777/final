@@ -41,7 +41,7 @@ public class TossPaymentWindowService {
     }
 
     @Transactional
-    public String openRepresentativeCheckout(Long paymentIdx) {
+    public String openRepresentativeCheckout(Long paymentIdx, String baseUrl) {
         TossCheckoutTarget target = paymentTransactionMapper.selectRepresentativeTarget(paymentIdx);
 
         if (target == null) {
@@ -64,14 +64,14 @@ public class TossPaymentWindowService {
         request.setCurrency("KRW");
         request.setOrderId(transaction.getMerchantOrderId());
         request.setOrderName(target.getOrderName());
-        request.setSuccessUrl(tossPaymentsProperties.getSuccessUrl());
-        request.setFailUrl(tossPaymentsProperties.getFailUrl());
+        request.setSuccessUrl(resolveSuccessUrl(baseUrl));
+        request.setFailUrl(resolveFailUrl(baseUrl));
 
         return createPaymentWindow(transaction.getPaymentTransactionIdx(), transaction.getIdempotencyKey(), request);
     }
 
     @Transactional
-    public String openIndividualCheckout(Long paymentShareIdx) {
+    public String openIndividualCheckout(Long paymentShareIdx, String baseUrl) {
         TossCheckoutTarget target = paymentTransactionMapper.selectIndividualTarget(paymentShareIdx);
 
         if (target == null) {
@@ -100,8 +100,8 @@ public class TossPaymentWindowService {
         request.setCurrency("KRW");
         request.setOrderId(transaction.getMerchantOrderId());
         request.setOrderName(target.getOrderName());
-        request.setSuccessUrl(tossPaymentsProperties.getSuccessUrl());
-        request.setFailUrl(tossPaymentsProperties.getFailUrl());
+        request.setSuccessUrl(resolveSuccessUrl(baseUrl));
+        request.setFailUrl(resolveFailUrl(baseUrl));
 
         return createPaymentWindow(transaction.getPaymentTransactionIdx(), transaction.getIdempotencyKey(), request);
     }
@@ -183,4 +183,25 @@ public class TossPaymentWindowService {
             return "{}";
         }
     }
+    private String resolveSuccessUrl(String baseUrl) {
+        if (baseUrl != null && !baseUrl.isBlank()) {
+            return trimTrailingSlash(baseUrl) + "/sandbox/toss/success";
+        }
+        return tossPaymentsProperties.getSuccessUrl();
+    }
+
+    private String resolveFailUrl(String baseUrl) {
+        if (baseUrl != null && !baseUrl.isBlank()) {
+            return trimTrailingSlash(baseUrl) + "/sandbox/toss/fail";
+        }
+        return tossPaymentsProperties.getFailUrl();
+    }
+
+    private String trimTrailingSlash(String value) {
+        if (value == null || value.isBlank()) {
+            return value;
+        }
+        return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+    }
+    
 }

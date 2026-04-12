@@ -10,6 +10,18 @@
         <style>
             .rd-page-shell {
                 padding-bottom: 40px;
+                overflow-x: hidden;
+            }
+
+            .rd-page-stack,
+            .rd-main-grid,
+            .rd-left,
+            .rd-right,
+            .rd-panel,
+            .rd-card,
+            .rd-item-card,
+            .rd-summary-card {
+                min-width: 0;
             }
 
             .rd-page-stack {
@@ -35,7 +47,7 @@
             .rd-top-title {
                 margin: 0;
                 color: var(--mo-navy-strong);
-                font-size: clamp(2rem, 2.4vw, 2.8rem);
+                font-size: clamp(2rem, 2.3vw, 2.8rem);
                 line-height: 1.08;
                 letter-spacing: -0.05em;
                 font-weight: 800;
@@ -66,6 +78,7 @@
                 font-weight: 800;
                 line-height: 1;
                 letter-spacing: -0.01em;
+                white-space: nowrap;
             }
 
             .rd-chip--primary {
@@ -155,12 +168,15 @@
             .rd-flow-step {
                 display: flex;
                 align-items: center;
+                justify-content: center;
                 gap: 10px;
-                min-height: 52px;
-                padding: 0 14px;
+                min-height: 54px;
+                padding: 0 12px;
                 border-radius: 16px;
                 border: 1px solid rgba(42, 54, 89, 0.08);
                 background: #fff;
+                min-width: 0;
+                text-align: center;
             }
 
             .rd-flow-step--current {
@@ -202,7 +218,8 @@
                 font-size: 14px;
                 font-weight: 800;
                 line-height: 1.2;
-                white-space: nowrap;
+                white-space: normal;
+                word-break: keep-all;
             }
 
             .rd-summary-grid {
@@ -234,6 +251,7 @@
                 font-weight: 800;
                 line-height: 1.2;
                 letter-spacing: -0.03em;
+                word-break: keep-all;
             }
 
             .rd-summary-card__desc {
@@ -317,6 +335,7 @@
                 font-size: 15px;
                 font-weight: 800;
                 letter-spacing: -0.02em;
+                word-break: keep-all;
             }
 
             .rd-badge-row {
@@ -336,6 +355,7 @@
                 font-size: 12px;
                 font-weight: 800;
                 line-height: 1;
+                white-space: nowrap;
             }
 
             .rd-badge--leader {
@@ -363,6 +383,7 @@
                 font-size: 1rem;
                 font-weight: 800;
                 white-space: nowrap;
+                flex-shrink: 0;
             }
 
             .rd-inline-form {
@@ -407,6 +428,7 @@
                 color: var(--mo-navy-strong);
                 font-size: 15px;
                 font-weight: 800;
+                word-break: keep-all;
             }
 
             .rd-item-meta {
@@ -450,6 +472,7 @@
                 font-size: 1rem;
                 font-weight: 800;
                 letter-spacing: -0.02em;
+                white-space: nowrap;
             }
 
             .rd-summary-value strong {
@@ -524,7 +547,7 @@
 
             @media (max-width: 767.98px) {
                 .rd-page-shell {
-                    padding-bottom: 116px;
+                    padding-bottom: 104px;
                 }
 
                 .rd-top-card,
@@ -539,11 +562,20 @@
                 }
 
                 .rd-top-title {
-                    font-size: 2.2rem;
+                    font-size: 2rem;
+                }
+
+                .rd-top-subtitle,
+                .rd-panel__desc,
+                .rd-summary-card__desc,
+                .rd-muted,
+                .rd-note,
+                .rd-code-section__desc {
+                    font-size: 13px;
                 }
 
                 .rd-panel__title {
-                    font-size: 1.6rem;
+                    font-size: 1.55rem;
                 }
 
                 .rd-code-section__main,
@@ -556,40 +588,36 @@
                     width: 100%;
                     justify-content: center;
                     letter-spacing: 0.14em;
+                    font-size: 1.2rem;
                 }
 
                 .rd-code-section .mo-btn {
                     width: 100%;
                 }
 
-                .rd-flow-wrap {
-                    margin-top: 16px;
-                }
-
                 .rd-flow-bar {
-                    grid-template-columns: repeat(4, minmax(88px, 1fr));
-                    gap: 8px;
-                    overflow-x: auto;
-                    padding-bottom: 4px;
-                }
-
-                .rd-flow-bar::-webkit-scrollbar {
-                    height: 6px;
-                }
-
-                .rd-flow-bar::-webkit-scrollbar-thumb {
-                    background: rgba(42, 54, 89, 0.16);
-                    border-radius: 999px;
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 6px;
+                    overflow: visible;
+                    padding-bottom: 0;
                 }
 
                 .rd-flow-step {
-                    min-width: 88px;
-                    justify-content: center;
-                    padding: 0 10px;
+                    min-height: 58px;
+                    padding: 8px 4px;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+
+                .rd-flow-step__num {
+                    width: 24px;
+                    height: 24px;
+                    font-size: 11px;
                 }
 
                 .rd-flow-step__title {
-                    font-size: 13px;
+                    font-size: 11px;
+                    line-height: 1.15;
                 }
 
                 .rd-amount {
@@ -652,7 +680,7 @@
                 }
 
                 .rd-mobile-sticky__action {
-                    min-width: 118px;
+                    min-width: 112px;
                     display: flex;
                     justify-content: flex-end;
                 }
@@ -688,7 +716,7 @@
             <div class="rd-code-section">
                 <div class="rd-code-section__label">방 코드</div>
                 <div class="rd-code-section__main">
-                    <span class="rd-code-section__value" th:text="${orderRoom.roomCode}">998462</span>
+                    <span class="rd-code-section__value" th:text="${orderRoom.roomCode}">215341</span>
                     <button type="button"
                             class="mo-btn mo-btn-outline js-copy-room-code"
                             th:data-room-code="${orderRoom.roomCode}">코드 복사</button>
@@ -729,7 +757,7 @@
                 <div class="rd-summary-card">
                     <div class="rd-summary-card__label">결제 방식</div>
                     <div class="rd-summary-card__value"
-                         th:text="${orderRoom.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">대표결제</div>
+                         th:text="${orderRoom.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">각자결제</div>
                     <div class="rd-summary-card__desc"
                          th:text="${orderRoom.orderMode == 'DELIVERY'} ? '배달 주문 기준으로 진행 중입니다.' : '현장 주문 기준으로 진행 중입니다.'">배달 주문 기준으로 진행 중입니다.</div>
                 </div>
@@ -739,7 +767,7 @@
                     <div class="rd-summary-card__value">
                         <span th:text="${completedCount}">0</span>
                         /
-                        <span th:text="${participantCount}">1</span>
+                        <span th:text="${participantCount}">2</span>
                         명 선택 완료
                     </div>
                     <div class="rd-summary-card__desc"
@@ -751,7 +779,7 @@
                 <div class="rd-summary-card">
                     <div class="rd-summary-card__label">팀 총액</div>
                     <div class="rd-summary-card__value"
-                         th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')} + '원'">0원</div>
+                         th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')} + '원'">128,000원</div>
                     <div class="rd-summary-card__desc">결제 시점에는 선택 완료된 활성 참여자 기준으로 최종 확정됩니다.</div>
                 </div>
             </div>
@@ -778,11 +806,11 @@
                                               th:text="${myState.participantRole == 'LEADER'} ? '방장' : '참여자'">방장</span>
                                         <span class="rd-badge"
                                               th:classappend="${myState.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
-                                              th:text="${myState.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 전</span>
+                                              th:text="${myState.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 완료</span>
                                     </div>
                                 </div>
                                 <div class="rd-amount"
-                                     th:text="${#numbers.formatInteger(myCartTotal, 0, 'COMMA')} + '원'">0원</div>
+                                     th:text="${#numbers.formatInteger(myCartTotal, 0, 'COMMA')} + '원'">108,000원</div>
                             </div>
                             <p class="rd-muted">내 장바구니 기준 금액입니다. 메뉴를 수정하면 선택 완료 상태가 다시 해제됩니다.</p>
                         </div>
@@ -794,14 +822,14 @@
                         <div th:each="participant : ${roomParticipants}" class="rd-card">
                             <div class="rd-card-head">
                                 <div>
-                                    <div class="rd-name" th:text="${participant.member.memberNickname}">참여자</div>
+                                    <div class="rd-name" th:text="${participant.member.memberNickname}">유저02</div>
                                     <div class="rd-badge-row">
                                         <span class="rd-badge"
                                               th:classappend="${participant.roomParticipant.participantRole == 'LEADER'} ? ' rd-badge--leader' : ' rd-badge--participant'"
                                               th:text="${participant.roomParticipant.participantRole == 'LEADER'} ? '방장' : '참여자'">참여자</span>
                                         <span class="rd-badge"
                                               th:classappend="${participant.roomParticipant.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
-                                              th:text="${participant.roomParticipant.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 전</span>
+                                              th:text="${participant.roomParticipant.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 완료</span>
                                     </div>
                                 </div>
 
@@ -834,13 +862,13 @@
                         <div th:each="item : ${myCartItems}" class="rd-item-card">
                             <div class="rd-card-head">
                                 <div>
-                                    <div class="rd-item-name" th:text="${item.storeMenu.menuName}">양념치킨</div>
+                                    <div class="rd-item-name" th:text="${item.storeMenu.menuName}">탕수육</div>
                                     <div class="rd-item-meta">
-                                        수량 <span th:text="${item.groupCartItem.itemQuantity}">1</span>개
+                                        수량 <span th:text="${item.groupCartItem.itemQuantity}">6</span>개
                                     </div>
                                 </div>
                                 <div class="rd-amount"
-                                     th:text="${#numbers.formatInteger(item.groupCartItem.itemTotalAmount, 0, 'COMMA')} + '원'">21,000원</div>
+                                     th:text="${#numbers.formatInteger(item.groupCartItem.itemTotalAmount, 0, 'COMMA')} + '원'">108,000원</div>
                             </div>
                         </div>
                     </div>
@@ -851,29 +879,46 @@
                         <div class="rd-summary-row">
                             <span class="rd-summary-label">내 주문 합계</span>
                             <span class="rd-summary-value">
-                                <strong th:text="${#numbers.formatInteger(myCartTotal, 0, 'COMMA')}">0</strong>원
+                                <strong th:text="${#numbers.formatInteger(myCartTotal, 0, 'COMMA')}">108,000</strong>원
                             </span>
                         </div>
                     </div>
 
                     <div class="rd-action-stack" th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
-                        <div class="rd-action-row" th:if="${myState.selectionStatus != 'SELECTED'}">
-                            <a class="mo-btn mo-btn-primary"
-                               th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">주문 확인하기</a>
-                        </div>
 
-                        <div class="rd-action-row" th:if="${myState.selectionStatus == 'SELECTED'}">
-                            <form class="rd-inline-form js-confirm-unselect"
-                                  th:action="@{/rooms/code/{code}/unselect(code=${orderRoom.roomCode})}"
-                                  method="post">
-                                <button type="submit" class="mo-btn mo-btn-primary">주문 다시 확인하기</button>
-                            </form>
-                        </div>
-
-                        <p class="rd-note" th:if="${myState.selectionStatus == 'SELECTED'}">
-                            메뉴를 다시 확인하면 선택 완료 상태가 해제되고, 수정 가능한 흐름으로 되돌아갑니다.
-                        </p>
-                    </div>
+					    <div class="rd-action-row"
+					         th:if="${myState.selectionStatus != 'SELECTED' and #lists.isEmpty(myCartItems)}">
+					        <a class="mo-btn mo-btn-primary"
+					           th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">
+					            메뉴 담으러 가기
+					        </a>
+					    </div>
+					
+					    <div class="rd-action-row"
+					         th:if="${myState.selectionStatus != 'SELECTED' and !#lists.isEmpty(myCartItems)}">
+					        <a class="mo-btn mo-btn-primary"
+					           th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">
+					            주문 확인하기
+					        </a>
+					    </div>
+					
+					    <div class="rd-action-row" th:if="${myState.selectionStatus == 'SELECTED'}">
+					        <form class="rd-inline-form js-confirm-unselect"
+					              th:action="@{/rooms/code/{code}/unselect(code=${orderRoom.roomCode})}"
+					              method="post">
+					            <button type="submit" class="mo-btn mo-btn-primary">주문 다시 확인하기</button>
+					        </form>
+					    </div>
+					
+					    <p class="rd-note"
+					       th:if="${myState.selectionStatus != 'SELECTED' and #lists.isEmpty(myCartItems)}">
+					        아직 담은 메뉴가 없습니다. 먼저 메뉴를 담은 뒤 주문 확인 단계로 이동합니다.
+					    </p>
+					
+					    <p class="rd-note" th:if="${myState.selectionStatus == 'SELECTED'}">
+					        메뉴를 다시 확인하면 선택 완료 상태가 해제되고, 수정 가능한 흐름으로 되돌아갑니다.
+					    </p>
+					</div>
                 </div>
             </div>
 
@@ -894,15 +939,15 @@
                         <div th:each="participantCart : ${otherCartItems}" class="rd-card">
                             <div class="rd-card-head">
                                 <div>
-                                    <div class="rd-name" th:text="${participantCart.member.memberNickname}">참여자</div>
+                                    <div class="rd-name" th:text="${participantCart.member.memberNickname}">유저02</div>
                                     <div class="rd-badge-row">
                                         <span class="rd-badge"
                                               th:classappend="${participantCart.roomParticipant.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
-                                              th:text="${participantCart.roomParticipant.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 전</span>
+                                              th:text="${participantCart.roomParticipant.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 완료</span>
                                     </div>
                                 </div>
                                 <div class="rd-amount"
-                                     th:text="${#numbers.formatInteger(participantCart.totalAmount, 0, 'COMMA')} + '원'">0원</div>
+                                     th:text="${#numbers.formatInteger(participantCart.totalAmount, 0, 'COMMA')} + '원'">20,000원</div>
                             </div>
 
                             <div class="rd-muted" th:if="${#lists.isEmpty(participantCart.items)}">
@@ -912,7 +957,7 @@
                             <div class="rd-badge-row" th:unless="${#lists.isEmpty(participantCart.items)}">
                                 <span th:each="item : ${participantCart.items}"
                                       class="rd-badge rd-badge--participant"
-                                      th:text="${item.storeMenu.menuName} + ' × ' + ${item.groupCartItem.itemQuantity}">메뉴 × 1</span>
+                                      th:text="${item.storeMenu.menuName} + ' × ' + ${item.groupCartItem.itemQuantity}">짬뽕 × 1</span>
                             </div>
                         </div>
                     </div>
@@ -930,13 +975,13 @@
                         <div class="rd-summary-row">
                             <span class="rd-summary-label">선택 완료 인원</span>
                             <span class="rd-summary-value">
-                                <strong th:text="${completedCount}">0</strong>/<span th:text="${participantCount}">1</span>
+                                <strong th:text="${completedCount}">2</strong>/<span th:text="${participantCount}">2</span>
                             </span>
                         </div>
                         <div class="rd-summary-row">
                             <span class="rd-summary-label">팀 총액</span>
                             <span class="rd-summary-value">
-                                <strong th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')}">0</strong>원
+                                <strong th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')}">128,000</strong>원
                             </span>
                         </div>
                     </div>
@@ -1016,8 +1061,8 @@
             <div class="rd-mobile-sticky__meta">
                 <div class="rd-mobile-sticky__title">주문 요약</div>
                 <div class="rd-mobile-sticky__desc">
-                    선택 완료 <span th:text="${completedCount}">0</span>/<span th:text="${participantCount}">1</span>
-                    · 팀 총액 <span th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')} + '원'">0원</span>
+                    선택 완료 <span th:text="${completedCount}">2</span>/<span th:text="${participantCount}">2</span>
+                    · 팀 총액 <span th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')} + '원'">128,000원</span>
                 </div>
             </div>
 
