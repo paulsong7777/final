@@ -5,54 +5,313 @@
       layout:decorate="~{layout/default}">
 <head>
     <title>대표 결제</title>
+
+    <th:block layout:fragment="pageStyles">
+        <style>
+            .rep-page-shell {
+                padding-bottom: 108px;
+                overflow-x: hidden;
+            }
+
+            .rep-stack {
+                display: grid;
+                gap: 24px;
+                min-width: 0;
+            }
+
+            .rep-hero {
+                padding: 24px;
+                border-radius: 28px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                box-shadow: 0 16px 34px rgba(37, 45, 89, 0.05);
+            }
+
+            .rep-hero__head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+            }
+
+            .rep-title {
+                margin: 0;
+                color: var(--mo-navy-strong);
+                font-size: clamp(2rem, 2.3vw, 2.7rem);
+                line-height: 1.08;
+                letter-spacing: -0.05em;
+                font-weight: 800;
+            }
+
+            .rep-subtitle {
+                margin: 10px 0 0;
+                color: var(--mo-text-soft);
+                font-size: 14px;
+                line-height: 1.65;
+            }
+
+            .rep-chip {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 34px;
+                padding: 0 14px;
+                border-radius: 999px;
+                background: rgba(255, 128, 0, 0.12);
+                color: var(--mo-primary);
+                font-size: 12px;
+                font-weight: 800;
+                line-height: 1;
+                white-space: nowrap;
+            }
+
+            .rep-main-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+                gap: 24px;
+                align-items: start;
+            }
+
+            .rep-panel,
+            .rep-highlight,
+            .rep-note-box {
+                padding: 24px;
+                border-radius: 26px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                box-shadow: 0 16px 34px rgba(37, 45, 89, 0.05);
+                min-width: 0;
+            }
+
+            .rep-panel__title,
+            .rep-highlight__title {
+                margin: 0;
+                color: var(--mo-navy-strong);
+                font-size: 1.8rem;
+                line-height: 1.15;
+                letter-spacing: -0.04em;
+                font-weight: 800;
+            }
+
+            .rep-panel__desc,
+            .rep-note-box__desc {
+                margin: 8px 0 0;
+                color: var(--mo-text-soft);
+                font-size: 14px;
+                line-height: 1.7;
+            }
+
+            .rep-price-box {
+                margin-top: 18px;
+                padding: 20px;
+                border-radius: 24px;
+                background: var(--mo-navy-strong);
+                color: #fff;
+                box-shadow: 0 18px 32px rgba(37, 45, 89, 0.14);
+            }
+
+            .rep-price-box__label {
+                font-size: 12px;
+                font-weight: 800;
+                opacity: .74;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .rep-price-box__value {
+                margin-top: 10px;
+                font-size: 2rem;
+                font-weight: 800;
+                letter-spacing: -0.04em;
+                line-height: 1.1;
+            }
+
+            .rep-price-box__desc {
+                margin-top: 10px;
+                font-size: 13px;
+                line-height: 1.65;
+                opacity: .84;
+            }
+
+            .rep-note-box {
+                background: rgba(42, 54, 89, 0.03);
+            }
+
+            .rep-note-box__title {
+                color: var(--mo-navy-strong);
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+            .rep-inline-link {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                min-height: 42px;
+                padding: 0 16px;
+                border-radius: 12px;
+                border: 1px solid rgba(42, 54, 89, 0.16);
+                background: #fff;
+                color: var(--mo-navy);
+                font-weight: 700;
+                font-size: 14px;
+                text-decoration: none;
+            }
+
+            .rep-sticky {
+                position: fixed;
+                left: 20px;
+                right: 20px;
+                bottom: 18px;
+                z-index: 1040;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 18px;
+                padding: 18px 20px;
+                border-radius: 24px;
+                background: rgba(37, 45, 89, 0.96);
+                color: #fff;
+                box-shadow: 0 22px 42px rgba(22, 28, 46, 0.22);
+                backdrop-filter: blur(10px);
+            }
+
+            .rep-sticky__meta {
+                min-width: 0;
+            }
+
+            .rep-sticky__label {
+                font-size: 12px;
+                font-weight: 800;
+                opacity: .72;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .rep-sticky__title {
+                margin-top: 6px;
+                font-size: 1.15rem;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+            }
+
+            .rep-sticky__desc {
+                margin-top: 6px;
+                font-size: 13px;
+                line-height: 1.55;
+                opacity: .82;
+            }
+
+            .rep-sticky__action,
+            .rep-sticky__action form {
+                margin: 0;
+            }
+
+            @media (max-width: 991.98px) {
+                .rep-hero__head,
+                .rep-main-grid {
+                    grid-template-columns: 1fr;
+                    flex-direction: column;
+                }
+            }
+
+            @media (max-width: 767.98px) {
+                .rep-page-shell {
+                    padding-bottom: 108px;
+                }
+
+                .rep-hero,
+                .rep-panel,
+                .rep-highlight,
+                .rep-note-box,
+                .rep-price-box {
+                    padding: 16px;
+                    border-radius: 20px;
+                }
+
+                .rep-title {
+                    font-size: 2rem;
+                }
+
+                .rep-panel__title,
+                .rep-highlight__title {
+                    font-size: 1.55rem;
+                }
+
+                .rep-price-box__value {
+                    font-size: 1.7rem;
+                }
+
+                .rep-sticky {
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    border-radius: 24px 24px 0 0;
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .rep-sticky__action,
+                .rep-sticky__action form,
+                .rep-sticky__action .mo-btn {
+                    width: 100%;
+                }
+            }
+        </style>
+    </th:block>
 </head>
 <body>
-<section layout:fragment="pageContent">
-    <section class="mo-section">
-        <div class="mo-surface-card">
-            <div class="mo-section-label">FE-07</div>
-            <h1 class="mo-section-title">대표 결제 진행</h1>
-            <p class="text-secondary mb-4">방장이 전체 금액을 한 번에 결제합니다.</p>
+<section layout:fragment="pageContent" class="rep-page-shell">
+    <section class="mo-section rep-stack">
+        <div class="rep-hero">
+            <div class="rep-hero__head">
+                <div>
+                    <h1 class="rep-title">대표 결제</h1>
+                    <p class="rep-subtitle">방장이 전체 금액을 한 번에 결제하고 주문을 최종 확정하는 단계입니다.</p>
+                </div>
 
-            <div class="d-grid gap-3">
-                <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-1">전체 결제 금액</div>
-                    <div class="fw-bold fs-4"
+                <span class="rep-chip">대표결제</span>
+            </div>
+        </div>
+
+        <div class="rep-main-grid">
+            <div class="rep-panel">
+                <h2 class="rep-panel__title">전체 결제 금액</h2>
+                <p class="rep-panel__desc">이 주문은 방장이 한 번에 결제합니다. 결제가 끝나면 주문 상세 허브로 이동합니다.</p>
+
+                <div class="rep-price-box">
+                    <div class="rep-price-box__label">total amount</div>
+                    <div class="rep-price-box__value"
                          th:text="${#numbers.formatInteger(payment.paymentRequestAmount, 0, 'COMMA')} + '원'">0원</div>
+                    <div class="rep-price-box__desc">대표결제 완료 후 전체 참여자는 다음 단계 상태를 같은 화면에서 보게 됩니다.</div>
+                </div>
+            </div>
+
+            <div class="rep-note-box">
+                <div class="rep-note-box__title">안내</div>
+                <div class="rep-note-box__desc">
+                    대표결제 화면에서는 금액 확인과 결제 실행만 남깁니다.
+                    참여자별 결제 현황과 대기 정보는 이후 화면에서 확인하면 됩니다.
                 </div>
 
-                <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-1">결제 완료 인원</div>
-                    <div class="fw-bold fs-5">
-                        <span th:text="${completedCount}">0</span> /
-                        <span th:text="${totalCount}">0</span>
-                    </div>
-                </div>
+                <a th:href="@{/orders/{orderIdx}(orderIdx=${orderIdx})}" class="rep-inline-link" style="margin-top: 14px;">주문 상세로 이동</a>
+            </div>
+        </div>
 
-                <div class="p-3 rounded-4 border bg-white" th:if="${payment.paymentExpiresAt != null}">
-                    <div class="small text-secondary mb-1">남은 시간</div>
-                    <div class="fw-bold fs-4" data-payment-countdown>--:--</div>
-                    <div class="small text-secondary mt-2">시간이 지나면 결제가 만료됩니다.</div>
-                </div>
+        <div class="rep-sticky">
+            <div class="rep-sticky__meta">
+                <div class="rep-sticky__label">representative payment</div>
+                <div class="rep-sticky__title"
+                     th:text="${#numbers.formatInteger(payment.paymentRequestAmount, 0, 'COMMA')} + '원 전체 결제'">0원 전체 결제</div>
+                <div class="rep-sticky__desc">방장이 한 번 결제하면 주문이 다음 단계로 넘어갑니다.</div>
+            </div>
 
-             <form th:action="@{/sandbox/toss/checkout/representative}"
-			      method="post">
-			    <input type="hidden" name="paymentIdx" th:value="${payment.paymentIdx}">
-			    <button type="submit" class="mo-btn mo-btn-primary w-100">전체 금액 결제하기</button>
-			</form>
-
-                <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-2">현재 결제 상태</div>
-                    <div class="d-grid gap-2">
-                        <div th:each="share : ${paymentShares}" class="d-flex justify-content-between align-items-center">
-                            <span th:text="${share.memberIdx == session.member.memberIdx ? '나' : (memberNameMap[share.memberIdx] != null ? memberNameMap[share.memberIdx] : '참여자')}">참여자</span>
-                            <span class="fw-semibold"
-                                  th:text="${share.shareStatus == 'PAID_SELF'} ? '결제 완료' : (${share.shareStatus == 'PAID_BY_REPRESENTATIVE'} ? '대표 결제 완료' : (${share.shareStatus == 'CANCELLED'} ? '취소됨' : '결제 대기'))">결제 대기</span>
-                        </div>
-                    </div>
-                </div>
-
-                <a th:href="@{/orders/{orderIdx}(orderIdx=${orderIdx})}" class="mo-btn mo-btn-outline w-100">주문 상세로 이동</a>
+            <div class="rep-sticky__action">
+                <form th:action="@{/sandbox/toss/checkout/representative}" method="post">
+                    <input type="hidden" name="paymentIdx" th:value="${payment.paymentIdx}">
+                    <button type="submit" class="mo-btn mo-btn-primary">전체 금액 결제하기</button>
+                </form>
             </div>
         </div>
 

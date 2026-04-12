@@ -5,56 +5,658 @@
       layout:decorate="~{layout/default}">
 <head>
     <title>주문 상세</title>
+
+    <th:block layout:fragment="pageStyles">
+        <style>
+            .od-page-shell {
+                overflow-x: hidden;
+            }
+
+            .od-stack,
+            .od-main-grid,
+            .od-main-left,
+            .od-main-right {
+                min-width: 0;
+            }
+
+            .od-stack {
+                display: grid;
+                gap: 24px;
+            }
+
+            .od-top-card {
+                padding: 24px;
+                border-radius: 28px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                box-shadow: 0 16px 34px rgba(37, 45, 89, 0.05);
+            }
+
+            .od-top-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+            }
+
+            .od-top-title {
+                margin: 0;
+                color: var(--mo-navy-strong);
+                font-size: clamp(2rem, 2.3vw, 2.8rem);
+                line-height: 1.08;
+                letter-spacing: -0.05em;
+                font-weight: 800;
+            }
+
+            .od-top-subtitle {
+                margin: 10px 0 0;
+                color: var(--mo-text-soft);
+                font-size: 14px;
+                line-height: 1.65;
+            }
+
+            .od-chip-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: flex-end;
+            }
+
+            .od-chip {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 34px;
+                padding: 0 14px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 800;
+                line-height: 1;
+                white-space: nowrap;
+            }
+
+            .od-chip--primary {
+                background: rgba(255, 128, 0, 0.12);
+                color: var(--mo-primary);
+            }
+
+            .od-chip--navy {
+                background: rgba(42, 54, 89, 0.08);
+                color: var(--mo-navy-strong);
+            }
+
+            .od-chip--success {
+                background: rgba(25, 135, 84, 0.12);
+                color: #198754;
+            }
+
+            .od-chip--danger {
+                background: rgba(248, 94, 40, 0.12);
+                color: var(--mo-accent);
+            }
+
+            .od-status-wrap {
+                margin-top: 18px;
+            }
+
+            .od-status-label {
+                margin-bottom: 10px;
+                color: #8A93A6;
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+            }
+
+            .od-status-bar {
+                display: grid;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .od-status-step {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                min-height: 54px;
+                padding: 0 12px;
+                border-radius: 16px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                min-width: 0;
+                text-align: center;
+            }
+
+            .od-status-step--current {
+                border-color: rgba(255, 128, 0, 0.28);
+                background: rgba(255, 128, 0, 0.06);
+            }
+
+            .od-status-step--done {
+                border-color: rgba(25, 135, 84, 0.22);
+                background: rgba(25, 135, 84, 0.06);
+            }
+
+            .od-status-step__num {
+                width: 28px;
+                height: 28px;
+                border-radius: 999px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                background: rgba(42, 54, 89, 0.08);
+                color: var(--mo-navy-strong);
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .od-status-step--current .od-status-step__num {
+                background: var(--mo-primary);
+                color: #fff;
+            }
+
+            .od-status-step--done .od-status-step__num {
+                background: #198754;
+                color: #fff;
+            }
+
+            .od-status-step__title {
+                color: var(--mo-navy-strong);
+                font-size: 13px;
+                font-weight: 800;
+                line-height: 1.2;
+                white-space: normal;
+                word-break: keep-all;
+            }
+
+            .od-summary-grid {
+                margin-top: 18px;
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .od-summary-card {
+                padding: 18px;
+                border-radius: 22px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                box-shadow: 0 10px 24px rgba(37, 45, 89, 0.04);
+            }
+
+            .od-summary-card__label {
+                color: #8A93A6;
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+            }
+
+            .od-summary-card__value {
+                margin-top: 8px;
+                color: var(--mo-navy-strong);
+                font-size: 1.3rem;
+                font-weight: 800;
+                line-height: 1.2;
+                letter-spacing: -0.03em;
+                word-break: keep-all;
+            }
+
+            .od-summary-card__desc {
+                margin-top: 8px;
+                color: var(--mo-text-soft);
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .od-main-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+                gap: 24px;
+                align-items: start;
+            }
+
+            .od-main-left,
+            .od-main-right {
+                display: grid;
+                gap: 24px;
+            }
+
+            .od-panel {
+                padding: 24px;
+                border-radius: 26px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                box-shadow: 0 16px 34px rgba(37, 45, 89, 0.05);
+            }
+
+            .od-panel__title {
+                margin: 0;
+                color: var(--mo-navy-strong);
+                font-size: 1.8rem;
+                line-height: 1.15;
+                letter-spacing: -0.04em;
+                font-weight: 800;
+            }
+
+            .od-panel__desc {
+                margin: 8px 0 0;
+                color: var(--mo-text-soft);
+                font-size: 14px;
+                line-height: 1.65;
+            }
+
+            .od-list {
+                display: grid;
+                gap: 12px;
+                margin-top: 18px;
+            }
+
+            .od-member-card {
+                padding: 18px;
+                border-radius: 22px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+            }
+
+            .od-member-card--me {
+                border-color: rgba(255, 128, 0, 0.24);
+                background: linear-gradient(180deg, rgba(255, 128, 0, 0.05), #fff);
+            }
+
+            .od-row {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .od-name {
+                color: var(--mo-navy-strong);
+                font-size: 15px;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+            }
+
+            .od-badge-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .od-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 30px;
+                padding: 0 12px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 800;
+                line-height: 1;
+                white-space: nowrap;
+            }
+
+            .od-badge--leader {
+                background: rgba(255, 128, 0, 0.12);
+                color: var(--mo-primary);
+            }
+
+            .od-badge--participant {
+                background: rgba(42, 54, 89, 0.08);
+                color: var(--mo-navy-strong);
+            }
+
+            .od-badge--done {
+                background: rgba(25, 135, 84, 0.12);
+                color: #198754;
+            }
+
+            .od-item-list {
+                display: grid;
+                gap: 10px;
+                margin-top: 16px;
+            }
+
+            .od-line-item {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 14px 0;
+                border-bottom: 1px solid rgba(42, 54, 89, 0.08);
+            }
+
+            .od-line-item:first-child {
+                padding-top: 0;
+            }
+
+            .od-line-item:last-child {
+                padding-bottom: 0;
+                border-bottom: 0;
+            }
+
+            .od-line-item__title {
+                color: var(--mo-navy-strong);
+                font-size: 14px;
+                font-weight: 700;
+                word-break: keep-all;
+            }
+
+            .od-line-item__meta {
+                margin-top: 4px;
+                color: var(--mo-text-soft);
+                font-size: 13px;
+            }
+
+            .od-line-item__value {
+                color: var(--mo-navy-strong);
+                font-size: 14px;
+                font-weight: 800;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            .od-empty {
+                padding: 18px 20px;
+                border: 1px dashed rgba(42, 54, 89, 0.16);
+                border-radius: 18px;
+                background: rgba(42, 54, 89, 0.03);
+                color: var(--mo-text-soft);
+                font-size: 14px;
+                line-height: 1.75;
+            }
+
+            .od-note-box {
+                padding: 18px;
+                border-radius: 22px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: rgba(42, 54, 89, 0.03);
+            }
+
+            .od-note-box--danger {
+                border-color: rgba(248, 94, 40, 0.18);
+                background: rgba(248, 94, 40, 0.05);
+            }
+
+            .od-note-box__title {
+                color: var(--mo-navy-strong);
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+            .od-note-box__desc {
+                margin-top: 8px;
+                color: var(--mo-text-soft);
+                font-size: 13px;
+                line-height: 1.7;
+            }
+
+            @media (max-width: 991.98px) {
+                .od-top-head {
+                    flex-direction: column;
+                }
+
+                .od-chip-group {
+                    justify-content: flex-start;
+                }
+
+                .od-summary-grid,
+                .od-main-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 767.98px) {
+                .od-top-card,
+                .od-panel,
+                .od-summary-card,
+                .od-member-card,
+                .od-note-box {
+                    padding: 16px;
+                    border-radius: 20px;
+                }
+
+                .od-top-title {
+                    font-size: 2rem;
+                }
+
+                .od-panel__title {
+                    font-size: 1.55rem;
+                }
+
+                .od-status-bar {
+                    grid-template-columns: repeat(5, minmax(72px, 1fr));
+                    gap: 6px;
+                }
+
+                .od-status-step {
+                    min-height: 58px;
+                    padding: 8px 4px;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+
+                .od-status-step__num {
+                    width: 24px;
+                    height: 24px;
+                    font-size: 11px;
+                }
+
+                .od-status-step__title {
+                    font-size: 11px;
+                    line-height: 1.15;
+                }
+
+                .od-row,
+                .od-line-item {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .od-line-item__value {
+                    text-align: right;
+                    white-space: normal;
+                }
+            }
+        </style>
+    </th:block>
 </head>
 <body>
-<section layout:fragment="pageContent">
-    <section class="mo-section">
-        <div class="mo-surface-card">
-            <div class="mo-section-label">FE-08</div>
-            <h1 class="mo-section-title">주문 상세</h1>
-            <p class="text-secondary mb-4">주문 상태가 바뀌면 화면도 실시간으로 새로고침됩니다.</p>
-
-            <div class="d-grid gap-3 mb-4">
-                <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-1">주문 상태</div>
-                    <div class="fw-bold fs-5"
-                         th:text="${groupOrder.orderStatus == 'PAYMENT_PENDING'} ? '결제 대기' : (${groupOrder.orderStatus == 'PAID'} ? '결제 완료' : (${groupOrder.orderStatus == 'ACCEPTED'} ? '주문 수락' : (${groupOrder.orderStatus == 'PREPARING'} ? '준비 중' : (${groupOrder.orderStatus == 'READY'} ? '준비 완료' : (${groupOrder.orderStatus == 'DELIVERING'} ? '배달 중' : (${groupOrder.orderStatus == 'COMPLETED'} ? '주문 완료' : (${groupOrder.orderStatus == 'CANCELLED'} ? '취소됨' : groupOrder.orderStatus)))))))">결제 완료</div>
+<section layout:fragment="pageContent" class="od-page-shell">
+    <section class="mo-section od-stack">
+        <div class="od-top-card">
+            <div class="od-top-head">
+                <div>
+                    <h1 class="od-top-title">주문 상세</h1>
+                    <p class="od-top-subtitle">결제 이후 점주 처리 상태까지 이어서 확인하는 주문 상태 허브입니다.</p>
                 </div>
 
-                <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-1">결제 방식</div>
-                    <div class="fw-bold fs-5"
-                         th:text="${groupOrder.paymentMode == 'REPRESENTATIVE'} ? '대표 결제' : '각자 결제'">대표 결제</div>
-                </div>
+                <div class="od-chip-group">
+                    <span class="od-chip od-chip--navy"
+                          th:text="${groupOrder.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">대표결제</span>
 
-                <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-1">총 주문 금액</div>
-                    <div class="fw-bold fs-4"
-                         th:text="${#numbers.formatInteger(groupOrder.orderTotalAmount, 0, 'COMMA')} + '원'">0원</div>
+                    <span class="od-chip od-chip--danger" th:if="${groupOrder.orderStatus == 'CANCELLED'}">주문 취소</span>
+
+                    <span class="od-chip od-chip--success" th:if="${groupOrder.orderStatus != 'CANCELLED'}">
+                        실시간 갱신
+                    </span>
                 </div>
             </div>
 
-            <div class="d-grid gap-3">
-                <div th:if="${#lists.isEmpty(memberItems)}" class="p-3 rounded-4 border bg-white text-secondary">
-                    현재 표시할 주문 항목이 없습니다.
+            <div class="od-status-wrap" th:if="${groupOrder.orderStatus != 'CANCELLED'}">
+                <div class="od-status-label">현재 진행 단계</div>
+                <div class="od-status-bar">
+                    <div class="od-status-step"
+                         th:classappend="${groupOrder.orderStatus == 'PAYMENT_PENDING'} ? ' od-status-step--current' : (${groupOrder.orderStatus == 'PAID' or groupOrder.orderStatus == 'ACCEPTED' or groupOrder.orderStatus == 'PREPARING' or groupOrder.orderStatus == 'READY' or groupOrder.orderStatus == 'DELIVERING' or groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
+                        <div class="od-status-step__num">1</div>
+                        <div class="od-status-step__title">결제 완료</div>
+                    </div>
+
+                    <div class="od-status-step"
+                         th:classappend="${groupOrder.orderStatus == 'ACCEPTED'} ? ' od-status-step--current' : (${groupOrder.orderStatus == 'PREPARING' or groupOrder.orderStatus == 'READY' or groupOrder.orderStatus == 'DELIVERING' or groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
+                        <div class="od-status-step__num">2</div>
+                        <div class="od-status-step__title">접수 완료</div>
+                    </div>
+
+                    <div class="od-status-step"
+                         th:classappend="${groupOrder.orderStatus == 'PREPARING'} ? ' od-status-step--current' : (${groupOrder.orderStatus == 'READY' or groupOrder.orderStatus == 'DELIVERING' or groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
+                        <div class="od-status-step__num">3</div>
+                        <div class="od-status-step__title">준비 중</div>
+                    </div>
+
+                    <div class="od-status-step"
+                         th:classappend="${groupOrder.orderStatus == 'READY' or groupOrder.orderStatus == 'DELIVERING'} ? ' od-status-step--current' : (${groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
+                        <div class="od-status-step__num">4</div>
+                        <div class="od-status-step__title">준비 완료</div>
+                    </div>
+
+                    <div class="od-status-step"
+                         th:classappend="${groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--current od-status-step--done' : ''">
+                        <div class="od-status-step__num">5</div>
+                        <div class="od-status-step__title">주문 완료</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="od-summary-grid">
+                <div class="od-summary-card">
+                    <div class="od-summary-card__label">주문 번호</div>
+                    <div class="od-summary-card__value" th:text="${groupOrder.orderIdx}">1</div>
+                    <div class="od-summary-card__desc">주문 상태 조회에 사용하는 기준 번호입니다.</div>
                 </div>
 
-                <div th:each="memberItem : ${memberItems}" class="p-3 rounded-4 border bg-white">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong th:text="${memberItem.member.memberNickname}">참여자</strong>
-                        <span th:text="${memberItem.roomParticipant.participantRole == 'LEADER'} ? '방장' : '참여자'">참여자</span>
+                <div class="od-summary-card">
+                    <div class="od-summary-card__label">주문 상태</div>
+                    <div class="od-summary-card__value" th:switch="${groupOrder.orderStatus}">
+                        <span th:case="'PAYMENT_PENDING'">결제 대기</span>
+                        <span th:case="'PAID'">결제 완료</span>
+                        <span th:case="'ACCEPTED'">주문 수락</span>
+                        <span th:case="'PREPARING'">준비 중</span>
+                        <span th:case="'READY'">준비 완료</span>
+                        <span th:case="'DELIVERING'">전달 중</span>
+                        <span th:case="'COMPLETED'">주문 완료</span>
+                        <span th:case="'CANCELLED'">취소됨</span>
+                        <span th:case="*" th:text="${groupOrder.orderStatus}">주문 상태</span>
+                    </div>
+                    <div class="od-summary-card__desc">점주 상태 변경에 맞춰 자동으로 갱신됩니다.</div>
+                </div>
+
+                <div class="od-summary-card">
+                    <div class="od-summary-card__label">결제 방식</div>
+                    <div class="od-summary-card__value"
+                         th:text="${groupOrder.paymentMode == 'REPRESENTATIVE'} ? '대표 결제' : '각자 결제'">대표 결제</div>
+                    <div class="od-summary-card__desc">결제 구조는 주문 생성 이후에도 그대로 유지됩니다.</div>
+                </div>
+
+                <div class="od-summary-card">
+                    <div class="od-summary-card__label">총 주문 금액</div>
+                    <div class="od-summary-card__value"
+                         th:text="${#numbers.formatInteger(groupOrder.orderTotalAmount, 0, 'COMMA')} + '원'">0원</div>
+                    <div class="od-summary-card__desc">최종 확정된 주문 기준 금액입니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="od-main-grid">
+            <div class="od-main-left">
+                <div class="od-panel">
+                    <h2 class="od-panel__title">참여자별 주문 내역</h2>
+                    <p class="od-panel__desc">결제 시점 기준으로 확정된 주문 스냅샷입니다.</p>
+
+                    <div th:if="${#lists.isEmpty(memberItems)}" class="od-empty" style="margin-top: 18px;">
+                        현재 표시할 주문 항목이 없습니다.
                     </div>
 
-                    <div th:if="${#lists.isEmpty(memberItem.items)}" class="text-secondary">
-                        주문한 메뉴가 없습니다.
+                    <div th:unless="${#lists.isEmpty(memberItems)}" class="od-list">
+                        <div th:each="memberItem : ${memberItems}"
+                             class="od-member-card"
+                             th:classappend="${session.member != null and session.member.memberIdx == memberItem.member.memberIdx} ? ' od-member-card--me' : ''">
+
+                            <div class="od-row">
+                                <div>
+                                    <div class="od-name" th:text="${memberItem.member.memberNickname}">참여자</div>
+
+                                    <div class="od-badge-row">
+                                        <span class="od-badge"
+                                              th:classappend="${memberItem.roomParticipant.participantRole == 'LEADER'} ? ' od-badge--leader' : ' od-badge--participant'"
+                                              th:text="${memberItem.roomParticipant.participantRole == 'LEADER'} ? '방장' : '참여자'">방장</span>
+
+                                        <span class="od-badge od-badge--done">주문 확정</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div th:if="${#lists.isEmpty(memberItem.items)}" class="od-empty" style="margin-top: 16px;">
+                                주문한 메뉴가 없습니다.
+                            </div>
+
+                            <div th:unless="${#lists.isEmpty(memberItem.items)}" class="od-item-list">
+                                <div th:each="item : ${memberItem.items}" class="od-line-item">
+                                    <div>
+                                        <div class="od-line-item__title" th:text="${item.menuNameSnapshot}">메뉴명</div>
+                                        <div class="od-line-item__meta">
+                                            수량 <span th:text="${item.itemQuantity}">1</span>개
+                                        </div>
+                                    </div>
+
+                                    <div class="od-line-item__value"
+                                         th:text="${#numbers.formatInteger(item.itemTotalAmount, 0, 'COMMA')} + '원'">0원</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="od-main-right">
+                <div class="od-panel">
+                    <h2 class="od-panel__title">현재 상태 안내</h2>
+                    <p class="od-panel__desc">지금 주문이 어느 단계에 있는지 한 번 더 읽을 수 있게 정리했습니다.</p>
+
+                    <div class="od-note-box" style="margin-top: 18px;" th:if="${groupOrder.orderStatus != 'CANCELLED'}">
+                        <div class="od-note-box__title" th:switch="${groupOrder.orderStatus}">
+                            <span th:case="'PAYMENT_PENDING'">결제 대기 상태입니다.</span>
+                            <span th:case="'PAID'">결제가 끝났고 점주 확인을 기다리는 중입니다.</span>
+                            <span th:case="'ACCEPTED'">점주가 주문을 접수했습니다.</span>
+                            <span th:case="'PREPARING'">가게에서 메뉴를 준비 중입니다.</span>
+                            <span th:case="'READY'">메뉴 준비가 끝났습니다.</span>
+                            <span th:case="'DELIVERING'">전달 또는 다음 인계 단계로 진행 중입니다.</span>
+                            <span th:case="'COMPLETED'">주문이 모두 완료되었습니다.</span>
+                            <span th:case="*" th:text="${groupOrder.orderStatus}">현재 주문 상태</span>
+                        </div>
+
+                        <div class="od-note-box__desc">
+                            상태가 바뀌면 이 화면도 자동으로 갱신됩니다.
+                        </div>
                     </div>
 
-                    <ul th:unless="${#lists.isEmpty(memberItem.items)}" class="mb-0">
-                        <li th:each="item : ${memberItem.items}"
-                            th:text="${item.menuNameSnapshot} + ' x ' + ${item.itemQuantity}">
-                            메뉴
-                        </li>
-                    </ul>
+                    <div class="od-note-box od-note-box--danger" style="margin-top: 18px;" th:if="${groupOrder.orderStatus == 'CANCELLED'}">
+                        <div class="od-note-box__title">주문이 취소되었습니다.</div>
+                        <div class="od-note-box__desc">
+                            결제 만료 또는 취소 처리로 인해 더 이상 진행되지 않는 주문입니다.
+                        </div>
+                    </div>
+
+                    <div class="od-note-box" style="margin-top: 12px;">
+                        <div class="od-note-box__title">결제 상태</div>
+                        <div class="od-note-box__desc" th:switch="${payment.paymentStatus}">
+                            <span th:case="'READY'">결제 준비 단계입니다.</span>
+                            <span th:case="'IN_PROGRESS'">결제 승인 처리가 진행 중입니다.</span>
+                            <span th:case="'PAID'">결제가 최종 완료되었습니다.</span>
+                            <span th:case="'CANCELLED'">결제 흐름이 취소되었습니다.</span>
+                            <span th:case="*" th:text="${payment.paymentStatus}">결제 상태</span>
+                        </div>
+                    </div>
+
+                    <div class="od-note-box" style="margin-top: 12px;">
+                        <div class="od-note-box__title">안내</div>
+                        <div class="od-note-box__desc">
+                            주문 이후의 상태는 점주 처리에 맞춰 실시간으로 바뀝니다.
+                            새로고침하지 않아도 최신 상태를 기준으로 화면이 업데이트됩니다.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
