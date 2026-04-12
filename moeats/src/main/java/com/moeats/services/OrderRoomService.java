@@ -136,18 +136,29 @@ public class OrderRoomService {
 		roomParticipant.setJoinedAt(this.findParticipantByIdx(roomParticipantIdx).getJoinedAt());
 		return result;
 	}
+	
 	public int setSelect(int roomParticipantIdx) {
-		OrderRoom orderRoom = findByIdx(findParticipantByIdx(roomParticipantIdx).getRoomIdx());
-		if(!orderRoom.getRoomStatus().equals("SELECTING"))
-			return 0;
-		return roomParticipantMapper.setSelect(roomParticipantIdx);
+	    RoomParticipant participant = findParticipantByIdx(roomParticipantIdx);
+	    OrderRoom orderRoom = findByIdx(participant.getRoomIdx());
+	    
+	    // 🔥 현재 방 상태를 로그로 확인
+	    System.out.println("현재 방 상태(roomStatus): " + orderRoom.getRoomStatus());
+
+	    if(!orderRoom.getRoomStatus().equals("SELECTING")) {
+	        System.out.println("실패 원인: 방 상태가 SELECTING이 아닙니다.");
+	        return 0;
+	    }
+	    
+	    return roomParticipantMapper.setSelect(roomParticipantIdx);
 	}
+	
 	public int unselect(int roomParticipantIdx) {
 		OrderRoom orderRoom = findByIdx(findParticipantByIdx(roomParticipantIdx).getRoomIdx());
 		if(!orderRoom.getRoomStatus().equals("SELECTING"))
 			return 0;
 		return roomParticipantMapper.unselect(roomParticipantIdx);
 	}
+	
 	public int pay(int roomParticipantIdx) {
 		OrderRoom orderRoom = findByIdx(findParticipantByIdx(roomParticipantIdx).getRoomIdx());
 		if(!orderRoom.getRoomStatus().equals("PAYMENT_PENDING"))

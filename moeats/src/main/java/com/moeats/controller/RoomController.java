@@ -292,16 +292,42 @@ public class RoomController {
 
 	@PostMapping("/rooms/code/{room_code}/select")
 	public String selectRoom(RedirectAttributes ra, @PathVariable("room_code") String roomCode,
-			@RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member) {
-		RoomParticipant roomParticipant = orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(),
-				member.getMemberIdx());
-		if (orderRoom.isJoinLocked() || roomParticipant == null
-				|| orderRoomService.setSelect(roomParticipant.getRoomParticipantIdx()) == 0) {
-			ra.addFlashAttribute("error", "선택을 확정하는 중 오류가 발생했습니다");
-			return String.format("redirect:/rooms/code/%s/confirm", roomCode);
-		}
-		sseService.participantUpdate(orderRoom.getRoomIdx());
-		return String.format("redirect:/rooms/code/%s", roomCode);
+	        @RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member) {
+	    
+	    System.out.println("=== [디버깅] selectRoom 메서드 시작 ===");
+	    System.out.println("방 코드: " + roomCode + " | 방 IDX: " + orderRoom.getRoomIdx());
+	    System.out.println("로그인 멤버 IDX: " + member.getMemberIdx());
+	    
+	    // 1. 참여자 정보 조회
+	    RoomParticipant roomParticipant = orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx());
+	    
+	    // 로그로 하나씩 확인
+	    boolean isLocked = orderRoom.isJoinLocked();
+	    boolean isParticipantNull = (roomParticipant == null);
+	    
+	    System.out.println("체크 1: 방 잠금 상태(isJoinLocked) = " + isLocked);
+	    System.out.println("체크 2: 참여자 정보 존재 여부(null 체크) = " + isParticipantNull);
+
+	    if (isLocked || isParticipantNull) {
+	        String reason = isLocked ? "방이 잠겨 있습니다." : "참여자 정보를 찾을 수 없습니다.";
+	        System.out.println("결과: 실패 (" + reason + ")");
+	        ra.addFlashAttribute("error", reason);
+	        return String.format("redirect:/rooms/code/%s/confirm", roomCode);
+	    }
+
+	    // 2. 선택 확정 처리 (DB 업데이트)
+	    int updateResult = orderRoomService.setSelect(roomParticipant.getRoomParticipantIdx());
+	    System.out.println("체크 3: DB 업데이트 결과(row count) = " + updateResult);
+
+	    if (updateResult == 0) {
+	        System.out.println("결과: 실패 (DB 업데이트 결과가 0입니다.)");
+	        ra.addFlashAttribute("error", "선택을 확정하는 중 오류가 발생했습니다.");
+	        return String.format("redirect:/rooms/code/%s/confirm", roomCode);
+	    }
+
+	    System.out.println("=== [디버깅] 모든 조건 통과! 성공! ===");
+	    sseService.participantUpdate(orderRoom.getRoomIdx());
+	    return String.format("redirect:/rooms/code/%s", roomCode);
 	}
 
 	@PostMapping("/rooms/code/{room_code}/unselect")

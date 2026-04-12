@@ -278,18 +278,31 @@
         }
 
         syncCardView(card);
-    }
+    }	// bindroomcard
 
     if (searchInput) {
         searchInput.addEventListener('input', renderSearch);
     }
 
-    if (confirmBtn) {
-        confirmBtn.addEventListener('click', function () {
-            if (confirmBtn.disabled || !roomCode) return;
-            window.location.href = `/rooms/code/${encodeURIComponent(roomCode)}/confirm`;
-        });
-    }
+	if (confirmBtn) {
+	    confirmBtn.addEventListener('click', function () {
+	        if (confirmBtn.disabled || !roomCode) return;
+
+	        // 1. 이미 saveCard를 통해 DB에 실시간 저장이 되고 있다면, 
+	        // 추가 저장 요청 없이 바로 페이지 이동만 하면 됩니다.
+	        
+	        // 이동하기 전, 수량이 0인 메뉴가 있는지(장바구니가 비었는지) 체크
+	        const totalQty = Array.from(stateMap.values()).reduce((sum, item) => sum + item.quantity, 0);
+	        
+	        if (totalQty <= 0) {
+	            alert("장바구니에 담긴 메뉴가 없습니다.");
+	            return;
+	        }
+
+	        // 2. 이동 (컨트롤러에서 GET으로 처리되어야 함)
+	        window.location.href = `/rooms/code/${encodeURIComponent(roomCode)}/confirm`;
+	    });
+	}
 
     cards.forEach(bindRoomCard);
     syncBottomBar();
