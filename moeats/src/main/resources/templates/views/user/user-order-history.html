@@ -115,12 +115,14 @@
     
                     <div class="history-head">
 				        <span th:text="${#temporals.format((safeOrder.paymentConfirmedAt ?: safeOrder.createdAt).toLocalDateTime().plusHours(9), 'yyyy-MM-dd HH:mm')}">날짜</span>
-				        
-                        <span class="fw-bold" style="color: var(--mo-primary);" 
-                              th:text="${safeOrder.orderStatus == 'PAID' ? '결제완료' : 
-                                        (safeOrder.orderStatus == 'ACCEPTED' ? '조리중' : 
-                                        (safeOrder.orderStatus == 'READY' ? '배달중' : 
-                                        (safeOrder.orderStatus == 'COMPLETED' ? '배달완료' : safeOrder.orderStatus)))}">상태</span>
+						<span class="fw-bold" style="color: var(--mo-primary);" 
+						      th:text="${safeOrder.orderStatus == 'PAID' ? '결제완료' : 
+						                (safeOrder.orderStatus == 'ACCEPTED' ? '주문확인' : 
+						                (safeOrder.orderStatus == 'PREPARING' ? '조리 중' : 
+						                (safeOrder.orderStatus == 'READY' ? '조리완료' : 
+						                (safeOrder.orderStatus == 'DELIVERING' ? '배달 중' : 
+						                (safeOrder.orderStatus == 'COMPLETED' ? '배달완료' : 
+						                (safeOrder.orderStatus == 'CANCELLED' ? '주문취소' : safeOrder.orderStatus))))))}">상태</span>
 				    </div>
 				
                     <div class="history-store" th:text="${safeOrder.storeName}">가게이름</div>

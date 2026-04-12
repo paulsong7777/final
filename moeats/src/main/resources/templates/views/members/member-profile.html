@@ -48,14 +48,16 @@
 		                            th:text="${order.groupOrder.storeName}">가게이름</h4>
 		                    </div>
 		                    
-		                    <div th:switch="${order.groupOrder.orderStatus}">
-		                        <span th:case="'PAID'" class="mo-address-item__badge" style="margin:0; background:rgba(220,53,69,0.1); color:#dc3545;">결제완료</span>
-		                        <span th:case="'ACCEPTED'" class="mo-address-item__badge" style="margin:0; background:rgba(255,128,0,0.1); color:var(--mo-primary);">조리 중</span>
-		                        <span th:case="'PREPARING'" class="mo-address-item__badge" style="margin:0; background:rgba(40,167,69,0.1); color:#28a745;">조리 완료</span>
-		                        <span th:case="'READY'" class="mo-address-item__badge" style="margin:0; background:rgba(23,162,184,0.1); color:#17a2b8;">배달 중</span>
-		                        <span th:case="'COMPLETED'" class="mo-address-item__badge" style="margin:0; background:rgba(42,54,89,0.1); color:var(--mo-navy-strong);">배달완료</span>
-		                        <span th:case="*" class="mo-address-item__badge" style="margin:0; background:#eee; color:#666;">확인 중</span>
-		                    </div>
+							<div th:switch="${order.groupOrder.orderStatus}">
+							    <span th:case="'PAYMENT_PENDING'" class="mo-address-item__badge" style="margin:0; background:#eee; color:#666;">결제대기</span>
+							    <span th:case="'PAID'" class="mo-address-item__badge" style="margin:0; background:rgba(220,53,69,0.1); color:#dc3545;">결제완료</span>
+							    <span th:case="'ACCEPTED'" class="mo-address-item__badge" style="margin:0; background:rgba(255,128,0,0.1); color:var(--mo-primary);">주문확인</span>
+							    <span th:case="'PREPARING'" class="mo-address-item__badge" style="margin:0; background:rgba(40,167,69,0.1); color:#28a745;">조리 중</span>
+							    <span th:case="'READY'" class="mo-address-item__badge" style="margin:0; background:rgba(23,162,184,0.1); color:#17a2b8;">조리완료</span>
+							    <span th:case="'DELIVERING'" class="mo-address-item__badge" style="margin:0; background:rgba(13,110,253,0.1); color:#0d6efd;">배달 중</span>
+							    <span th:case="'COMPLETED'" class="mo-address-item__badge" style="margin:0; background:rgba(42,54,89,0.1); color:var(--mo-navy-strong);">배달완료</span>
+							    <span th:case="'CANCELLED'" class="mo-address-item__badge" style="margin:0; background:rgba(108,117,125,0.1); color:#6c757d;">주문취소</span>
+							</div>
 		                </div>
 		            
 		                <div class="d-flex justify-content-between align-items-center">

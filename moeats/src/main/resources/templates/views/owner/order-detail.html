@@ -128,8 +128,8 @@
                 
                 <div class="mo-surface-card p-4 p-md-5 bg-white shadow-sm rounded-4">
                     
-                    <div class="row text-center mo-step-container mb-5 pt-3" 
-                         th:with="statusList=${ {'PAID', 'ACCEPTED', 'PREPARING', 'READY', 'COMPLETED'} },
+                    <div th:if="${safeOrder.orderStatus != 'CANCELLED'}" class="row text-center mo-step-container mb-5 pt-3" 
+                         th:with="statusList=${ {'PAID', 'ACCEPTED', 'PREPARING', 'READY', 'DELIVERING', 'COMPLETED'} },
                                   currentIdx=${statusList.indexOf(safeOrder.orderStatus)}">
                         <div class="mo-step-line"></div>
                         <div class="col mo-step-item" th:each="status, stat : ${statusList}"
@@ -137,9 +137,18 @@
                             <div class="mo-step-circle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2">
                                 <i th:if="${stat.index < currentIdx}" class="bi bi-check-lg"></i>
                                 <i th:if="${stat.index >= currentIdx}" class="bi" 
-                                   th:classappend="${status == 'PAID' ? 'bi-credit-card' : (status == 'ACCEPTED' ? 'bi-clipboard-check' : (status == 'PREPARING' ? 'bi-fire' : (status == 'READY' ? 'bi-box-seam' : 'bi-flag-fill')))}"></i>
+                                   th:classappend="${status == 'PAID' ? 'bi-credit-card' : 
+                                                    (status == 'ACCEPTED' ? 'bi-clipboard-check' : 
+                                                    (status == 'PREPARING' ? 'bi-fire' : 
+                                                    (status == 'READY' ? 'bi-box-seam' : 
+                                                    (status == 'DELIVERING' ? 'bi-bicycle' : 'bi-flag-fill'))))}"></i>
                             </div>
-                            <div class="mo-step-text" th:text="${status == 'PAID' ? '결제완료' : (status == 'ACCEPTED' ? '접수완료' : (status == 'PREPARING' ? '조리중' : (status == 'READY' ? '준비완료' : '주문완료')))}">상태</div>
+                            <div class="mo-step-text" 
+                                 th:text="${status == 'PAID' ? '신규주문' : 
+                                           (status == 'ACCEPTED' ? '주문접수' : 
+                                           (status == 'PREPARING' ? '조리중' : 
+                                           (status == 'READY' ? '조리완료' : 
+                                           (status == 'DELIVERING' ? '배달중' : '배달완료'))))}">상태</div>
                         </div>
                     </div>
 
@@ -170,49 +179,55 @@
                         </div>
                     </div>
                     
-                    <div class="mt-4 mb-4">
-    <div class="fw-bold mb-3" style="color: var(--mo-navy-strong); font-size: 15px;">주문 진행 기록</div>
-    
-    <div class="mo-timeline">
-        <div class="mo-timeline-item active">
-            <div class="mo-timeline-content">
-                <span class="mo-timeline-label">💳 결제 완료 (주문 수신)</span>
-                <span class="mo-timeline-time" 
-                      th:text="${#temporals.format(safeOrder.paymentConfirmedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss')}">12:00:00</span>
-            </div>
-        </div>
+                    <div class="mt-4 mb-4" th:with="statusList=${ {'PAID', 'ACCEPTED', 'PREPARING', 'READY', 'DELIVERING', 'COMPLETED'} }, currentIdx=${statusList.indexOf(safeOrder.orderStatus)}">
+                        <div class="fw-bold mb-3" style="color: var(--mo-navy-strong); font-size: 15px;">주문 진행 기록</div>
+                        
+                        <div class="mo-timeline">
+                            <div class="mo-timeline-item active">
+                                <div class="mo-timeline-content">
+                                    <span class="mo-timeline-label">💳 결제 완료 (신규 주문)</span>
+                                    <span class="mo-timeline-time" th:text="${safeOrder.paymentConfirmedAt != null ? #temporals.format(safeOrder.paymentConfirmedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss') : '-'}">12:00:00</span>
+                                </div>
+                            </div>
 
-        <div class="mo-timeline-item" th:classappend="${safeOrder.storeConfirmedAt != null ? 'active' : ''}">
-            <div class="mo-timeline-content">
-                <span class="mo-timeline-label">✅ 매장 접수 완료</span>
-                <span class="mo-timeline-time" 
-                      th:if="${safeOrder.storeConfirmedAt != null}"
-                      th:text="${#temporals.format(safeOrder.storeConfirmedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss')}">-</span>
-                <span class="mo-timeline-time" th:unless="${safeOrder.storeConfirmedAt != null}">대기 중</span>
-            </div>
-        </div>
+                            <div class="mo-timeline-item" th:classappend="${currentIdx >= 1 ? 'active' : ''}">
+                                <div class="mo-timeline-content">
+                                    <span class="mo-timeline-label">✅ 주문 접수 완료</span>
+                                    <span class="mo-timeline-time" th:if="${safeOrder.storeConfirmedAt != null}" th:text="${#temporals.format(safeOrder.storeConfirmedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss')}">-</span>
+                                    <span class="mo-timeline-time" th:unless="${safeOrder.storeConfirmedAt != null}">대기 중</span>
+                                </div>
+                            </div>
 
-		<div class="mo-timeline-item" th:classappend="${safeOrder.orderStatus == 'READY' || safeOrder.orderStatus == 'COMPLETED' ? 'active' : ''}">
-		    <div class="mo-timeline-content">
-		        <span class="mo-timeline-label">👨‍🍳 조리 완료 / 배달 시작</span>
-		        <span class="mo-timeline-time" 
-		              th:if="${safeOrder.orderStatus == 'READY' || safeOrder.orderStatus == 'COMPLETED'}"
-		              th:text="${#temporals.format(safeOrder.updatedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss')}">14:30:00</span>
-		        <span class="mo-timeline-time" th:unless="${safeOrder.orderStatus == 'READY' || safeOrder.orderStatus == 'COMPLETED'}">-</span>
-		    </div>
-		</div>
+                            <div class="mo-timeline-item" th:classappend="${currentIdx >= 2 ? 'active' : ''}">
+                                <div class="mo-timeline-content">
+                                    <span class="mo-timeline-label">👨‍🍳 조리 중</span>
+                                    <span class="mo-timeline-time" th:text="${currentIdx >= 2 ? #temporals.format(safeOrder.updatedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss') : '-'}">-</span>
+                                </div>
+                            </div>
 
-        <div class="mo-timeline-item" th:classappend="${safeOrder.completedAt != null ? 'active' : ''}">
-            <div class="mo-timeline-content">
-                <span class="mo-timeline-label">🏁 배달 및 주문 완료</span>
-                <span class="mo-timeline-time" 
-                      th:if="${safeOrder.completedAt != null}"
-                      th:text="${#temporals.format(safeOrder.completedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss')}">배달 중</span>
-                <span class="mo-timeline-time" th:unless="${safeOrder.completedAt != null}">-</span>
-            </div>
-        </div>
-    </div>
-</div>
+                            <div class="mo-timeline-item" th:classappend="${currentIdx >= 3 ? 'active' : ''}">
+                                <div class="mo-timeline-content">
+                                    <span class="mo-timeline-label">📦 조리 완료</span>
+                                    <span class="mo-timeline-time" th:text="${currentIdx >= 3 ? #temporals.format(safeOrder.updatedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss') : '-'}">-</span>
+                                </div>
+                            </div>
+
+                            <div class="mo-timeline-item" th:classappend="${currentIdx >= 4 ? 'active' : ''}">
+                                <div class="mo-timeline-content">
+                                    <span class="mo-timeline-label">🛵 배달 중</span>
+                                    <span class="mo-timeline-time" th:text="${currentIdx >= 4 ? #temporals.format(safeOrder.updatedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss') : '-'}">-</span>
+                                </div>
+                            </div>
+
+                            <div class="mo-timeline-item" th:classappend="${currentIdx >= 5 ? 'active' : ''}">
+                                <div class="mo-timeline-content">
+                                    <span class="mo-timeline-label">🏁 배달 완료</span>
+                                    <span class="mo-timeline-time" th:if="${safeOrder.completedAt != null}" th:text="${#temporals.format(safeOrder.completedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss')}">-</span>
+                                    <span class="mo-timeline-time" th:unless="${safeOrder.completedAt != null}">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
 
                     <div class="mb-4">
@@ -235,28 +250,35 @@
 
                     <div class="d-flex flex-column gap-3">
                         <button type="button" th:if="${safeOrder.orderStatus == 'PAID'}" class="mo-btn mo-btn-primary w-100 py-3 fs-6" 
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'ACCEPTED')">접수하기</button>
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'ACCEPTED')">주문 접수하기</button>
                         
-                        <button type="button" th:if="${safeOrder.orderStatus == 'ACCEPTED'}" class="mo-btn mo-btn-primary w-100 py-3 fs-6" 
+                        <button type="button" th:if="${safeOrder.orderStatus == 'ACCEPTED'}" class="btn btn-warning w-100 py-3 fs-6 text-white border-0" style="background-color: #ff9800; font-weight: bold;"
                                 th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'PREPARING')">조리 시작하기</button>
                         
-                        <button type="button" th:if="${safeOrder.orderStatus == 'PREPARING'}" class="mo-btn w-100 py-3 fs-6 border-0" style="background: var(--mo-navy); color: #fff;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'READY')">준비 완료 처리</button>
-                        
-                        <button type="button" th:if="${safeOrder.orderStatus == 'READY'}" class="mo-btn w-100 py-3 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff;"
+                        <button type="button" th:if="${safeOrder.orderStatus == 'PREPARING'}" class="btn btn-success w-100 py-3 fs-6 border-0 text-white" style="font-weight: bold;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'READY')">조리 완료 처리</button>
+
+                        <button type="button" th:if="${safeOrder.orderStatus == 'READY'}" class="btn btn-info w-100 py-3 fs-6 border-0 text-white" style="font-weight: bold;"
+                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'DELIVERING')">배달 시작하기</button>
+                                
+                        <button type="button" th:if="${safeOrder.orderStatus == 'DELIVERING'}" class="mo-btn w-100 py-3 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff;"
                                 th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">배달 완료 처리</button>
 
                         <div th:if="${safeOrder.orderStatus == 'COMPLETED'}" class="p-3 text-center rounded-3 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy-strong);">
-                            완료된 주문입니다.
+                            처리가 완료된 주문입니다.
+                        </div>
+                        <div th:if="${safeOrder.orderStatus == 'CANCELLED'}" class="p-3 text-center rounded-3 fw-bold text-danger" style="background: rgba(220, 53, 69, 0.05);">
+                            취소된 주문입니다.
                         </div>
 
                         <div class="text-center mt-2 pt-3 border-top">
                             <a th:href="@{/owners/dashboard}" class="mo-btn mo-btn-plain text-secondary fw-bold" style="font-size: 13px;">
-                                <i class="bi bi-arrow-left me-1"></i> 돌아가기
+                                <i class="bi bi-arrow-left me-1"></i> 대시보드로 돌아가기
                             </a>
                         </div>
                     </div>
-                </div> </div>
+                </div> 
+            </div>
         </div>
     </div>
 
@@ -283,7 +305,11 @@
                 const response = await fetch('/owners/order/status_update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ roomIdx: roomIdx, nextStatus: nextStatus })
+                    // 🚨 핵심 수정 부분: 백엔드가 인식할 수 있도록 "roomStatus"로 이름표를 바꿔서 보냅니다!
+                    body: JSON.stringify({ 
+                        "roomIdx": Number(roomIdx), 
+                        "roomStatus": String(nextStatus) 
+                    })
                 });
                 const data = await response.json();
                 if (!response.ok || !data.result) throw new Error('fail');

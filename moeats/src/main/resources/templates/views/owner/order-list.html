@@ -98,13 +98,15 @@
                                 <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;" th:text="${store.storeName ?: 'MoEats 매장'}">매장명</td>
                                 <td class="text-end fw-bold" style="color: var(--mo-text-soft);" th:text="${order.groupOrder.orderStatus}">WAITING</td>
                                 <td class="status-cell">
-                                    <div th:switch="${order.groupOrder.orderStatus}">
-                                        <span th:case="'PAID'" class="mo-badge mo-badge--waiting">결제완료</span>
-                                        <span th:case="'ACCEPTED'" class="mo-badge mo-badge--accepted">조리 중</span>
-                                        <span th:case="'PREPARING'" class="mo-badge mo-badge--cooking">조리 완료</span>
-                                        <span th:case="'READY'" class="mo-badge mo-badge--delivering">배달 중</span>
-                                        <span th:case="'COMPLETED'" class="mo-badge mo-badge--completed">완료</span>
-                                    </div>
+									<div th:switch="${order.groupOrder.orderStatus}">
+									    <span th:case="'PAID'" class="mo-badge mo-badge--waiting">신규주문</span>
+									    <span th:case="'ACCEPTED'" class="mo-badge mo-badge--accepted">접수완료</span>
+									    <span th:case="'PREPARING'" class="mo-badge mo-badge--cooking">조리중</span>
+									    <span th:case="'READY'" class="mo-badge" style="background: rgba(23, 162, 184, 0.1); color: #17a2b8;">조리완료</span>
+									    <span th:case="'DELIVERING'" class="mo-badge mo-badge--delivering">배달중</span>
+									    <span th:case="'COMPLETED'" class="mo-badge mo-badge--completed">완료</span>
+									    <span th:case="'CANCELLED'" class="mo-badge" style="background: #eee; color: #666;">취소됨</span>
+									</div>
                                 </td>
                                 <td class="pe-4">
                                     <a th:href="@{/owners/order/detail(roomIdx=${order.groupOrder.roomIdx ?: 0})}" 
@@ -205,16 +207,18 @@
         }
 
         // 상태별 뱃지 HTML 반환 (Mo-Eats 스타일)
-        function getStatusBadgeHtml(status) {
-            const badges = {
-                'PAID': '<span class="mo-badge mo-badge--waiting">대기중</span>',
-                'ACCEPTED': '<span class="mo-badge mo-badge--accepted">접수완료</span>',
-                'PREPARING': '<span class="mo-badge mo-badge--cooking">조리중</span>',
-                'READY': '<span class="mo-badge mo-badge--delivering">배달중</span>',
-                'COMPLETED': '<span class="mo-badge mo-badge--completed">완료</span>'
-            };
-            return badges[status] || '<span class="mo-badge">알수없음</span>';
-        }
+		function getStatusBadgeHtml(status) {
+		    const badges = {
+		        'PAID': '<span class="mo-badge mo-badge--waiting">신규주문</span>',
+		        'ACCEPTED': '<span class="mo-badge mo-badge--accepted">접수완료</span>',
+		        'PREPARING': '<span class="mo-badge mo-badge--cooking">조리중</span>',
+		        'READY': '<span class="mo-badge" style="background: rgba(23, 162, 184, 0.1); color: #17a2b8;">조리완료</span>',
+		        'DELIVERING': '<span class="mo-badge mo-badge--delivering">배달중</span>',
+		        'COMPLETED': '<span class="mo-badge mo-badge--completed">완료</span>',
+		        'CANCELLED': '<span class="mo-badge" style="background: #eee; color: #666;">취소됨</span>'
+		    };
+		    return badges[status] || '<span class="mo-badge">알수없음</span>';
+		}
 
         function updateLastRefreshTime() {
             const now = new Date();

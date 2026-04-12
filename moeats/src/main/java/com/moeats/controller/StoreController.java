@@ -49,7 +49,7 @@ public class StoreController {
     private final String COMPLETED = "COMPLETED";
  // tier1에서 delivery 구현이 안되는 상황이기 때문에 간소화. 영훈
     private final List<String> ORDER_STATUSES =
-            List.of("PAID", "ACCEPTED", "PREPARING", "READY", "COMPLETED");
+            List.of("PAID", "ACCEPTED", "PREPARING", "READY", "DELIVERING", "COMPLETED");
 //    private final List<String> ORDER_STATUSES = List.of("PAID","ACCEPTED","PREPARING","READY","DELIVERING","COMPLETED");
     
     
