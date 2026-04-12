@@ -1,638 +1,251 @@
+
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/default}">
 
 <head>
-    <meta charset="UTF-8">
-    <title>가게 메뉴</title>
+<meta charset="UTF-8">
+<title>가게 메뉴</title>
 
-    <th:block layout:fragment="pageStyles">
-        <style>
-		    .fe02-shell {
-		        display: flex;
-		        flex-direction: column;
-		        gap: 20px;
-		        padding-bottom: 120px;
-		    }
+<th:block layout:fragment="pageStyles">
+	<style>
+		/* 서윤 님의 기존 fe02 스타일 시트 유지 */
+		.fe02-shell { display: flex; flex-direction: column; gap: 20px; padding-bottom: 120px; }
+		.fe02-store-hero { position: relative; overflow: hidden; min-height: 236px; padding: 22px 24px; border-radius: 24px; background: #fff; border: 1px solid rgba(42, 54, 89, 0.08); box-shadow: var(--mo-shadow-soft); display: flex; align-items: flex-end; }
+		.fe02-store-hero__bg { position: absolute; inset: 0; background-position: center; background-size: cover; background-repeat: no-repeat; transform: scale(1.02); }
+		.fe02-store-hero__bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(18, 24, 38, 0.12) 0%, rgba(18, 24, 38, 0.62) 100%); }
+		.fe02-store-hero__content { position: relative; z-index: 1; width: 100%; max-width: 640px; }
+		.fe02-store-hero__eyebrow { color: #FFD7B0; font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+		.fe02-store-hero__title { margin: 8px 0 0; color: #fff; font-size: 32px; font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; }
+		.fe02-store-hero__desc { margin: 8px 0 0; color: rgba(255, 255, 255, 0.92); font-size: 13px; line-height: 1.38; max-width: 420px; }
+		.fe02-store-hero__meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: stretch; }
+		.fe02-store-hero__meta-item { min-width: 0; height: 52px; padding: 6px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.24); display: flex; flex-direction: column; justify-content: center; }
+		.fe02-store-hero__meta-item--minimum { flex: 0 0 116px; max-width: 116px; }
+		.fe02-store-hero__meta-item--address { flex: 0 1 380px; max-width: 380px; }
+		.fe02-store-hero__meta-label { display: block; margin-bottom: 2px; color: var(--mo-text-soft); font-size: 8px; font-weight: 700; line-height: 1.1; }
+		.fe02-store-hero__meta-value { color: var(--mo-navy-strong); font-size: 11px; font-weight: 800; line-height: 1.2; word-break: keep-all; }
+		.fe02-store-hero__meta-value--address { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.fe02-toolbar { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: 20px; background: #fff; border: 1px solid rgba(42, 54, 89, 0.08); box-shadow: var(--mo-shadow-soft); }
+		.fe02-search { position: relative; flex: 1 1 auto; min-width: 0; }
+		.fe02-search__icon { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); color: #94A3B8; pointer-events: none; }
+		.fe02-search .form-control { min-height: 46px; padding-left: 40px; border-radius: 14px; border-color: rgba(42, 54, 89, 0.12); }
+		.fe02-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+		.fe02-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 20px; background: #fff; border: 1px solid rgba(42, 54, 89, 0.08); box-shadow: var(--mo-shadow-soft); transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease; min-height: 0; }
+		.fe02-card__thumb { width: 100%; aspect-ratio: 1/1; border-radius: 16px; overflow: hidden; background: #F7F7F8; display: flex; align-items: center; justify-content: center; }
+		.fe02-card__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+		.fe02-card__body { flex: 1; min-width: 0; }
+		.fe02-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+		.fe02-card__name { margin: 0; color: var(--mo-navy-strong); font-size: 18px; font-weight: 800; line-height: 1.35; letter-spacing: -0.02em; }
+		.fe02-card__desc { margin: 6px 0 0; color: var(--mo-text-soft); font-size: 13px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+		.fe02-card__footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+		.fe02-card__price { color: var(--mo-navy-strong); font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+		.fe02-status { display: inline-flex; align-items: center; justify-content: center; min-height: 30px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+		.fe02-status--available { background: rgba(42, 54, 89, 0.08); color: var(--mo-navy); }
+		.fe02-status--soldout { background: rgba(248, 94, 40, 0.12); color: var(--mo-accent); }
+		.fe02-empty { padding: 56px 20px; border-radius: 24px; background: #fff; border: 1px solid rgba(42, 54, 89, 0.08); box-shadow: var(--mo-shadow-soft); text-align: center; }
+		.fe02-order-fab { position: fixed; right: 28px; bottom: 28px; z-index: 1040; min-width: 180px; min-height: 58px; padding: 0 28px; border: none; border-radius: 999px; background: var(--mo-primary); color: #fff; font-size: 16px; font-weight: 800; box-shadow: 0 18px 40px rgba(255, 128, 0, 0.28); transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease; }
 		
-		 .fe02-store-hero {
-			    position: relative;
-			    overflow: hidden;
-			    min-height: 236px;
-			    padding: 22px 24px;
-			    border-radius: 24px;
-			    background: #fff;
-			    border: 1px solid rgba(42, 54, 89, 0.08);
-			    box-shadow: var(--mo-shadow-soft);
-			    display: flex;
-			    align-items: flex-end;
-			}
-		
-		    .fe02-store-hero__bg {
-		        position: absolute;
-		        inset: 0;
-		        background-position: center;
-		        background-size: cover;
-		        background-repeat: no-repeat;
-		        transform: scale(1.02);
-		    }
-		
-		    .fe02-store-hero__bg::after {
-		        content: "";
-		        position: absolute;
-		        inset: 0;
-		        background:
-		            linear-gradient(180deg, rgba(18, 24, 38, 0.12) 0%, rgba(18, 24, 38, 0.62) 100%);
-		    }
-		
-		    .fe02-store-hero__content {
-			    position: relative;
-			    z-index: 1;
-			    width: 100%;
-			    max-width: 640px;
-			}
-					
-		   .fe02-store-hero__eyebrow {
-			    color: #FFD7B0;
-			    font-size: 11px;
-			    font-weight: 800;
-			    letter-spacing: 0.12em;
-			    text-transform: uppercase;
-			}
-		
-			.fe02-store-hero__title {
-			    margin: 8px 0 0;
-			    color: #fff;
-			    font-size: 32px;
-			    font-weight: 800;
-			    line-height: 1.08;
-			    letter-spacing: -0.03em;
-			}
-			
-			.fe02-store-hero__desc {
-			    margin: 8px 0 0;
-			    color: rgba(255, 255, 255, 0.92);
-			    font-size: 13px;
-			    line-height: 1.38;
-			    max-width: 420px;
-			}
-		
-			.fe02-store-hero__meta {
-			    display: flex;
-			    flex-wrap: wrap;
-			    gap: 8px;
-			    margin-top: 10px;
-			    align-items: stretch;
-			}
-			
-			.fe02-store-hero__meta-item {
-			    min-width: 0;
-			    height: 52px;
-			    padding: 6px 12px;
-			    border-radius: 12px;
-			    background: rgba(255, 255, 255, 0.90);
-			    backdrop-filter: blur(8px);
-			    border: 1px solid rgba(255, 255, 255, 0.24);
-			    display: flex;
-			    flex-direction: column;
-			    justify-content: center;
-			}
-			
-			.fe02-store-hero__meta-item--minimum {
-			    flex: 0 0 116px;
-			    max-width: 116px;
-			}
-			
-			.fe02-store-hero__meta-item--address {
-			    flex: 0 1 380px;
-			    max-width: 380px;
-			}
-			
-			.fe02-store-hero__meta-label {
-			    display: block;
-			    margin-bottom: 2px;
-			    color: var(--mo-text-soft);
-			    font-size: 8px;
-			    font-weight: 700;
-			    line-height: 1.1;
-			}
-			
-			.fe02-store-hero__meta-value {
-			    color: var(--mo-navy-strong);
-			    font-size: 11px;
-			    font-weight: 800;
-			    line-height: 1.2;
-			    word-break: keep-all;
-			}
-			
-			.fe02-store-hero__meta-value--address {
-			    display: block;
-			    white-space: nowrap;
-			    overflow: hidden;
-			    text-overflow: ellipsis;
-			}
-		
-		    .fe02-toolbar {
-		        display: flex;
-		        align-items: center;
-		        gap: 12px;
-		        padding: 16px 18px;
-		        border-radius: 20px;
-		        background: #fff;
-		        border: 1px solid rgba(42, 54, 89, 0.08);
-		        box-shadow: var(--mo-shadow-soft);
-		    }
-		
-		    .fe02-search {
-		        position: relative;
-		        flex: 1 1 auto;
-		        min-width: 0;
-		    }
-		
-		    .fe02-search__icon {
-		        position: absolute;
-		        top: 50%;
-		        left: 14px;
-		        transform: translateY(-50%);
-		        color: #94A3B8;
-		        pointer-events: none;
-		    }
-		
-		    .fe02-search .form-control {
-		        min-height: 46px;
-		        padding-left: 40px;
-		        border-radius: 14px;
-		        border-color: rgba(42, 54, 89, 0.12);
-		    }
-		
-		    .fe02-grid {
-		        display: grid;
-		        grid-template-columns: repeat(4, minmax(0, 1fr));
-		        gap: 16px;
-		    }
-		
-		    .fe02-card {
-		        display: flex;
-		        flex-direction: column;
-		        gap: 12px;
-		        padding: 16px;
-		        border-radius: 20px;
-		        background: #fff;
-		        border: 1px solid rgba(42, 54, 89, 0.08);
-		        box-shadow: var(--mo-shadow-soft);
-		        transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
-		        min-height: 0;
-		    }
-		
-		    .fe02-card__thumb {
-		        width: 100%;
-		        aspect-ratio: 1 / 1;
-		        border-radius: 16px;
-		        overflow: hidden;
-		        background: #F7F7F8;
-		        display: flex;
-		        align-items: center;
-		        justify-content: center;
-		    }
-		
-		    .fe02-card__thumb img {
-		        width: 100%;
-		        height: 100%;
-		        object-fit: cover;
-		        display: block;
-		    }
-		
-		    .fe02-card__body {
-		        flex: 1;
-		        min-width: 0;
-		    }
-		
-		    .fe02-card__head {
-		        display: flex;
-		        align-items: flex-start;
-		        justify-content: space-between;
-		        gap: 8px;
-		    }
-		
-		    .fe02-card__name {
-		        margin: 0;
-		        color: var(--mo-navy-strong);
-		        font-size: 18px;
-		        font-weight: 800;
-		        line-height: 1.35;
-		        letter-spacing: -0.02em;
-		    }
-		
-		    .fe02-card__desc {
-		        margin: 6px 0 0;
-		        color: var(--mo-text-soft);
-		        font-size: 13px;
-		        line-height: 1.5;
-		        display: -webkit-box;
-		        -webkit-line-clamp: 2;
-		        -webkit-box-orient: vertical;
-		        overflow: hidden;
-		    }
-		
-		    .fe02-card__footer {
-		        display: flex;
-		        align-items: center;
-		        justify-content: space-between;
-		        gap: 10px;
-		        margin-top: 10px;
-		    }
-		
-		    .fe02-card__price {
-		        color: var(--mo-navy-strong);
-		        font-size: 18px;
-		        font-weight: 800;
-		        letter-spacing: -0.02em;
-		    }
-		
-		    .fe02-status {
-		        display: inline-flex;
-		        align-items: center;
-		        justify-content: center;
-		        min-height: 30px;
-		        padding: 0 12px;
-		        border-radius: 999px;
-		        font-size: 12px;
-		        font-weight: 800;
-		        white-space: nowrap;
-		    }
-		
-		    .fe02-status--available {
-		        background: rgba(42, 54, 89, 0.08);
-		        color: var(--mo-navy);
-		    }
-		
-		    .fe02-status--soldout {
-		        background: rgba(248, 94, 40, 0.12);
-		        color: var(--mo-accent);
-		    }
-		
-		    .fe02-empty {
-		        padding: 56px 20px;
-		        border-radius: 24px;
-		        background: #fff;
-		        border: 1px solid rgba(42, 54, 89, 0.08);
-		        box-shadow: var(--mo-shadow-soft);
-		        text-align: center;
-		    }
-		
-		    .fe02-order-fab {
-		        position: fixed;
-		        right: 28px;
-		        bottom: 28px;
-		        z-index: 1040;
-		        min-width: 180px;
-		        min-height: 58px;
-		        padding: 0 28px;
-		        border: none;
-		        border-radius: 999px;
-		        background: var(--mo-primary);
-		        color: #fff;
-		        font-size: 16px;
-		        font-weight: 800;
-		        box-shadow: 0 18px 40px rgba(255, 128, 0, 0.28);
-		        transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
-		    }
-		
-		    .fe02-order-fab:hover {
-		        transform: translateY(-2px);
-		        box-shadow: 0 22px 44px rgba(255, 128, 0, 0.32);
-		    }
-		
-		    .fe02-order-fab:disabled {
-		        opacity: 0.6;
-		        cursor: not-allowed;
-		    }
-		
-		    @media (max-width: 1199.98px) {
-		        .fe02-grid {
-		            grid-template-columns: repeat(3, minmax(0, 1fr));
-		        }
-		    }
-		
-		   @media (max-width: 991.98px) {
-		    .fe02-store-hero {
-		        min-height: 214px;
-		        padding: 18px 20px;
-		    }
-		
-		    .fe02-store-hero__title {
-		        font-size: 28px;
-		    }
-		
-		    .fe02-grid {
-		        grid-template-columns: repeat(2, minmax(0, 1fr));
-		    }
+		@media (max-width: 1199.98px) { .fe02-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+		@media (max-width: 991.98px) { .fe02-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+		@media (max-width: 575.98px) {
+			.fe02-grid { grid-template-columns: 1fr; gap: 12px; }
+			.fe02-card { flex-direction: row; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; }
+			.fe02-card__thumb { width: 84px; min-width: 84px; aspect-ratio: 1/1; border-radius: 14px; align-self: flex-start; }
+			.fe02-order-fab { left: 16px; right: 16px; bottom: 16px; width: auto; min-width: 0; border-radius: 18px; }
 		}
-		
-		    @media (max-width: 575.98px) {
-		        .fe02-shell {
-			        padding-bottom: 96px;
-			    }
-			
-			    .fe02-store-hero {
-			        min-height: 188px;
-			        padding: 14px 16px;
-			        border-radius: 22px;
-			    }
-			
-			    .fe02-store-hero__title {
-			        font-size: 24px;
-			        line-height: 1.06;
-			    }
-			
-			    .fe02-store-hero__desc {
-			        margin-top: 6px;
-			        font-size: 12px;
-			        line-height: 1.32;
-			        max-width: none;
-			    }
-			
-			    .fe02-store-hero__meta {
-			        gap: 6px;
-			        margin-top: 8px;
-			    }
-			
-			    .fe02-store-hero__meta-item {
-			        height: 46px;
-			        padding: 5px 10px;
-			        border-radius: 10px;
-			    }
-			
-			    .fe02-store-hero__meta-item--minimum {
-			        flex: 0 0 102px;
-			        max-width: 102px;
-			    }
-			
-			    .fe02-store-hero__meta-item--address {
-			        flex: 1 1 0;
-			        max-width: none;
-			    }
-			
-			    .fe02-store-hero__meta-label {
-			        font-size: 7px;
-			        margin-bottom: 2px;
-			    }
-			
-			    .fe02-store-hero__meta-value {
-			        font-size: 10px;
-			        line-height: 1.18;
-			    }
-		
-				.fe02-store-hero__meta-value--address {
-			        white-space: normal;
-			        overflow: hidden;
-			        text-overflow: unset;
-			        display: -webkit-box;
-			        -webkit-line-clamp: 2;
-			        -webkit-box-orient: vertical;
-			        }
-		        .fe02-toolbar,
-		        .fe02-empty {
-		            padding: 16px;
-		        }
-		
-		        .fe02-grid {
-		            grid-template-columns: 1fr;
-		            gap: 12px;
-		        }
-		
-		        .fe02-card {
-		            flex-direction: row;
-		            align-items: center;
-		            gap: 12px;
-		            padding: 14px;
-		            border-radius: 18px;
-		        }
-		
-		        .fe02-card__thumb {
-		            width: 84px;
-		            min-width: 84px;
-		            aspect-ratio: 1 / 1;
-		            border-radius: 14px;
-		            align-self: flex-start;
-		        }
-		
-		        .fe02-card__body {
-		            display: flex;
-		            flex-direction: column;
-		            justify-content: center;
-		            min-width: 0;
-		            width: 100%;
-		        }
-		
-		        .fe02-card__head {
-		            align-items: flex-start;
-		            gap: 8px;
-		        }
-		
-		        .fe02-card__name {
-		            font-size: 17px;
-		            line-height: 1.25;
-		        }
-		
-		        .fe02-card__desc {
-		            font-size: 12px;
-		            -webkit-line-clamp: 1;
-		            margin-top: 4px;
-		        }
-		
-		        .fe02-card__footer {
-		            margin-top: 8px;
-		            align-items: center;
-		            gap: 8px;
-		        }
-		
-		        .fe02-card__price {
-		            font-size: 16px;
-		        }
-		
-		        .fe02-card__footer .mo-btn {
-		            min-height: 40px;
-		            padding: 0 14px;
-		            border-radius: 14px;
-		            font-size: 13px;
-		            white-space: nowrap;
-		        }
-		
-		        .fe02-status {
-		            min-height: 26px;
-		            padding: 0 10px;
-		            font-size: 11px;
-		        }
-		
-		        .fe02-order-fab {
-		            left: 16px;
-		            right: 16px;
-		            bottom: 16px;
-		            width: auto;
-		            min-width: 0;
-		            border-radius: 18px;
-		        }
-		    }
-		    
-		    
-		</style>
-    </th:block>
+	</style>
+</th:block>
 </head>
 
 <body>
-<section layout:fragment="pageContent">
-   <div class="fe02-shell"
-     th:with="
-        firstMenu=${#lists.isEmpty(menuList) ? null : menuList[0]},
-        currentStoreIdx=${store != null ? store.storeIdx : (firstMenu != null ? firstMenu.storeIdx : 0)},
-        totalCount=${#lists.size(menuList)},
-        soldOutCount=${#aggregates.sum(menuList.![menuStatus == 'SOLD_OUT' ? 1 : 0])},
-        availableCount=${totalCount - soldOutCount},
-        isRoomCart=${orderRoom != null}
-     "
-     th:attr="
-        data-store-idx=${currentStoreIdx},
-        data-room-mode=${isRoomCart},
-        data-room-code=${orderRoom != null ? orderRoom.roomCode : ''}
-     ">
+	<section layout:fragment="pageContent">
+		<div class="fe02-shell"
+			th:with="
+				firstMenu=${#lists.isEmpty(menuList) ? null : menuList[0]},
+				currentStoreIdx=${store != null ? store.storeIdx : (firstMenu != null ? firstMenu.storeIdx : 0)},
+				totalCount=${#lists.size(menuList)},
+				soldOutCount=${#aggregates.sum(menuList.![menuStatus == 'SOLD_OUT' ? 1 : 0])},
+				availableCount=${totalCount - soldOutCount},
+				isRoomCart=${orderRoom != null}
+			"
+			th:attr="
+				data-store-idx=${currentStoreIdx},
+				data-room-mode=${isRoomCart},
+				data-room-code=${orderRoom != null ? orderRoom.roomCode : ''}
+			">
 
-		<section class="fe02-store-hero">
-		   <div class="fe02-store-hero__bg"
-			     th:if="${store != null and store.heroImageUrl != null and !#strings.isEmpty(store.heroImageUrl)}"
-			     th:style="|background-image:url('${store.heroImageUrl}');|">
+			<section class="fe02-store-hero">
+				<div class="fe02-store-hero__bg"
+					th:if="${store != null and store.heroImageUrl != null and !#strings.isEmpty(store.heroImageUrl)}"
+					th:style="|background-image:url('${store.heroImageUrl}');|">
+				</div>
+				<div class="fe02-store-hero__bg"
+					th:unless="${store != null and store.heroImageUrl != null and !#strings.isEmpty(store.heroImageUrl)}"
+					style="background-image: linear-gradient(135deg, #252D59 0%, #2A3659 45%, #FF8000 100%);">
+				</div>
+
+				<div class="fe02-store-hero__content">
+					<div class="fe02-store-hero__eyebrow">가게 상세 페이지</div>
+					<h1 class="fe02-store-hero__title" th:text="${store?.storeName ?: '가게 정보'}">가게명</h1>
+					<p class="fe02-store-hero__desc" th:text="${store?.storeDescription ?: '메뉴를 확인하고 바로 주문을 시작할 수 있습니다.'}">소개</p>
+
+					<div class="fe02-store-hero__meta">
+						<div class="fe02-store-hero__meta-item fe02-store-hero__meta-item--minimum">
+							<span class="fe02-store-hero__meta-label">최소주문금액</span> 
+							<strong class="fe02-store-hero__meta-value" th:text="${store != null ? #numbers.formatInteger(store.minimumOrderAmount, 1, 'COMMA') + '원' : '0원'}">0원</strong>
+						</div>
+						<div class="fe02-store-hero__meta-item fe02-store-hero__meta-item--address">
+							<span class="fe02-store-hero__meta-label">가게 주소</span> 
+							<strong class="fe02-store-hero__meta-value fe02-store-hero__meta-value--address">
+								<span th:text="${store?.storeAddress1 ?: '주소 정보 없음'}">주소</span>
+								<span th:if="${!#strings.isEmpty(store?.storeAddress2)}" th:text="' ' + ${store.storeAddress2}">상세주소</span>
+							</strong>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="fe02-toolbar">
+				<div class="fe02-search">
+					<span class="fe02-search__icon">🔍</span> 
+					<input type="text" id="menuSearchInput" class="form-control" placeholder="메뉴 이름 또는 설명으로 검색">
+				</div>
+			</section>
+
+			<section id="menuList" class="fe02-grid">
+				<article class="fe02-card" th:each="menu : ${menuList}"
+					th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? ' is-soldout' : ''">
+
+					<div class="fe02-card__thumb">
+						<img th:if="${!#strings.isEmpty(menu.imageUrl)}" th:src="${menu.imageUrl}" th:alt="${menu.menuName}">
+						<span th:unless="${!#strings.isEmpty(menu.imageUrl)}">🍽️</span>
+					</div>
+
+					<div class="fe02-card__body">
+						<div class="fe02-card__head">
+							<h2 class="fe02-card__name" th:text="${menu.menuName}">메뉴 이름</h2>
+							<span th:class="|fe02-status fe02-status--${menu.menuStatus == 'SOLD_OUT' ? 'soldout' : 'available'}|"
+								  th:text="${menu.menuStatus == 'SOLD_OUT' ? '품절' : '주문 가능'}"></span>
+						</div>
+						<p class="fe02-card__desc" th:text="${menu.menuDescription ?: '메뉴 설명이 없습니다.'}">설명</p>
+
+						<div class="fe02-card__footer">
+							<strong class="fe02-card__price" th:text="${#numbers.formatInteger(menu.menuPrice, 1, 'COMMA')} + '원'">0원</strong>
+							<button type="button" class="mo-btn mo-btn-outline" 
+								th:disabled="${menu.menuStatus == 'SOLD_OUT'}"
+								onclick="openMenuModal(this)"
+								th:attr="data-name=${menu.menuName}, data-desc=${menu.menuDescription}, data-price=${menu.menuPrice}, data-img=${menu.imageUrl}">
+								<span th:text="${menu.menuStatus == 'SOLD_OUT' ? '품절' : '메뉴 보기'}">메뉴 보기</span>
+							</button>
+						</div>
+					</div>
+				</article>
+			</section>
+
+			<div class="modal fade" id="commonMenuModal" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered">
+					<div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
+						<div class="position-relative">
+							<img id="modalImg" src="" class="w-100" style="height: 300px; object-fit: cover;">
+							<button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 shadow-none" data-bs-dismiss="modal"></button>
+						</div>
+						<div class="modal-body p-4">
+							<div class="mb-3">
+								<span class="text-uppercase fw-bold" style="color: var(--mo-navy); font-size: 0.75rem; letter-spacing: 1px;">Menu Detail</span>
+								<h3 id="modalName" class="fw-bold mt-1 mb-2" style="color: var(--mo-navy);">메뉴명</h3>
+								<p id="modalDesc" class="text-secondary mb-0" style="font-size: 0.95rem; line-height: 1.6;">설명</p>
+							</div>
+							<hr class="my-4" style="border-color: #eee;">
+							<div class="d-flex justify-content-between align-items-center mb-4">
+								<span class="fw-bold fs-5">수량 선택</span>
+								<div class="d-flex align-items-center bg-light rounded-pill p-1" style="border: 1px solid #ddd;">
+									<button class="btn btn-white rounded-circle shadow-sm p-0" style="width: 32px; height: 32px;" onclick="updateModalQty(-1)">-</button>
+									<span id="modalQtyDisplay" class="fw-bold px-3 fs-5">1</span>
+									<button class="btn btn-white rounded-circle shadow-sm p-0" style="width: 32px; height: 32px;" onclick="updateModalQty(1)">+</button>
+								</div>
+							</div>
+							<button type="button" class="btn w-100 py-3 fw-bold shadow-sm" onclick="addSelectedToCart()"
+								style="background-color: var(--mo-navy); color: #fff; border-radius: 16px; font-size: 1.1rem;">
+								<span id="modalTotalPrice">0</span>원 담기
+							</button>
+						</div>
+					</div>
+				</div>
 			</div>
-			
-			<div class="fe02-store-hero__bg"
-			     th:unless="${store != null and store.heroImageUrl != null and !#strings.isEmpty(store.heroImageUrl)}"
-			     style="background-image:linear-gradient(135deg, #252D59 0%, #2A3659 45%, #FF8000 100%);">
+
+			<div id="menuSearchEmpty" class="fe02-empty d-none">
+				<div class="fe02-empty__icon">🍽️</div>
+				<h2 class="fe02-empty__title">조건에 맞는 메뉴가 없습니다</h2>
 			</div>
-		
-		    <div class="fe02-store-hero__content">
-		        <div class="fe02-store-hero__eyebrow">가게 상세 페이지</div>
-		
-		        <h1 class="fe02-store-hero__title"
-		            th:text="${store != null and store.storeName != null and !#strings.isEmpty(store.storeName) ? store.storeName : '가게 정보'}">
-		            가게명
-		        </h1>
-		
-		        <p class="fe02-store-hero__desc"
-		           th:text="${store != null and store.storeDescription != null and !#strings.isEmpty(store.storeDescription) ? store.storeDescription : '메뉴를 확인하고 바로 주문을 시작할 수 있습니다.'}">
-		            가게 소개
-		        </p>
-		
-		        <div class="fe02-store-hero__meta">
-				    <div class="fe02-store-hero__meta-item fe02-store-hero__meta-item--minimum">
-				        <span class="fe02-store-hero__meta-label">최소주문금액</span>
-				        <strong class="fe02-store-hero__meta-value"
-				                th:text="${store != null ? #numbers.formatInteger(store.minimumOrderAmount, 1, 'COMMA') + '원' : '정보 없음'}">
-				            0원
-				        </strong>
-				    </div>
+			<div th:if="${#lists.isEmpty(menuList)}" class="fe02-empty">
+				<div class="fe02-empty__icon">🍽️</div>
+				<h2 class="fe02-empty__title">등록된 메뉴가 없습니다</h2>
+			</div>
+
+			<button type="button" class="fe02-order-fab" id="fe02CreateRoomBtn"
+				th:attr="data-store-idx=${currentStoreIdx}, 
+						 data-store-name=${store?.storeName ?: ''}, 
+						 data-minimum-order-amount=${store?.minimumOrderAmount ?: ''}">
+				<span id="fabTotalPrice">주문하기</span>
+			</button>
+		</div>
+	</section>
+
+	<th:block layout:fragment="pageScripts">
+		<script>
+			let currentItemPrice = 0;
+			let currentQty = 1;
+
+			// 모달 열기 및 데이터 세팅
+			function openMenuModal(btn) {
+				const name = btn.getAttribute('data-name');
+				const desc = btn.getAttribute('data-desc') || '메뉴 설명이 없습니다.';
+				const price = parseInt(btn.getAttribute('data-price')) || 0;
+				const img = btn.getAttribute('data-img') || ''; // 기본 이미지 경로가 있다면 여기에 넣으세요
+
+				currentItemPrice = price;
+				currentQty = 1;
+
+				document.getElementById('modalName').innerText = name;
+				document.getElementById('modalDesc').innerText = desc;
+				document.getElementById('modalImg').src = img;
+				document.getElementById('modalQtyDisplay').innerText = currentQty;
+				document.getElementById('modalTotalPrice').innerText = price.toLocaleString();
+
+				const modalElement = document.getElementById('commonMenuModal');
+				const myModal = new bootstrap.Modal(modalElement);
+				myModal.show();
+			}
+
+			// 수량 변경 함수
+			function updateModalQty(delta) {
+				currentQty += delta;
+				if (currentQty < 1) currentQty = 1;
 				
-				    <div class="fe02-store-hero__meta-item fe02-store-hero__meta-item--address">
-				        <span class="fe02-store-hero__meta-label">가게 주소</span>
-				        <strong class="fe02-store-hero__meta-value fe02-store-hero__meta-value--address">
-				            <span th:text="${store != null and store.storeAddress1 != null ? store.storeAddress1 : '주소 정보 없음'}">
-				                주소
-				            </span>
-				            <span th:if="${store != null and store.storeAddress2 != null and !#strings.isEmpty(store.storeAddress2)}">
-				                &nbsp;<span th:text="${store.storeAddress2}">상세주소</span>
-				            </span>
-				        </strong>
-				    </div>
-				</div>
-		    </div>
-		</section>
+				document.getElementById('modalQtyDisplay').innerText = currentQty;
+				const total = currentItemPrice * currentQty;
+				document.getElementById('modalTotalPrice').innerText = total.toLocaleString();
+			}
 
-        <section class="fe02-toolbar">
-		    <div class="fe02-search">
-		        <span class="fe02-search__icon">🔍</span>
-		        <input type="text"
-		               id="menuSearchInput"
-		               class="form-control"
-		               placeholder="메뉴 이름 또는 설명으로 검색">
-		    </div>
-		</section>
+			// HTML 내 <script> 태그 부분
+			function addSelectedToCart() {
+			    const name = document.getElementById('modalName').innerText;
+			    const totalAmount = currentItemPrice * currentQty; // 현재 선택한 총액 계산
 
-        <section id="menuList" class="fe02-grid">
-            <article class="fe02-card"
-                     th:each="menu : ${menuList}"
-                     th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? ' is-soldout' : ''"
-                     th:attr="
-                        data-menu-name=${menu.menuName},
-                        data-menu-desc=${menu.menuDescription},
-                        data-menu-status=${menu.menuStatus}">
+			    // [핵심] JS 파일에 만든 updateFabText 함수를 호출하여 버튼 글자를 바꿉니다.
+			    if (typeof window.updateFabText === 'function') {
+			        window.updateFabText(totalAmount);
+			    }
 
-                <div class="fe02-card__thumb">
-				    <img th:if="${menu.imageUrl != null and !#strings.isEmpty(menu.imageUrl)}"
-				         th:src="${menu.imageUrl}"
-				         th:alt="${menu.menuName}">
-				    <span th:unless="${menu.imageUrl != null and !#strings.isEmpty(menu.imageUrl)}">🍽️</span>
-				</div>
-
-                <div class="fe02-card__body">
-                    <div class="fe02-card__head">
-                        <h2 class="fe02-card__name" th:text="${menu.menuName}">메뉴 이름</h2>
-
-                        <span class="fe02-status fe02-status--available"
-                              th:if="${menu.menuStatus == 'AVAILABLE'}">주문 가능</span>
-                        <span class="fe02-status fe02-status--soldout"
-                              th:if="${menu.menuStatus == 'SOLD_OUT'}">품절</span>
-                        <span class="fe02-status fe02-status--available"
-                              th:if="${menu.menuStatus != 'AVAILABLE' and menu.menuStatus != 'SOLD_OUT'}"
-                              th:text="${menu.menuStatus}">상태</span>
-                    </div>
-
-                    <p class="fe02-card__desc"
-                       th:text="${menu.menuDescription != null and !#strings.isEmpty(menu.menuDescription) ? menu.menuDescription : '메뉴 설명이 아직 등록되지 않았습니다.'}">
-                        메뉴 설명
-                    </p>
-
-                    <div class="fe02-card__footer">
-                        <strong class="fe02-card__price"
-                                th:text="${#numbers.formatInteger(menu.menuPrice, 1, 'COMMA')} + '원'">
-                            0원
-                        </strong>
-
-                        <button type="button"
-                                class="mo-btn mo-btn-outline fe02MenuActionBtn"
-                                th:disabled="${menu.menuStatus == 'SOLD_OUT'}">
-                            <span th:text="${menu.menuStatus == 'SOLD_OUT' ? '품절' : '메뉴 보기'}">메뉴 보기</span>
-                        </button>
-                    </div>
-                </div>
-            </article>
-        </section>
-
-        <div id="menuSearchEmpty" class="fe02-empty d-none">
-            <div class="fe02-empty__icon">🍽️</div>
-            <h2 class="fe02-empty__title">조건에 맞는 메뉴가 없습니다</h2>
-            <p class="fe02-empty__desc">검색어를 바꿔 다시 확인해 주세요.</p>
-        </div>
-
-        <div th:if="${#lists.isEmpty(menuList)}" class="fe02-empty">
-            <div class="fe02-empty__icon">🍽️</div>
-            <h2 class="fe02-empty__title">등록된 메뉴가 없습니다</h2>
-            <p class="fe02-empty__desc">현재 가게에 등록된 메뉴가 없어 화면에 표시할 항목이 없습니다.</p>
-        </div>
-    </div>
-    <button type="button"
-	        class="fe02-order-fab"
-	        id="fe02CreateRoomBtn"
-	        th:attr="
-	            data-store-idx=${store != null ? store.storeIdx : currentStoreIdx},
-	            data-store-name=${store != null ? store.storeName : ''},
-	            data-minimum-order-amount=${store != null ? store.minimumOrderAmount : ''}">
-	    주문하기
-	</button>
-	    
-</section>
-
-<th:block layout:fragment="pageScripts">
-    <script th:src="@{/js/store/menu-list.js}"></script>
-</th:block>
+			    alert(`${name} ${currentQty}개를 담았습니다.`);
+			    
+			    const modalElement = document.getElementById('commonMenuModal');
+			    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+			    modalInstance.hide();
+			}
+		</script>
+		<script th:src="@{/js/store/menu-list.js}"></script>
+	</th:block>
 </body>
 </html>

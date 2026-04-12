@@ -30,231 +30,199 @@ import com.moeats.timer.OrderRoomTimer;
 @Controller
 public class OrderController {
 
-    @Autowired
-    GroupOrderService groupOrderService;
+	@Autowired
+	GroupOrderService groupOrderService;
 
-    @Autowired
-    OrderRoomService orderRoomService;
+	@Autowired
+	OrderRoomService orderRoomService;
 
-    @Autowired
-    PaymentService paymentService;
+	@Autowired
+	PaymentService paymentService;
 
-    @Autowired
-    OrderMemberQueryService memberService;
+	@Autowired
+	OrderMemberQueryService memberService;
 
-    @Autowired
-    SSEService sseService;
+	@Autowired
+	SSEService sseService;
 
-    @Autowired
-    OrderRoomTimer orderRoomTimer;
+	@Autowired
+	OrderRoomTimer orderRoomTimer;
 
-    @GetMapping("/orders/{order_idx}")
-    public String orderDetail(
-            Model model,
-            @PathVariable("order_idx") int orderIdx,
-            @RequestAttribute("groupOrder") GroupOrder groupOrder,
-            @RequestAttribute("payment") Payment payment) {
+	@GetMapping("/orders/{order_idx}")
+	public String orderDetail(Model model, @PathVariable("order_idx") int orderIdx,
+			@RequestAttribute("groupOrder") GroupOrder groupOrder, @RequestAttribute("payment") Payment payment) {
 
-        final record MemberItems(RoomParticipant roomParticipant, Member member, List<GroupOrderItem> items) {}
+		final record MemberItems(RoomParticipant roomParticipant, Member member, List<GroupOrderItem> items) {
+		}
 
-        Map<Integer, List<GroupOrderItem>> groupOrderItems = groupOrderService.findByOrder(groupOrder.getOrderIdx())
-                .stream()
-                .collect(Collectors.groupingBy(GroupOrderItem::getMemberIdx));
+		Map<Integer, List<GroupOrderItem>> groupOrderItems = groupOrderService.findByOrder(groupOrder.getOrderIdx())
+				.stream().collect(Collectors.groupingBy(GroupOrderItem::getMemberIdx));
 
-        Map<Integer, RoomParticipant> roomParticipantMap = orderRoomService.findByRoom(groupOrder.getRoomIdx())
-                .stream()
-                .collect(Collectors.toMap(RoomParticipant::getMemberIdx, roomParticipant -> roomParticipant));
+		Map<Integer, RoomParticipant> roomParticipantMap = orderRoomService.findByRoom(groupOrder.getRoomIdx()).stream()
+				.collect(Collectors.toMap(RoomParticipant::getMemberIdx, roomParticipant -> roomParticipant));
 
-        List<MemberItems> memberItems = memberService.findByIdxs(roomParticipantMap.keySet())
-                .stream()
-                .map(roomMember -> new MemberItems(
-                        roomParticipantMap.get(roomMember.getMemberIdx()),
-                        roomMember,
-                        groupOrderItems.getOrDefault(roomMember.getMemberIdx(), List.of())))
-                .toList();
+		List<MemberItems> memberItems = memberService.findByIdxs(roomParticipantMap.keySet()).stream()
+				.map(roomMember -> new MemberItems(roomParticipantMap.get(roomMember.getMemberIdx()), roomMember,
+						groupOrderItems.getOrDefault(roomMember.getMemberIdx(), List.of())))
+				.toList();
 
-        model.addAttribute("orderIdx", orderIdx);
-        model.addAttribute("groupOrder", groupOrder);
-        model.addAttribute("payment", payment);
-        model.addAttribute("memberItems", memberItems);
+		model.addAttribute("orderIdx", orderIdx);
+		model.addAttribute("groupOrder", groupOrder);
+		model.addAttribute("payment", payment);
+		model.addAttribute("memberItems", memberItems);
 
-        return "order-detail";
-    }
+		return "order-detail";
+	}
 
-    @GetMapping("/orders/{order_idx}/payment")
-    public String orderPayment(
-            RedirectAttributes ra,
-            @PathVariable("order_idx") int orderIdx,
-            @RequestAttribute("groupOrder") GroupOrder groupOrder,
-            @RequestAttribute("payment") Payment payment,
-            @SessionAttribute("member") Member member) {
+	@GetMapping("/orders/{order_idx}/payment")
+	public String orderPayment(RedirectAttributes ra, @PathVariable("order_idx") int orderIdx,
+			@RequestAttribute("groupOrder") GroupOrder groupOrder, @RequestAttribute("payment") Payment payment,
+			@SessionAttribute("member") Member member) {
 
-        PaymentShare paymentShare = paymentService.findPaymentMember(payment.getPaymentIdx(), member.getMemberIdx());
+		PaymentShare paymentShare = paymentService.findPaymentMember(payment.getPaymentIdx(), member.getMemberIdx());
 
-        if (paymentShare == null) {
-            ra.addFlashAttribute("error", "오류가 발생했습니다 관리자에게 연락해주십시오");
-            return "redirect:/main";
-        }
+		if (paymentShare == null) {
+			ra.addFlashAttribute("error", "오류가 발생했습니다 관리자에게 연락해주십시오");
+			return "redirect:/main";
+		}
 
-        if ("PAID".equals(payment.getPaymentStatus())) {
-            return String.format("redirect:/orders/%d", orderIdx);
-        }
+		if ("PAID".equals(payment.getPaymentStatus())) {
+			return String.format("redirect:/orders/%d", orderIdx);
+		}
 
-        String destination;
+		String destination;
 
-        if ("REPRESENTATIVE".equals(groupOrder.getPaymentMode())) {
-            if (groupOrder.getLeaderMemberIdx() == member.getMemberIdx()
-                    && !"PAID_SELF".equals(paymentShare.getShareStatus())) {
-                destination = "representative";
-            } else {
-                destination = "wait";
-            }
-        } else {
-            if ("PAID_SELF".equals(paymentShare.getShareStatus())) {
-                destination = "wait";
-            } else {
-                destination = "individual";
-            }
-        }
+		if ("REPRESENTATIVE".equals(groupOrder.getPaymentMode())) {
+			if (groupOrder.getLeaderMemberIdx() == member.getMemberIdx()
+					&& !"PAID_SELF".equals(paymentShare.getShareStatus())) {
+				destination = "representative";
+			} else {
+				destination = "wait";
+			}
+		} else {
+			if ("PAID_SELF".equals(paymentShare.getShareStatus())) {
+				destination = "wait";
+			} else {
+				destination = "individual";
+			}
+		}
 
-        return String.format("redirect:/orders/%d/payment/%s", orderIdx, destination);
-    }
+		return String.format("redirect:/orders/%d/payment/%s", orderIdx, destination);
+	}
 
-    @GetMapping("/orders/{order_idx}/payment/representative")
-    public String representativePay(
-            Model model,
-            @PathVariable("order_idx") int orderIdx,
-            @RequestAttribute("groupOrder") GroupOrder groupOrder,
-            @RequestAttribute("payment") Payment payment,
-            @RequestAttribute("paymentShare") PaymentShare paymentShare,
-            @SessionAttribute("member") Member member) {
+	@GetMapping("/orders/{order_idx}/payment/representative")
+	public String representativePay(Model model, @PathVariable("order_idx") int orderIdx,
+			@RequestAttribute("groupOrder") GroupOrder groupOrder, @RequestAttribute("payment") Payment payment,
+			@RequestAttribute("paymentShare") PaymentShare paymentShare, @SessionAttribute("member") Member member) {
 
-        if (member.getMemberIdx() != groupOrder.getLeaderMemberIdx()) {
-            return String.format("redirect:/orders/%d/payment/wait", orderIdx);
-        }
+		if (member.getMemberIdx() != groupOrder.getLeaderMemberIdx()) {
+			return String.format("redirect:/orders/%d/payment/wait", orderIdx);
+		}
 
-        if ("PAID_SELF".equals(paymentShare.getShareStatus()) || "PAID".equals(payment.getPaymentStatus())) {
-            return String.format("redirect:/orders/%d", orderIdx);
-        }
+		if ("PAID_SELF".equals(paymentShare.getShareStatus()) || "PAID".equals(payment.getPaymentStatus())) {
+			return String.format("redirect:/orders/%d", orderIdx);
+		}
 
-        List<PaymentShare> paymentShares = paymentService.findByPayment(payment.getPaymentIdx());
-        bindPaymentModel(model, orderIdx, groupOrder, payment, paymentShare, paymentShares);
+		List<PaymentShare> paymentShares = paymentService.findByPayment(payment.getPaymentIdx());
+		bindPaymentModel(model, orderIdx, groupOrder, payment, paymentShare, paymentShares);
 
-        return "payment-representative";
-    }
+		return "payment-representative";
+	}
 
-    @GetMapping("/orders/{order_idx}/payment/individual")
-    public String individualPay(
-            Model model,
-            @PathVariable("order_idx") int orderIdx,
-            @RequestAttribute("groupOrder") GroupOrder groupOrder,
-            @RequestAttribute("payment") Payment payment,
-            @RequestAttribute("paymentShare") PaymentShare paymentShare) {
+	@GetMapping("/orders/{order_idx}/payment/individual")
+	public String individualPay(Model model, @PathVariable("order_idx") int orderIdx,
+			@RequestAttribute("groupOrder") GroupOrder groupOrder, @RequestAttribute("payment") Payment payment,
+			@RequestAttribute("paymentShare") PaymentShare paymentShare) {
 
-        if ("PAID".equals(payment.getPaymentStatus()) || "PAID_SELF".equals(paymentShare.getShareStatus())) {
-            return String.format("redirect:/orders/%d/payment/wait", orderIdx);
-        }
+		if ("PAID".equals(payment.getPaymentStatus()) || "PAID_SELF".equals(paymentShare.getShareStatus())) {
+			return String.format("redirect:/orders/%d/payment/wait", orderIdx);
+		}
 
-        if ("CANCELLED".equals(payment.getPaymentStatus()) || "CANCELLED".equals(paymentShare.getShareStatus())) {
-            return String.format("redirect:/orders/%d", orderIdx);
-        }
+		if ("CANCELLED".equals(payment.getPaymentStatus()) || "CANCELLED".equals(paymentShare.getShareStatus())) {
+			return String.format("redirect:/orders/%d", orderIdx);
+		}
 
-        List<PaymentShare> paymentShares = paymentService.findByPayment(payment.getPaymentIdx());
-        bindPaymentModel(model, orderIdx, groupOrder, payment, paymentShare, paymentShares);
+		List<PaymentShare> paymentShares = paymentService.findByPayment(payment.getPaymentIdx());
+		bindPaymentModel(model, orderIdx, groupOrder, payment, paymentShare, paymentShares);
 
-        return "payment-individual";
-    }
+		return "payment-individual";
+	}
 
-    @GetMapping("/orders/{order_idx}/payment/wait")
-    public String waitForPayment(
-            Model model,
-            @PathVariable("order_idx") int orderIdx,
-            @RequestAttribute("groupOrder") GroupOrder groupOrder,
-            @RequestAttribute("payment") Payment payment,
-            @RequestAttribute("paymentShare") PaymentShare paymentShare,
-            @SessionAttribute("member") Member member) {
+	@GetMapping("/orders/{order_idx}/payment/wait")
+	public String waitForPayment(Model model, @PathVariable("order_idx") int orderIdx,
+			@RequestAttribute("groupOrder") GroupOrder groupOrder, @RequestAttribute("payment") Payment payment,
+			@RequestAttribute("paymentShare") PaymentShare paymentShare, @SessionAttribute("member") Member member) {
 
-        if ("PAID".equals(payment.getPaymentStatus())) {
-            return String.format("redirect:/orders/%d", orderIdx);
-        }
+		if ("PAID".equals(payment.getPaymentStatus())) {
+			return String.format("redirect:/orders/%d", orderIdx);
+		}
 
-        if ("CANCELLED".equals(payment.getPaymentStatus()) || "CANCELLED".equals(paymentShare.getShareStatus())) {
-            return String.format("redirect:/orders/%d", orderIdx);
-        }
+		if ("CANCELLED".equals(payment.getPaymentStatus()) || "CANCELLED".equals(paymentShare.getShareStatus())) {
+			return String.format("redirect:/orders/%d", orderIdx);
+		}
 
-        if ("INDIVIDUAL".equals(payment.getPaymentMode()) && "PENDING".equals(paymentShare.getShareStatus())) {
-            return String.format("redirect:/orders/%d/payment", orderIdx);
-        }
+		if ("INDIVIDUAL".equals(payment.getPaymentMode()) && "PENDING".equals(paymentShare.getShareStatus())) {
+			return String.format("redirect:/orders/%d/payment", orderIdx);
+		}
 
-        List<PaymentShare> paymentShares = paymentService.findByPayment(payment.getPaymentIdx());
-        bindPaymentModel(model, orderIdx, groupOrder, payment, paymentShare, paymentShares);
-        model.addAttribute("isLeader", groupOrder.getLeaderMemberIdx() == member.getMemberIdx());
+		List<PaymentShare> paymentShares = paymentService.findByPayment(payment.getPaymentIdx());
+		bindPaymentModel(model, orderIdx, groupOrder, payment, paymentShare, paymentShares);
+		model.addAttribute("isLeader", groupOrder.getLeaderMemberIdx() == member.getMemberIdx());
 
-        return "payment-wait";
-    }
+		return "payment-wait";
+	}
 
-    @PostMapping("/orders/{order_idx}/payment/complete")
-    public String paymentComplete(
-            RedirectAttributes ra,
-            @PathVariable("order_idx") int orderIdx,
-            @RequestAttribute("groupOrder") GroupOrder groupOrder,
-            @RequestAttribute("payment") Payment payment,
-            @RequestAttribute("paymentShare") PaymentShare paymentShare,
-            @SessionAttribute("member") Member member) {
+	@PostMapping("/orders/{order_idx}/payment/complete")
+	public String paymentComplete(RedirectAttributes ra, @PathVariable("order_idx") int orderIdx,
+			@RequestAttribute("groupOrder") GroupOrder groupOrder, @RequestAttribute("payment") Payment payment,
+			@RequestAttribute("paymentShare") PaymentShare paymentShare, @SessionAttribute("member") Member member) {
 
-        int paymentShareIdx = paymentShare.getPaymentShareIdx();
+		int paymentShareIdx = paymentShare.getPaymentShareIdx();
 
-        if (paymentService.paySelf(paymentShareIdx) == 0) {
-            ra.addFlashAttribute("error", "결제 중 오류가 발생했습니다 관리자에게 연락해주십시오");
-            return String.format("redirect:/orders/%d/payment", orderIdx);
-        }
+		if (paymentService.paySelf(paymentShareIdx) == 0) {
+			ra.addFlashAttribute("error", "결제 중 오류가 발생했습니다 관리자에게 연락해주십시오");
+			return String.format("redirect:/orders/%d/payment", orderIdx);
+		}
 
-        if ("REPRESENTATIVE".equals(payment.getPaymentMode())) {
-            if (member.getMemberIdx() != groupOrder.getLeaderMemberIdx()) {
-                ra.addFlashAttribute("error", "잘못된 접근입니다");
-                return "redirect:/main";
-            }
+		if ("REPRESENTATIVE".equals(payment.getPaymentMode())) {
+			if (member.getMemberIdx() != groupOrder.getLeaderMemberIdx()) {
+				ra.addFlashAttribute("error", "잘못된 접근입니다");
+				return "redirect:/main";
+			}
 
-            paymentShare = paymentService.findShareByIdx(paymentShareIdx);
-            paymentService.paidByRepresentative(payment.getPaymentIdx(), paymentShare.getPaidAt());
+			paymentShare = paymentService.findShareByIdx(paymentShareIdx);
+			paymentService.paidByRepresentative(payment.getPaymentIdx(), paymentShare.getPaidAt());
 
-            orderRoomTimer.stop(orderIdx);
-            sseService.payOrder(orderIdx, paymentShareIdx);
-            sseService.payComplete(orderIdx, groupOrder.getStoreIdx());
+			orderRoomTimer.stop(orderIdx);
+			sseService.payOrder(orderIdx, paymentShareIdx);
+			sseService.payComplete(orderIdx, groupOrder.getStoreIdx());
 
-            return String.format("redirect:/orders/%d", orderIdx);
-        }
+			return String.format("redirect:/orders/%d", orderIdx);
+		}
 
-        sseService.payOrder(orderIdx, paymentShareIdx);
+		sseService.payOrder(orderIdx, paymentShareIdx);
 
-        if (paymentService.findPaymentPending(payment.getPaymentIdx()).isEmpty()) {
-            orderRoomTimer.stop(orderIdx);
-            sseService.payComplete(orderIdx, groupOrder.getStoreIdx());
-            return String.format("redirect:/orders/%d", orderIdx);
-        }
+		if (paymentService.findPaymentPending(payment.getPaymentIdx()).isEmpty()) {
+			orderRoomTimer.stop(orderIdx);
+			sseService.payComplete(orderIdx, groupOrder.getStoreIdx());
+			return String.format("redirect:/orders/%d", orderIdx);
+		}
 
-        return String.format("redirect:/orders/%d/payment/wait", orderIdx);
-    }
+		return String.format("redirect:/orders/%d/payment/wait", orderIdx);
+	}
 
-    private void bindPaymentModel(
-            Model model,
-            int orderIdx,
-            GroupOrder groupOrder,
-            Payment payment,
-            PaymentShare paymentShare,
-            List<PaymentShare> paymentShares) {
+	private void bindPaymentModel(Model model, int orderIdx, GroupOrder groupOrder, Payment payment,
+			PaymentShare paymentShare, List<PaymentShare> paymentShares) {
 
-        long completedCount = paymentShares.stream()
-                .filter(share -> "PAID_SELF".equals(share.getShareStatus())
-                        || "PAID_BY_REPRESENTATIVE".equals(share.getShareStatus()))
-                .count();
+		long completedCount = paymentShares.stream().filter(share -> "PAID_SELF".equals(share.getShareStatus())
+				|| "PAID_BY_REPRESENTATIVE".equals(share.getShareStatus())).count();
 
-        model.addAttribute("orderIdx", orderIdx);
-        model.addAttribute("groupOrder", groupOrder);
-        model.addAttribute("payment", payment);
-        model.addAttribute("paymentShare", paymentShare);
-        model.addAttribute("paymentShares", paymentShares);
-        model.addAttribute("completedCount", completedCount);
-        model.addAttribute("totalCount", paymentShares.size());
-    }
+		model.addAttribute("orderIdx", orderIdx);
+		model.addAttribute("groupOrder", groupOrder);
+		model.addAttribute("payment", payment);
+		model.addAttribute("paymentShare", paymentShare);
+		model.addAttribute("paymentShares", paymentShares);
+		model.addAttribute("completedCount", completedCount);
+		model.addAttribute("totalCount", paymentShares.size());
+	}
 }

@@ -56,6 +56,7 @@ public class StoreController {
 			RedirectAttributes ra,
 			Model model,
 			@SessionAttribute("member") Member member) {
+		
 		Store store = storeService.myStore(member.getMemberIdx());
 	    if ( store==null ) {
 	    	ra.addFlashAttribute("error", "가게가 없습니다");
