@@ -37,7 +37,7 @@ public class GroupOrderService {
 		GroupOrder groupOrder = groupOrderMapper.findByIdx(orderIdx);
 		return new GroupOrderRecord(
 				groupOrder,
-				groupOrderItemMapper.findOrderItemAmount(groupOrder.getOrderIdx()),
+				groupOrderItemMapper.findByOrder(groupOrder.getOrderIdx()), // ✨ 수정 후! (모든 상세 정보 불러오기)
 				orderDeliveryMapper.findByOrder(groupOrder.getOrderIdx()));
 	}
 	public List<GroupOrderRecord> findRecordByStore(int storeIdx) {
