@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -20,6 +21,8 @@ import com.moeats.domain.Store;
 import com.moeats.service.DeliveryAddressService;
 import com.moeats.service.MemberAccountService;
 import com.moeats.service.StoreService;
+import com.moeats.services.GroupOrderService;
+import com.moeats.services.GroupOrderService.GroupOrderRecord;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -37,12 +40,45 @@ public class MemberController {
 	@Autowired
 	private StoreService storeService;
 	
+	@Autowired
+	private GroupOrderService groupOrderService;
+	
 	
 	// ===== 상수 정의 ======
 	private static final String ROLE_OWNER = "OWNER";
 	private static final String ROLE_USER = "USER";
 	
+	@GetMapping("/members/me/orders")
+	public String myOrderHistory(@SessionAttribute(name="member", required=false) Member member,
+			Model model) {
+		
+		// USER용 기본 배송지
+		if("USER".equals(member.getMemberRoleType())) {
+		    DeliveryAddress deliveryAddress = deliveryAddressService.getDefaultAddress(member.getMemberIdx());
+		    model.addAttribute("deliveryAddress", deliveryAddress);
+		    
+		    // 전체 주소 리스트 추가
+		    List<DeliveryAddress> addressList =
+		            deliveryAddressService.getAddress(member.getMemberIdx());
+		    
+		    List<GroupOrderRecord> orderList = groupOrderService.findRecentOrdersByMember(member.getMemberIdx());
+		    model.addAttribute("orderList", orderList);
+		    
+		    model.addAttribute("addressList", addressList);
+		}
+		return "views/user/user-order-history";
+	}
 	
+	/**
+     * 마이페이지 내역 클릭 시 상세 데이터를 JSON으로 반환
+     */
+    @GetMapping("members/me/api/orders/{orderIdx}")
+    @ResponseBody
+    public GroupOrderService.GroupOrderRecord getOrderApi(@PathVariable("orderIdx") int orderIdx) {
+        // GroupOrderRecord는 GroupOrderService 내부의 record/static class일 것이므로 
+        // 서비스명을 붙여서 참조하거나 import 해야 합니다.
+        return groupOrderService.findRecordByIdx(orderIdx);
+    }
 	
 	// 이메일 중복 확인 true → 사용 가능 (중복 없음)	false → 이미 존재
 	@GetMapping("/members/email-check")
@@ -118,6 +154,10 @@ public class MemberController {
 	        // 전체 주소 리스트 추가
 	        List<DeliveryAddress> addressList =
 	                deliveryAddressService.getAddress(member.getMemberIdx());
+	        
+	        List<GroupOrderRecord> orderList = groupOrderService.findRecentOrdersByMember(member.getMemberIdx());
+	        model.addAttribute("orderList", orderList);
+	        
 	        model.addAttribute("addressList", addressList);
 	    }
 

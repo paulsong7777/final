@@ -19,15 +19,72 @@
 				<h3 class="mo-store-card__title m-0" style="font-size: 18px;">
 					<span th:text="${session.member.memberNickname}" style="color: var(--mo-primary);">닉네임</span>님 환영합니다! 👋
 				</h3>
-				<input type="button" th:onclick="@{location.href='/members/me/edit'}" value="정보 수정" class="mo-btn mo-btn-outline" style="min-height: 36px; padding: 0 16px; font-size: 13px; border-radius: 999px;">
+                <input type="button" onclick="location.href='/members/me/edit'" value="정보 수정" class="mo-btn mo-btn-outline" style="min-height: 36px; padding: 0 16px; font-size: 13px; border-radius: 999px;">
 			</div>
 		</div>
+
+		<div class="mo-surface-card mb-4" th:if="${session.member.memberRoleType == 'USER'}">
+		    <div class="d-flex justify-content-between align-items-center mb-4">
+		        <h3 class="mo-store-card__title m-0">최근 주문 내역</h3>
+		        <a href="/members/me/orders" class="mo-btn mo-btn-plain p-0" style="font-size: 13px; color: var(--mo-primary);">전체보기 ></a>
+		    </div>
 		
+		    <th:block th:if="${not #lists.isEmpty(orderList)}">
+		        <div class="d-flex flex-column gap-3">
+                    <div th:each="order : ${orderList}" 
+		                 class="p-3 border rounded-4 shadow-sm" 
+		                 style="background: #fff; cursor: pointer;" 
+		                 th:data-idx="${order.groupOrder.orderIdx}"
+                         th:data-name="${order.groupOrder.storeName}"
+                         onclick="openOrderDetail(this.getAttribute('data-idx'), this.getAttribute('data-name'))">
+		                
+		                <div class="d-flex justify-content-between align-items-start mb-2">
+		                    <div>
+		                        <span class="text-secondary" style="font-size: 13px;" 
+		                              th:with="baseTime=${order.groupOrder.paymentConfirmedAt ?: order.groupOrder.createdAt}"
+		                              th:text="${#temporals.format(baseTime.toLocalDateTime().plusHours(9), 'yyyy-MM-dd HH:mm')}">시간</span>
+		                        
+		                        <h4 class="fw-bold mb-1 mt-1" style="font-size: 16px; color: var(--mo-navy-strong);" 
+		                            th:text="${order.groupOrder.storeName}">가게이름</h4>
+		                    </div>
+		                    
+		                    <div th:switch="${order.groupOrder.orderStatus}">
+		                        <span th:case="'PAID'" class="mo-address-item__badge" style="margin:0; background:rgba(220,53,69,0.1); color:#dc3545;">결제완료</span>
+		                        <span th:case="'ACCEPTED'" class="mo-address-item__badge" style="margin:0; background:rgba(255,128,0,0.1); color:var(--mo-primary);">조리 중</span>
+		                        <span th:case="'PREPARING'" class="mo-address-item__badge" style="margin:0; background:rgba(40,167,69,0.1); color:#28a745;">조리 완료</span>
+		                        <span th:case="'READY'" class="mo-address-item__badge" style="margin:0; background:rgba(23,162,184,0.1); color:#17a2b8;">배달 중</span>
+		                        <span th:case="'COMPLETED'" class="mo-address-item__badge" style="margin:0; background:rgba(42,54,89,0.1); color:var(--mo-navy-strong);">배달완료</span>
+		                        <span th:case="*" class="mo-address-item__badge" style="margin:0; background:#eee; color:#666;">확인 중</span>
+		                    </div>
+		                </div>
+		            
+		                <div class="d-flex justify-content-between align-items-center">
+		                    <div class="text-truncate text-secondary" style="font-size: 14px; max-width: 70%;">
+		                        <span th:text="${order.groupOrderItems[0].menuNameSnapshot}">메뉴명</span>
+		                        <span th:if="${#lists.size(order.groupOrderItems) > 1}" 
+		                              th:text="' 외 ' + (${#lists.size(order.groupOrderItems)} - 1) + '개'"> 외 N개</span>
+		                    </div>
+		                    <div class="fw-bold" style="color: var(--mo-primary); font-size: 15px;" 
+		                         th:text="${#numbers.formatInteger(order.groupOrder.orderTotalAmount, 0, 'COMMA')} + '원'">
+		                        0원
+		                    </div>
+		                </div>
+		            </div> 
+                </div>
+		    </th:block>
+		
+		    <th:block th:if="${#lists.isEmpty(orderList)}">
+		        <div class="mo-empty-state mo-empty-state--compact py-4">
+		            <p class="mo-empty-state__desc" style="font-size: 13px;">최근 주문한 내역이 없습니다.</p>
+		        </div>
+		    </th:block>
+		</div>
+
 		<th:block th:if="${session.member.memberRoleType == 'USER'}">
 			<div class="mo-surface-card mb-4">
 				<div class="d-flex justify-content-between align-items-center mb-4">
 					<h3 class="mo-store-card__title m-0">배달 주소 관리</h3>
-					<input type="button" th:onclick="@{location.href='/members/me/addresses'}" value="+ 주소 추가" class="mo-btn mo-btn-primary" style="min-height: 36px; padding: 0 14px; font-size: 13px;">
+                    <input type="button" onclick="location.href='/members/me/addresses'" value="+ 주소 추가" class="mo-btn mo-btn-primary" style="min-height: 36px; padding: 0 14px; font-size: 13px;">
 				</div>
 				
 				<div style="background: rgba(255,128,0,0.05); border: 1px solid rgba(255,128,0,0.2); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
@@ -52,8 +109,8 @@
 							<div class="mo-address-item__text mb-3" th:text="${address.deliveryAddress1 + ' ' + (address.deliveryAddress2 != null ? address.deliveryAddress2 : '')}"></div>
 							
 							<div class="d-flex gap-2">
-								<input type="button" th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/edit'|" value="수정" class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 12px; font-size: 12px;">
-								<input type="button" th:onclick="|location.href='/members/me/addresses/${address.deliveryAddressIdx}/delete'|" value="삭제" class="mo-btn mo-btn-plain" style="min-height: 32px; padding: 0 12px; font-size: 12px; color: #dc3545;">
+                                <input type="button" th:data-url="|/members/me/addresses/${address.deliveryAddressIdx}/edit|" onclick="location.href=this.getAttribute('data-url')" value="수정" class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 12px; font-size: 12px;">
+								<input type="button" th:data-url="|/members/me/addresses/${address.deliveryAddressIdx}/delete|" onclick="location.href=this.getAttribute('data-url')" value="삭제" class="mo-btn mo-btn-plain" style="min-height: 32px; padding: 0 12px; font-size: 12px; color: #dc3545;">
 								
 								<form th:if="${!address.isActive}" th:action="@{/members/me/addresses/{id}/default(id=${address.deliveryAddressIdx})}" method="post" style="margin: 0; margin-left: auto;">
 									<input type="hidden" name="redirectUrl" value="/members/me"/>
@@ -82,7 +139,7 @@
 				<th:block th:if="${store != null}">
 				    <div class="mo-address-item" style="border-color: rgba(42, 54, 89, 0.15); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#fafafa'" onmouseout="this.style.backgroundColor='transparent'">
 				        
-				        <div style="cursor: pointer;" th:onclick="|location.href='@{/owners/store}'|">
+                        <div style="cursor: pointer;" onclick="location.href='/owners/store'">
 				            <div class="mo-address-item__head">
 				                <div class="d-flex align-items-center gap-2">
 				                    <span class="mo-address-item__label" style="font-size: 18px;" th:text="${store.storeName}"></span>
@@ -95,7 +152,7 @@
 				            <div class="mo-address-item__text mb-4" th:text="${store.storeAddress1 + (store.storeAddress2 != null ? ' ' + store.storeAddress2 : '')}"></div>
 				        </div>
 				        <div class="d-flex flex-wrap gap-2">
-				            <input type="button" th:onclick="|location.href='@{/owners/store/edit(redirectUrl='/members/me')}'|" value="정보 수정" class="mo-btn mo-btn-outline" style="flex: 1; min-width: 100px;">
+                            <input type="button" onclick="location.href='/owners/store/edit?redirectUrl=/members/me'" value="정보 수정" class="mo-btn mo-btn-outline" style="flex: 1; min-width: 100px;">
 				            
 				            <form th:if="${store.storeStatus == 'INACTIVE' or store.storeStatus == 'CLOSED' or store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK'}" th:action="@{/owners/store/status}" method="post" style="margin: 0; flex: 1; min-width: 100px;">
 				                <input type="hidden" name="storeIdx" th:value="${store.storeIdx}" />
@@ -130,7 +187,7 @@
 		</th:block>
 		
 		<div class="d-flex justify-content-between align-items-center mt-5 mb-4 pl-2 pr-2">
-			<input type="button" th:onclick="@{|location.href='/main'|}" value="메인으로" class="mo-btn mo-btn-plain">
+            <input type="button" onclick="location.href='/main'" value="메인으로" class="mo-btn mo-btn-plain">
 			
 			<div style="font-size: 13px;">
 				<a href="#" style="color: var(--mo-text-soft); text-decoration: none;">회원탈퇴</a>
@@ -140,5 +197,65 @@
 		</div>
 		
 	</div>
+	
+	<div class="modal fade" id="orderDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="fw-bold m-0" style="color: var(--mo-navy-strong);">주문 상세 정보</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="modalContent">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="mo-btn mo-btn-outline w-100" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+<th:block layout:fragment="pageScripts">
+<script th:inline="javascript">
+async function openOrderDetail(orderIdx, storeName) {
+    const myModal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+    const contentDiv = document.getElementById('modalContent');
+    myModal.show();
+    
+    try {
+        const response = await fetch(`/members/me/api/orders/${orderIdx}`);
+        const data = await response.json(); 
+        
+        let itemsHtml = data.groupOrderItems.map(item => `
+            <div class="d-flex justify-content-between mb-2 small">
+                <span>${item.menuNameSnapshot} x ${item.itemQuantity}</span>
+                <span class="fw-bold">${item.itemTotalAmount.toLocaleString()}원</span>
+            </div>
+        `).join('');
+
+        contentDiv.innerHTML = `
+            <div class="mb-3 border-bottom pb-3">
+                <div class="small text-secondary mb-1">가게명</div>
+                <div class="fw-bold fs-5">${storeName}</div>
+            </div>
+            <div class="mb-3">
+                <div class="small text-secondary mb-2">주문 메뉴</div>
+                ${itemsHtml}
+            </div>
+            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                <span class="fw-bold">총 결제금액</span>
+                <span class="fs-5 fw-bold text-danger">${data.groupOrder.orderTotalAmount.toLocaleString()}원</span>
+            </div>
+        `;
+    } catch (error) {
+        contentDiv.innerHTML = `<p class="text-center text-danger">정보를 불러오지 못했습니다.</p>`;
+    }
+}
+</script>
+</th:block>
 </html>

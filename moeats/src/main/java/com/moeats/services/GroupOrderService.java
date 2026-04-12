@@ -19,6 +19,7 @@ import com.moeats.mappers.GroupCartItemMapper;
 import com.moeats.mappers.GroupOrderItemMapper;
 import com.moeats.mappers.GroupOrderMapper;
 import com.moeats.mappers.OrderDeliveryMapper;
+import com.moeats.service.MemberAccountService;
 
 @Service
 public class GroupOrderService {
@@ -30,6 +31,8 @@ public class GroupOrderService {
 	GroupOrderItemMapper groupOrderItemMapper;
 	@Autowired
 	OrderDeliveryMapper orderDeliveryMapper;
+	@Autowired
+	MemberAccountService memberAccountService;
 	
 	public record GroupOrderRecord(GroupOrder groupOrder,List<GroupOrderItem> groupOrderItems,OrderDelivery orderDelivery) {}
 	
@@ -149,4 +152,30 @@ public class GroupOrderService {
 		res += groupOrderMapper.delete(orderIdx);
 		return res;
 	}
+	
+	// 고객 최근 주문내역 (닉네임 포함 버전)
+    public List<GroupOrderRecord> findRecentOrdersByMember(int memberIdx) {
+        // 1. 해당 멤버가 참여한 주문 리스트 가져오기
+        List<GroupOrder> orders = groupOrderMapper.findByMember(memberIdx);
+        
+        return orders.stream().map(order -> {
+            // 2. 해당 주문의 모든 아이템 리스트 가져오기
+            List<GroupOrderItem> items = groupOrderItemMapper.findByOrder(order.getOrderIdx());
+            
+            // 3. ✨ [핵심] 각 아이템에 참여자 별명(Nickname) 채워넣기
+            items.forEach(item -> {
+                // memberAccountService에서 memberIdx로 별명을 찾아와서 세팅
+                // (getMemberByMemberIdx 메서드 이름은 프로젝트 상황에 맞게 확인 필요)
+                var member = memberAccountService.getMember(item.getMemberIdx());
+                if (member != null) {
+                    item.setMemberNickname(member.getMemberNickname());
+                }
+            });
+
+            // 4. 배달 정보 가져오기
+            OrderDelivery delivery = orderDeliveryMapper.findByOrder(order.getOrderIdx());
+            
+            return new GroupOrderRecord(order, items, delivery);
+        }).collect(Collectors.toList());
+    }
 }

@@ -23,6 +23,8 @@ public class GroupOrder {
 	Timestamp createdAt;
 	Timestamp updatedAt;
 	
+	String storeName;
+	
 	public static GroupOrder from(OrderRoom orderRoom) {
 		GroupOrder groupOrder = new GroupOrder(); 
 		groupOrder.setRoomIdx(orderRoom.getRoomIdx());

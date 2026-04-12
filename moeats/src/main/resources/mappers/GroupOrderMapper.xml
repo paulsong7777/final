@@ -2,6 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moeats.mappers.GroupOrderMapper">
+	
+	<select id="findByMember" resultType="GroupOrder">
+	    SELECT DISTINCT 
+	        go.*, 
+	        s.store_name as storeName  FROM group_order go
+	    JOIN group_order_item goi ON go.order_idx = goi.order_idx
+	    JOIN store s ON go.store_idx = s.store_idx  WHERE goi.member_idx = #{memberIdx}
+	      AND NOT go.order_status IN ('PAYMENT_PENDING', 'CANCELLED')
+	    ORDER BY go.payment_confirmed_at DESC, go.created_at DESC
+	    LIMIT 5
+	</select>
+	
 	<select id="findAll" resultType="GroupOrder">
 		SELECT * FROM group_order
 	</select>

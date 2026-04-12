@@ -28,4 +28,6 @@ public interface GroupOrderMapper {
 	int expectVisit(
 		@Param("orderIdx") int orderIdx,
 		@Param("expectedVisitAt") int expectedVisitAt);
+	
+	List<GroupOrder> findByMember(@Param("memberIdx") int memberIdx);
 }
