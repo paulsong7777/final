@@ -32,6 +32,15 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+
+<script th:if="${error != null}" th:inline="javascript">
+    alert([[${error}]]);
+</script>
+
+<script th:if="${message != null}" th:inline="javascript">
+    alert([[${message}]]);
+</script>
+
 <script th:src="@{/js/moeats-layout.js}"></script>
 <th:block layout:fragment="pageScripts"></th:block>
 </body>

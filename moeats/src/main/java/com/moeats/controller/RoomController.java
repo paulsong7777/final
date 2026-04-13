@@ -373,9 +373,11 @@ public class RoomController {
 	}
 
 	@PostMapping("/rooms/code/{room_code}/kick")
-	public String kickRoom(RedirectAttributes ra, @RequestParam(defaultValue = "0") int kickMemberIdx,
-			@PathVariable("room_code") String roomCode, @RequestAttribute("orderRoom") OrderRoom orderRoom,
-			@SessionAttribute("member") Member member) {
+	public String kickRoom(RedirectAttributes ra,
+	        @RequestParam(name = "kickMemberIdx", defaultValue = "0") int kickMemberIdx,
+	        @PathVariable("room_code") String roomCode,
+	        @RequestAttribute("orderRoom") OrderRoom orderRoom,
+	        @SessionAttribute("member") Member member) {
 		if (orderRoom.getLeaderMemberIdx() != member.getMemberIdx()) {
 			ra.addFlashAttribute("error", "잘못된 접근입니다");
 			return "redirect:/main";
