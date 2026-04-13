@@ -207,10 +207,10 @@
 
 						<div class="fe02-card__footer">
 							<strong class="fe02-card__price" th:text="${#numbers.formatInteger(menu.menuPrice, 1, 'COMMA')} + '원'">0원</strong>
-							<button type="button" class="mo-btn mo-btn-outline" 
-								th:disabled="${menu.menuStatus == 'SOLD_OUT'}"
-								onclick="openMenuModal(this)"
-								th:attr="data-name=${menu.menuName}, data-desc=${menu.menuDescription}, data-price=${menu.menuPrice}, data-img=${menu.imageUrl}">
+							<button type="button" class="mo-btn mo-btn-outline"
+								        th:disabled="${menu.menuStatus == 'SOLD_OUT'}"
+								        onclick="openMenuLayer(this)"
+								        th:attr="data-menu-idx=${menu.menuIdx}, data-name=${menu.menuName}, data-desc=${menu.menuDescription}, data-price=${menu.menuPrice}, data-img=${menu.imageUrl}">
 								<span th:text="${menu.menuStatus == 'SOLD_OUT' ? '품절' : '메뉴 보기'}">메뉴 보기</span>
 							</button>
 						</div>
@@ -242,7 +242,7 @@
 							</div>
 							<button type="button" 
 							        class="btn w-100 py-3 fw-bold shadow-sm" 
-							        th:onclick="${session.member != null} ? 'addSelectedToCart()' : 'location.href=\'/login\''"
+							     	th:onclick="${session.member != null} ? 'addSelectedToCart()' : 'moveToLoginWithReturnUrl()'"
 							        th:styleappend="${session.member != null} 
 							                        ? 'background-color: var(--mo-navy); color: #fff; border-radius: 16px; font-size: 1.1rem;' 
 							                        : 'background-color: #f8f9fa; color: var(--mo-navy); border: 1px solid #ddd; border-radius: 16px; font-size: 1rem;'">
@@ -255,6 +255,43 @@
 					</div>
 				</div>
 			</div>
+			
+			<div class="offcanvas offcanvas-bottom mo-bottom-sheet" id="commonMenuBottomSheet" tabindex="-1" aria-hidden="true">
+    <div class="mo-bottom-sheet__header">
+        <div class="mo-modal-card__eyebrow">MENU</div>
+        <h2 class="mo-modal-card__title mb-0" data-menu-layer-name>메뉴명</h2>
+    </div>
+    <div class="mo-bottom-sheet__body">
+        <div class="mo-modal-form mo-modal-form--sheet">
+            <div class="position-relative mb-3">
+                <img data-menu-layer-img src="" class="w-100" style="height: 240px; object-fit: cover; border-radius: 18px;">
+            </div>
+
+            <div class="mb-3">
+                <p data-menu-layer-desc class="text-secondary mb-0" style="font-size: 0.95rem; line-height: 1.6;">설명</p>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="fw-bold fs-5">수량 선택</span>
+                <div class="d-flex align-items-center bg-light rounded-pill p-1" style="border: 1px solid #ddd;">
+                    <button type="button" class="btn btn-white rounded-circle shadow-sm p-0" style="width: 32px; height: 32px;" onclick="updateModalQty(-1)">-</button>
+                    <span id="modalQtyDisplayMobile" class="fw-bold px-3 fs-5">1</span>
+                    <button type="button" class="btn btn-white rounded-circle shadow-sm p-0" style="width: 32px; height: 32px;" onclick="updateModalQty(1)">+</button>
+                </div>
+            </div>
+
+            <button type="button"
+                    class="btn w-100 py-3 fw-bold shadow-sm"
+                    th:onclick="${session.member != null} ? 'addSelectedToCart()' : 'moveToLoginWithReturnUrl()'"
+                    th:styleappend="${session.member != null}
+                                    ? 'background-color: var(--mo-navy); color: #fff; border-radius: 16px; font-size: 1.1rem;'
+                                    : 'background-color: #f8f9fa; color: var(--mo-navy); border: 1px solid #ddd; border-radius: 16px; font-size: 1rem;'">
+                <span data-menu-layer-total>0</span>원
+                <span th:text="${session.member != null} ? '담기' : '담기 (로그인 필요)'">담기</span>
+            </button>
+        </div>
+    </div>
+</div>
 
 			<div id="menuSearchEmpty" class="fe02-empty d-none">
 				<div class="fe02-empty__icon">🍽️</div>
@@ -277,56 +314,119 @@
 
 	<th:block layout:fragment="pageScripts">
 		<script>
-			let currentItemPrice = 0;
-			let currentQty = 1;
-
-			// 모달 열기 및 데이터 세팅
-			function openMenuModal(btn) {
-				const name = btn.getAttribute('data-name');
-				const desc = btn.getAttribute('data-desc') || '메뉴 설명이 없습니다.';
-				const price = parseInt(btn.getAttribute('data-price')) || 0;
-				const img = btn.getAttribute('data-img') || ''; // 기본 이미지 경로가 있다면 여기에 넣으세요
-
-				currentItemPrice = price;
-				currentQty = 1;
-
-				document.getElementById('modalName').innerText = name;
-				document.getElementById('modalDesc').innerText = desc;
-				document.getElementById('modalImg').src = img;
-				document.getElementById('modalQtyDisplay').innerText = currentQty;
-				document.getElementById('modalTotalPrice').innerText = price.toLocaleString();
-
-				const modalElement = document.getElementById('commonMenuModal');
-				const myModal = new bootstrap.Modal(modalElement);
-				myModal.show();
-			}
-
-			// 수량 변경 함수
-			function updateModalQty(delta) {
-				currentQty += delta;
-				if (currentQty < 1) currentQty = 1;
-				
-				document.getElementById('modalQtyDisplay').innerText = currentQty;
-				const total = currentItemPrice * currentQty;
-				document.getElementById('modalTotalPrice').innerText = total.toLocaleString();
-			}
-
-			// HTML 내 <script> 태그 부분
-			function addSelectedToCart() {
-			    const name = document.getElementById('modalName').innerText;
-			    const totalAmount = currentItemPrice * currentQty; // 현재 선택한 총액 계산
-
-			    // [핵심] JS 파일에 만든 updateFabText 함수를 호출하여 버튼 글자를 바꿉니다.
-			    if (typeof window.updateFabText === 'function') {
-			        window.updateFabText(totalAmount);
-			    }
-
-			    alert(`${name} ${currentQty}개를 담았습니다.`);
-			    
-			    const modalElement = document.getElementById('commonMenuModal');
-			    const modalInstance = bootstrap.Modal.getInstance(modalElement);
-			    modalInstance.hide();
-			}
+		    let currentItemPrice = 0;
+		    let currentQty = 1;
+		    let currentMenuIdx = 0;
+		
+		    function isMobileMenuLayer() {
+		        return window.innerWidth < 992;
+		    }
+		
+		    function syncMenuQtyView() {
+		        const desktopQty = document.getElementById('modalQtyDisplay');
+		        const mobileQty = document.getElementById('modalQtyDisplayMobile');
+		
+		        if (desktopQty) desktopQty.innerText = currentQty;
+		        if (mobileQty) mobileQty.innerText = currentQty;
+		
+		        const total = currentItemPrice * currentQty;
+		
+		        const desktopTotal = document.getElementById('modalTotalPrice');
+		        if (desktopTotal) desktopTotal.innerText = total.toLocaleString();
+		
+		        document.querySelectorAll('[data-menu-layer-total]').forEach((el) => {
+		            el.innerText = total.toLocaleString();
+		        });
+		    }
+		
+		    function setMenuLayerData(name, desc, price, img) {
+		        document.getElementById('modalName').innerText = name;
+		        document.getElementById('modalDesc').innerText = desc;
+		        document.getElementById('modalImg').src = img;
+		
+		        document.querySelectorAll('[data-menu-layer-name]').forEach((el) => {
+		            el.innerText = name;
+		        });
+		        document.querySelectorAll('[data-menu-layer-desc]').forEach((el) => {
+		            el.innerText = desc;
+		        });
+		        document.querySelectorAll('[data-menu-layer-img]').forEach((el) => {
+		            el.src = img;
+		        });
+		        document.querySelectorAll('[data-menu-layer-total]').forEach((el) => {
+		            el.innerText = price.toLocaleString();
+		        });
+		    }
+		
+		    function openMenuLayer(btn) {
+		        const name = btn.getAttribute('data-name');
+		        const desc = btn.getAttribute('data-desc') || '메뉴 설명이 없습니다.';
+		        const price = parseInt(btn.getAttribute('data-price')) || 0;
+		        const img = btn.getAttribute('data-img') || '';
+		        const menuIdx = parseInt(btn.getAttribute('data-menu-idx')) || 0;
+		
+		        currentItemPrice = price;
+		        currentQty = 1;
+		        currentMenuIdx = menuIdx;
+		
+		        setMenuLayerData(name, desc, price, img);
+		        syncMenuQtyView();
+		
+		        if (isMobileMenuLayer()) {
+		            const offcanvasEl = document.getElementById('commonMenuBottomSheet');
+		            const sheet = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+		            sheet.show();
+		        } else {
+		            const modalElement = document.getElementById('commonMenuModal');
+		            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+		            modal.show();
+		        }
+		    }
+		
+		    function updateModalQty(delta) {
+		        currentQty += delta;
+		        if (currentQty < 1) currentQty = 1;
+		        syncMenuQtyView();
+		    }
+		
+		    function moveToLoginWithReturnUrl() {
+		        const returnUrl = window.location.pathname + window.location.search + window.location.hash;
+		        window.location.href = '/login?returnUrl=' + encodeURIComponent(returnUrl);
+		    }
+		
+		    function addSelectedToCart() {
+		        const name = document.getElementById('modalName').innerText;
+		        const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
+		        const storeIdx = Number(createRoomBtn?.dataset?.storeIdx || 0);
+		
+		        const pending = {
+		            storeIdx: storeIdx,
+		            menuIdx: currentMenuIdx,
+		            quantity: currentQty,
+		            savedAt: Date.now()
+		        };
+		
+		        sessionStorage.setItem('moPendingMenuSelection', JSON.stringify(pending));
+		
+		        alert(`${name} ${currentQty}개를 담았습니다.`);
+		
+		        const modalElement = document.getElementById('commonMenuModal');
+		        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+		        if (modalInstance) modalInstance.hide();
+		
+		        const offcanvasEl = document.getElementById('commonMenuBottomSheet');
+		        const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
+		        if (offcanvasInstance) offcanvasInstance.hide();
+		
+		        if (typeof window.openCreateRoomSheet === 'function') {
+		            window.openCreateRoomSheet({
+		                storeIdx: Number(createRoomBtn?.dataset?.storeIdx || 0),
+		                storeName: createRoomBtn?.dataset?.storeName || '',
+		                minimumOrderAmount: createRoomBtn?.dataset?.minimumOrderAmount || '',
+		                afterCreate: 'cart'
+		            });
+		        }
+		    }
 		</script>
 		<script th:src="@{/js/store/menu-list.js}"></script>
 		<script th:inline="javascript">

@@ -72,11 +72,23 @@
 		closeLayer(createRoomModalEl, mobileCreateRoomSheetEl);
     };
 
-    const openLoginLayer = () => {
-        const delayed = closeMobileMenu();
-        closeAllLayers();
+	const getCurrentReturnUrl = () => {
+	    return window.location.pathname + window.location.search + window.location.hash;
+	};
 
-        window.setTimeout(() => {
+	const syncLoginReturnUrl = () => {
+	    const returnUrl = getCurrentReturnUrl();
+	    document.querySelectorAll('.js-login-return-url').forEach((input) => {
+	        input.value = returnUrl;
+	    });
+	};
+	
+	const openLoginLayer = () => {
+	    const delayed = closeMobileMenu();
+	    closeAllLayers();
+	    syncLoginReturnUrl();
+
+	    window.setTimeout(() => {
             if (isMobile()) {
                 const mobileLoginSheet = getOffcanvasInstance(mobileLoginSheetEl);
                 if (mobileLoginSheet) mobileLoginSheet.show();
@@ -156,10 +168,12 @@
 	        const storeNameEl = form.querySelector('[data-mo-store-name]');
 	        const minimumEl = form.querySelector('[data-mo-store-minimum]');
 	        const submitButton = form.querySelector('[data-mo-create-submit]');
+	        const afterCreateInput = form.querySelector('input[name="afterCreate"]');
 
 	        if (storeIdxInput) storeIdxInput.value = payload.storeIdx ?? '';
 	        if (storeNameEl) storeNameEl.textContent = payload.storeName || '가게를 선택해 주세요';
 	        if (minimumEl) minimumEl.textContent = formatMinimumOrderText(payload.minimumOrderAmount);
+	        if (afterCreateInput) afterCreateInput.value = payload.afterCreate || '';
 
 	        if (submitButton) {
 	            submitButton.disabled = !validateCreateRoomForm(form);
@@ -220,11 +234,12 @@
 	        return;
 	    }
 
-	    openCreateRoomLayer({
-	        storeIdx: payload.storeIdx,
-	        storeName: payload.storeName || '',
-	        minimumOrderAmount: payload.minimumOrderAmount || ''
-	    });
+		openCreateRoomLayer({
+		    storeIdx: payload.storeIdx,
+		    storeName: payload.storeName || '',
+		    minimumOrderAmount: payload.minimumOrderAmount || '',
+		    afterCreate: payload.afterCreate || ''
+		});
 	};
 
 	window.openMoLoginLayer = () => {

@@ -128,7 +128,10 @@ public class RoomController {
 	}
 
 	@PostMapping("/rooms")
-	public String roomCreate(RedirectAttributes ra, OrderRoom orderRoom, @SessionAttribute("member") Member member) {
+	public String roomCreate(RedirectAttributes ra,
+	                         OrderRoom orderRoom,
+	                         @RequestParam(name = "afterCreate", required = false) String afterCreate,
+	                         @SessionAttribute("member") Member member) {
 		String activeRedirect = redirectToActiveRoomIfExists(member, ra);
 		if (activeRedirect != null) {
 			return activeRedirect;
@@ -144,6 +147,9 @@ public class RoomController {
 		if (res == 0) {
 			ra.addFlashAttribute("error", "방을 생성하는 중 오류가 발생했습니다");
 			return "redirect:/rooms/new";
+		}
+		if ("cart".equals(afterCreate)) {
+		    return "redirect:/rooms/code/" + code + "/cart";
 		}
 		return "redirect:/rooms/code/" + code;
 	}
