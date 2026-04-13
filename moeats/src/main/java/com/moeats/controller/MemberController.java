@@ -189,22 +189,26 @@ public class MemberController {
         model.addAttribute("member", member);
         session.setAttribute("memberIdx", member.getMemberIdx());
 
+        // 📍 1. 점주(OWNER)인지 '가장 먼저' 확인해서 무조건 대시보드로 보냅니다.
+        if (ROLE_OWNER.equals(member.getMemberRoleType())) {
+            return "redirect:/owners/dashboard";
+        }
+
+        // 📍 2. 일반 유저(USER)인 경우, 이전 페이지(returnUrl)가 있으면 거기로 돌려보냅니다.
         String safeReturnUrl = normalizeReturnUrl(returnUrl);
         if (safeReturnUrl != null) {
             session.removeAttribute("redirectURI");
             return "redirect:" + safeReturnUrl;
         }
 
+        // 📍 3. 세션에 저장된 URI가 있으면 거기로 보냅니다.
         String redirectURI = normalizeReturnUrl((String) session.getAttribute("redirectURI"));
         if (redirectURI != null) {
             session.removeAttribute("redirectURI");
             return "redirect:" + redirectURI;
         }
 
-        if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-            return "redirect:/owners/dashboard";
-        }
-
+        // 📍 4. 위 조건에 아무것도 해당하지 않으면 기본 메인 페이지로 보냅니다.
         return "redirect:/main";
     }
 
