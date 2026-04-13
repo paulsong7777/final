@@ -510,13 +510,15 @@
                     </div>
                 </div>
 
-                <a th:href="@{/orders/{orderIdx}(orderIdx=${orderIdx})}" class="pay-inline-link">주문 상세로 이동</a>
+                <div class="pay-inline-link" style="pointer-events:none; opacity:.72;">
+				    전원 결제 완료 후 주문 상세로 자동 이동
+				</div>
             </div>
         </div>
 
         <div class="pay-sticky">
             <div class="pay-sticky__meta">
-                <div class="pay-sticky__label">individual payment</div>
+                <div class="pay-sticky__label">각자 결제</div>
                 <div class="pay-sticky__title"
                      th:text="${#numbers.formatInteger(paymentShare.shareAmount, 0, 'COMMA')} + '원 결제'">0원 결제</div>
                 <div class="pay-sticky__desc">내 결제가 끝나면 전체 완료를 기다리는 대기 화면으로 이동합니다.</div>

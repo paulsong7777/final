@@ -59,6 +59,10 @@ public class OrderController {
             @RequestAttribute("groupOrder") GroupOrder groupOrder,
             @RequestAttribute("payment") Payment payment) {
 
+        if (!"PAID".equals(payment.getPaymentStatus())) {
+            return String.format("redirect:/orders/%d/payment", orderIdx);
+        }
+
         final record MemberItems(RoomParticipant roomParticipant, Member member, List<GroupOrderItem> items) {}
 
         Map<Integer, List<GroupOrderItem>> groupOrderItems = groupOrderService.findByOrder(groupOrder.getOrderIdx())
@@ -77,6 +81,7 @@ public class OrderController {
                         groupOrderItems.getOrDefault(roomMember.getMemberIdx(), List.of())))
                 .toList();
 
+        model.addAttribute("orderRoom", orderRoomService.findByIdx(groupOrder.getRoomIdx()));
         model.addAttribute("orderIdx", orderIdx);
         model.addAttribute("groupOrder", groupOrder);
         model.addAttribute("payment", payment);

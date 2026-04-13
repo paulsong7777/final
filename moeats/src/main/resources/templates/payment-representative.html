@@ -281,7 +281,7 @@
                 <p class="rep-panel__desc">이 주문은 방장이 한 번에 결제합니다. 결제가 끝나면 주문 상세 허브로 이동합니다.</p>
 
                 <div class="rep-price-box">
-                    <div class="rep-price-box__label">total amount</div>
+                    <div class="rep-price-box__label">전체 결제 금액</div>
                     <div class="rep-price-box__value"
                          th:text="${#numbers.formatInteger(payment.paymentRequestAmount, 0, 'COMMA')} + '원'">0원</div>
                     <div class="rep-price-box__desc">대표결제 완료 후 전체 참여자는 다음 단계 상태를 같은 화면에서 보게 됩니다.</div>
@@ -295,13 +295,15 @@
                     참여자별 결제 현황과 대기 정보는 이후 화면에서 확인하면 됩니다.
                 </div>
 
-                <a th:href="@{/orders/{orderIdx}(orderIdx=${orderIdx})}" class="rep-inline-link" style="margin-top: 14px;">주문 상세로 이동</a>
+                <div class="rep-inline-link" style="margin-top: 14px; pointer-events:none; opacity:.72;">
+				    결제 완료 후 주문 상세로 자동 이동
+				</div>
             </div>
         </div>
 
         <div class="rep-sticky">
             <div class="rep-sticky__meta">
-                <div class="rep-sticky__label">representative payment</div>
+                <div class="rep-sticky__label">대표 결제</div>
                 <div class="rep-sticky__title"
                      th:text="${#numbers.formatInteger(payment.paymentRequestAmount, 0, 'COMMA')} + '원 전체 결제'">0원 전체 결제</div>
                 <div class="rep-sticky__desc">방장이 한 번 결제하면 주문이 다음 단계로 넘어갑니다.</div>

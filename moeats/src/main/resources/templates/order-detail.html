@@ -489,7 +489,7 @@
                 <div class="od-status-label">현재 진행 단계</div>
                 <div class="od-status-bar">
                     <div class="od-status-step"
-                         th:classappend="${groupOrder.orderStatus == 'PAYMENT_PENDING'} ? ' od-status-step--current' : (${groupOrder.orderStatus == 'PAID' or groupOrder.orderStatus == 'ACCEPTED' or groupOrder.orderStatus == 'PREPARING' or groupOrder.orderStatus == 'READY' or groupOrder.orderStatus == 'DELIVERING' or groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
+    							 th:classappend="${groupOrder.orderStatus == 'PAID'} ? ' od-status-step--current od-status-step--done' : ''">
                         <div class="od-status-step__num">1</div>
                         <div class="od-status-step__title">결제 완료</div>
                     </div>
@@ -497,7 +497,7 @@
                     <div class="od-status-step"
                          th:classappend="${groupOrder.orderStatus == 'ACCEPTED'} ? ' od-status-step--current' : (${groupOrder.orderStatus == 'PREPARING' or groupOrder.orderStatus == 'READY' or groupOrder.orderStatus == 'DELIVERING' or groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
                         <div class="od-status-step__num">2</div>
-                        <div class="od-status-step__title">접수 완료</div>
+                        <div class="od-status-step__title">주문 확인</div>
                     </div>
 
                     <div class="od-status-step"
@@ -509,37 +509,36 @@
                     <div class="od-status-step"
                          th:classappend="${groupOrder.orderStatus == 'READY' or groupOrder.orderStatus == 'DELIVERING'} ? ' od-status-step--current' : (${groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
                         <div class="od-status-step__num">4</div>
-                        <div class="od-status-step__title">준비 완료</div>
+                        <div class="od-status-step__title">배달 시작</div>
                     </div>
 
                     <div class="od-status-step"
                          th:classappend="${groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--current od-status-step--done' : ''">
                         <div class="od-status-step__num">5</div>
-                        <div class="od-status-step__title">주문 완료</div>
+                        <div class="od-status-step__title">배달 완료</div>
                     </div>
                 </div>
             </div>
 
             <div class="od-summary-grid">
-                <div class="od-summary-card">
-                    <div class="od-summary-card__label">주문 번호</div>
-                    <div class="od-summary-card__value" th:text="${groupOrder.orderIdx}">1</div>
-                    <div class="od-summary-card__desc">주문 상태 조회에 사용하는 기준 번호입니다.</div>
-                </div>
+                <div class="od-summary-card" th:if="${orderRoom != null}">
+				    <div class="od-summary-card__label">주문 번호</div>
+				    <div class="od-summary-card__value" th:text="${orderRoom.roomCode}">135797</div>
+				    <div class="od-summary-card__desc">참여 중이던 주문방 기준 코드입니다.</div>
+				</div>
 
                 <div class="od-summary-card">
                     <div class="od-summary-card__label">주문 상태</div>
-                    <div class="od-summary-card__value" th:switch="${groupOrder.orderStatus}">
-                        <span th:case="'PAYMENT_PENDING'">결제 대기</span>
-                        <span th:case="'PAID'">결제 완료</span>
-                        <span th:case="'ACCEPTED'">주문 수락</span>
-                        <span th:case="'PREPARING'">준비 중</span>
-                        <span th:case="'READY'">준비 완료</span>
-                        <span th:case="'DELIVERING'">전달 중</span>
-                        <span th:case="'COMPLETED'">주문 완료</span>
-                        <span th:case="'CANCELLED'">취소됨</span>
-                        <span th:case="*" th:text="${groupOrder.orderStatus}">주문 상태</span>
-                    </div>
+                   <div class="od-summary-card__value" th:switch="${groupOrder.orderStatus}">
+					    <span th:case="'PAYMENT_PENDING'">결제 대기</span>
+					    <span th:case="'PAID'">결제 완료</span>
+					    <span th:case="'ACCEPTED'">접수 완료</span>
+					    <span th:case="'PREPARING'">준비 중</span>
+					    <span th:case="'READY'">준비 완료</span>
+					    <span th:case="'COMPLETED'">주문 완료</span>
+					    <span th:case="'CANCELLED'">취소됨</span>
+					    <span th:case="*" th:text="${groupOrder.orderStatus}">주문 상태</span>
+					</div>
                     <div class="od-summary-card__desc">점주 상태 변경에 맞춰 자동으로 갱신됩니다.</div>
                 </div>
 
@@ -615,22 +614,40 @@
                     <h2 class="od-panel__title">현재 상태 안내</h2>
                     <p class="od-panel__desc">지금 주문이 어느 단계에 있는지 한 번 더 읽을 수 있게 정리했습니다.</p>
 
-                    <div class="od-note-box" style="margin-top: 18px;" th:if="${groupOrder.orderStatus != 'CANCELLED'}">
-                        <div class="od-note-box__title" th:switch="${groupOrder.orderStatus}">
-                            <span th:case="'PAYMENT_PENDING'">결제 대기 상태입니다.</span>
-                            <span th:case="'PAID'">결제가 끝났고 점주 확인을 기다리는 중입니다.</span>
-                            <span th:case="'ACCEPTED'">점주가 주문을 접수했습니다.</span>
-                            <span th:case="'PREPARING'">가게에서 메뉴를 준비 중입니다.</span>
-                            <span th:case="'READY'">메뉴 준비가 끝났습니다.</span>
-                            <span th:case="'DELIVERING'">전달 또는 다음 인계 단계로 진행 중입니다.</span>
-                            <span th:case="'COMPLETED'">주문이 모두 완료되었습니다.</span>
-                            <span th:case="*" th:text="${groupOrder.orderStatus}">현재 주문 상태</span>
-                        </div>
-
-                        <div class="od-note-box__desc">
-                            상태가 바뀌면 이 화면도 자동으로 갱신됩니다.
-                        </div>
-                    </div>
+                    <div class="od-status-wrap" th:if="${groupOrder.orderStatus != 'CANCELLED'}">
+					    <div class="od-status-label">현재 진행 단계</div>
+					    <div class="od-status-bar">
+					        <div class="od-status-step"
+					             th:classappend="${groupOrder.orderStatus == 'PAID'} ? ' od-status-step--current od-status-step--done' : ''">
+					            <div class="od-status-step__num">1</div>
+					            <div class="od-status-step__title">결제 완료</div>
+					        </div>
+					
+					        <div class="od-status-step"
+					             th:classappend="${groupOrder.orderStatus == 'ACCEPTED'} ? ' od-status-step--current od-status-step--done' : (${groupOrder.orderStatus == 'PREPARING' or groupOrder.orderStatus == 'READY' or groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
+					            <div class="od-status-step__num">2</div>
+					            <div class="od-status-step__title">주문 확인</div>
+					        </div>
+					
+					        <div class="od-status-step"
+					             th:classappend="${groupOrder.orderStatus == 'PREPARING'} ? ' od-status-step--current od-status-step--done' : (${groupOrder.orderStatus == 'READY' or groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
+					            <div class="od-status-step__num">3</div>
+					            <div class="od-status-step__title">준비 중</div>
+					        </div>
+					
+					        <div class="od-status-step"
+					             th:classappend="${groupOrder.orderStatus == 'READY'} ? ' od-status-step--current od-status-step--done' : (${groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--done' : '')">
+					            <div class="od-status-step__num">4</div>
+					            <div class="od-status-step__title">배달 시작</div>
+					        </div>
+					
+					        <div class="od-status-step"
+					             th:classappend="${groupOrder.orderStatus == 'COMPLETED'} ? ' od-status-step--current od-status-step--done' : ''">
+					            <div class="od-status-step__num">5</div>
+					            <div class="od-status-step__title">배달 완료</div>
+					        </div>
+					    </div>
+					</div>
 
                     <div class="od-note-box od-note-box--danger" style="margin-top: 18px;" th:if="${groupOrder.orderStatus == 'CANCELLED'}">
                         <div class="od-note-box__title">주문이 취소되었습니다.</div>
