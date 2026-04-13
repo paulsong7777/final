@@ -88,16 +88,23 @@
 									</div>
 								</div>
 							
-							    <h4 class="fw-bold mb-2 text-truncate" style="color: var(--mo-navy-strong); font-size: 18px;" 
-							        th:text="${!order.groupOrderItems.isEmpty() ? order.groupOrderItems[0].menuNameSnapshot + (order.groupOrderItems.size() > 1 ? ' 외 ' + (order.groupOrderItems.size() - 1) + '건' : '') : '신규 주문'}">
-							        메뉴명
-							    </h4>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h4 class="fw-bold m-0 text-truncate" style="color: var(--mo-navy-strong); font-size: 18px; max-width: 65%;" 
+                                        th:text="${!order.groupOrderItems.isEmpty() ? order.groupOrderItems[0].menuNameSnapshot + (order.groupOrderItems.size() > 1 ? ' 외 ' + (order.groupOrderItems.size() - 1) + '건' : '') : '신규 주문'}">
+                                        메뉴명
+                                    </h4>
+                                    
+                                    <div class="fw-bold" style="color: var(--mo-primary); font-size: 17px;"
+                                         th:text="${#numbers.formatInteger(order.groupOrder.orderTotalAmount, 0, 'COMMA')} + '원'">
+                                        0원
+                                    </div>
+                                </div>
 							    
 							    <div class="text-secondary mb-4" style="font-size: 14px; line-height: 1.4;">
 							        <i class="bi bi-geo-alt-fill me-1 text-primary"></i> 
 							        <span class="fw-bold text-dark">배달 주소 :</span>
-							        <span th:text="${order.orderDelivery.deliveryAddress1}">지번/도로명 주소</span>
-							        <span th:if="${order.orderDelivery.deliveryAddress2 != null}" th:text="${' ' + order.orderDelivery.deliveryAddress2}">상세주소</span>
+							        <span th:text="${order.orderDelivery != null ? order.orderDelivery.deliveryAddress1 : '주소 정보 없음'}">지번/도로명 주소</span>
+							        <span th:if="${order.orderDelivery != null and order.orderDelivery.deliveryAddress2 != null}" th:text="${' ' + order.orderDelivery.deliveryAddress2}">상세주소</span>
 							    </div>
 							
 								<th:block th:switch="${order.groupOrder.orderStatus}">
@@ -200,7 +207,6 @@
                 });
 
                 if(response.ok) {
-                	// 옵션 1: 대시보드 화면에 그대로 남아서 변경된 상태를 바로 확인하고 싶을 때 (추천!)
                     location.reload();
                 } else {
                     alert("처리 중 오류가 발생했습니다.");
@@ -232,7 +238,6 @@
                     new kakao.maps.Marker({ position: new kakao.maps.LatLng(lat, lng), map: map });
                     
                     window.addEventListener('resize', () => map.relayout());
-                    // 탭이나 모달 등 전환 시 지도 깨짐 방지
                     setTimeout(() => map.relayout(), 300);
                 } catch (e) { console.error("Map Error:", e); }
             });
@@ -240,40 +245,37 @@
 
         window.onload = initDashboardMap;
         
-     // 🌟 실시간 SSE 연결 함수 추가 🌟
         function initSSE() {
-            // 1. 방금 만든 컨트롤러 주소로 SSE 연결 (EventSource 객체 생성)
             const eventSource = new EventSource('/owners/api/sse/connect');
 
-            // 2. 서버와 연결이 성공했을 때 (SSEService의 "connect" 이벤트)
             eventSource.addEventListener('connect', function(event) {
                 console.log("🟢 실시간 주문 알림(SSE) 연결 완료!");
             });
 
-            // 3. 🚨 새 주문이 들어왔을 때! (SSEService의 "new" 이벤트)
             eventSource.addEventListener('new', function(event) {
-                // event.data 안에는 넘어온 새 주문 정보 JSON이 들어있습니다.
-                // const newOrderData = JSON.parse(event.data); 
+                const audio = new Audio('/audio/order_new.wav');
                 
-                // 알림창 띄우기 (또는 예쁜 Toast 알림으로 대체 가능)
-                alert("🔔 띵동! 새로운 주문이 들어왔습니다!");
+                audio.onended = function() {
+                    alert("🔔 띵동! 새로운 주문이 들어왔습니다!");
+                    window.location.reload();
+                };
 
-                // 화면을 새로고침하여 타임리프가 최신 데이터를 다시 그려주도록 합니다.
-                // (자바스크립트로 HTML 태그를 일일이 만드는 것보다 가장 깔끔하고 버그가 없는 방식입니다.)
-                window.location.reload();
+                audio.play().catch(function(error) {
+                    console.log("소리 차단됨 (화면 클릭 필요):", error);
+                    alert("🔔 띵동! 새로운 주문이 들어왔습니다!");
+                    window.location.reload();
+                });
             });
 
-            // 4. 에러 발생 시 연결 종료 (재연결 방지 및 자원 낭비 방지)
             eventSource.onerror = function(err) {
                 console.error("🔴 SSE 연결 오류:", err);
                 eventSource.close();
             };
         }
 
-        // 창이 로드될 때 지도 초기화와 SSE 연결을 같이 실행합니다.
         window.addEventListener('load', () => {
             initDashboardMap();
-            initSSE(); // SSE 구독 시작!
+            initSSE();
         });
         /*]]>*/
     </script>

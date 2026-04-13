@@ -33,4 +33,7 @@ public interface MemberMapper {
 	// 회원 조회
 	public Member getMember(int memberIdx);
 	
+	// 🌟 추가: 회원 탈퇴 (상태 변경)
+    public void deleteMember(int memberIdx);
+	
 }

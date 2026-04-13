@@ -309,5 +309,23 @@ public class MemberController {
 		    // SSEService의 orderMap에 이 주문 번호로 구독을 시작합니다.
 		    return sseService.joinOrder(orderIdx);
 		}
-	
+
+		// 🌟 회원 탈퇴 (소프트 딜리트) API 🌟
+		@PostMapping("/members/me/withdraw")
+		@ResponseBody
+		public boolean withdrawMember(@SessionAttribute("member") Member loginUser, HttpSession session) {
+			try {
+				// 1. 로그인된 유저의 IDX를 가져와서 DB에서 INACTIVE 상태로 변경합니다.
+				memberService.deleteMember(loginUser.getMemberIdx());
+				
+				// 2. 탈퇴 처리 후 세션을 만료시켜 로그아웃 상태로 만듭니다.
+				session.invalidate();
+				
+				// 3. 프론트엔드(자바스크립트)에 성공 여부를 알려줍니다.
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
 }

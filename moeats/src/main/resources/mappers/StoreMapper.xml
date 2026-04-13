@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moeats.mapper.StoreMapper">
 
-    <select id="storeList" resultType="Store">
+ <select id="storeList" resultType="Store">
         SELECT *
         FROM (
             SELECT
@@ -16,10 +16,10 @@
                     )
                 ) AS distance
             FROM store s
+            INNER JOIN member m ON s.owner_member_idx = m.member_idx
             <where>
-                1=1 
-                
-                <if test="userLat != null and userLng != null">
+                AND m.member_status = 'ACTIVE'
+                AND s.store_status != 'INACTIVE' <if test="userLat != null and userLng != null">
                     AND s.supports_delivery = TRUE
                     AND s.latitude IS NOT NULL
                     AND s.longitude IS NOT NULL
@@ -36,9 +36,9 @@
                         s.store_name LIKE CONCAT('%', #{keyword}, '%')
                         OR EXISTS (
                             SELECT 1
-                            FROM store_menu m
-                            WHERE m.store_idx = s.store_idx
-                              AND m.menu_name LIKE CONCAT('%', #{keyword}, '%')
+                            FROM store_menu smu
+                            WHERE smu.store_idx = s.store_idx
+                              AND smu.menu_name LIKE CONCAT('%', #{keyword}, '%')
                         )
                     )
                 </if>
@@ -142,10 +142,12 @@
     </insert>
 
     <!-- 점주 가게 조회 -->
-    <select id="myStore" resultType="Store">
-        SELECT *
-        FROM store
-        WHERE owner_member_idx = #{ownerMemberIdx}
+	<select id="myStore" resultType="Store">
+        SELECT s.*
+        FROM store s
+        INNER JOIN member m ON s.owner_member_idx = m.member_idx
+        WHERE s.owner_member_idx = #{ownerMemberIdx}
+          AND m.member_status = 'ACTIVE' 
     </select>
 
 </mapper>

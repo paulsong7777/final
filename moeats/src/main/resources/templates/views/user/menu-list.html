@@ -89,14 +89,14 @@
 <body>
 	<section layout:fragment="pageContent">
 		<div class="fe02-shell"
-			th:with="
-				firstMenu=${#lists.isEmpty(menuList) ? null : menuList[0]},
-				currentStoreIdx=${store != null ? store.storeIdx : (firstMenu != null ? firstMenu.storeIdx : 0)},
-				totalCount=${#lists.size(menuList)},
-				soldOutCount=${#aggregates.sum(menuList.![menuStatus == 'SOLD_OUT' ? 1 : 0])},
-				availableCount=${totalCount - soldOutCount},
-				isRoomCart=${orderRoom != null}
-			"
+		    th:with="
+		        firstMenu=${#lists.isEmpty(menuList) ? null : menuList[0]},
+		        currentStoreIdx=${store != null ? store.storeIdx : (firstMenu != null ? firstMenu.storeIdx : 0)},
+		        totalCount=${#lists.size(menuList)},
+		        soldOutCount=${#aggregates.sum(menuList.![menuStatus == 'SOLD_OUT' ? 1 : 0])},
+		        availableCount=${(totalCount ?: 0) - (soldOutCount ?: 0)},
+		        isRoomCart=${orderRoom != null}
+		    "
 			th:attr="
 				data-store-idx=${currentStoreIdx},
 				data-room-mode=${isRoomCart},
@@ -134,11 +134,11 @@
 				</div>
 			</section>
 
-			<section class="fe02-toolbar">
-				<div class="fe02-search">
-					<span class="fe02-search__icon">🔍</span> 
-					<input type="text" id="menuSearchInput" class="form-control" placeholder="메뉴 이름 또는 설명으로 검색">
-				</div>
+			<section class="fe02-toolbar" th:if="${not #lists.isEmpty(menuList)}">
+			    <div class="fe02-search">
+			        <span class="fe02-search__icon">🔍</span> 
+			        <input type="text" id="menuSearchInput" class="form-control" placeholder="메뉴 이름 또는 설명으로 검색">
+			    </div>
 			</section>
 
 			<section id="menuList" class="fe02-grid">
@@ -211,13 +211,13 @@
 				</div>
 			</div>
 
-			<div id="menuSearchEmpty" class="fe02-empty d-none">
-				<div class="fe02-empty__icon">🍽️</div>
-				<h2 class="fe02-empty__title">조건에 맞는 메뉴가 없습니다</h2>
+			<div id="menuSearchEmpty" class="fe02-empty d-none" th:if="${not #lists.isEmpty(menuList)}">
+			    <div class="fe02-empty__icon">🍽️</div>
+			    <h2 class="fe02-empty__title">조건에 맞는 메뉴가 없습니다</h2>
 			</div>
 			<div th:if="${#lists.isEmpty(menuList)}" class="fe02-empty">
-				<div class="fe02-empty__icon">🍽️</div>
-				<h2 class="fe02-empty__title">등록된 메뉴가 없습니다</h2>
+			    <div class="fe02-empty__icon">🍽️</div>
+			    <h2 class="fe02-empty__title">등록된 메뉴가 없습니다</h2>
 			</div>
 
 			<button type="button" class="fe02-order-fab" id="fe02CreateRoomBtn"

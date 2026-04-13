@@ -18,12 +18,17 @@
 		delete from store_menu where menu_idx = #{menuIdx}
 	</delete> -->
 	
-	
-	<delete id="deleteMenu">
-    DELETE FROM store_menu 
-    WHERE store_idx = #{storeIdx} 
-      AND menu_idx = #{menuIdx}
-</delete>
+	<update id="deleteMenu">
+	    UPDATE store_menu 
+	    SET menu_status = 'DELETED' 
+	    WHERE store_idx = #{storeIdx} AND menu_idx = #{menuIdx}
+	</update>
+
+<!-- 	<delete id="deleteMenu">
+	    DELETE FROM store_menu 
+	    WHERE store_idx = #{storeIdx} 
+	      AND menu_idx = #{menuIdx}
+	</delete> -->
 	
 	<!-- 메뉴 상태 변경 (활성, 품절, 숨김 등)-->
 	<update id="updateStatus">
@@ -157,13 +162,16 @@
 	        sm.display_order,
 	        sm.created_at,
 	        sm.updated_at,
-	        smc.category_name,    mi.image_url          FROM store_menu sm
+	        smc.category_name,    
+            mi.image_url          
+        FROM store_menu sm
 	    LEFT JOIN store_menu_category smc
 	        ON sm.menu_category_idx = smc.menu_category_idx
 	    LEFT JOIN menu_image mi
 	        ON sm.menu_idx = mi.menu_idx
-	       AND mi.is_primary = TRUE   WHERE sm.store_idx = #{storeIdx}
-	    ORDER BY
+	       AND mi.is_primary = TRUE   
+        WHERE sm.store_idx = #{storeIdx}
+          AND sm.menu_status != 'DELETED'  ORDER BY
 	        COALESCE(smc.display_order, 9999), smc.menu_category_idx,
 	        sm.display_order,                  sm.menu_idx
 	</select>

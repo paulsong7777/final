@@ -75,7 +75,7 @@
                         <div class="mb-4">
                             <label class="mo-form-label">메뉴 이름</label>
                             <input type="text" name="menuName" th:value="${storeMenu?.menuName}" 
-                                   class="form-control mo-form-control fw-bold" placeholder="메뉴 이름을 입력하세요" required>
+                                   class="form-control mo-form-control fw-bold mo-valid-name" placeholder="메뉴 이름을 입력하세요" required>
                         </div>
 
                         <div class="mb-4">
@@ -89,7 +89,7 @@
 
                         <div class="mb-4">
                             <label class="mo-form-label">메뉴 설명</label>
-                            <textarea name="menuDescription" class="form-control mo-form-control pt-3" style="min-height: 120px; resize: none;" 
+                            <textarea name="menuDescription" class="form-control mo-form-control pt-3 mo-valid-name" style="min-height: 120px; resize: none;" 
                                       rows="3" th:text="${storeMenu?.menuDescription}" placeholder="메뉴 설명을 입력하세요"></textarea>
                         </div>
 

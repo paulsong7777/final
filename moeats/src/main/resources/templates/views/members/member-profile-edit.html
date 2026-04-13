@@ -31,8 +31,8 @@
             <form th:action="@{/members/me/edit}" method="post" id="memberUpdateForm">
                 
                 <div class="mb-4">
-                    <label class="mo-form-label">* 이 름</label>
-                    <input type="text" class="form-control mo-form-control" name="memberNickname" th:value="${session.member.memberNickname}" readonly style="background-color: var(--mo-bg); color: var(--mo-text-soft);">
+                    <label class="mo-form-label">* 별 명</label>
+                    <input type="text" class="form-control mo-form-control mo-valid-name" name="memberNickname" th:value="${session.member.memberNickname}" readonly style="background-color: var(--mo-bg); color: var(--mo-text-soft);">
                 </div>
 
                 <div class="mb-4">

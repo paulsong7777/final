@@ -338,4 +338,52 @@
 	bindCreateRoomForms();
     bindAutoFocus();
     bindResponsiveCleanup();
+	
+	
+	// ==========================================
+	// [공통] 입력창 유효성 검사 (특수문자 차단 및 천지인 호환)
+	// 사용법: input 태그에 class="mo-valid-name" 추가
+	// ==========================================
+	document.addEventListener('DOMContentLoaded', function() {
+	    const targetInputs = document.querySelectorAll('.mo-valid-name');
+	    
+	    targetInputs.forEach(input => {
+	        let isComposing = false;
+
+	        // 한글 조합(천지인 포함) 상태 감지
+	        input.addEventListener('compositionstart', () => isComposing = true);
+	        input.addEventListener('compositionend', () => {
+	            isComposing = false;
+	            filterInput(input);
+	        });
+
+	        // 입력 중: 특수문자 실시간 차단
+	        input.addEventListener('input', function() {
+	            if (isComposing) return; // 조합 중이면 건드리지 않음
+	            filterInput(this);
+	        });
+
+	        function filterInput(el) {
+	            const currentVal = el.value;
+	            // 특수문자 차단 (영어, 숫자, 한글 자모음, 띄어쓰기만 허용)
+	            const regex = /[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣\s]/g; 
+	            
+	            if (regex.test(currentVal)) {
+	                el.value = currentVal.replace(regex, '');
+	            }
+	        }
+
+	        // 포커스 아웃: 단독 자음/모음 찌꺼기 걸러내기
+	        input.addEventListener('blur', function() {
+	            const currentVal = this.value;
+	            const invalidRegex = /[ㄱ-ㅎㅏ-ㅣ]/g; 
+	            
+	            if (invalidRegex.test(currentVal)) {
+	                alert("자음이나 모음만 단독으로 입력할 수 없습니다. (예: ㅋㅋ, ㅠㅠ)");
+	                this.value = currentVal.replace(invalidRegex, '');
+	            }
+	        });
+	    });
+	});
+	
 })();
