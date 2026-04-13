@@ -149,6 +149,26 @@ public class RoomController {
 			return "redirect:/rooms/new";
 		}
 		if ("cart".equals(afterCreate)) {
+		    OrderRoom createdRoom = orderRoomService.findByCode(code);
+		    if (createdRoom == null) {
+		        ra.addFlashAttribute("error", "생성된 주문방 정보를 찾을 수 없습니다.");
+		        return "redirect:/main";
+		    }
+
+		    if (orderRoomService.findJoinedRoomMember(createdRoom.getRoomIdx(), member.getMemberIdx()) == null) {
+		        RoomParticipant leaderParticipant = new RoomParticipant();
+		        leaderParticipant.setRoomIdx(createdRoom.getRoomIdx());
+		        leaderParticipant.setMemberIdx(member.getMemberIdx());
+		        leaderParticipant.setParticipantRole("LEADER");
+
+		        if (createdRoom.isJoinLocked() || orderRoomService.join(leaderParticipant) == 0) {
+		            ra.addFlashAttribute("error", "주문방 생성 후 참여 처리에 실패했습니다.");
+		            return "redirect:/rooms/code/" + code;
+		        }
+
+		        safeRoomSse("participantUpdate", () -> sseService.participantUpdate(createdRoom.getRoomIdx()));
+		    }
+
 		    return "redirect:/rooms/code/" + code + "/cart";
 		}
 		return "redirect:/rooms/code/" + code;

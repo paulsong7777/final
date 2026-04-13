@@ -29,19 +29,27 @@ public class RoomMemberInterceptor implements HandlerInterceptor {
     private OrderRoomService orderRoomService;
     
     private boolean forRestAPI(HttpServletResponse response, Object handler) {
-    	if ( handler instanceof HandlerMethod ) {
-    		HandlerMethod handlerMethod = (HandlerMethod) handler;
-    		if(		handlerMethod.getBeanType().isAnnotationPresent(RestController.class)
-    				|| handlerMethod.hasMethodAnnotation(ResponseBody.class) )
-			response.setContentType("application/json");
-			response.setCharacterEncoding("UTF-8");
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			try {
-				response.getWriter().write("{\"result\": false}");
-			} catch (IOException e) {}
-			return true;
-    	}
-    	return false;
+        if (!(handler instanceof HandlerMethod)) {
+            return false;
+        }
+
+        HandlerMethod handlerMethod = (HandlerMethod) handler;
+        boolean isRest =
+                handlerMethod.getBeanType().isAnnotationPresent(RestController.class)
+                || handlerMethod.hasMethodAnnotation(ResponseBody.class);
+
+        if (!isRest) {
+            return false;
+        }
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        try {
+            response.getWriter().write("{\"result\": false}");
+        } catch (IOException e) {
+        }
+        return true;
     }
     
     @Override
