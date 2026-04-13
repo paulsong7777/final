@@ -80,6 +80,17 @@
 
         function readURL(input) {
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // 💡 [추가된 로직] 용량 체크 (10MB = 10 * 1024 * 1024 bytes)
+                const maxSize = 10 * 1024 * 1024; 
+                if (file.size > maxSize) {
+                    alert("사진 용량이 너무 큽니다! 10MB 이하의 이미지만 업로드 가능합니다.");
+                    input.value = ""; // 선택한 파일 초기화
+                    return; // 함수 종료 (미리보기 안 함)
+                }
+
+                // 정상 용량일 경우 미리보기 띄우기
                 const reader = new FileReader();
                 reader.onload = e => {
 
@@ -92,7 +103,7 @@
                     guideMsg.classList.add('d-none');
 
                 };
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
     </script>

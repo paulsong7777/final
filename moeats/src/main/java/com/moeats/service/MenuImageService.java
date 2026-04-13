@@ -15,6 +15,10 @@ public class MenuImageService {
 	@Autowired
 	private MenuImageMapper menuImageMapper;
 	
+	public void deleteImagesByMenuIdx(int menuIdx) {
+	    menuImageMapper.deleteImagesByMenuIdx(menuIdx);
+	}
+	
 	// 이미지 삭제
 	public void deleteImage(int menuImageIdx) {
 		menuImageMapper.deleteImage(menuImageIdx);
@@ -51,9 +55,13 @@ public class MenuImageService {
 	};
 	
 	// 메뉴 이미지 전체 조회
-	public List<MenuImage> imageList(){
-		
-		return menuImageMapper.imageList();
-	};
+	public List<MenuImage> imageList(int storeIdx) { // ✨ int storeIdx 추가
+	    return menuImageMapper.imageList(storeIdx);
+	}
+
+	// Service 클래스 안에 추가
+    public void clearPrimaryImage(int menuIdx) {
+        menuImageMapper.clearPrimaryImage(menuIdx);
+    }
 	
 }

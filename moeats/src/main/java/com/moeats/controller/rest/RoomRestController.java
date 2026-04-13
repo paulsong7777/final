@@ -14,12 +14,16 @@ import com.moeats.domain.GroupCartItem;
 import com.moeats.domain.Member;
 import com.moeats.domain.OrderRoom;
 import com.moeats.services.GroupCartItemService;
+import com.moeats.services.sse.SSEService;
 
 @RestController
 public class RoomRestController {
 
     @Autowired
     private GroupCartItemService groupCartItemService;
+
+    @Autowired
+    private SSEService sseService;
 
     @PostMapping("/rooms/code/{room_code}/cart")
     public Map<String, Object> roomCartAdd(
@@ -34,6 +38,8 @@ public class RoomRestController {
         if (orderRoom.isJoinLocked() || groupCartItemService.insert(groupCartItem) == 0) {
             return Map.of("result", false);
         }
+
+        sendParticipantUpdate(orderRoom.getRoomIdx());
 
         return Map.of(
                 "result", true,
@@ -63,6 +69,8 @@ public class RoomRestController {
             return Map.of("result", false);
         }
 
+        sendParticipantUpdate(orderRoom.getRoomIdx());
+
         return Map.of(
                 "result", true,
                 "cartItemIdx", cartItemIdx
@@ -86,10 +94,19 @@ public class RoomRestController {
             return Map.of("result", false);
         }
 
+        sendParticipantUpdate(orderRoom.getRoomIdx());
+
         return Map.of(
                 "result", true,
                 "cartItemIdx", cartItemIdx,
                 "deleted", true
         );
+    }
+
+    private void sendParticipantUpdate(int roomIdx) {
+        try {
+            sseService.participantUpdate(roomIdx);
+        } catch (Exception ignore) {
+        }
     }
 }

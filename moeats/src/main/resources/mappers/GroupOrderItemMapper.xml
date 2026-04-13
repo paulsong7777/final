@@ -42,7 +42,7 @@
 			#{menuNameSnapshot},
 			#{menuPriceSnapshot},
 			#{itemQuantity},
-			#{baseAamount},
+			#{baseAmount},
 			#{optionExtraAmount},
 			#{itemTotalAmount}
 		)

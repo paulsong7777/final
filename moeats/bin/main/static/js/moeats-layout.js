@@ -192,6 +192,25 @@
 	                window.alert('가게, 배송지, 결제 방식을 모두 확인해 주세요.');
 	                return;
 	            }
+				
+				// --- 추가된 로직 시작 ---
+				            // 1. 세션 스토리지에서 저장된 총액을 가져옵니다.
+				            const totalAmount = sessionStorage.getItem('totalOrderAmount') || '0';
+				            
+				            // 2. 폼 안에 있는 hidden input 중 이름이 'totalAmount'인 것을 찾습니다.
+				            let amountInput = form.querySelector('input[name="totalAmount"]');
+				            
+				            // 3. 만약 hidden input이 없다면 즉석에서 만들어 넣어줍니다.
+				            if (!amountInput) {
+				                amountInput = document.createElement('input');
+				                amountInput.type = 'hidden';
+				                amountInput.name = 'totalAmount';
+				                form.appendChild(amountInput);
+				            }
+				            
+				            // 4. 최종 금액을 할당합니다.
+				            amountInput.value = totalAmount;
+				            // --- 추가된 로직 끝 ---
 	        });
 
 	        refresh();

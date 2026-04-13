@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -12,17 +12,19 @@
         <div class="mo-surface-card">
             <div class="mo-section-label">FE-08</div>
             <h1 class="mo-section-title">주문 상세</h1>
-            <p class="text-secondary mb-4">점주 상태 변경이 있으면 이 화면이 실시간으로 갱신됩니다.</p>
+            <p class="text-secondary mb-4">주문 상태가 바뀌면 화면도 실시간으로 새로고침됩니다.</p>
 
             <div class="d-grid gap-3 mb-4">
                 <div class="p-3 rounded-4 border bg-white">
                     <div class="small text-secondary mb-1">주문 상태</div>
-                    <div class="fw-bold fs-5" th:text="${groupOrder.orderStatus}">PAID</div>
+                    <div class="fw-bold fs-5"
+                         th:text="${groupOrder.orderStatus == 'PAYMENT_PENDING'} ? '결제 대기' : (${groupOrder.orderStatus == 'PAID'} ? '결제 완료' : (${groupOrder.orderStatus == 'ACCEPTED'} ? '주문 수락' : (${groupOrder.orderStatus == 'PREPARING'} ? '준비 중' : (${groupOrder.orderStatus == 'READY'} ? '준비 완료' : (${groupOrder.orderStatus == 'DELIVERING'} ? '배달 중' : (${groupOrder.orderStatus == 'COMPLETED'} ? '주문 완료' : (${groupOrder.orderStatus == 'CANCELLED'} ? '취소됨' : groupOrder.orderStatus)))))))">결제 완료</div>
                 </div>
 
                 <div class="p-3 rounded-4 border bg-white">
                     <div class="small text-secondary mb-1">결제 방식</div>
-                    <div class="fw-bold fs-5" th:text="${groupOrder.paymentMode}">REPRESENTATIVE</div>
+                    <div class="fw-bold fs-5"
+                         th:text="${groupOrder.paymentMode == 'REPRESENTATIVE'} ? '대표 결제' : '각자 결제'">대표 결제</div>
                 </div>
 
                 <div class="p-3 rounded-4 border bg-white">
@@ -40,7 +42,7 @@
                 <div th:each="memberItem : ${memberItems}" class="p-3 rounded-4 border bg-white">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <strong th:text="${memberItem.member.memberNickname}">참여자</strong>
-                        <span th:text="${memberItem.roomParticipant.participantRole}">PARTICIPANT</span>
+                        <span th:text="${memberItem.roomParticipant.participantRole == 'LEADER'} ? '방장' : '참여자'">참여자</span>
                     </div>
 
                     <div th:if="${#lists.isEmpty(memberItem.items)}" class="text-secondary">
@@ -49,7 +51,7 @@
 
                     <ul th:unless="${#lists.isEmpty(memberItem.items)}" class="mb-0">
                         <li th:each="item : ${memberItem.items}"
-                            th:text="${item.menuNameSnapshot} + ' × ' + ${item.itemQuantity}">
+                            th:text="${item.menuNameSnapshot} + ' x ' + ${item.itemQuantity}">
                             메뉴
                         </li>
                     </ul>

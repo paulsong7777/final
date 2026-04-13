@@ -50,27 +50,27 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="mo-form-label">메뉴 이미지</label>
-                            <input type="file" id="imageFile" name="menuFile" class="d-none" accept="image/*" onchange="previewImage(this)">
-                            
-                            <div id="imageContainer" class="image-upload-box position-relative d-flex align-items-center justify-content-center overflow-hidden rounded-4 bg-light" 
-                                 style="height: 220px; cursor: pointer;"
-                                 onclick="document.getElementById('imageFile').click()">
-                                
-                                <div id="guideMsg" th:classappend="${storeMenu?.imageUrl != null} ? 'd-none' : ''" class="text-center text-secondary">
-                                    <div class="mb-2" style="font-size: 36px;">📷</div>
-                                    <span class="fw-bold" style="color: var(--mo-text-soft);">클릭하여 사진 교체</span>
-                                </div>
-                                
-                                <img id="preview" th:src="${storeMenu?.imageUrl}" 
-                                     th:classappend="${storeMenu?.imageUrl == null} ? 'd-none' : ''"
-                                     class="w-100 h-100 object-fit-cover" alt="미리보기">
-                                
-                                <div class="image-upload-badge position-absolute bottom-0 end-0 m-3 px-3 py-1 text-white fw-bold" style="font-size: 13px;">
-                                    <i class="bi bi-pencil-fill me-1"></i> 변경
-                                </div>
-                            </div>
-                        </div>
+						    <label class="mo-form-label">메뉴 이미지</label>
+						    <input type="file" id="imageFile" name="menuFile" class="d-none" accept="image/*" onchange="previewImage(this)">
+						    
+						    <div id="imageContainer" class="image-upload-box position-relative d-flex align-items-center justify-content-center overflow-hidden rounded-4 bg-light" 
+						         style="height: 220px; cursor: pointer;"
+						         onclick="document.getElementById('imageFile').click()">
+						        
+						        <div id="guideMsg" th:classappend="${storeMenu.imageUrl != null and storeMenu.imageUrl != ''} ? 'd-none' : ''" class="text-center text-secondary">
+						            <div class="mb-2" style="font-size: 36px;">📷</div>
+						            <span class="fw-bold" style="color: var(--mo-text-soft);">클릭하여 사진 교체</span>
+						        </div>
+						        
+						        <img id="preview" th:src="${storeMenu.imageUrl}" 
+						             th:classappend="${storeMenu.imageUrl == null or storeMenu.imageUrl == ''} ? 'd-none' : ''"
+						             class="w-100 h-100 object-fit-cover" alt="미리보기">
+						        
+						        <div class="image-upload-badge position-absolute bottom-0 end-0 m-3 px-3 py-1 text-white fw-bold" style="font-size: 13px;">
+						            <i class="bi bi-pencil-fill me-1"></i> 변경
+						        </div>
+						    </div>
+						</div>
 
                         <div class="mb-4">
                             <label class="mo-form-label">메뉴 이름</label>

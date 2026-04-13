@@ -53,6 +53,7 @@
 			share_status			= 'PAID_SELF',
 			paid_at					= CURRENT_TIMESTAMP
 		WHERE payment_share_idx		= #{paymentShareIdx}
+		  AND share_status			= 'PENDING'
 	</update>
 	<update id="cancel" parameterType="int">
 		UPDATE payment_share SET

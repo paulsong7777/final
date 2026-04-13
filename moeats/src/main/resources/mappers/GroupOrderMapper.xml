@@ -17,25 +17,32 @@
 	<select id="findActive" resultType="GroupOrder">
 		SELECT * FROM group_order WHERE order_status = 'ACTIVE'
 	</select>
-	<insert id="insert" parameterType="GroupOrder">
-		INSERT INTO group_order(
-			room_idx,
-			store_idx,
-			leader_member_idx,
-			order_mode,
-			payment_mode,
-			order_status,
-			order_total_amount
-		) VALUES (
-			#{roomIdx},
-			#{storeIdx},
-			#{leaderMemberIdx},
-			#{orderMode},
-			#{paymentMode},
-			'PAYMENT_PENDING',
-			#{orderTotalAmount}
-		)
+	<insert id="insert"
+	        parameterType="GroupOrder"
+	        useGeneratedKeys="true"
+	        keyProperty="orderIdx">
+	    INSERT INTO group_order(
+	        room_idx,
+	        store_idx,
+	        leader_member_idx,
+	        order_mode,
+	        payment_mode,
+	        order_status,
+	        order_total_amount
+	    ) VALUES (
+	        #{roomIdx},
+	        #{storeIdx},
+	        #{leaderMemberIdx},
+	        #{orderMode},
+	        #{paymentMode},
+	        'PAYMENT_PENDING',
+	        #{orderTotalAmount}
+	    )
 	</insert>
+	
+	
+	
+	
 	<update id="pay" parameterType="int">
 		UPDATE group_order SET
 			order_status		= 'PAID',

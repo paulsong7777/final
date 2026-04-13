@@ -10,11 +10,8 @@
 -- - group_order / group_order_item 스냅샷은 결제 단계 진입 시 생성
 -- =========================================================
 
-CREATE DATABASE IF NOT EXISTS moeats
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_0900_ai_ci;
-
-USE moeats;
+CREATE DATABASE IF NOT EXISTS dummy;
+USE dummy;
 
 -- =========================================================
 -- 0. TABLES

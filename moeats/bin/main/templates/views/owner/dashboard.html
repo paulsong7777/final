@@ -128,7 +128,9 @@
         function handleCardClick(event, el) {
             if (event.target.closest('button')) return;
             const roomIdx = el.getAttribute('data-idx');
-            if (roomIdx) location.href = '/s/order/detail?roomIdx=' + roomIdx;
+
+            if (roomIdx) location.href = '/owners/order/detail?roomIdx=' + roomIdx;
+
         }
 
         async function handleStatusUpdate(event, roomIdx, nextStatus) {
@@ -145,7 +147,8 @@
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             try {
-                const response = await fetch('POST /s/order/status_update', {
+
+                const response = await fetch('/owners/order/status_update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

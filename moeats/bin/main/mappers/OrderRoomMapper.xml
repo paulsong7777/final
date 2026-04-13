@@ -5,25 +5,32 @@
 	
 	<!-- 회원 기준 활성 주문방 1건 조회 -->
 	<select id="findActiveRoomByMember" resultType="OrderRoom">
-    SELECT o.*
-    FROM order_room o
-    JOIN room_participant rp
-      ON rp.room_idx = o.room_idx
-    WHERE rp.member_idx = #{memberIdx}
-      AND rp.left_at IS NULL
-      AND o.room_status IN ('OPEN', 'SELECTING', 'PAYMENT_PENDING')
-    ORDER BY
-      CASE o.room_status
-        WHEN 'PAYMENT_PENDING' THEN 1
-        WHEN 'SELECTING' THEN 2
-        WHEN 'OPEN' THEN 3
-        ELSE 4
-      END,
-      o.updated_at DESC,
-      o.room_idx DESC
-    LIMIT 1
-</select>
+	    SELECT o.*
+	    FROM order_room o
+	    JOIN room_participant rp
+	      ON rp.room_idx = o.room_idx
+	    WHERE rp.member_idx = #{memberIdx}
+	      AND rp.left_at IS NULL
+	      AND o.room_status IN ('OPEN', 'SELECTING', 'PAYMENT_PENDING')
+	    ORDER BY
+	      CASE o.room_status
+	        WHEN 'PAYMENT_PENDING' THEN 1
+	        WHEN 'SELECTING' THEN 2
+	        WHEN 'OPEN' THEN 3
+	        ELSE 4
+	      END,
+	      o.updated_at DESC,
+	      o.room_idx DESC
+	    LIMIT 1
+	</select>
 	
+	<!-- 결제로 안넘어가서 임시로 작업 -->
+	<update id="beginSelecting" parameterType="int">
+	    UPDATE order_room SET
+	        room_status = 'SELECTING'
+	    WHERE room_idx = #{roomIdx}
+	      AND room_status = 'OPEN'
+	</update>
 	
 	
 	<select id="findAll" resultType="OrderRoom">
@@ -47,21 +54,23 @@
 		SELECT * FROM order_room WHERE created_at &lt; CURRENT_TIMESTAMP - INTERVAL 1 DAY
 	</select>
 	<insert id="insert" parameterType="OrderRoom">
-		INSERT INTO order_room(
-			leader_member_idx,
-			store_idx,
-			room_code,
-			order_mode,
-			payment_mode,
-			room_status
-		) VALUES (
-			#{leaderMemberIdx},
-			#{storeIdx},
-			#{roomCode},
-			#{orderMode},
-			#{paymentMode},
-			'OPEN'
-		)
+	    INSERT INTO order_room(
+	        leader_member_idx,
+	        store_idx,
+	        selected_delivery_address_idx,
+	        room_code,
+	        order_mode,
+	        payment_mode,
+	        room_status
+	    ) VALUES (
+	        #{leaderMemberIdx},
+	        #{storeIdx},
+	        #{selectedDeliveryAddressIdx},
+	        #{roomCode},
+	        #{orderMode},
+	        #{paymentMode},
+	        'OPEN'
+	    )
 	</insert>
 	<update id="menuSelect" parameterType="OrderRoom">
 		UPDATE order_room SET

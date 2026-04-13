@@ -52,6 +52,15 @@ public class PaymentService {
 	public int paidByRepresentative(int paymentIdx,Timestamp paidAt) {
 		return paymentShareMapper.paidByRepresentative(paymentIdx,paidAt);
 	}
+	public int payAmount(int paymentIdx, int paymentPaidAmount) {
+		return paymentMapper.payAmount(paymentIdx, paymentPaidAmount);
+	}
+	public int progress(int paymentIdx) {
+		return paymentMapper.progress(paymentIdx);
+	}
+	public int pay(int paymentIdx) {
+		return paymentMapper.pay(paymentIdx);
+	}
 	
 	public int cancel(int paymentIdx) {
 		int res = paymentShareMapper.cancel(paymentIdx);

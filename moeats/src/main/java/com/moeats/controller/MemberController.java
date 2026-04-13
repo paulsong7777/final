@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -50,6 +51,16 @@ public class MemberController {
 		return memberService.getMemberFromEmail(memberEmail) == null;
 	}
 	
+	// 비밀번호 실시간 확인 AJAX용
+	@PostMapping("/members/password-check")
+	@ResponseBody
+	public boolean checkPasswordAjax(
+	        @RequestParam("memberPassword") String memberPassword,
+	        @SessionAttribute("member") Member loginUser) {
+	    
+	    // 서비스의 isPassCheck를 호출하여 DB의 암호화된 비번과 비교
+	    return memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
+	}
 	
 	// 회원 수정
 	@PostMapping("/members/me/edit")
@@ -59,18 +70,22 @@ public class MemberController {
 			@SessionAttribute("member") Member loginUser,
 			@RequestParam("memberPassword") String memberPassword) {
 		
-		boolean isPassCheck = memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
-		
-		if(!isPassCheck) {
-			model.addAttribute("error", "비밀번호를 확인해주세요.");
-			model.addAttribute("member", member);
-			return "views/members/member-profile-edit";
-		}
-		
-		member.setMemberIdx(loginUser.getMemberIdx());
-		memberService.updateMember(member);
-		
-		return "redirect:/members/me";
+		// 1. 현재 비밀번호(oldPassword)가 DB와 일치하는지 먼저 검사
+	    boolean isPassCheck = memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
+	    
+	    if(!isPassCheck) {
+	        // ❌ 틀렸을 경우: 다시 수정 페이지로 보내면서 에러 메시지 전달
+	        ra.addFlashAttribute("error", "현재 비밀번호가 일치하지 않습니다.");
+	        return "redirect:/members/me/edit";
+	    }
+	    
+	    // 2. 맞았을 경우: 정보 업데이트 진행
+	    // (이때 member 객체 안의 memberPassword는 '새로 변경할 비밀번호'가 담겨 있어야 함)
+	    member.setMemberIdx(loginUser.getMemberIdx());
+	    memberService.updateMember(member);
+	    
+	    ra.addFlashAttribute("message", "정보가 수정되었습니다.");
+	    return "redirect:/members/me";
 	}
 	
 	
@@ -177,21 +192,25 @@ public class MemberController {
 		return "views/members/login";
 	}
 	
-	// 회원가입	- 일반/사업자 분기
-	@PostMapping("/members")
-	public String insertMember(Member member, RedirectAttributes ra, HttpSession session) {
+	// 회원가입 - 일반/사업자 분기
+		@PostMapping("/members")
+		public String insertMember(@ModelAttribute("newMember") Member member, RedirectAttributes ra, HttpSession session) {
+	        // 💡 @ModelAttribute("newMember")를 붙여서
+	        // 스프링이 이 객체를 "member"가 아닌 "newMember"로 인식하게 만듭니다.
+	        // 이렇게 하면 @SessionAttributes("member")가 반응하지 않습니다!
 
-	    try {
-	        memberService.insertMember(member);
-	        session.invalidate(); // ⭐ 기존 로그인 세션 제거
-	        return "redirect:/login";
+			try {
+				memberService.insertMember(member);
 
-	    } catch (Exception e) {
-	    	e.printStackTrace();
-	        ra.addFlashAttribute("error", e.getMessage());
-	        return "redirect:/members/createType";
-	    }
-	}
+				session.invalidate(); // ⭐ 기존 로그인 세션 제거
+
+				return "redirect:/login";
+
+			} catch (Exception e) {
+				ra.addFlashAttribute("error", e.getMessage());
+				return "redirect:/members/createType";
+			}
+		}
 	
 	// 통합 대시보드 분기(역할분기 일반/사업자)
 	@GetMapping("/members/dashboard")

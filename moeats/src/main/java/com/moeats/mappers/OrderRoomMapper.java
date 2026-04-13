@@ -29,6 +29,8 @@ public interface OrderRoomMapper {
 	int cancel(int roomIdx);
 	int expire(int roomIdx);
 	int delete(int roomIdx);
+	// 결제로 안넘어가서 임시로 작업
+	int beginSelecting(int roomIdx);
 	
 	int expireAll();
 	int deleteAll(List<OrderRoom> roomIdxList);

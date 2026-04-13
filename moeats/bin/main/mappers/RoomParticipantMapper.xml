@@ -26,10 +26,10 @@
 	</select>
 	
 	<select id="findNotSelected" resultType="RoomParticipant">
-		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND selection_status = 'NOT_SELECTED'
+		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND selection_status = 'NOT_SELECTED' AND left_at IS NULL
 	</select>
 	<select id="findUnpaid" resultType="RoomParticipant">
-		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND payment_status = 'UNPAID'
+		SELECT * FROM room_participant WHERE room_idx = #{roomIdx} AND payment_status = 'UNPAID' AND left_at IS NULL
 	</select>
 	<insert id="insert" parameterType="RoomParticipant">
 		INSERT INTO room_participant(

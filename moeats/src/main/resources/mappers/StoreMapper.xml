@@ -17,8 +17,8 @@
                 ) AS distance
             FROM store s
             <where>
-                AND s.store_status = 'ACTIVE'
-
+                1=1 
+                
                 <if test="userLat != null and userLng != null">
                     AND s.supports_delivery = TRUE
                     AND s.latitude IS NOT NULL

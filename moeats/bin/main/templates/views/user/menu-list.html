@@ -228,24 +228,76 @@
 				document.getElementById('modalTotalPrice').innerText = total.toLocaleString();
 			}
 
-			// HTML 내 <script> 태그 부분
-			function addSelectedToCart() {
-			    const name = document.getElementById('modalName').innerText;
-			    const totalAmount = currentItemPrice * currentQty; // 현재 선택한 총액 계산
+			/* [수정된 부분] 장바구니 담기 클릭 시 FAB 버튼 금액 업데이트 */
+	        function addSelectedToCart() {
+	            const name = document.getElementById('modalName').innerText;
+	            const totalAmount = currentItemPrice * currentQty;
 
-			    // [핵심] JS 파일에 만든 updateFabText 함수를 호출하여 버튼 글자를 바꿉니다.
-			    if (typeof window.updateFabText === 'function') {
-			        window.updateFabText(totalAmount);
-			    }
+	            // FAB 버튼(주문하기)의 텍스트를 현재 선택한 금액으로 업데이트
+	            const fabSpan = document.getElementById('fabTotalPrice');
+	            if (fabSpan) {
+	            	// [누적 합산 방식] 기존 금액에 새 금액을 더함
+	                const prevPrice = parseInt(fabSpan.innerText.replace(/[^0-9]/g, '')) || 0;
+	                const newTotal = prevPrice + totalAmount;
+	                fabSpan.innerText = `${newTotal.toLocaleString()}원 주문하기`;
+	            }
 
-			    alert(`${name} ${currentQty}개를 담았습니다.`);
-			    
-			    const modalElement = document.getElementById('commonMenuModal');
-			    const modalInstance = bootstrap.Modal.getInstance(modalElement);
-			    modalInstance.hide();
-			}
-		</script>
-		<script th:src="@{/js/store/menu-list.js}"></script>
+	            // 기존에 js 파일과 연결되어 있던 기능이 있다면 유지
+	            if (typeof window.updateFabText === 'function') {
+	                window.updateFabText(totalAmount);
+	            }
+
+	            alert(`${name} ${currentQty}개를 담았습니다.`);
+	            
+	            const modalElement = document.getElementById('commonMenuModal');
+	            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+	            modalInstance.hide();
+	        }
+
+	        document.addEventListener('DOMContentLoaded', function() {
+	            const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
+
+	            if (createRoomBtn) {
+	                createRoomBtn.addEventListener('click', function() {
+	                    // 1. 데이터 추출
+	                    const pathSegments = window.location.pathname.split('/');
+	                    const storeIdx = pathSegments[pathSegments.indexOf('stores') + 1];
+	                    const fabText = document.getElementById('fabTotalPrice').innerText;
+	                    const totalPrice = parseInt(fabText.replace(/[^0-9]/g, '')) || 0;
+
+	                    if (totalPrice === 0) {
+	                        alert("메뉴를 먼저 선택해주세요!");
+	                        return;
+	                    }
+
+	                    // 2. 가짜 폼(Form) 생성 - 컨트롤러가 redirect를 정상적으로 수행하게 하려면 이 방식이 제일 확실합니다.
+	                    const form = document.createElement('form');
+	                    form.method = 'POST';
+	                    form.action = '/rooms'; // 컨트롤러의 @PostMapping("/rooms")와 일치
+
+	                    // 3. 파라미터 추가 (storeIdx, totalPrice)
+	                    const params = {
+	                        'storeIdx': storeIdx,
+	                        'totalPrice': totalPrice
+	                    };
+
+	                    for (const key in params) {
+	                        const hiddenField = document.createElement('input');
+	                        hiddenField.type = 'hidden';
+	                        hiddenField.name = key;
+	                        hiddenField.value = params[key];
+	                        form.appendChild(hiddenField);
+	                    }
+
+	                    // 4. 폼 전송
+	                    document.body.appendChild(form);
+	                    form.submit();
+	                });
+	            }
+	        });
+	    </script>
+	    <script th:src="@{/js/store/menu-list.js}"></script>
 	</th:block>
+		
 </body>
 </html>

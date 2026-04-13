@@ -21,6 +21,8 @@ public class OrderRoomService {
 	OrderRoomMapper orderRoomMapper;
 	@Autowired
 	RoomParticipantMapper roomParticipantMapper;
+	@Autowired
+	GroupCartItemService groupCartItemService;
 	private final Random random = new Random();
 	
 	// 겹치지 않는 6자리 숫자와 알파벳으로 이루어진 코드 생성
@@ -155,10 +157,18 @@ public class OrderRoomService {
 		return roomParticipantMapper.pay(roomParticipantIdx);
 	}
 	public int leave(int roomParticipantIdx) {
-		OrderRoom orderRoom = findByIdx(findParticipantByIdx(roomParticipantIdx).getRoomIdx());
-		if(orderRoom.isJoinLocked())
+		RoomParticipant roomParticipant = findParticipantByIdx(roomParticipantIdx);
+		if(roomParticipant == null)
 			return 0;
-		return roomParticipantMapper.leave(roomParticipantIdx);
+		OrderRoom orderRoom = findByIdx(roomParticipant.getRoomIdx());
+		if(orderRoom == null || orderRoom.isJoinLocked())
+			return 0;
+		int result = roomParticipantMapper.leave(roomParticipantIdx);
+		if(result == 0)
+			return 0;
+		groupCartItemService.findRoomMember(roomParticipant.getRoomIdx(), roomParticipant.getMemberIdx())
+				.forEach(groupCartItem -> groupCartItemService.remove(groupCartItem.getCartItemIdx()));
+		return result;
 	}
 	
 	// 활성 주문방 참가자 조회

@@ -1,17 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/default}">
 <head>
-    <title>각자결제</title>
+    <title>각자 결제</title>
 </head>
 <body>
 <section layout:fragment="pageContent">
     <section class="mo-section">
         <div class="mo-surface-card">
             <div class="mo-section-label">FE-07</div>
-            <h1 class="mo-section-title">각자결제 진행</h1>
+            <h1 class="mo-section-title">각자 결제 진행</h1>
             <p class="text-secondary mb-4">내가 담은 메뉴 금액만 결제합니다.</p>
 
             <div class="d-grid gap-3">
@@ -22,7 +22,7 @@
                 </div>
 
                 <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-1">완료 인원</div>
+                    <div class="small text-secondary mb-1">결제 완료 인원</div>
                     <div class="fw-bold fs-5">
                         <span th:text="${completedCount}">0</span> /
                         <span th:text="${totalCount}">0</span>
@@ -30,20 +30,24 @@
                 </div>
 
                 <div class="p-3 rounded-4 border bg-white" th:if="${payment.paymentExpiresAt != null}">
-                    <div class="small text-secondary mb-1">결제 만료 시각</div>
-                    <div class="fw-bold" th:text="${payment.paymentExpiresAt}">만료시각</div>
+                    <div class="small text-secondary mb-1">남은 시간</div>
+                    <div class="fw-bold fs-4" data-payment-countdown>--:--</div>
+                    <div class="small text-secondary mt-2">시간이 지나면 결제가 만료됩니다.</div>
                 </div>
 
-                <form th:action="@{/orders/{orderIdx}/payment/complete(orderIdx=${orderIdx})}" method="post">
+                <form th:action="@{/orders/{orderIdx}/payment/complete(orderIdx=${orderIdx})}"
+                      method="post"
+                      data-payment-complete-form="true">
                     <button type="submit" class="mo-btn mo-btn-primary w-100">내 금액 결제하기</button>
                 </form>
 
                 <div class="p-3 rounded-4 border bg-white">
-                    <div class="small text-secondary mb-2">현재 결제 현황</div>
+                    <div class="small text-secondary mb-2">현재 결제 상태</div>
                     <div class="d-grid gap-2">
                         <div th:each="share : ${paymentShares}" class="d-flex justify-content-between align-items-center">
-                            <span th:text="${'참여자 ' + share.memberIdx}">참여자</span>
-                            <span class="fw-semibold" th:text="${share.shareStatus}">PENDING</span>
+                            <span th:text="${share.memberIdx == session.member.memberIdx ? '나' : (memberNameMap[share.memberIdx] != null ? memberNameMap[share.memberIdx] : '참여자')}">참여자</span>
+                            <span class="fw-semibold"
+                                  th:text="${share.shareStatus == 'PAID_SELF'} ? '결제 완료' : (${share.shareStatus == 'PAID_BY_REPRESENTATIVE'} ? '대표 결제 완료' : (${share.shareStatus == 'CANCELLED'} ? '취소됨' : '결제 대기'))">결제 대기</span>
                         </div>
                     </div>
                 </div>
@@ -54,6 +58,7 @@
 
         <input type="hidden" id="orderIdx" th:value="${orderIdx}">
         <input type="hidden" id="orderSsePageType" value="payment-individual">
+        <input type="hidden" id="paymentExpiresAtMs" th:if="${payment.paymentExpiresAt != null}" th:value="${payment.paymentExpiresAt.time}">
     </section>
 </section>
 
