@@ -853,7 +853,7 @@
                     <div class="rd-panel__head">
                         <div>
                             <h2 class="rd-panel__title">내 장바구니</h2>
-                            <p class="rd-panel__desc">확정 전 마지막으로 내 주문 구성을 확인하는 영역입니다.</p>
+                            <p class="rd-panel__desc">내가 담은 메뉴와 합계를 마지막으로 확인합니다.</p>
                         </div>
                     </div>
 
@@ -900,7 +900,7 @@
 					    <div class="rd-action-row"
 						     th:if="${myState.selectionStatus != 'SELECTED' and !#lists.isEmpty(myCartItems)}">
 						    <a class="mo-btn mo-btn-primary"
-						       th:href="@{/rooms/code/{code}/confirm(code=${orderRoom.roomCode})}">
+						       th:href="@{|/rooms/code/${orderRoom.roomCode}/confirm|}">
 						        주문 확인하기
 						    </a>
 						</div>
@@ -919,7 +919,7 @@
 					    </p>
 					
 					    <p class="rd-note" th:if="${myState.selectionStatus == 'SELECTED'}">
-					        메뉴를 다시 확인하면 선택 완료 상태가 해제되고, 수정 가능한 흐름으로 되돌아갑니다.
+					        메뉴를 다시 확인하면 선택 완료가 해제되고 수정 가능한 흐름으로 돌아갑니다.
 					    </p>
 					</div>
                 </div>
@@ -930,7 +930,7 @@
                     <div class="rd-panel__head">
                         <div>
                             <h2 class="rd-panel__title">타인 장바구니 요약</h2>
-                            <p class="rd-panel__desc">다른 참여자의 메뉴 선택 흐름을 요약된 형태로 확인할 수 있습니다.</p>
+                            <p class="rd-panel__desc">다른 참여자의 선택 현황을 요약해서 확인합니다.</p>
                         </div>
                     </div>
 
@@ -970,7 +970,7 @@
                     <div class="rd-panel__head">
                         <div>
                             <h2 class="rd-panel__title">결제 진입</h2>
-                            <p class="rd-panel__desc">전원 선택 완료 여부와 팀 총액을 기준으로 결제 단계로 이동합니다.</p>
+                            <p class="rd-panel__desc">전원 선택 완료 여부와 팀 총액을 확인한 뒤 결제를 시작합니다.</p>
                         </div>
                     </div>
 
@@ -1008,7 +1008,7 @@
                                       th:if="${allSelected}"
                                       th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
                                       method="post">
-                                    <button type="submit" class="mo-btn mo-btn-primary">결제 진행하기</button>
+                                    <button type="submit" class="mo-btn mo-btn-primary">결제 시작하기</button>
                                 </form>
 
                                 <button type="button"
@@ -1019,25 +1019,23 @@
                                 <form class="rd-inline-form js-confirm-cancel"
                                       th:action="@{/rooms/code/{code}/close(code=${orderRoom.roomCode})}"
                                       method="post">
-                                    <button type="submit" class="mo-btn mo-btn-outline">방 종료</button>
+                                    <button type="submit" class="mo-btn mo-btn-outline">주문방 종료</button>
                                 </form>
                             </div>
 
                             <p class="rd-note" th:unless="${allSelected}">
-                                아직 선택이 끝나지 않은 참여자가 있어 결제 단계는 잠겨 있습니다. 모든 참여자가 선택 완료가 되면 결제 버튼이 활성화됩니다.
+                                아직 선택이 끝나지 않은 참여자가 있어 결제는 잠겨 있습니다. 전원이 선택을 마치면 버튼이 열립니다.
                             </p>
 
                             <p class="rd-note rd-note--strong" th:if="${allSelected}">
-                                전원 선택 완료 상태입니다. 지금 결제를 시작하면 방이 잠기고 결제 화면으로 이동합니다.
+                                전원이 선택을 마쳤습니다. 지금 결제를 시작하면 바로 결제 화면으로 이어집니다.
                             </p>
                         </div>
 
                         <div th:unless="${isLeader}">
                             <div class="rd-aside-box">
                                 <div class="rd-aside-box__title">방장 진행 대기</div>
-                                <div class="rd-aside-box__desc">
-                                    현재 단계에서는 방장이 결제 진입을 시작합니다. 참여자는 선택 상태를 유지한 채 방장의 진행을 기다리면 됩니다.
-                                </div>
+                                <div class="rd-aside-box__desc">방장이 결제를 시작하면 다음 단계로 함께 이동합니다. 지금은 선택 상태만 유지해 주세요.</div>
                             </div>
 
                             <div class="rd-action-row">
@@ -1086,17 +1084,19 @@
                       th:if="${allSelected}"
                       th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
                       method="post">
-                    <button type="submit" class="mo-btn mo-btn-primary">결제 진행</button>
+                    <button type="submit" class="mo-btn mo-btn-primary">결제 시작</button>
                 </form>
 
-                <button type="button"
-                        class="mo-btn mo-btn-primary"
-                        th:unless="${allSelected}"
-                        disabled>결제 대기</button>
+                <div class="small text-secondary text-end"
+                     th:if="${!allSelected}">
+                    전원이 선택을 마치면 여기에서 바로 결제를 시작할 수 있습니다.
+                </div>
             </div>
 
             <div class="rd-mobile-sticky__action" th:unless="${isLeader}">
-                <button type="button" class="mo-btn mo-btn-outline" disabled>방장 대기</button>
+                <div class="small text-secondary text-end">
+                    방장이 결제를 시작하면 다음 단계로 이어집니다.
+                </div>
             </div>
         </div>
     </section>

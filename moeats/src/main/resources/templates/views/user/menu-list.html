@@ -195,7 +195,7 @@
 				</div>
 
 				<div class="fe02-store-hero__content">
-					<div class="fe02-store-hero__eyebrow">가게 상세 페이지</div>
+					<div class="fe02-store-hero__eyebrow">주문할 가게</div>
 					<h1 class="fe02-store-hero__title" th:text="${store?.storeName ?: '가게 정보'}">가게명</h1>
 					<div class="fe02-store-hero__desc-wrap">
 					    <p id="storeHeroDesc"
@@ -276,7 +276,7 @@
 						</div>
 						<div class="modal-body p-4">
 							<div class="mb-3">
-								<span class="text-uppercase fw-bold" style="color: var(--mo-navy); font-size: 0.75rem; letter-spacing: 1px;">Menu Detail</span>
+								<span class="fw-bold" style="color: var(--mo-navy); font-size: 0.75rem; letter-spacing: 0.08em;">메뉴</span>
 								<h3 id="modalName" class="fw-bold mt-1 mb-2" style="color: var(--mo-navy);">메뉴명</h3>
 								<p id="modalDesc" class="text-secondary mb-0" style="font-size: 0.95rem; line-height: 1.6;">설명</p>
 							</div>
@@ -307,7 +307,7 @@
 			
 			<div class="offcanvas offcanvas-bottom mo-bottom-sheet" id="commonMenuBottomSheet" tabindex="-1" aria-hidden="true">
     <div class="mo-bottom-sheet__header">
-        <div class="mo-modal-card__eyebrow">MENU</div>
+        <div class="mo-modal-card__eyebrow">메뉴</div>
         <h2 class="mo-modal-card__title mb-0" data-menu-layer-name>메뉴명</h2>
     </div>
     <div class="mo-bottom-sheet__body">
@@ -457,8 +457,6 @@
 		
 		        sessionStorage.setItem('moPendingMenuSelection', JSON.stringify(pending));
 		
-		        alert(`${name} ${currentQty}개를 담았습니다.`);
-		
 		        const modalElement = document.getElementById('commonMenuModal');
 		        const modalInstance = bootstrap.Modal.getInstance(modalElement);
 		        if (modalInstance) modalInstance.hide();
@@ -466,14 +464,21 @@
 		        const offcanvasEl = document.getElementById('commonMenuBottomSheet');
 		        const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
 		        if (offcanvasInstance) offcanvasInstance.hide();
-		
+
+		        if (typeof window.moShowToast === 'function') {
+		            window.moShowToast(`${name} ${currentQty}개를 담았어요.`, 'success');
+		        }
+
 		        if (typeof window.openCreateRoomSheet === 'function') {
-		            window.openCreateRoomSheet({
-		                storeIdx: Number(createRoomBtn?.dataset?.storeIdx || 0),
-		                storeName: createRoomBtn?.dataset?.storeName || '',
-		                minimumOrderAmount: createRoomBtn?.dataset?.minimumOrderAmount || '',
-		                afterCreate: 'confirm'
-		            });
+		            window.setTimeout(function () {
+		                window.openCreateRoomSheet({
+		                    storeIdx: Number(createRoomBtn?.dataset?.storeIdx || 0),
+		                    storeName: createRoomBtn?.dataset?.storeName || '',
+		                    minimumOrderAmount: createRoomBtn?.dataset?.minimumOrderAmount || '',
+		                    afterCreate: 'confirm',
+		                    contextMessage: `${name} ${currentQty}개를 장바구니에 담았어요. 주문방 설정만 마치면 바로 이어집니다.`
+		                });
+		            }, 140);
 		        }
 		    }
 		</script>

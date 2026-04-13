@@ -1,6 +1,17 @@
 document.addEventListener('DOMContentLoaded', function () {
     const copyButton = document.querySelector('.js-copy-room-code');
     const root = document.getElementById('roomDetailRoot');
+    const showToast = function (message, variant) {
+        if (typeof window.moShowToast === 'function') {
+            window.moShowToast(message, variant);
+        }
+    };
+    const requestConfirm = function (options) {
+        if (typeof window.moOpenConfirm === 'function') {
+            return window.moOpenConfirm(options);
+        }
+        return Promise.resolve(false);
+    };
 
     const roomCode = root ? root.dataset.roomCode || '' : '';
     const roomStatus = root ? root.dataset.roomStatus || '' : '';
@@ -13,10 +24,22 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!copiedRoomCode) return;
 
             try {
-                await navigator.clipboard.writeText(copiedRoomCode);
-                alert('방 코드를 복사했습니다.');
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(copiedRoomCode);
+                } else {
+                    const fallbackInput = document.createElement('textarea');
+                    fallbackInput.value = copiedRoomCode;
+                    fallbackInput.setAttribute('readonly', '');
+                    fallbackInput.style.position = 'absolute';
+                    fallbackInput.style.left = '-9999px';
+                    document.body.appendChild(fallbackInput);
+                    fallbackInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(fallbackInput);
+                }
+                showToast('방 코드를 복사했어요.', 'success');
             } catch (error) {
-                window.prompt('방 코드를 직접 복사해주세요.', copiedRoomCode);
+                showToast('복사에 실패했어요. 방 코드를 길게 눌러 직접 복사해 주세요.', 'warning');
             }
         });
     }
@@ -36,29 +59,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function bindConfirm(selector, messageBuilder, beforeConfirm) {
 	    document.querySelectorAll(selector).forEach(function (form) {
-	        form.addEventListener('submit', function (event) {
+	        form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
 	            if (form.dataset.submitting === 'true') {
 	                return;
 	            }
 
 	            if (typeof beforeConfirm === 'function') {
 	                const precheck = beforeConfirm(form);
-	                if (precheck === false) {
-	                    event.preventDefault();
+	                if (precheck === false || (precheck && precheck.valid === false)) {
+                        if (precheck && precheck.message) {
+                            showToast(precheck.message, precheck.variant || 'warning');
+                        }
 	                    return;
 	                }
 	            }
 
-	            const message = typeof messageBuilder === 'function'
+	            const confirmOptions = typeof messageBuilder === 'function'
 	                ? messageBuilder(form)
-	                : '계속하시겠습니까?';
+	                : { message: '계속하시겠습니까?' };
+                const normalizedOptions = typeof confirmOptions === 'string'
+                    ? { message: confirmOptions }
+                    : confirmOptions;
 
-	            if (!window.confirm(message)) {
-	                event.preventDefault();
+	            const confirmed = await requestConfirm(normalizedOptions);
+	            if (!confirmed) {
 	                return;
 	            }
 
-	            event.preventDefault();
 	            form.dataset.submitting = 'true';
 
 	            closeRoomEventSource();
@@ -72,17 +101,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
     bindConfirm('.js-confirm-kick', function (form) {
         const targetName = form.dataset.targetName || '선택한 참여자';
-        return targetName + '님을 방에서 내보내시겠습니까?';
+        return {
+            eyebrow: '참여자 관리',
+            title: '참여자를 내보낼까요?',
+            message: targetName + '님을 주문방에서 내보냅니다.',
+            confirmText: '내보내기',
+            cancelText: '닫기'
+        };
     });
 
     bindConfirm('.js-confirm-unselect', function () {
-        return '메뉴를 수정하면 선택 완료 상태가 해제됩니다. 계속하시겠습니까?';
+        return {
+            eyebrow: '주문 다시 확인',
+            title: '선택 완료를 해제할까요?',
+            message: '메뉴를 다시 확인하면 선택 완료 상태가 해제되고 수정 가능한 흐름으로 돌아갑니다.',
+            confirmText: '다시 확인하기',
+            cancelText: '취소'
+        };
     });
 
 	bindConfirm(
 	    '.js-confirm-checkout',
 	    function () {
-	        return '전원 선택 완료 상태입니다. 결제를 시작하시겠습니까?';
+	        return {
+                eyebrow: '결제 시작',
+                title: '결제를 시작할까요?',
+                message: '지금 결제를 시작하면 주문방이 잠기고 결제 화면으로 이동합니다.',
+                confirmText: '결제 시작',
+                cancelText: '취소'
+            };
 	    },
 	    function () {
 	        const totalAmount = Number(root?.dataset?.roomGrandTotal || 0);
@@ -90,10 +137,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	        if (minimumOrderAmount > 0 && totalAmount < minimumOrderAmount) {
 	            const diff = minimumOrderAmount - totalAmount;
-	            window.alert(
-	                `최소주문금액 미달입니다.\n현재 팀 총액: ${totalAmount.toLocaleString()}원\n최소주문금액: ${minimumOrderAmount.toLocaleString()}원\n부족 금액: ${diff.toLocaleString()}원`
-	            );
-	            return false;
+                return {
+                    valid: false,
+                    message: `최소주문금액까지 ${diff.toLocaleString()}원이 더 필요합니다. 현재 팀 총액은 ${totalAmount.toLocaleString()}원입니다.`
+                };
 	        }
 
 	        return true;
@@ -101,11 +148,23 @@ document.addEventListener('DOMContentLoaded', function () {
 	);
 
     bindConfirm('.js-confirm-leave', function () {
-        return '주문방에서 나가시겠습니까?';
+        return {
+            eyebrow: '주문방 나가기',
+            title: '주문방에서 나갈까요?',
+            message: '지금 나가면 현재 주문방 화면에서 바로 빠져나갑니다.',
+            confirmText: '나가기',
+            cancelText: '머무르기'
+        };
     });
 
     bindConfirm('.js-confirm-cancel', function () {
-        return '주문방을 종료하시겠습니까? 종료 후에는 다시 되돌릴 수 없습니다.';
+        return {
+            eyebrow: '주문방 종료',
+            title: '주문방을 종료할까요?',
+            message: '주문방을 종료하면 참여자 전원이 더 이상 이 방을 사용할 수 없습니다.',
+            confirmText: '종료하기',
+            cancelText: '취소'
+        };
     });
 
     if (roomCode && ['OPEN', 'SELECTING', 'PAYMENT_PENDING'].includes(roomStatus)) {
@@ -147,8 +206,10 @@ document.addEventListener('DOMContentLoaded', function () {
         eventSource.addEventListener('cancel', function (event) {
             console.log('[room-detail] cancel', event.data);
             closeRoomEventSource();
-            alert('주문방이 종료되었습니다.');
-            window.location.href = '/main';
+            showToast('주문방이 종료되어 홈으로 이동합니다.', 'warning');
+            window.setTimeout(function () {
+                window.location.href = '/main';
+            }, 700);
         });
 
         eventSource.onerror = function (event) {

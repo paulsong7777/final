@@ -269,13 +269,13 @@
     </div>
 
     <!-- =========================
-         LOGIN : DESKTOP MODAL
+         로그인 : 데스크톱 모달
     ========================= -->
     <div class="modal fade mo-auth-modal" id="moLoginModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content mo-modal-card">
                 <div class="mo-modal-card__header">
-                    <div class="mo-modal-card__eyebrow">LOGIN</div>
+                    <div class="mo-modal-card__eyebrow">계정</div>
                     <h2 class="mo-modal-card__title">로그인</h2>
                     <p class="mo-modal-card__desc">로그인 후 바로 가게 탐색과 주문 참여를 이어갈 수 있습니다.</p>
                 </div>
@@ -306,11 +306,11 @@
     </div>
 
     <!-- =========================
-         LOGIN : MOBILE BOTTOM SHEET
+         로그인 : 모바일 바텀 시트
     ========================= -->
     <div class="offcanvas offcanvas-bottom mo-bottom-sheet" tabindex="-1" id="moMobileLoginSheet" aria-hidden="true">
         <div class="mo-bottom-sheet__header">
-            <div class="mo-modal-card__eyebrow">LOGIN</div>
+            <div class="mo-modal-card__eyebrow">계정</div>
             <h2 class="mo-modal-card__title mb-0">로그인</h2>
         </div>
         <div class="mo-bottom-sheet__body">
@@ -340,13 +340,13 @@
     </div>
 
     <!-- =========================
-         JOIN ROOM : DESKTOP MODAL
+         주문방 참여 : 데스크톱 모달
     ========================= -->
     <div class="modal fade mo-auth-modal" id="moJoinModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content mo-modal-card">
                 <div class="mo-modal-card__header">
-                    <div class="mo-modal-card__eyebrow">ROOM</div>
+                    <div class="mo-modal-card__eyebrow">주문방</div>
                     <h2 class="mo-modal-card__title">방 참여</h2>
                     <p class="mo-modal-card__desc">6자리 코드를 입력하면 주문방에 바로 참여할 수 있습니다.</p>
                 </div>
@@ -370,11 +370,11 @@
     </div>
 
     <!-- =========================
-         JOIN ROOM : MOBILE BOTTOM SHEET
+         주문방 참여 : 모바일 바텀 시트
     ========================= -->
     <div class="offcanvas offcanvas-bottom mo-bottom-sheet" tabindex="-1" id="moMobileJoinSheet" aria-hidden="true">
         <div class="mo-bottom-sheet__header">
-            <div class="mo-modal-card__eyebrow">ROOM</div>
+            <div class="mo-modal-card__eyebrow">주문방</div>
             <h2 class="mo-modal-card__title mb-0">방 참여</h2>
         </div>
         <div class="mo-bottom-sheet__body">
@@ -397,13 +397,13 @@
     </div>
 
     <!-- =========================
-         ADDRESS : DESKTOP MODAL
+         배송지 : 데스크톱 모달
     ========================= -->
     <div class="modal fade mo-auth-modal" id="moAddressModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered mo-address-modal-dialog">
             <div class="modal-content mo-modal-card">
                 <div class="mo-modal-card__header">
-                    <div class="mo-modal-card__eyebrow">ADDRESS</div>
+                    <div class="mo-modal-card__eyebrow">배송지</div>
                     <h2 class="mo-modal-card__title">배송지 선택</h2>
                     <p class="mo-modal-card__desc">현재 가게 탐색과 주문방 생성에 사용할 배송지를 선택합니다.</p>
                 </div>
@@ -469,11 +469,11 @@
     </div>
 
     <!-- =========================
-         ADDRESS : MOBILE BOTTOM SHEET
+         배송지 : 모바일 바텀 시트
     ========================= -->
     <div class="offcanvas offcanvas-bottom mo-bottom-sheet" tabindex="-1" id="moMobileAddressSheet" aria-hidden="true">
         <div class="mo-bottom-sheet__header">
-            <div class="mo-modal-card__eyebrow">ADDRESS</div>
+            <div class="mo-modal-card__eyebrow">배송지</div>
             <h2 class="mo-modal-card__title mb-0">배송지 선택</h2>
         </div>
 
@@ -536,15 +536,14 @@
     </div>
 
     <!-- =========================
-         CREATE ROOM : DESKTOP MODAL
+         주문방 생성 : 데스크톱 모달
     ========================= -->
     <div class="modal fade mo-auth-modal" id="moCreateRoomModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content mo-modal-card">
                 <div class="mo-modal-card__header">
-                    <div class="mo-modal-card__eyebrow">CREATE ROOM</div>
+                    <div class="mo-modal-card__eyebrow">주문방</div>
                     <h2 class="mo-modal-card__title">주문방 생성</h2>
-                    <!-- <p class="mo-modal-card__desc">현재 보고 있는 가게 기준으로 주문방을 생성합니다.</p> -->
                 </div>
 
                 <div class="mo-modal-form">
@@ -555,6 +554,9 @@
                         <input type="hidden" name="storeIdx" value="">
                         <input type="hidden" name="orderMode" value="DELIVERY">
                         <input type="hidden" name="afterCreate" value="">
+                        <p class="mo-helper-text mb-0" data-mo-create-context>
+                            선택한 가게와 배송지, 결제 방식을 확인해 주세요.
+                        </p>
 
                         <div class="p-3 rounded-4 border bg-light-subtle">
 						    <div class="small text-secondary mb-1">선택 가게</div>
@@ -620,6 +622,8 @@
                             </div>
                         </div>
 
+                        <p class="small text-danger mb-0 d-none" data-mo-create-feedback role="alert"></p>
+
                         <button type="submit"
                                 class="mo-btn mo-btn-primary w-100"
                                 data-mo-create-submit>
@@ -632,11 +636,11 @@
     </div>
 
     <!-- =========================
-         CREATE ROOM : MOBILE BOTTOM SHEET
+         주문방 생성 : 모바일 바텀 시트
     ========================= -->
     <div class="offcanvas offcanvas-bottom mo-bottom-sheet" tabindex="-1" id="moMobileCreateRoomSheet" aria-hidden="true">
         <div class="mo-bottom-sheet__header">
-            <div class="mo-modal-card__eyebrow">CREATE ROOM</div>
+            <div class="mo-modal-card__eyebrow">주문방</div>
             <h2 class="mo-modal-card__title mb-0">주문방 생성</h2>
         </div>
 
@@ -649,6 +653,9 @@
                     <input type="hidden" name="storeIdx" value="">
                     <input type="hidden" name="orderMode" value="DELIVERY">
                     <input type="hidden" name="afterCreate" value="">
+                    <p class="mo-helper-text mb-0" data-mo-create-context>
+                        선택한 가게와 배송지, 결제 방식을 확인해 주세요.
+                    </p>
 
                     <div class="p-3 rounded-4 border bg-light-subtle">
 					    <div class="small text-secondary mb-1">선택 가게</div>
@@ -714,12 +721,46 @@
                         </div>
                     </div>
 
+                    <p class="small text-danger mb-0 d-none" data-mo-create-feedback role="alert"></p>
+
                     <button type="submit"
                             class="mo-btn mo-btn-primary w-100"
                             data-mo-create-submit>
                         주문방 생성하기
                     </button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade mo-auth-modal" id="moConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content mo-modal-card">
+                <div class="mo-modal-card__header">
+                    <div class="mo-modal-card__eyebrow" data-mo-confirm-eyebrow>확인</div>
+                    <h2 class="mo-modal-card__title" data-mo-confirm-title>한 번 더 확인해 주세요</h2>
+                    <p class="mo-modal-card__desc" data-mo-confirm-message>이 작업을 계속 진행할까요?</p>
+                </div>
+                <div class="mo-modal-form">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="mo-btn mo-btn-outline flex-fill" data-bs-dismiss="modal" data-mo-confirm-cancel>취소</button>
+                        <button type="button" class="mo-btn mo-btn-primary flex-fill" data-mo-confirm-accept>확인</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1200;">
+        <div id="moGlobalToast"
+             class="toast align-items-center text-white border-0"
+             role="status"
+             aria-live="polite"
+             aria-atomic="true"
+             style="background: var(--mo-navy-strong); border-radius: 16px; min-width: min(360px, calc(100vw - 24px)); box-shadow: 0 18px 40px rgba(22, 34, 68, 0.22);">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold py-3 px-4" data-mo-toast-message>안내 메시지</div>
+                <button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" aria-label="닫기"></button>
             </div>
         </div>
     </div>
