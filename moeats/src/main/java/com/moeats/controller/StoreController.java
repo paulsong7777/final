@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.GroupOrder;
@@ -27,6 +29,7 @@ import com.moeats.service.StoreService;
 import com.moeats.services.GroupOrderService;
 import com.moeats.services.GroupOrderService.GroupOrderRecord;
 import com.moeats.services.OrderMemberQueryService;
+import com.moeats.services.OrderRoomService;
 import com.moeats.services.sse.SSEService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +45,8 @@ public class StoreController {
     private SSEService sseService;
     @Autowired
     private GeoService geoService;
+    @Autowired
+    private OrderRoomService orderRoomService;
     
     @Autowired
     private OrderMemberQueryService orderMemberQueryService;
@@ -49,7 +54,7 @@ public class StoreController {
     private final String COMPLETED = "COMPLETED";
  // tier1에서 delivery 구현이 안되는 상황이기 때문에 간소화. 영훈
     private final List<String> ORDER_STATUSES =
-            List.of("PAID", "ACCEPTED", "PREPARING", "READY", "COMPLETED");
+            List.of("PAID", "ACCEPTED", "PREPARING", "READY", "DELIVERING", "COMPLETED");
 //    private final List<String> ORDER_STATUSES = List.of("PAID","ACCEPTED","PREPARING","READY","DELIVERING","COMPLETED");
     
     
@@ -170,6 +175,7 @@ public class StoreController {
         model.addAttribute("menu", "order-detail");
         model.addAttribute("store", store);
         model.addAttribute("orderRecord", orderRecord);
+        model.addAttribute("orderRoom", orderRoomService.findByIdx(groupOrder.getRoomIdx()));
         return "views/owner/order-detail";
     }
     // 3차 디버깅 결과 터질 위험요소 발견. ViewOwnerController 삭제로 보강 필요하다 판단.
@@ -408,5 +414,16 @@ public class StoreController {
         // DB에서 주문 목록을 가져옵니다. 
         // (정렬은 이전에 XML에서 수정한 대로 미완료 주문 우선으로 나옵니다.)
         return groupOrderService.findRecordByStore(store.getStoreIdx());
+    }
+    
+    @GetMapping(value = "/owners/api/sse/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @ResponseBody
+    public SseEmitter connectStoreSse(@SessionAttribute("member") Member member) {
+        Store store = storeService.myStore(member.getMemberIdx());
+        if (store == null) {
+            return null;
+        }
+        // SSEService의 storeMap에 현재 사장님의 매장 번호로 구독(연결)을 시작합니다.
+        return sseService.joinStore(store.getStoreIdx());
     }
 }

@@ -95,6 +95,8 @@ public class GroupOrderService {
 	            return ready(groupOrder.getOrderIdx());
 	        case "READY":
 	            return complete(groupOrder.getOrderIdx());
+    		case "DELIVERING":
+				return complete(groupOrder.getOrderIdx());
 	        default:
 	            return 0;
 	    }

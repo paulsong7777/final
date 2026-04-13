@@ -48,14 +48,16 @@
 		                            th:text="${order.groupOrder.storeName}">가게이름</h4>
 		                    </div>
 		                    
-		                    <div th:switch="${order.groupOrder.orderStatus}">
-		                        <span th:case="'PAID'" class="mo-address-item__badge" style="margin:0; background:rgba(220,53,69,0.1); color:#dc3545;">결제완료</span>
-		                        <span th:case="'ACCEPTED'" class="mo-address-item__badge" style="margin:0; background:rgba(255,128,0,0.1); color:var(--mo-primary);">조리 중</span>
-		                        <span th:case="'PREPARING'" class="mo-address-item__badge" style="margin:0; background:rgba(40,167,69,0.1); color:#28a745;">조리 완료</span>
-		                        <span th:case="'READY'" class="mo-address-item__badge" style="margin:0; background:rgba(23,162,184,0.1); color:#17a2b8;">배달 중</span>
-		                        <span th:case="'COMPLETED'" class="mo-address-item__badge" style="margin:0; background:rgba(42,54,89,0.1); color:var(--mo-navy-strong);">배달완료</span>
-		                        <span th:case="*" class="mo-address-item__badge" style="margin:0; background:#eee; color:#666;">확인 중</span>
-		                    </div>
+							<div th:switch="${order.groupOrder.orderStatus}">
+							    <span th:case="'PAYMENT_PENDING'" class="mo-address-item__badge" style="margin:0; background:#eee; color:#666;">결제대기</span>
+							    <span th:case="'PAID'" class="mo-address-item__badge" style="margin:0; background:rgba(220,53,69,0.1); color:#dc3545;">결제완료</span>
+							    <span th:case="'ACCEPTED'" class="mo-address-item__badge" style="margin:0; background:rgba(255,128,0,0.1); color:var(--mo-primary);">주문확인</span>
+							    <span th:case="'PREPARING'" class="mo-address-item__badge" style="margin:0; background:rgba(40,167,69,0.1); color:#28a745;">조리 중</span>
+							    <span th:case="'READY'" class="mo-address-item__badge" style="margin:0; background:rgba(23,162,184,0.1); color:#17a2b8;">조리완료</span>
+							    <span th:case="'DELIVERING'" class="mo-address-item__badge" style="margin:0; background:rgba(13,110,253,0.1); color:#0d6efd;">배달 중</span>
+							    <span th:case="'COMPLETED'" class="mo-address-item__badge" style="margin:0; background:rgba(42,54,89,0.1); color:var(--mo-navy-strong);">배달완료</span>
+							    <span th:case="'CANCELLED'" class="mo-address-item__badge" style="margin:0; background:rgba(108,117,125,0.1); color:#6c757d;">주문취소</span>
+							</div>
 		                </div>
 		            
 		                <div class="d-flex justify-content-between align-items-center">
@@ -256,6 +258,40 @@ async function openOrderDetail(orderIdx, storeName) {
         contentDiv.innerHTML = `<p class="text-center text-danger">정보를 불러오지 못했습니다.</p>`;
     }
 }
+
+ // 🌟 실시간 주문 상태 변경 수신 SSE 🌟
+    function initUserSSE() {
+        // 화면에 떠있는 최근 주문들의 번호(orderIdx)를 모두 수집합니다.
+        const orderElements = document.querySelectorAll('[data-idx]');
+        const orderIdxSet = new Set();
+        
+        orderElements.forEach(el => {
+            const idx = el.getAttribute('data-idx');
+            if(idx) orderIdxSet.add(idx);
+        });
+
+        // 화면에 있는 각 주문 번호마다 파이프를 연결합니다.
+        orderIdxSet.forEach(orderIdx => {
+            const eventSource = new EventSource(`/members/api/sse/orders/${orderIdx}`);
+            
+            // 사장님이 상태를 변경하면 SSEService가 'change'라는 이름으로 이벤트를 쏩니다!
+            eventSource.addEventListener('change', function(event) {
+                // event.data 안에는 바뀐 상태값(예: 'ACCEPTED', 'DELIVERING')이 들어있습니다.
+                console.log("주문 상태 변경됨: ", event.data);
+                
+                // 화면을 새로고침하여 바뀐 상태(배지)를 즉시 보여줍니다.
+                window.location.reload();
+            });
+            
+            eventSource.onerror = function() {
+                eventSource.close();
+            };
+        });
+    }
+
+    // 화면이 로딩되면 SSE 연결 시작!
+    window.addEventListener('load', initUserSSE);
+
 </script>
 </th:block>
 </html>
