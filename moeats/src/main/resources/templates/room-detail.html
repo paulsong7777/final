@@ -692,7 +692,10 @@
 <section layout:fragment="pageContent"
          id="roomDetailRoot"
          class="rd-page-shell"
-         th:attr="data-room-code=${orderRoom.roomCode}, data-room-status=${orderRoom.roomStatus}">
+         th:attr="data-room-code=${orderRoom.roomCode},
+                  data-room-status=${orderRoom.roomStatus},
+                  data-room-grand-total=${roomGrandTotal},
+                  data-minimum-order-amount=${store != null ? store.minimumOrderAmount : 0}">
     <section class="mo-section rd-page-stack">
         <div class="rd-top-card">
             <div class="rd-top-head">
@@ -971,7 +974,19 @@
                         </div>
                     </div>
 
+
                     <div class="rd-summary-box" style="margin-top: 18px;">
+                    <p class="rd-note" style="margin-top: 12px;" th:if="${store != null}">
+					    최소주문금액은
+					    <strong th:text="${#numbers.formatInteger(store.minimumOrderAmount, 0, 'COMMA')} + '원'">15,000원</strong>
+					    입니다.
+					</p>
+					<p class="rd-note"
+					   th:if="${store != null and roomGrandTotal < store.minimumOrderAmount}">
+					    현재 기준으로
+					    <strong th:text="${#numbers.formatInteger(store.minimumOrderAmount - roomGrandTotal, 0, 'COMMA')} + '원'">3,000원</strong>
+					    이 더 필요합니다.
+					</p>
                         <div class="rd-summary-row">
                             <span class="rd-summary-label">선택 완료 인원</span>
                             <span class="rd-summary-value">

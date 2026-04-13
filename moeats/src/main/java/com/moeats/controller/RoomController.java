@@ -162,21 +162,22 @@ public class RoomController {
 		}
 
 		if (orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
-			RoomParticipant roomParticipant = new RoomParticipant();
-			roomParticipant.setRoomIdx(orderRoom.getRoomIdx());
-			roomParticipant.setMemberIdx(member.getMemberIdx());
+		    RoomParticipant roomParticipant = new RoomParticipant();
+		    roomParticipant.setRoomIdx(orderRoom.getRoomIdx());
+		    roomParticipant.setMemberIdx(member.getMemberIdx());
 
-			if (orderRoom.getLeaderMemberIdx() == member.getMemberIdx()) {
-				roomParticipant.setParticipantRole("LEADER");
-			} else {
-				roomParticipant.setParticipantRole("PARTICIPANT");
-			}
+		    if (orderRoom.getLeaderMemberIdx() == member.getMemberIdx()) {
+		        roomParticipant.setParticipantRole("LEADER");
+		    } else {
+		        roomParticipant.setParticipantRole("PARTICIPANT");
+		    }
 
-			if (orderRoom.isJoinLocked() || orderRoomService.join(roomParticipant) == 0) {
-				ra.addFlashAttribute("error", "더이상 방에 참여할 수 없습니다");
-				return "redirect:/rooms/join";
-			}
-			safeRoomSse("participantUpdate", () -> sseService.participantUpdate(orderRoom.getRoomIdx()));
+		    if (orderRoom.isJoinLocked() || orderRoomService.join(roomParticipant) == 0) {
+		        ra.addFlashAttribute("error", "이미 나갔거나 내보내진 주문방에는 다시 참여할 수 없습니다.");
+		        return "redirect:/main";
+		    }
+
+		    safeRoomSse("participantUpdate", () -> sseService.participantUpdate(orderRoom.getRoomIdx()));
 		}
 
 		List<GroupCartItem> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx());
@@ -227,7 +228,10 @@ public class RoomController {
 		boolean isLeader = myState != null && "LEADER".equals(myState.getParticipantRole());
 		boolean allSelected = participantCount > 0 && completedCount == participantCount;
 
+		Store store = storeService.getStoreByIdx(orderRoom.getStoreIdx());
+
 		model.addAttribute("orderRoom", orderRoom);
+		model.addAttribute("store", store);
 		model.addAttribute("isLeader", isLeader);
 		model.addAttribute("participantCount", participantCount);
 		model.addAttribute("completedCount", completedCount);

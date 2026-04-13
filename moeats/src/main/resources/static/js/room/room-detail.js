@@ -34,34 +34,41 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function bindConfirm(selector, messageBuilder) {
-        document.querySelectorAll(selector).forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                if (form.dataset.submitting === 'true') {
-                    return;
-                }
+	function bindConfirm(selector, messageBuilder, beforeConfirm) {
+	    document.querySelectorAll(selector).forEach(function (form) {
+	        form.addEventListener('submit', function (event) {
+	            if (form.dataset.submitting === 'true') {
+	                return;
+	            }
 
-                const message = typeof messageBuilder === 'function'
-                    ? messageBuilder(form)
-                    : '계속하시겠습니까?';
+	            if (typeof beforeConfirm === 'function') {
+	                const precheck = beforeConfirm(form);
+	                if (precheck === false) {
+	                    event.preventDefault();
+	                    return;
+	                }
+	            }
 
-                if (!window.confirm(message)) {
-                    event.preventDefault();
-                    return;
-                }
+	            const message = typeof messageBuilder === 'function'
+	                ? messageBuilder(form)
+	                : '계속하시겠습니까?';
 
-                event.preventDefault();
-                form.dataset.submitting = 'true';
+	            if (!window.confirm(message)) {
+	                event.preventDefault();
+	                return;
+	            }
 
-                closeRoomEventSource();
+	            event.preventDefault();
+	            form.dataset.submitting = 'true';
 
-                // SSE 연결 정리 시간을 아주 짧게 준 뒤 submit
-                window.setTimeout(function () {
-                    form.submit();
-                }, 60);
-            });
-        });
-    }
+	            closeRoomEventSource();
+
+	            window.setTimeout(function () {
+	                form.submit();
+	            }, 60);
+	        });
+	    });
+	}
 
     bindConfirm('.js-confirm-kick', function (form) {
         const targetName = form.dataset.targetName || '선택한 참여자';
@@ -72,9 +79,26 @@ document.addEventListener('DOMContentLoaded', function () {
         return '메뉴를 수정하면 선택 완료 상태가 해제됩니다. 계속하시겠습니까?';
     });
 
-    bindConfirm('.js-confirm-checkout', function () {
-        return '전원 선택 완료 상태입니다. 결제를 시작하시겠습니까?';
-    });
+	bindConfirm(
+	    '.js-confirm-checkout',
+	    function () {
+	        return '전원 선택 완료 상태입니다. 결제를 시작하시겠습니까?';
+	    },
+	    function () {
+	        const totalAmount = Number(root?.dataset?.roomGrandTotal || 0);
+	        const minimumOrderAmount = Number(root?.dataset?.minimumOrderAmount || 0);
+
+	        if (minimumOrderAmount > 0 && totalAmount < minimumOrderAmount) {
+	            const diff = minimumOrderAmount - totalAmount;
+	            window.alert(
+	                `최소주문금액 미달입니다.\n현재 팀 총액: ${totalAmount.toLocaleString()}원\n최소주문금액: ${minimumOrderAmount.toLocaleString()}원\n부족 금액: ${diff.toLocaleString()}원`
+	            );
+	            return false;
+	        }
+
+	        return true;
+	    }
+	);
 
     bindConfirm('.js-confirm-leave', function () {
         return '주문방에서 나가시겠습니까?';

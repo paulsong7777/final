@@ -225,7 +225,11 @@
 	        storeName: payload.storeName || '',
 	        minimumOrderAmount: payload.minimumOrderAmount || ''
 	    });
-	};;
+	};
+
+	window.openMoLoginLayer = () => {
+	    openLoginLayer();
+	};
 	
 	const bindButtons = () => {
 	    document.querySelectorAll('[data-mo-open-mobile-menu]').forEach((button) => {

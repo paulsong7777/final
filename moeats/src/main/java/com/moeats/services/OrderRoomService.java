@@ -123,21 +123,44 @@ public class OrderRoomService {
 	public List<RoomParticipant> findUnpaid(int roomIdx){
 		return roomParticipantMapper.findUnpaid(roomIdx);
 	}
+	
 	public int join(RoomParticipant roomParticipant) {
-		if(findByIdx(roomParticipant.getRoomIdx()).isJoinLocked())
-			return 0;
-		RoomParticipant preExist = this.findRoomMember(roomParticipant.getRoomIdx(),roomParticipant.getMemberIdx());
-		if(preExist==null)
-			return roomParticipantMapper.insert(roomParticipant);
-		int roomParticipantIdx = preExist.getRoomParticipantIdx();
-		int result = roomParticipantMapper.rejoin(roomParticipantIdx);
-		if(result==0)
-			return 0;
-		roomParticipant.setRoomParticipantIdx(roomParticipantIdx);
-		roomParticipant.setLeftAt(null);
-		roomParticipant.setJoinedAt(this.findParticipantByIdx(roomParticipantIdx).getJoinedAt());
-		return result;
+	    OrderRoom orderRoom = findByIdx(roomParticipant.getRoomIdx());
+	    if (orderRoom == null || orderRoom.isJoinLocked()) {
+	        return 0;
+	    }
+
+	    RoomParticipant preExist = this.findRoomMember(roomParticipant.getRoomIdx(), roomParticipant.getMemberIdx());
+
+	    // 최초 참여만 허용
+	    if (preExist == null) {
+	        return roomParticipantMapper.insert(roomParticipant);
+	    }
+
+	    // 이미 현재 참여 중이면 중복 참여로 간주
+	    if (preExist.getLeftAt() == null) {
+	        return 0;
+	    }
+
+	    // 한 번 나갔거나 내보내진 참여자는 같은 방에 자동 복귀시키지 않는다.
+	    return 0;
 	}
+	
+//	public int join(RoomParticipant roomParticipant) {
+//		if(findByIdx(roomParticipant.getRoomIdx()).isJoinLocked())
+//			return 0;
+//		RoomParticipant preExist = this.findRoomMember(roomParticipant.getRoomIdx(),roomParticipant.getMemberIdx());
+//		if(preExist==null)
+//			return roomParticipantMapper.insert(roomParticipant);
+//		int roomParticipantIdx = preExist.getRoomParticipantIdx();
+//		int result = roomParticipantMapper.rejoin(roomParticipantIdx);
+//		if(result==0)
+//			return 0;
+//		roomParticipant.setRoomParticipantIdx(roomParticipantIdx);
+//		roomParticipant.setLeftAt(null);
+//		roomParticipant.setJoinedAt(this.findParticipantByIdx(roomParticipantIdx).getJoinedAt());
+//		return result;
+//	}
 	public int setSelect(int roomParticipantIdx) {
 		OrderRoom orderRoom = findByIdx(findParticipantByIdx(roomParticipantIdx).getRoomIdx());
 		if(!orderRoom.getRoomStatus().equals("SELECTING"))

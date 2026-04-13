@@ -53,6 +53,16 @@
 	if (createRoomBtn) {
 	    createRoomBtn.addEventListener('click', () => {
 	        const storeIdx = getStoreIdx();
+	        const isAuthenticated = createRoomBtn.dataset.authenticated === 'true';
+
+	        if (!isAuthenticated) {
+	            if (typeof window.openMoLoginLayer === 'function') {
+	                window.openMoLoginLayer();
+	            } else {
+	                window.location.href = '/login';
+	            }
+	            return;
+	        }
 
 	        if (!storeIdx) {
 	            window.alert('가게 정보가 없어 주문방 생성으로 이동할 수 없습니다.');

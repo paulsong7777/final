@@ -18,7 +18,41 @@
 		.fe02-store-hero__content { position: relative; z-index: 1; width: 100%; max-width: 640px; }
 		.fe02-store-hero__eyebrow { color: #FFD7B0; font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 		.fe02-store-hero__title { margin: 8px 0 0; color: #fff; font-size: 32px; font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; }
-		.fe02-store-hero__desc { margin: 8px 0 0; color: rgba(255, 255, 255, 0.92); font-size: 13px; line-height: 1.38; max-width: 420px; }
+		.fe02-store-hero__desc {
+		    margin: 8px 0 0;
+		    color: rgba(255, 255, 255, 0.92);
+		    font-size: 13px;
+		    line-height: 1.55;
+		    max-width: 420px;
+		    display: -webkit-box;
+		    -webkit-line-clamp: 3;
+		    -webkit-box-orient: vertical;
+		    overflow: hidden;
+		}
+		
+		.fe02-store-hero__desc.is-expanded {
+		    display: block;
+		    -webkit-line-clamp: initial;
+		    overflow: visible;
+		}
+		
+		.fe02-store-hero__more {
+		    display: inline-flex;
+		    align-items: center;
+		    gap: 6px;
+		    margin-top: 8px;
+		    padding: 0;
+		    border: 0;
+		    background: transparent;
+		    color: #FFD7B0;
+		    font-size: 12px;
+		    font-weight: 800;
+		    cursor: pointer;
+		}
+		
+		.fe02-store-hero__more.d-none {
+		    display: none !important;
+		}
 		.fe02-store-hero__meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: stretch; }
 		.fe02-store-hero__meta-item { min-width: 0; height: 52px; padding: 6px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.24); display: flex; flex-direction: column; justify-content: center; }
 		.fe02-store-hero__meta-item--minimum { flex: 0 0 116px; max-width: 116px; }
@@ -116,7 +150,18 @@
 				<div class="fe02-store-hero__content">
 					<div class="fe02-store-hero__eyebrow">가게 상세 페이지</div>
 					<h1 class="fe02-store-hero__title" th:text="${store?.storeName ?: '가게 정보'}">가게명</h1>
-					<p class="fe02-store-hero__desc" th:text="${store?.storeDescription ?: '메뉴를 확인하고 바로 주문을 시작할 수 있습니다.'}">소개</p>
+					<div class="fe02-store-hero__desc-wrap">
+					    <p id="storeHeroDesc"
+					       class="fe02-store-hero__desc"
+					       th:text="${store?.storeDescription ?: '메뉴를 확인하고 바로 주문을 시작할 수 있습니다.'}">
+					        소개
+					    </p>
+					    <button type="button"
+					            id="storeHeroDescToggle"
+					            class="fe02-store-hero__more d-none">
+					        펼쳐보기
+					    </button>
+					</div>
 
 					<div class="fe02-store-hero__meta">
 						<div class="fe02-store-hero__meta-item fe02-store-hero__meta-item--minimum">
@@ -221,10 +266,11 @@
 			</div>
 
 			<button type="button" class="fe02-order-fab" id="fe02CreateRoomBtn"
-				th:attr="data-store-idx=${currentStoreIdx}, 
-						 data-store-name=${store?.storeName ?: ''}, 
-						 data-minimum-order-amount=${store?.minimumOrderAmount ?: ''}">
-				<span id="fabTotalPrice">주문하기</span>
+			    th:attr="data-store-idx=${currentStoreIdx}, 
+			             data-store-name=${store?.storeName ?: ''}, 
+			             data-minimum-order-amount=${store?.minimumOrderAmount ?: ''},
+			             data-authenticated=${session.member != null}">
+			    <span id="fabTotalPrice">주문하기</span>
 			</button>
 		</div>
 	</section>
@@ -284,36 +330,54 @@
 		</script>
 		<script th:src="@{/js/store/menu-list.js}"></script>
 		<script th:inline="javascript">
-		    document.addEventListener('DOMContentLoaded', function() {
-		        const searchInput = document.getElementById('menuSearchInput');
-		        const menuItems = document.querySelectorAll('.fe02-card');
-		        const emptyState = document.getElementById('menuSearchEmpty');
-		
-		        if (searchInput) {
-		            searchInput.addEventListener('input', function(e) {
-		                const keyword = e.target.value.toLowerCase().trim();
-		                let visibleCount = 0;
-		
-		                menuItems.forEach(item => {
-		                    const name = (item.getAttribute('data-menu-name') || "").toLowerCase();
-		                    const desc = (item.getAttribute('data-menu-desc') || "").toLowerCase();
-		                    
-		                    if (name.includes(keyword) || desc.includes(keyword)) {
-		                        item.classList.remove('d-none');
-		                        visibleCount++;
-		                    } else {
-		                        item.classList.add('d-none');
-		                    }
-		                });
-		
-		                if (visibleCount === 0) {
-		                    emptyState.classList.remove('d-none');
+		document.addEventListener('DOMContentLoaded', function() {
+		    const searchInput = document.getElementById('menuSearchInput');
+		    const menuItems = document.querySelectorAll('.fe02-card');
+		    const emptyState = document.getElementById('menuSearchEmpty');
+
+		    const heroDesc = document.getElementById('storeHeroDesc');
+		    const heroDescToggle = document.getElementById('storeHeroDescToggle');
+
+		    if (heroDesc && heroDescToggle) {
+		        requestAnimationFrame(() => {
+		            const isOverflowing = heroDesc.scrollHeight > heroDesc.clientHeight + 1;
+
+		            if (isOverflowing) {
+		                heroDescToggle.classList.remove('d-none');
+		            }
+
+		            heroDescToggle.addEventListener('click', function() {
+		                const expanded = heroDesc.classList.toggle('is-expanded');
+		                heroDescToggle.textContent = expanded ? '접기' : '펼쳐보기';
+		            });
+		        });
+		    }
+
+		    if (searchInput) {
+		        searchInput.addEventListener('input', function(e) {
+		            const keyword = e.target.value.toLowerCase().trim();
+		            let visibleCount = 0;
+
+		            menuItems.forEach(item => {
+		                const name = (item.getAttribute('data-menu-name') || "").toLowerCase();
+		                const desc = (item.getAttribute('data-menu-desc') || "").toLowerCase();
+
+		                if (name.includes(keyword) || desc.includes(keyword)) {
+		                    item.classList.remove('d-none');
+		                    visibleCount++;
 		                } else {
-		                    emptyState.classList.add('d-none');
+		                    item.classList.add('d-none');
 		                }
 		            });
-		        }
-		    });
+
+		            if (visibleCount === 0) {
+		                emptyState.classList.remove('d-none');
+		            } else {
+		                emptyState.classList.add('d-none');
+		            }
+		        });
+		    }
+		});
 		    </script>
 	</th:block>
 </body>
