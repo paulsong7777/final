@@ -32,16 +32,17 @@
                 </if>
 
                 <if test="keyword != null and keyword != ''">
-                    AND (
-                        s.store_name LIKE CONCAT('%', #{keyword}, '%')
-                        OR EXISTS (
-                            SELECT 1
-                            FROM store_menu smu
-                            WHERE smu.store_idx = s.store_idx
-                              AND smu.menu_name LIKE CONCAT('%', #{keyword}, '%')
-                        )
-                    )
-                </if>
+				    AND (
+				        s.store_name LIKE CONCAT('%', #{keyword}, '%')
+				        OR EXISTS (
+				            SELECT 1
+				            FROM store_menu smu
+				            WHERE smu.store_idx = s.store_idx
+				              AND smu.menu_status IN ('AVAILABLE', 'SOLD_OUT')
+				              AND smu.menu_name LIKE CONCAT('%', #{keyword}, '%')
+				        )
+				    )
+				</if>
             </where>
         ) t
 

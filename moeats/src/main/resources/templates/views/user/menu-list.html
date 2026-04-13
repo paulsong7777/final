@@ -116,6 +116,53 @@
 		    font-size: 16px;
 		    z-index: 1;
 		}
+		.fe02-section-list {
+		    display: grid;
+		    gap: 20px;
+		}
+		
+		.fe02-section {
+		    display: grid;
+		    gap: 12px;
+		}
+		
+		.fe02-section__head {
+		    display: flex;
+		    align-items: center;
+		    justify-content: space-between;
+		    gap: 12px;
+		}
+		
+		.fe02-section__title {
+		    margin: 0;
+		    color: var(--mo-navy-strong);
+		    font-size: 20px;
+		    font-weight: 800;
+		    letter-spacing: -0.02em;
+		}
+		
+		.fe02-section__count {
+		    color: var(--mo-text-soft);
+		    font-size: 13px;
+		    font-weight: 700;
+		}
+		
+		.fe02-section__grid {
+		    display: grid;
+		    grid-template-columns: repeat(4, minmax(0, 1fr));
+		    gap: 16px;
+		}
+		
+		@media (max-width: 1199.98px) {
+		    .fe02-section__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+		}
+		@media (max-width: 991.98px) {
+		    .fe02-section__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		}
+		@media (max-width: 575.98px) {
+		    .fe02-section__grid { grid-template-columns: 1fr; gap: 12px; }
+		}
+		
 	</style>
 </th:block>
 </head>
@@ -186,13 +233,15 @@
 			    </div>
 			</section>
 
-			<section id="menuList" class="fe02-grid">
+			<section id="menuList" class="fe02-section-list">
 				<article class="fe02-card"
-				         th:each="menu : ${menuList}"
-				         th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? ' is-soldout' : ''"
-				         th:attr="data-menu-name=${menu.menuName},
-				                  data-menu-desc=${menu.menuDescription},
-				                  data-menu-status=${menu.menuStatus}">
+					         th:each="menu : ${menuList}"
+					         th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? ' is-soldout' : ''"
+					         th:attr="
+					             data-menu-name=${menu.menuName},
+					             data-menu-desc=${menu.menuDescription},
+					             data-menu-status=${menu.menuStatus},
+					             data-category-name=${menu.categoryName != null and !#strings.isEmpty(menu.categoryName) ? menu.categoryName : '기타 메뉴'}">
 
 					<div class="fe02-card__thumb">
 						<img th:if="${!#strings.isEmpty(menu.imageUrl)}" th:src="${menu.imageUrl}" th:alt="${menu.menuName}">

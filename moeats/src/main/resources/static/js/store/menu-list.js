@@ -23,28 +23,81 @@
         return match ? match[1] : '';
     }
 
-    function matchesKeyword(card, keyword) {
-        if (!keyword) return true;
+	function matchesKeyword(card, keyword) {
+	    if (!keyword) return true;
 
-        const name = normalize(card.dataset.menuName);
-        const desc = normalize(card.dataset.menuDesc);
-        return name.includes(keyword) || desc.includes(keyword);
-    }
+	    const name = normalize(card.dataset.menuName);
+	    const desc = normalize(card.dataset.menuDesc);
+	    const category = normalize(card.dataset.categoryName);
 
-    function render() {
-        const keyword = normalize(searchInput?.value);
-        let visible = 0;
+	    return name.includes(keyword) || desc.includes(keyword) || category.includes(keyword);
+	}
 
-        cards.forEach((card) => {
-            const shouldShow = matchesKeyword(card, keyword);
-            card.classList.toggle('d-none', !shouldShow);
-            if (shouldShow) visible += 1;
-        });
+	function buildSections() {
+	    const visibleCards = cards.filter((card) => !card.classList.contains('d-none'));
+	    menuList.innerHTML = '';
 
-        if (emptyState) {
-            emptyState.classList.toggle('d-none', visible > 0);
-        }
-    }
+	    if (!visibleCards.length) {
+	        return;
+	    }
+
+	    const groups = new Map();
+
+	    visibleCards.forEach((card) => {
+	        const categoryName = card.dataset.categoryName || '기타 메뉴';
+	        if (!groups.has(categoryName)) {
+	            groups.set(categoryName, []);
+	        }
+	        groups.get(categoryName).push(card);
+	    });
+
+	    groups.forEach((groupCards, categoryName) => {
+	        const section = document.createElement('section');
+	        section.className = 'fe02-section';
+
+	        const head = document.createElement('div');
+	        head.className = 'fe02-section__head';
+
+	        const title = document.createElement('h2');
+	        title.className = 'fe02-section__title';
+	        title.textContent = categoryName;
+
+	        const count = document.createElement('span');
+	        count.className = 'fe02-section__count';
+	        count.textContent = `${groupCards.length}개 메뉴`;
+
+	        const grid = document.createElement('div');
+	        grid.className = 'fe02-section__grid';
+
+	        head.appendChild(title);
+	        head.appendChild(count);
+	        section.appendChild(head);
+	        section.appendChild(grid);
+
+	        groupCards.forEach((card) => {
+	            grid.appendChild(card);
+	        });
+
+	        menuList.appendChild(section);
+	    });
+	}	
+	
+	function render() {
+	    const keyword = normalize(searchInput?.value);
+	    let visible = 0;
+
+	    cards.forEach((card) => {
+	        const shouldShow = matchesKeyword(card, keyword);
+	        card.classList.toggle('d-none', !shouldShow);
+	        if (shouldShow) visible += 1;
+	    });
+
+	    if (emptyState) {
+	        emptyState.classList.toggle('d-none', visible > 0);
+	    }
+
+	    buildSections();
+	}
 
     if (searchInput) {
         searchInput.addEventListener('input', render);
