@@ -56,9 +56,11 @@
                     <div class="order-status-scroll flex-grow-1 p-4 bg-light bg-opacity-10">
                         <th:block th:if="${not #lists.isEmpty(orderList)}">
                             
-                            <div th:each="order : ${orderList}" 
-							     class="mo-address-item mb-3 bg-white p-4 border rounded-4 shadow-sm" 
+                           <div th:each="order : ${orderList}" 
+							     class="mo-address-item mb-3 bg-white p-4 border rounded-4 shadow-sm order-card-for-map" 
 							     th:data-idx="${order.groupOrder.roomIdx}"
+							     th:data-status="${order.groupOrder.orderStatus}"
+							     th:data-address="${order.orderDelivery != null ? order.orderDelivery.deliveryAddress1 : ''}"
 							     onclick="handleCardClick(event, this)"
 							     style="cursor: pointer; transition: transform 0.2s ease;">
 							    
@@ -225,25 +227,89 @@
             const latEl = document.getElementById('store-lat');
             if(!latEl) return; 
 
-            const lat = parseFloat(latEl.value);
-            const lng = parseFloat(document.getElementById('store-lng').value);
+            const storeLat = parseFloat(latEl.value);
+            const storeLng = parseFloat(document.getElementById('store-lng').value);
             const container = document.getElementById('moeats-map');
 
             kakao.maps.load(function() {
                 try {
+                    const storePosition = new kakao.maps.LatLng(storeLat, storeLng);
                     const map = new kakao.maps.Map(container, {
-                        center: new kakao.maps.LatLng(lat, lng),
-                        level: 3
+                        center: storePosition,
+                        level: 5
                     });
-                    new kakao.maps.Marker({ position: new kakao.maps.LatLng(lat, lng), map: map });
+
+                    const bounds = new kakao.maps.LatLngBounds();
+                    bounds.extend(storePosition);
+
+                    // 1. 우리 매장 마커 (빨간색 점 + 텍스트 CustomOverlay)
+                    const storeContent = `
+                        <div style="display: flex; flex-direction: column; align-items: center; transform: translateY(-50%);">
+                            <div style="background-color: white; border: 1.5px solid #E53A40; color: #E53A40; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; margin-bottom: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                🏠 우리 매장
+                            </div>
+                            <div style="width: 18px; height: 18px; background-color: #E53A40; border: 2.5px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+                        </div>
+                    `;
+                    
+                    new kakao.maps.CustomOverlay({
+                        position: storePosition,
+                        content: storeContent,
+                        map: map,
+                        yAnchor: 0.5 // 중앙에 맞춤
+                    });
+
+                    const geocoder = new kakao.maps.services.Geocoder();
+                    const orderCards = document.querySelectorAll('.order-card-for-map');
+                    
+                    orderCards.forEach((card) => {
+                        const status = card.getAttribute('data-status');
+                        const roomIdx = card.getAttribute('data-idx');
+                        const address = card.getAttribute('data-address');
+                        
+                        // 2. 배달 완료(COMPLETED) 및 취소(CANCELLED)된 주문은 지도에 표시하지 않음
+                        if (status === 'COMPLETED' || status === 'CANCELLED') {
+                            return; 
+                        }
+                        
+                        if (address && address.trim() !== '') {
+                            geocoder.addressSearch(address, function(result, reqStatus) {
+                                if (reqStatus === kakao.maps.services.Status.OK) {
+                                    const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                                    // 3-1. 기본 파란색 마커 생성
+                                    const marker = new kakao.maps.Marker({
+                                        map: map,
+                                        position: coords
+                                    });
+
+                                    // 3-2. 마커 바로 위에 주문번호를 띄워주는 CustomOverlay 생성
+                                    const labelContent = `
+                                        <div style="background-color: #2A3659; color: white; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 38px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid white;">
+                                            주문 #${roomIdx}
+                                        </div>
+                                    `;
+                                    
+                                    new kakao.maps.CustomOverlay({
+                                        position: coords,
+                                        content: labelContent,
+                                        map: map,
+                                        yAnchor: 1 // 기준점을 맨 아래로 하여 마커 위로 올라가게 배치
+                                    });
+
+                                    // 지도 범위 재설정
+                                    bounds.extend(coords);
+                                    map.setBounds(bounds);
+                                } 
+                            });
+                        }
+                    });
                     
                     window.addEventListener('resize', () => map.relayout());
                     setTimeout(() => map.relayout(), 300);
                 } catch (e) { console.error("Map Error:", e); }
             });
         }
-
-        window.onload = initDashboardMap;
         
         function initSSE() {
             const eventSource = new EventSource('/owners/api/sse/connect');
