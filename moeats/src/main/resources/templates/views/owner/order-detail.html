@@ -244,21 +244,8 @@
 
                         <button type="button" th:if="${safeOrder.orderStatus == 'READY'}" class="mo-btn w-100 py-3 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff;"
                                 th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">배달 완료 처리</button>
-
-                        <div th:if="${safeOrder.orderStatus == 'COMPLETED'}" class="p-3 text-center rounded-3 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy-strong);">
-                            처리가 완료된 주문입니다.
-                        </div>
-                        <div th:if="${safeOrder.orderStatus == 'CANCELLED'}" class="p-3 text-center rounded-3 fw-bold text-danger" style="background: rgba(220, 53, 69, 0.05);">
-                            취소된 주문입니다.
-                        </div>
-
-                        <div class="text-center mt-2 pt-3 border-top">
-                            <a th:href="@{/owners/dashboard}" class="mo-btn mo-btn-plain text-secondary fw-bold" style="font-size: 13px;">
-                                <i class="bi bi-arrow-left me-1"></i> 대시보드로 돌아가기
-                            </a>
-                        </div>
-                    </div>
-
+                                
+                                <hr class="my-4" style="border-top: 2px dashed rgba(42, 54, 89, 0.15); opacity: 1;">
 
                     <div class="mb-4">
                         <div class="fw-bold mb-3" style="color: var(--mo-navy-strong);">주문 메뉴</div>
@@ -302,9 +289,9 @@
                         </div>
 
                         <div class="text-center mt-2 pt-3 border-top">
-                            <a th:href="@{/owners/dashboard}" class="mo-btn mo-btn-plain text-secondary fw-bold" style="font-size: 13px;">
-                                <i class="bi bi-arrow-left me-1"></i> 대시보드로 돌아가기
-                            </a>
+							<a href="javascript:history.back();" class="mo-btn mo-btn-plain text-secondary fw-bold" style="font-size: 13px;">
+							    돌아가기
+							</a>
                         </div>
                     </div>
                 </div> 
