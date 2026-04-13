@@ -281,12 +281,12 @@ $(function(){
 	let isComposing = false; // 한글 조합 중인지 체크하는 플래그
 
 	// 한글 조합 시작
-	$("#memberNickname, #email_id, #email_domain").on("compositionstart", function() {
+	$("#email_id, #email_domain").on("compositionstart", function() {
 	    isComposing = true;
 	});
 
 	// 한글 조합 완료
-	$("#memberNickname, #email_id, #email_domain").on("compositionend", function() {
+	$("#email_id, #email_domain").on("compositionend", function() {
 	    isComposing = false;
 	    // 조합이 끝난 직후에 한번 검사를 트리거합니다.
 	    $(this).trigger("input");
@@ -320,26 +320,6 @@ $(function(){
 	        // alert 창은 UX를 해칠 수 있으므로, 모바일 환경에서는 
 	        // 텍스트를 바로 치환해주는 방식이 더 안전합니다.
 	        $(this).val(currentVal.replace(/[^a-zA-Z.]/g, ''));
-	    }
-	});
-
-	// 3. 별명 검사 (천지인 완벽 호환)
-	// (1) 타이핑 중: 특수문자와 공백만 실시간 차단
-	$("#memberNickname").on("input", function() {
-	    if (isComposing) return; // 'ㄱ', 'ㅏ' 치는 동안에는 절대 건드리지 않음
-
-	    let currentVal = $(this).val();
-	    if (/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/.test(currentVal)) {
-	        $(this).val(currentVal.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/g, ''));
-	    }
-	});
-
-	// (2) 입력 완료 후 (포커스가 벗어날 때): 단독 자음/모음 검사
-	$("#memberNickname").on("blur", function() {
-	    let currentVal = $(this).val();
-	    if (/[ㄱ-ㅎㅏ-ㅣ]/.test(currentVal)) {
-	        alert("별명에 자음이나 모음만 단독으로 남겨둘 수 없습니다. (예: ㅋㅋ, ㅇㄴㅁ)");
-	        $(this).val(currentVal.replace(/[ㄱ-ㅎㅏ-ㅣ]/g, ''));
 	    }
 	});
 

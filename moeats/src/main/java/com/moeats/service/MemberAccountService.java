@@ -35,16 +35,19 @@ public class MemberAccountService {
         }
 
         public Member login(String member_email, String member_password) {
-                Member member = memberMapper.getMemberFromEmail(member_email);
+            Member member = memberMapper.getMemberFromEmail(member_email);
 
-                if (member == null) {
-                        return null;
-                }
+            // 1. 회원이 존재하지 않거나, 상태가 탈퇴(INACTIVE)인 경우 null 반환
+            if (member == null || "INACTIVE".equals(member.getMemberStatus())) {
+                return null; 
+            }
 
-                if (passwordEncoder.matches(member_password, member.getMemberPassword())) {
-                        return member;
-                }
-                return null;
+            // 2. 비번 검증
+            if (passwordEncoder.matches(member_password, member.getMemberPassword())) {
+                return member;
+            }
+            
+            return null;
         }
 
         public void insertMember(Member member) {
@@ -102,5 +105,10 @@ public class MemberAccountService {
                 }
 
                 return digits.substring(0, 3) + "-" + digits.substring(3, 7) + "-" + digits.substring(7);
+        }
+
+        // 🌟 수정: 회원 탈퇴 로직 구현
+        public void deleteMember(int memberIdx) {
+            memberMapper.deleteMember(memberIdx);
         }
 }
