@@ -214,14 +214,11 @@
                     <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">DASHBOARD & ORDERS</div>
                     
                     <a th:href="@{/owners/dashboard}" class="mo-mobile-menu__link" th:classappend="${menu == 'dash'} ? 'is-active'">
-                        <span><i class="bi bi-speedometer2 me-2"></i>대시보드(신규)</span>
+                        <span><i class="bi bi-speedometer2 me-2"></i>대시보드</span>
                     </a>
-                    <a th:href="@{/owners/order/detail}" class="mo-mobile-menu__link" th:classappend="${menu == 'order-detail'} ? 'is-active'">
-                        <span><i class="bi bi-search me-2"></i>주문 상세 조회</span>
-                    </a>
-                    <a th:href="@{/owners/order/list}" class="mo-mobile-menu__link" th:classappend="${menu == 'order-list'} ? 'is-active'">
-                        <span><i class="bi bi-receipt me-2"></i>현재 주문 내역</span>
-                    </a>
+					<a th:href="@{/owners/order/list}" class="mo-mobile-menu__link" th:classappend="${menu == 'order-list'} ? 'is-active'">
+					    <span><i class="bi bi-search me-2"></i>주문 내역 조회</span>
+					</a>
                 </div>
 
                 <div class="mo-mobile-menu__group mb-4">

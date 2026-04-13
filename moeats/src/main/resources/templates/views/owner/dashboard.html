@@ -64,10 +64,9 @@
 							    
 							    <div class="d-flex justify-content-between align-items-center mb-3">
 								    <div class="fw-bold" style="font-size: 14px; color: var(--mo-text-soft);">
-								        <div class="mb-1">
-								            주문번호 <span class="ms-1" style="color: var(--mo-primary); font-size: 16px;" th:text="${order.groupOrder.orderIdx}">3</span>
-								            <span class="ms-2 text-dark" th:text="'| ' + ${leaderNameMap[order.groupOrder.leaderMemberIdx]} + ' 님'">| 홍길동 님</span>
-								        </div>
+									<div class="mb-1">
+									    <span class="text-dark" th:text="${leaderNameMap[order.groupOrder.leaderMemberIdx]} + ' 님'">홍길동 님</span>
+									</div>
 								        
 										<div class="mt-2 fw-bold" style="font-size: 15px; color: var(--mo-navy-strong);">
 										    주문시각 : 
@@ -82,9 +81,9 @@
 									    <span th:case="'PAID'" class="fw-bold fs-6 text-danger">신규 주문</span>
 									    <span th:case="'ACCEPTED'" class="fw-bold fs-6" style="color: var(--mo-primary);">접수완료</span>
 									    <span th:case="'PREPARING'" class="fw-bold fs-6 text-success">조리 중</span>
-									    <span th:case="'READY'" class="fw-bold fs-6 text-info">조리완료</span>
+									    <span th:case="'READY'" class="fw-bold fs-6 text-info">준비완료</span>
 									    <span th:case="'DELIVERING'" class="fw-bold fs-6 text-primary">배달 중</span>
-									    <span th:case="'COMPLETED'" class="fw-bold fs-6 text-secondary">배달완료</span>
+									    <span th:case="'COMPLETED'" class="fw-bold fs-6 text-secondary">주문완료</span>
 									    <span th:case="'CANCELLED'" class="fw-bold fs-6 text-muted">주문취소</span>
 									</div>
 								</div>
@@ -112,10 +111,10 @@
 								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'READY')">조리 완료처리</button>
 
 								    <button th:case="'READY'" type="button" class="btn btn-info w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" 
-								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'DELIVERING')">배달 시작하기</button>
+								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'DELIVERING')">준비 완료 처리</button>
 								            
 								    <button th:case="'DELIVERING'" type="button" class="btn w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px; background-color: var(--mo-navy-strong);" 
-								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'COMPLETED')">배달 완료처리</button>
+								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'COMPLETED')">주문 완료 처리</button>
 								            
 								    <button th:case="'COMPLETED'" type="button" class="btn btn-secondary w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" disabled>처리가 완료된 주문입니다</button>
 								</th:block>
@@ -168,8 +167,17 @@
         async function handleStatusUpdate(event, roomIdx, nextStatus) {
             event.preventDefault();
             event.stopPropagation();
-            if(!roomIdx || !confirm("주문을 접수하시겠습니까?")) return;
-
+            
+            const confirmMessageMap = {
+            	    ACCEPTED: '주문을 접수하시겠습니까?',
+            	    PREPARING: '조리를 시작하시겠습니까?',
+            	    READY: '준비 완료 상태로 변경하시겠습니까?',
+            	    COMPLETED: '주문 완료 상태로 변경하시겠습니까?'
+            	};
+            
+            if (!roomIdx || !confirm(confirmMessageMap[nextStatus] || '상태를 변경하시겠습니까?')) {
+                return;
+            }
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
             btn.disabled = true;
@@ -185,9 +193,9 @@
                         'Content-Type': 'application/json',
                         ...(header && { [header]: token })
                     },
-                    body: JSON.stringify({ 
-                        "roomIdx": Number(roomIdx), 
-                        "roomStatus": String(nextStatus) 
+                    body: JSON.stringify({
+                        roomIdx: Number(roomIdx),
+                        nextStatus: String(nextStatus)
                     })
                 });
 
@@ -231,6 +239,42 @@
         }
 
         window.onload = initDashboardMap;
+        
+     // 🌟 실시간 SSE 연결 함수 추가 🌟
+        function initSSE() {
+            // 1. 방금 만든 컨트롤러 주소로 SSE 연결 (EventSource 객체 생성)
+            const eventSource = new EventSource('/owners/api/sse/connect');
+
+            // 2. 서버와 연결이 성공했을 때 (SSEService의 "connect" 이벤트)
+            eventSource.addEventListener('connect', function(event) {
+                console.log("🟢 실시간 주문 알림(SSE) 연결 완료!");
+            });
+
+            // 3. 🚨 새 주문이 들어왔을 때! (SSEService의 "new" 이벤트)
+            eventSource.addEventListener('new', function(event) {
+                // event.data 안에는 넘어온 새 주문 정보 JSON이 들어있습니다.
+                // const newOrderData = JSON.parse(event.data); 
+                
+                // 알림창 띄우기 (또는 예쁜 Toast 알림으로 대체 가능)
+                alert("🔔 띵동! 새로운 주문이 들어왔습니다!");
+
+                // 화면을 새로고침하여 타임리프가 최신 데이터를 다시 그려주도록 합니다.
+                // (자바스크립트로 HTML 태그를 일일이 만드는 것보다 가장 깔끔하고 버그가 없는 방식입니다.)
+                window.location.reload();
+            });
+
+            // 4. 에러 발생 시 연결 종료 (재연결 방지 및 자원 낭비 방지)
+            eventSource.onerror = function(err) {
+                console.error("🔴 SSE 연결 오류:", err);
+                eventSource.close();
+            };
+        }
+
+        // 창이 로드될 때 지도 초기화와 SSE 연결을 같이 실행합니다.
+        window.addEventListener('load', () => {
+            initDashboardMap();
+            initSSE(); // SSE 구독 시작!
+        });
         /*]]>*/
     </script>
 </th:block>

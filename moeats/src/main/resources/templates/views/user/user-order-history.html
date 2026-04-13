@@ -111,7 +111,7 @@
                     </a>
                 </div>
                 
-                <div th:each="record : ${orderList}" class="mo-history-item shadow-sm" th:with="safeOrder=${record.groupOrder}">
+                <div th:each="record : ${orderList}" class="mo-history-item shadow-sm" th:with="safeOrder=${record.groupOrder}" th:data-idx="${safeOrder.orderIdx}">
     
                     <div class="history-head">
 				        <span th:text="${#temporals.format((safeOrder.paymentConfirmedAt ?: safeOrder.createdAt).toLocalDateTime().plusHours(9), 'yyyy-MM-dd HH:mm')}">날짜</span>
@@ -176,5 +176,35 @@
         </div>
     </div>
 </section>
+<th:block layout:fragment="pageScripts">
+<script th:inline="javascript">
+/*<![CDATA[*/
+function initUserSSE() {
+    const orderElements = document.querySelectorAll('[data-idx]');
+    const orderIdxSet = new Set();
+    
+    orderElements.forEach(el => {
+        const idx = el.getAttribute('data-idx');
+        if(idx) orderIdxSet.add(idx);
+    });
+
+    orderIdxSet.forEach(orderIdx => {
+        const eventSource = new EventSource(`/members/api/sse/orders/${orderIdx}`);
+        
+        eventSource.addEventListener('change', function(event) {
+            window.location.reload();
+        });
+        
+        eventSource.onerror = function() {
+            eventSource.close();
+        };
+    });
+}
+
+window.addEventListener('load', initUserSSE);
+/*]]>*/
+</script>
+</th:block>
+
 </body>
 </html>

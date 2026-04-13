@@ -3,6 +3,7 @@ package com.moeats.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.DeliveryAddress;
@@ -23,6 +25,7 @@ import com.moeats.service.MemberAccountService;
 import com.moeats.service.StoreService;
 import com.moeats.services.GroupOrderService;
 import com.moeats.services.GroupOrderService.GroupOrderRecord;
+import com.moeats.services.sse.SSEService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -42,6 +45,9 @@ public class MemberController {
 	
 	@Autowired
 	private GroupOrderService groupOrderService;
+	
+    @Autowired
+    private SSEService sseService;
 	
 	
 	// ===== 상수 정의 ======
@@ -295,5 +301,13 @@ public class MemberController {
 		
 		return "views/members/create-type";
 	}
+	
+	// 🌟 유저 실시간 주문 상태 확인용 SSE 연결 API 🌟
+		@GetMapping(value = "/members/api/sse/orders/{orderIdx}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+		@ResponseBody
+		public SseEmitter connectOrderSse(@PathVariable("orderIdx") int orderIdx) {
+		    // SSEService의 orderMap에 이 주문 번호로 구독을 시작합니다.
+		    return sseService.joinOrder(orderIdx);
+		}
 	
 }
