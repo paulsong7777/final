@@ -148,7 +148,7 @@ public class RoomController {
 			ra.addFlashAttribute("error", "방을 생성하는 중 오류가 발생했습니다");
 			return "redirect:/rooms/new";
 		}
-		if ("cart".equals(afterCreate)) {
+		 if ("confirm".equals(afterCreate)) {
 		    OrderRoom createdRoom = orderRoomService.findByCode(code);
 		    if (createdRoom == null) {
 		        ra.addFlashAttribute("error", "생성된 주문방 정보를 찾을 수 없습니다.");
@@ -169,9 +169,13 @@ public class RoomController {
 		        safeRoomSse("participantUpdate", () -> sseService.participantUpdate(createdRoom.getRoomIdx()));
 		    }
 
-		    return "redirect:/rooms/code/" + code + "/cart";
-		}
-		return "redirect:/rooms/code/" + code;
+		   
+		        return "redirect:/rooms/code/" + code + "/cart?next=confirm";
+		    }
+		    if ("cart".equals(afterCreate)) {
+		        return "redirect:/rooms/code/" + code + "/cart";
+		    }
+		    return "redirect:/rooms/code/" + code;
 	}
 
 	@GetMapping("/rooms/code/{room_code}")

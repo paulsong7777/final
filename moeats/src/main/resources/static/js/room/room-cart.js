@@ -10,6 +10,7 @@
     if (!root || !menuList) return;
 
     const roomCode = root.dataset.roomCode || '';
+	const nextStep = new URLSearchParams(window.location.search).get('next') || '';
     const cards = Array.from(menuList.querySelectorAll('.rc-card'));
     const stateMap = new Map();
 
@@ -310,8 +311,12 @@
 	    syncCardView(targetCard);
 	    syncBottomBar();
 
-	    await saveCard(targetCard);
-	    sessionStorage.removeItem('moPendingMenuSelection');
+		await saveCard(targetCard);
+		sessionStorage.removeItem('moPendingMenuSelection');
+
+		if (nextStep === 'confirm' && roomCode) {
+		    window.location.replace(`/rooms/code/${encodeURIComponent(roomCode)}/confirm`);
+		}
 	}
 
     if (searchInput) {
