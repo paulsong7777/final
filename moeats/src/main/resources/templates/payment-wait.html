@@ -418,6 +418,58 @@
 
 <th:block layout:fragment="pageScripts">
     <script th:src="@{/js/order/order-channel.js}"></script>
+
+    <script>
+        let isSafeExit = false;
+
+        history.pushState(null, null, location.href);
+        window.addEventListener('popstate', function() {
+            if (!isSafeExit) {
+                history.pushState(null, null, location.href);
+                alert("결제 대기 중입니다. 완료될 때까지 잠시 기다려 주세요.");
+            }
+        });
+
+        window.addEventListener('beforeunload', function(event) {
+            if (!isSafeExit) {
+                event.preventDefault();
+                event.returnValue = ''; 
+            }
+        });
+
+        // 대기 화면은 모든 클릭을 100% 차단합니다.
+        document.addEventListener('click', function(e) {
+            if (isSafeExit) return;
+            const clickable = e.target.closest('a, button, input[type="button"], input[type="submit"], [data-bs-toggle], [data-mo-open-join]');
+            if (clickable) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                alert("결제 대기 중입니다. 완료될 때까지 잠시 기다려 주세요.");
+            }
+        }, true);
+
+        // 폼 전송도 100% 차단합니다.
+        document.addEventListener('submit', function(e) {
+            if (!isSafeExit) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        }, true);
+
+        // 💣 방 폭파 감지 로직 (방장이 취소하면 팀원들도 즉시 쫓겨남)
+        setInterval(() => {
+            if (isSafeExit) return; 
+            fetch(window.location.href, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(res => {
+                    // 백엔드가 /main으로 리다이렉트 시킨 것을 감지
+                    if (res.redirected || res.url.includes('/main') || !res.ok) {
+                        alert("방장이 결제를 취소하여 주문방이 폭파되었습니다. 메인 화면으로 이동합니다.");
+                        isSafeExit = true; 
+                        window.location.href = '/main'; 
+                    }
+                }).catch(() => {});
+        }, 3000);
+    </script>
 </th:block>
 </body>
 </html>
