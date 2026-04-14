@@ -24,6 +24,113 @@
     let allStores = [];
     let requestSeq = 0;
 
+	function resolveMenuPreviewText(store) {
+	    return String(store.menuPreviewText || '').trim();
+	}
+
+	function resolveMenuChips(store) {
+	    const previewText = resolveMenuPreviewText(store);
+	    if (!previewText) return [];
+
+	    return previewText
+	        .split('|||')
+	        .map((item) => String(item || '').trim())
+	        .filter(Boolean)
+	        .slice(0, 3);
+	}
+
+	function categoryPlaceholderLabel(code) {
+	    switch (code) {
+	        case 'CHICKEN': return '치킨';
+	        case 'PIZZA': return '피자';
+	        case 'CHINESE': return '중식';
+	        case 'KOREAN': return '한식';
+	        case 'CAFE': return '카페';
+	        default: return '가게';
+	    }
+	}
+
+	function hasUsableImage(url) {
+	    const value = String(url || '').trim();
+	    return !!value && !value.includes('store-placeholder.png');
+	}
+
+	function buildPlaceholderMarkup(categoryCode) {
+	    const label = categoryPlaceholderLabel(categoryCode);
+
+	    return `
+	        <div class="mo-store-card--ajax__placeholder mo-store-card--ajax__placeholder--${categoryCode.toLowerCase()}">
+	            <div class="mo-store-card--ajax__placeholder-icon" aria-hidden="true">
+	                ${buildCategoryIcon(categoryCode)}
+	            </div>
+	            <span class="mo-store-card--ajax__placeholder-label">${escapeHtml(label)}</span>
+	        </div>
+	    `;
+	}
+
+	function buildCategoryIcon(categoryCode) {
+	    switch (categoryCode) {
+	        case 'CHICKEN':
+	            return `
+	                <svg viewBox="0 0 24 24" fill="none">
+	                    <path d="M8 15c0-2.8 2.2-5 5-5 2.2 0 4 1.8 4 4 0 3.3-2.7 6-6 6-1.7 0-3-1.3-3-3v-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+	                    <circle cx="18.5" cy="7.5" r="1.5" stroke="currentColor" stroke-width="1.8"/>
+	                    <circle cx="6" cy="18" r="1.4" stroke="currentColor" stroke-width="1.8"/>
+	                </svg>
+	            `;
+	        case 'PIZZA':
+	            return `
+	                <svg viewBox="0 0 24 24" fill="none">
+	                    <path d="M4 7c5-2 11-2 16 0l-8 13L4 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+	                    <circle cx="11" cy="10.5" r="1.2" fill="currentColor"/>
+	                    <circle cx="15" cy="11.5" r="1.2" fill="currentColor"/>
+	                </svg>
+	            `;
+	        case 'CHINESE':
+	            return `
+	                <svg viewBox="0 0 24 24" fill="none">
+	                    <path d="M5 14h14a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+	                    <path d="M8 10c1 0 1-2 2-2s1 2 2 2 1-2 2-2 1 2 2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+	                </svg>
+	            `;
+	        case 'KOREAN':
+	            return `
+	                <svg viewBox="0 0 24 24" fill="none">
+	                    <path d="M4 13c0 4.4 3.6 8 8 8s8-3.6 8-8H4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+	                    <path d="M7 10h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+	                    <path d="M9 7h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+	                </svg>
+	            `;
+	        case 'CAFE':
+	            return `
+	                <svg viewBox="0 0 24 24" fill="none">
+	                    <path d="M7 9h8a0 0 0 0 1 0 0v4a4 4 0 0 1-4 4h0a4 4 0 0 1-4-4V9a0 0 0 0 1 0 0Z" stroke="currentColor" stroke-width="1.8"/>
+	                    <path d="M15 10h1.5A2.5 2.5 0 0 1 19 12.5v0A2.5 2.5 0 0 1 16.5 15H15" stroke="currentColor" stroke-width="1.8"/>
+	                    <path d="M6 19h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+	                </svg>
+	            `;
+	        default:
+	            return `
+	                <svg viewBox="0 0 24 24" fill="none">
+	                    <rect x="5" y="6" width="14" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/>
+	                </svg>
+	            `;
+	    }
+	}
+
+	function buildMenuChips(store) {
+	    const chips = resolveMenuChips(store);
+	    if (!chips.length) {
+	        return `<div class="mo-store-card--ajax__chips">
+	            <span class="mo-store-card--ajax__chip is-empty">대표 메뉴 준비 중</span>
+	        </div>`;
+	    }
+
+	    return `<div class="mo-store-card--ajax__chips">
+	        ${chips.map((chip) => `<span class="mo-store-card--ajax__chip">${escapeHtml(chip)}</span>`).join('')}
+	    </div>`;
+	}
+	
     function escapeHtml(value) {
         return String(value ?? '')
             .replace(/&/g, '&amp;')
@@ -116,54 +223,57 @@
         return `<button type="button" class="mo-btn w-100" disabled aria-disabled="true" style="background:#f8fafc; color:#6b7280; border:1px solid #d7dde5; cursor:default;">${escapeHtml(statusText)}</button>`;
     }
 
-    function buildStoreCard(store) {
-        const categoryCode = resolveCategoryCode(store);
-        const imageUrl = resolveImageUrl(store);
-        const description = resolveDescription(store);
-        const minimumOrderAmount = formatPrice(store.minimumOrderAmount);
-        const storeLink = resolveStoreLink(store);
-        const storeName = store.storeName || '가게명';
-        const categoryName = categoryLabel(categoryCode);
+	function buildStoreCard(store) {
+	    const categoryCode = resolveCategoryCode(store);
+	    const imageUrl = resolveImageUrl(store);
+	    const minimumOrderAmount = formatPrice(store.minimumOrderAmount);
+	    const storeLink = resolveStoreLink(store);
+	    const storeName = store.storeName || '가게명';
+	    const categoryName = categoryLabel(categoryCode);
 
-        const statusPriority = getStatusPriority(store);
-        const isAvailable = statusPriority === 1;
-        const statusBadge = !isAvailable ? buildStatusBadge(store) : '';
+	    const statusPriority = getStatusPriority(store);
+	    const isAvailable = statusPriority === 1;
+	    const statusBadge = !isAvailable ? buildStatusBadge(store) : '';
 
-        return `
-            <div class="col-12 col-md-6 col-xl-3 js-store-item" data-category="${escapeHtml(categoryCode)}">
-                <article class="mo-store-card mo-store-card--ajax h-100 ${!isAvailable ? 'is-unavailable' : ''}">
-                    <div class="mo-store-card--ajax__image-wrap position-relative">
-                        <a href="${storeLink}" class="mo-store-card--ajax__image-link" aria-label="${escapeHtml(storeName)} 상세 보기">
-                            <div class="mo-store-card--ajax__image" style="background-image:url('${escapeHtml(imageUrl)}');"></div>
-                        </a>
-                        <div class="mo-store-card--ajax__overlay-top">
-                            <span class="mo-store-card--ajax__category">${escapeHtml(categoryName)}</span>
-                            ${statusBadge}
-                        </div>
-                    </div>
+	    const imageMarkup = hasUsableImage(imageUrl)
+	        ? `<div class="mo-store-card--ajax__image" style="background-image:url('${escapeHtml(imageUrl)}');"></div>`
+	        : buildPlaceholderMarkup(categoryCode);
 
-                    <div class="mo-store-card__body mo-store-card--ajax__body d-flex flex-column">
-                        <a href="${storeLink}" class="mo-store-card--ajax__title-link">
-                            <h3 class="mo-store-card__title mo-store-card--ajax__title js-store-title">${escapeHtml(storeName)}</h3>
-                        </a>
+	    return `
+	        <div class="col-12 col-md-6 col-xl-3 js-store-item" data-category="${escapeHtml(categoryCode)}">
+	            <article class="mo-store-card mo-store-card--ajax h-100 ${!isAvailable ? 'is-unavailable' : ''}">
+	                <div class="mo-store-card--ajax__image-wrap position-relative">
+	                    <a href="${storeLink}" class="mo-store-card--ajax__image-link" aria-label="${escapeHtml(storeName)} 상세 보기">
+	                        ${imageMarkup}
+	                    </a>
+	                    <div class="mo-store-card--ajax__overlay-top">
+	                        <span class="mo-store-card--ajax__category">${escapeHtml(categoryName)}</span>
+	                        ${statusBadge}
+	                    </div>
+	                </div>
 
-                        <p class="mo-store-card__desc mo-store-card--ajax__desc js-store-desc">${escapeHtml(description || '가게 소개가 아직 등록되지 않았습니다.')}</p>
+	                <div class="mo-store-card__body mo-store-card--ajax__body d-flex flex-column">
+	                    <a href="${storeLink}" class="mo-store-card--ajax__title-link">
+	                        <h3 class="mo-store-card__title mo-store-card--ajax__title">${escapeHtml(storeName)}</h3>
+	                    </a>
 
-                        <div class="mo-store-card--ajax__meta-row">
-                            <div class="mo-store-card--ajax__meta-item">
-                                <span class="mo-store-card--ajax__meta-label">최소주문</span>
-                                <strong class="mo-store-card--ajax__meta-value">${escapeHtml(minimumOrderAmount)}</strong>
-                            </div>
-                        </div>
+	                    ${buildMenuChips(store)}
 
-                        <div class="mo-store-card__actions mo-store-card--ajax__actions mt-auto">
-                            ${buildCardAction(store, isAvailable)}
-                        </div>
-                    </div>
-                </article>
-            </div>
-        `;
-    }
+	                    <div class="mo-store-card--ajax__meta-row">
+	                        <div class="mo-store-card--ajax__meta-item">
+	                            <span class="mo-store-card--ajax__meta-label">최소주문</span>
+	                            <strong class="mo-store-card--ajax__meta-value">${escapeHtml(minimumOrderAmount)}</strong>
+	                        </div>
+	                    </div>
+
+	                    <div class="mo-store-card__actions mo-store-card--ajax__actions mt-auto">
+	                        ${buildCardAction(store, isAvailable)}
+	                    </div>
+	                </div>
+	            </article>
+	        </div>
+	    `;
+	}
 
     function sortStores(stores) {
         return [...stores].sort((a, b) => getStatusPriority(a) - getStatusPriority(b));
