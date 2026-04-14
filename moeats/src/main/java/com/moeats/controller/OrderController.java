@@ -436,7 +436,7 @@ public class OrderController {
         orderRoomTimer.stop(orderIdx);
         sseService.cancelRoom(groupOrder.getRoomIdx());
 
-        ra.addFlashAttribute("message", "결제를 취소하여 주문방이 폭파되었습니다.");
+        // ra.addFlashAttribute("message", "결제를 취소하여 주문방이 폭파되었습니다.");
         return "redirect:/main";
     }
 }

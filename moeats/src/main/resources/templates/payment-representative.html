@@ -343,7 +343,6 @@
 
     const GUARD_TOAST_INTERVAL = 1200;
 
-    // 기본 alert() 제거하고 CSS 토스트(moShowToast)만 실행
     const showGuardToast = (message, variant = 'warning') => {
         if (window.moShowToast) {
             window.moShowToast(message, variant);
@@ -370,14 +369,12 @@
         return true; 
     };
 
-    // 버튼 클릭 시 아무 알림 없이 즉시 메인으로 이동
     window.returnToMainSafely = function() {
         isSafeExit = true; 
         window.location.href = '/main'; 
     };
 
-    // order-channel.js에서도 호출할 수 있도록 전역 객체(window)에 바인딩
-   // 시간 만료 처리 함수 (Alert 팝업 적용)
+    // 시간 만료 처리 함수 (Alert 팝업 적용) 결제시간 초과
     window.handlePaymentExpired = async () => {
         if (isExpired) return;
         isExpired = true;
@@ -393,6 +390,25 @@
             window.location.href = '/main';
         } else {
             alert('결제 시간이 지났습니다.');
+            window.location.href = '/main';
+        }
+    };
+
+    // 💡 추가된 부분: SSE 통신에서 취소 신호가 왔을 때 실행될 함수 // 방장 결제 취소
+    window.handleRoomCancelled = async () => {
+        if (isSafeExit) return;
+        isSafeExit = true;
+
+        if (typeof window.moOpenAlert === 'function') {
+            await window.moOpenAlert({
+                eyebrow: '주문 취소 안내',
+                title: '주문방이 종료되었어요',
+                message: '방장이 결제를 취소하여 메인 화면으로 돌아갑니다.',
+                confirmText: '홈으로 이동'
+            });
+            window.location.href = '/main';
+        } else {
+            alert('주문방이 취소되었습니다.');
             window.location.href = '/main';
         }
     };
@@ -417,8 +433,9 @@
 
         const isCheckoutBtn = e.target.closest('form[action*="/checkout/"]');
         const isCancelBtn = e.target.closest('#cancelPaymentForm');
+        const isModalClick = e.target.closest('.modal, #moConfirmModal, .mo-modal-overlay');
 
-        if (isCheckoutBtn || isCancelBtn) return;
+        if (isCheckoutBtn || isCancelBtn || isModalClick) return;
 
         const clickable = e.target.closest('a, button, input[type="button"], input[type="submit"], [data-bs-toggle], [data-mo-open-join]');
         if (!clickable) return;
@@ -428,6 +445,7 @@
         showBlockedNavigationToast();
     }, true);
 
+ // 💡 수정된 부분: 결제 취소 시 모달 2개가 순서대로 뜨는 폼 제출 처리
     document.addEventListener('submit', async function (e) {
         if (isSafeExit || isExpired) return;
 
@@ -442,9 +460,22 @@
             e.preventDefault();
             e.stopImmediatePropagation();
 
+            // 1. Confirm 모달: 취소할 건지 진짜 묻기
             const accepted = await openGuardConfirm();
             if (!accepted) return;
 
+            // 💡 핵심 해결책: 첫 번째 모달의 닫힘 애니메이션이 끝날 때까지 0.4초(400ms) 대기합니다.
+            await new Promise(resolve => setTimeout(resolve, 400));
+
+            // 2. Alert 모달: 취소 완료 안내 (이제 안 사라지고 사용자가 누를 때까지 기다립니다!)
+            await window.moOpenAlert({
+                eyebrow: '취소 완료',
+                title: '결제가 취소되었어요',
+                message: '주문방이 종료되었습니다. 메인 화면으로 이동할게요.',
+                confirmText: '홈으로 이동'
+            });
+
+            // 3. '홈으로 이동' 버튼을 누르면 그제서야 폼 전송 및 서버 처리
             isSafeExit = true;
             form.submit();
             return;
