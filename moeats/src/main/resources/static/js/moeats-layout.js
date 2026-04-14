@@ -36,20 +36,20 @@
         return window.bootstrap.Offcanvas.getOrCreateInstance(el);
     };
 
-    const toastPalette = {
-        success: {
-            background: '#162244',
-            color: '#ffffff'
-        },
-        warning: {
-            background: '#6f4c00',
-            color: '#ffffff'
-        },
-        info: {
-            background: '#20335f',
-            color: '#ffffff'
-        }
-    };
+	const toastPalette = {
+	    success: {
+	        background: '#252D59',
+	        color: '#ffffff'
+	    },
+	    warning: {
+	        background: '#F85E28',
+	        color: '#ffffff'
+	    },
+	    info: {
+	        background: '#252D59',
+	        color: '#ffffff'
+	    }
+	};
 
     const showToast = (message, variant = 'info') => {
         if (!toastEl || !toastMessageEl || !window.bootstrap || !message) return;
