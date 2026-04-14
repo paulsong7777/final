@@ -14,6 +14,28 @@
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" th:href="@{/css/moeats-layout.css}">
     <th:block layout:fragment="pageStyles"></th:block>
+    
+    <style>
+	    .mo-order-status-fab {
+	        position: fixed;
+	        right: 20px;
+	        bottom: 20px;
+	        z-index: 1080;
+	        display: inline-flex;
+	        align-items: center;
+	        justify-content: center;
+	        min-height: 52px;
+	        padding: 0 18px;
+	        border-radius: 999px;
+	        background: var(--mo-primary, #FF8000);
+	        color: #fff;
+	        font-size: 14px;
+	        font-weight: 800;
+	        text-decoration: none;
+	        box-shadow: 0 14px 28px rgba(255, 128, 0, 0.28);
+	    }
+	</style>
+    
 </head>
 <body class="mo-body">
 <div class="mo-app-shell d-flex flex-column min-vh-100">
@@ -28,7 +50,11 @@
 
     <th:block th:replace="~{fragments/footer :: siteFooter}"></th:block>
 </div>
-
+<a th:if="${session.member != null and session.member.memberRoleType == 'USER' and headerHasTrackableOrder}"
+   th:href="@{/orders/{orderIdx}(orderIdx=${headerTrackableOrderIdx})}"
+   class="mo-order-status-fab">
+    주문 현황 보기
+</a>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>

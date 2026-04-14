@@ -3,6 +3,24 @@
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moeats.mappers.GroupOrderMapper">
 	
+	
+	
+	<select id="findLatestTrackableByMember" resultType="GroupOrder">
+	    SELECT DISTINCT
+	        go.*,
+	        s.store_name AS storeName
+	    FROM group_order go
+	    JOIN group_order_item goi
+	        ON go.order_idx = goi.order_idx
+	    JOIN store s
+	        ON go.store_idx = s.store_idx
+	    WHERE goi.member_idx = #{memberIdx}
+	      AND go.order_status IN ('PAID', 'ACCEPTED', 'PREPARING', 'READY', 'DELIVERING')
+	    ORDER BY go.payment_confirmed_at DESC, go.created_at DESC
+	    LIMIT 1
+	</select>
+	
+	
 	<select id="findByMember" resultType="GroupOrder">
 	    SELECT DISTINCT 
 	        go.*, 

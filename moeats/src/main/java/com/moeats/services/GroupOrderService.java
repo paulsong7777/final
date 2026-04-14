@@ -54,6 +54,10 @@ public class GroupOrderService {
 	public GroupOrder findByIdx(int orderIdx) {
 		return groupOrderMapper.findByIdx(orderIdx);
 	}
+	public GroupOrder findLatestTrackableByMember(int memberIdx) {
+	    return groupOrderMapper.findLatestTrackableByMember(memberIdx);
+	}
+	
 	public GroupOrder findByRoom(int roomIdx) {
 		return groupOrderMapper.findByRoom(roomIdx);
 	}

@@ -14,6 +14,7 @@ public interface GroupOrderMapper {
 	GroupOrder findByRoom(int roomIdx);
 	List<GroupOrder> findByStore(int storeIdx);
 	List<GroupOrder> findActive();
+	GroupOrder findLatestTrackableByMember(@Param("memberIdx") int memberIdx);
 	int insert(GroupOrder groupOrder);
 	int pay(int orderIdx);
 	int accept(int orderIdx);
