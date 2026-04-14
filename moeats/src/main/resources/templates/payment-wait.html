@@ -421,19 +421,24 @@
 
     <script>
         // 대기 화면용 만료 처리 함수 (버튼 교체 없이 안내 후 이동만 수행)
-        window.handlePaymentExpired = () => {
-            // 토스트 알림 띄우기
-            if (window.moShowToast) {
-                window.moShowToast('세션이 만료되어 주문이 취소되었습니다. \n메인화면으로 이동합니다.', 'danger');
-            } else {
-                alert('세션이 만료되어 주문이 취소되었습니다.');
-            }
+   	window.handlePaymentExpired = async () => {
+        if (isExpired) return;
+        isExpired = true;
+        isSafeExit = true;
 
-            // 3초 뒤 메인 화면으로 자동 이동
-            setTimeout(() => {
-                window.location.href = '/main';
-            }, 3000);
-        };
+        if (typeof window.moOpenAlert === 'function') {
+            await window.moOpenAlert({
+                eyebrow: '주문 취소 안내',
+                title: '결제 시간이 지났어요',
+                message: '안전한 이용을 위해 메인 화면으로 돌아갈게요.',
+                confirmText: '홈으로 이동'
+            });
+            window.location.href = '/main';
+        } else {
+            alert('결제 시간이 지났습니다.');
+            window.location.href = '/main';
+        }
+    };
     </script>
 </th:block>
 </th:block>

@@ -144,6 +144,17 @@
 				        </a>
 				    </div>
 	
+                <button type="button"
+                        class="mo-mobile-menu__link"
+                        data-mo-open-join
+                        th:attr="data-mo-active-room-code=${headerActiveRoomCode}">
+                    <span>방 참여</span>
+                    <span class="mo-mobile-menu__sub"
+					      th:text="${headerHasActiveRoom ? '참여 중인 주문방으로 바로 이동' : '6자리 코드로 바로 입장'}">
+					    6자리 코드로 바로 입장
+					</span>
+                </button>
+                
 	                <button type="button"
                         class="mo-mobile-menu__link"
                         data-mo-open-address
@@ -155,16 +166,6 @@
                     </span>
                 </button>
 
-                <button type="button"
-                        class="mo-mobile-menu__link"
-                        data-mo-open-join
-                        th:attr="data-mo-active-room-code=${headerActiveRoomCode}">
-                    <span>방 참여</span>
-                    <span class="mo-mobile-menu__sub"
-					      th:text="${headerHasActiveRoom ? '참여 중인 주문방으로 바로 이동' : '6자리 코드로 바로 입장'}">
-					    6자리 코드로 바로 입장
-					</span>
-                </button>
 	
 	                <a th:href="@{/members/me/addresses}" class="mo-mobile-menu__link">
 	                    <span>배송지 관리</span>
