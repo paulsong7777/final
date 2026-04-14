@@ -15,7 +15,7 @@
     <link rel="stylesheet" th:href="@{/css/moeats-layout.css}">
     <th:block layout:fragment="pageStyles"></th:block>
     
-   <style>
+  <style>
 	    .mo-floating-order-status {
 	        position: relative;
 	        z-index: 1080;
@@ -50,21 +50,27 @@
 	    @media (max-width: 767.98px) {
 	        .mo-floating-order-status {
 	            position: sticky;
-	            top: 0;
-	            padding: 8px 16px 0;
-	            background: transparent;
+	            top: 68px;
+	            margin-top: -1px;
+	            z-index: 1030;
+	            padding: 0;
+	            background: rgba(255, 255, 255, 0.96);
+	            border-bottom: 1px solid rgba(42, 54, 89, 0.08);
+	            box-shadow: 0 4px 10px rgba(37, 45, 89, 0.03);
 	        }
 	
 	        .mo-order-status-fab {
 	            position: static;
 	            left: auto;
 	            bottom: auto;
-	            width: 100%;
-	            min-height: 46px;
-	            padding: 0 16px;
+	            display: flex;
+	            width: calc(100% - 24px);
+	            margin: 8px 12px 10px;
+	            min-height: 42px;
+	            padding: 0 14px;
 	            font-size: 13px;
-	            border-radius: 14px;
-	            box-shadow: 0 10px 22px rgba(255, 128, 0, 0.22);
+	            border-radius: 12px;
+	            box-shadow: none;
 	        }
 	    }
 	</style>
@@ -75,15 +81,17 @@
 	    <th:block th:replace="~{fragments/header :: siteHeader}"></th:block>
 	
 	    <div class="container mo-floating-order-status"
-	         th:if="${session.member != null
-	                 and session.member.memberRoleType == 'USER'
-	                 and headerHasTrackableOrder
-	                 and (hideFloatingOrderStatusButton == null or !hideFloatingOrderStatusButton)}">
-	        <a th:href="@{/orders/{orderIdx}(orderIdx=${headerTrackableOrderIdx})}"
-	           class="mo-order-status-fab">
-	            주문 현황 보기
-	        </a>
-	    </div>
+		     th:if="${session.member != null
+		             and session.member.memberRoleType == 'USER'
+		             and headerHasTrackableOrder
+		             and (hideFloatingOrderStatusButton == null or !hideFloatingOrderStatusButton)}">
+		    <div class="mo-floating-order-status__inner">
+		        <a th:href="@{/orders/{orderIdx}(orderIdx=${headerTrackableOrderIdx})}"
+		           class="mo-order-status-fab">
+		            주문 현황 보기
+		        </a>
+		    </div>
+		</div>
 	
 	    <main class="mo-page-main flex-grow-1">
 	        <div class="container mo-page-container">
