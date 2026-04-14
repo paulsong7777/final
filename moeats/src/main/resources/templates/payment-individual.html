@@ -292,6 +292,18 @@
                 font-size: 13px;
                 line-height: 1.7;
             }
+            
+            .pay-lock-note {
+			    margin-top: 14px;
+			    padding: 12px 14px;
+			    border-radius: 16px;
+			    border: 1px solid rgba(255, 128, 0, 0.16);
+			    background: rgba(255, 128, 0, 0.08);
+			    color: var(--mo-navy-strong);
+			    font-size: 13px;
+			    line-height: 1.65;
+			    font-weight: 600;
+			}
 
             .pay-inline-link {
                 display: inline-flex;
@@ -504,11 +516,16 @@
                 </div>
 
                 <div class="pay-note-box">
-                    <div class="pay-note-box__title">현재 단계 안내</div>
-                    <div class="pay-note-box__desc">
-                        각자결제는 균등 1/N이 아니라 내 주문 금액 기준입니다. 전원이 성공해야 주문이 최종 확정됩니다.
-                    </div>
-                </div>
+				    <div class="pay-note-box__title">현재 단계 안내</div>
+				    <div class="pay-note-box__desc">
+				        각자결제는 균등 1/N이 아니라 내 주문 금액 기준입니다. 전원이 성공해야 주문이 최종 확정됩니다.
+				    </div>
+				
+				    <div class="pay-lock-note">
+				        내 결제가 끝나기 전에는 뒤로가기와 화면 이동이 제한됩니다.
+				        결제를 완료한 뒤 다음 단계로 넘어가 주세요.
+				    </div>
+				</div>
 
                 <div class="pay-inline-link" style="pointer-events:none; opacity:.72;">
 				    전원 결제 완료 후 주문 상세로 자동 이동
@@ -542,69 +559,98 @@
     <script th:src="@{/js/order/order-channel.js}"></script>
     
     <script>
-        let isSafeExit = false;
-
-        // 1. 뒤로가기 무조건 방지
-        history.pushState(null, null, location.href);
-        window.addEventListener('popstate', function() {
-            if (!isSafeExit) {
-                history.pushState(null, null, location.href);
-                alert("결제를 진행해 주세요. 다른 페이지로 이동할 수 없습니다.");
-            }
-        });
-
-        // 2. 탭 닫기 방지
-        window.addEventListener('beforeunload', function(event) {
-            if (!isSafeExit) {
-                event.preventDefault();
-                event.returnValue = ''; 
-            }
-        });
-
-        // 3. 화면 내 모든 클릭(햄버거 메뉴 등) 완벽 차단
-        document.addEventListener('click', function(e) {
-            if (isSafeExit) return;
-
-            // 오직 '내 금액 결제하기' 폼만 클릭 허용
-            const isCheckoutBtn = e.target.closest('form[action*="/checkout/"]');
-            if (isCheckoutBtn) return;
-
-            const clickable = e.target.closest('a, button, input[type="button"], input[type="submit"], [data-bs-toggle], [data-mo-open-join]');
-            if (clickable) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                alert("결제를 진행해 주세요. 다른 페이지로 이동할 수 없습니다.");
-            }
-        }, true);
-
-        // 4. 오직 결제 폼만 전송 허용
-        document.addEventListener('submit', function(e) {
-            if (isSafeExit) return;
-            const form = e.target;
-            
-            if (form.action && form.action.includes('/checkout/')) {
-                isSafeExit = true;
-                return;
-            }
-
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            alert("결제를 진행해 주세요. 다른 페이지로 이동할 수 없습니다.");
-        }, true);
-
-        // 5. 💣 방 폭파(또는 시간 만료) 감지 자동 튕김 로직
-        setInterval(() => {
-            if (isSafeExit) return; 
-            fetch(window.location.href, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(res => {
-                    if (res.redirected || res.url.includes('/main') || !res.ok) {
-                        alert("주문방이 취소되거나 결제 시간이 만료되어 메인 화면으로 이동합니다.");
-                        isSafeExit = true; 
-                        window.location.href = '/main'; 
-                    }
-                }).catch(() => {});
-        }, 3000);
-    </script>
+	    let isSafeExit = false;
+	    let isRedirecting = false;
+	    let lastGuardToastAt = 0;
+	
+	    const blockedMessage = '결제 진행 중입니다. 내 결제 완료 전에는 다른 화면으로 이동할 수 없습니다.';
+	    const expiredMessage = '주문방이 취소되었거나 결제 시간이 만료되어 메인 화면으로 이동합니다.';
+	    const GUARD_TOAST_INTERVAL = 1200;
+	
+	    const showGuardToast = (message, variant = 'warning') => {
+	        if (window.moShowToast) {
+	            window.moShowToast(message, variant);
+	            return;
+	        }
+	        alert(message);
+	    };
+	
+	    const showBlockedNavigationToast = () => {
+	        const now = Date.now();
+	        if (now - lastGuardToastAt < GUARD_TOAST_INTERVAL) return;
+	        lastGuardToastAt = now;
+	        showGuardToast(blockedMessage, 'warning');
+	    };
+	
+	    const moveToMainWithNotice = () => {
+	        if (isRedirecting) return;
+	        isRedirecting = true;
+	        isSafeExit = true;
+	        showGuardToast(expiredMessage, 'warning');
+	        window.setTimeout(() => {
+	            window.location.href = '/main';
+	        }, 900);
+	    };
+	
+	    history.pushState({ paymentGuard: true }, '', location.href);
+	
+	    window.addEventListener('popstate', function () {
+	        if (isSafeExit) return;
+	        history.pushState({ paymentGuard: true }, '', location.href);
+	        showBlockedNavigationToast();
+	    });
+	
+	    window.addEventListener('beforeunload', function (event) {
+	        if (!isSafeExit) {
+	            event.preventDefault();
+	            event.returnValue = '';
+	        }
+	    });
+	
+	    document.addEventListener('click', function (e) {
+	        if (isSafeExit) return;
+	
+	        const isCheckoutBtn = e.target.closest('form[action*="/checkout/"]');
+	        if (isCheckoutBtn) return;
+	
+	        const clickable = e.target.closest('a, button, input[type="button"], input[type="submit"], [data-bs-toggle], [data-mo-open-join]');
+	        if (!clickable) return;
+	
+	        e.preventDefault();
+	        e.stopImmediatePropagation();
+	        showBlockedNavigationToast();
+	    }, true);
+	
+	    document.addEventListener('submit', function (e) {
+	        if (isSafeExit) return;
+	
+	        const form = e.target;
+	
+	        if (form.action && form.action.includes('/checkout/')) {
+	            isSafeExit = true;
+	            return;
+	        }
+	
+	        e.preventDefault();
+	        e.stopImmediatePropagation();
+	        showBlockedNavigationToast();
+	    }, true);
+	
+	    setInterval(() => {
+	        if (isSafeExit || isRedirecting) return;
+	
+	        fetch(window.location.href, {
+	            method: 'GET',
+	            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+	        })
+	        .then(res => {
+	            if (res.redirected || res.url.includes('/main') || !res.ok) {
+	                moveToMainWithNotice();
+	            }
+	        })
+	        .catch(() => {});
+	    }, 3000);
+	</script>
 </th:block>
 </body>
 </html>
