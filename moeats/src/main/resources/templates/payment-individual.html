@@ -559,98 +559,129 @@
     <script th:src="@{/js/order/order-channel.js}"></script>
     
     <script>
-	    let isSafeExit = false;
-	    let isRedirecting = false;
-	    let lastGuardToastAt = 0;
-	
-	    const blockedMessage = '결제 진행 중입니다. 내 결제 완료 전에는 다른 화면으로 이동할 수 없습니다.';
-	    const expiredMessage = '주문방이 취소되었거나 결제 시간이 만료되어 메인 화면으로 이동합니다.';
-	    const GUARD_TOAST_INTERVAL = 1200;
-	
-	    const showGuardToast = (message, variant = 'warning') => {
-	        if (window.moShowToast) {
-	            window.moShowToast(message, variant);
-	            return;
-	        }
-	        alert(message);
-	    };
-	
-	    const showBlockedNavigationToast = () => {
-	        const now = Date.now();
-	        if (now - lastGuardToastAt < GUARD_TOAST_INTERVAL) return;
-	        lastGuardToastAt = now;
-	        showGuardToast(blockedMessage, 'warning');
-	    };
-	
-	    const moveToMainWithNotice = () => {
-	        if (isRedirecting) return;
-	        isRedirecting = true;
-	        isSafeExit = true;
-	        showGuardToast(expiredMessage, 'warning');
-	        window.setTimeout(() => {
-	            window.location.href = '/main';
-	        }, 900);
-	    };
-	
-	    history.pushState({ paymentGuard: true }, '', location.href);
-	
-	    window.addEventListener('popstate', function () {
-	        if (isSafeExit) return;
-	        history.pushState({ paymentGuard: true }, '', location.href);
-	        showBlockedNavigationToast();
-	    });
-	
-	    window.addEventListener('beforeunload', function (event) {
-	        if (!isSafeExit) {
-	            event.preventDefault();
-	            event.returnValue = '';
-	        }
-	    });
-	
-	    document.addEventListener('click', function (e) {
-	        if (isSafeExit) return;
-	
-	        const isCheckoutBtn = e.target.closest('form[action*="/checkout/"]');
-	        if (isCheckoutBtn) return;
-	
-	        const clickable = e.target.closest('a, button, input[type="button"], input[type="submit"], [data-bs-toggle], [data-mo-open-join]');
-	        if (!clickable) return;
-	
-	        e.preventDefault();
-	        e.stopImmediatePropagation();
-	        showBlockedNavigationToast();
-	    }, true);
-	
-	    document.addEventListener('submit', function (e) {
-	        if (isSafeExit) return;
-	
-	        const form = e.target;
-	
-	        if (form.action && form.action.includes('/checkout/')) {
-	            isSafeExit = true;
-	            return;
-	        }
-	
-	        e.preventDefault();
-	        e.stopImmediatePropagation();
-	        showBlockedNavigationToast();
-	    }, true);
-	
-	    setInterval(() => {
-	        if (isSafeExit || isRedirecting) return;
-	
-	        fetch(window.location.href, {
-	            method: 'GET',
-	            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-	        })
-	        .then(res => {
-	            if (res.redirected || res.url.includes('/main') || !res.ok) {
-	                moveToMainWithNotice();
-	            }
-	        })
-	        .catch(() => {});
-	    }, 3000);
-	</script>
+    let isSafeExit = false;
+    let isExpired = false;
+    let lastGuardToastAt = 0;
+
+    const GUARD_TOAST_INTERVAL = 1200;
+
+    const showGuardToast = (message, variant = 'warning') => {
+        if (window.moShowToast) {
+            window.moShowToast(message, variant);
+            return;
+        }
+        alert(message);
+    };
+
+    const showBlockedNavigationToast = () => {
+        const now = Date.now();
+        if (now - lastGuardToastAt < GUARD_TOAST_INTERVAL) return;
+        lastGuardToastAt = now;
+        showGuardToast('결제 진행 중입니다. 내 결제 완료 전에는 다른 화면으로 이동할 수 없습니다.', 'warning');
+    };
+
+    // 💡 핵심: 시간 만료 처리 함수 (order-channel.js 통제용 전역 등록)
+    window.handlePaymentExpired = () => {
+        if (isExpired) return; // 중복 실행 방지
+        isExpired = true;
+        isSafeExit = true; // 화면 이동 방어벽 해제
+
+        // 1. 단일 알림창 (메시지 통일)
+        showGuardToast('세션이 만료되어 주문이 취소되었습니다.', 'danger'); 
+
+        // 2. 3초 뒤 하단 스티키 버튼 및 텍스트 교체
+        setTimeout(() => {
+            const actionContainer = document.querySelector('.pay-sticky__action');
+            if (actionContainer) {
+                actionContainer.innerHTML = `
+                    <button type="button" class="mo-btn mo-btn-outline" 
+                            style="width: 100%; background: #fff; border: 1px solid var(--mo-accent); color: var(--mo-accent);" 
+                            onclick="window.location.href='/main'">
+                        세션만료(홈으로 이동)
+                    </button>
+                `;
+            }
+            
+            // 안내 문구 변경
+            const descContainer = document.querySelector('.pay-sticky__desc');
+            if (descContainer) {
+                descContainer.innerText = '세션이 만료되어 주문이 취소되었습니다.';
+                descContainer.style.color = 'var(--mo-accent)';
+            }
+        }, 3000);
+    };
+
+    history.pushState({ paymentGuard: true }, '', location.href);
+
+    window.addEventListener('popstate', function () {
+        if (isSafeExit) return;
+        history.pushState({ paymentGuard: true }, '', location.href);
+        showBlockedNavigationToast();
+    });
+
+    window.addEventListener('beforeunload', function (event) {
+        if (!isSafeExit && !isExpired) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    document.addEventListener('click', function (e) {
+        if (isSafeExit || isExpired) return; // 만료 상태면 클릭 차단 해제
+
+        const isCheckoutBtn = e.target.closest('form[action*="/checkout/"]');
+        if (isCheckoutBtn) return;
+
+        const clickable = e.target.closest('a, button, input[type="button"], input[type="submit"], [data-bs-toggle], [data-mo-open-join]');
+        if (!clickable) return;
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        showBlockedNavigationToast();
+    }, true);
+
+    document.addEventListener('submit', function (e) {
+        if (isSafeExit || isExpired) return;
+
+        const form = e.target;
+        if (form.action && form.action.includes('/checkout/')) {
+            isSafeExit = true;
+            return;
+        }
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        showBlockedNavigationToast();
+    }, true);
+
+    // 1. 백엔드 세션 만료 폴링 감지
+    setInterval(() => {
+        if (isSafeExit || isExpired) return;
+
+        fetch(window.location.href, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+            if (res.redirected || res.url.includes('/main') || !res.ok) {
+                handlePaymentExpired();
+            }
+        })
+        .catch(() => {});
+    }, 3000);
+
+    // 2. 프론트엔드 자체 남은 시간 감지
+    const expiresAtEl = document.getElementById('paymentExpiresAtMs');
+    if (expiresAtEl && expiresAtEl.value) {
+        const expiresAt = parseInt(expiresAtEl.value, 10);
+        const checkTimer = setInterval(() => {
+            if (Date.now() >= expiresAt) {
+                clearInterval(checkTimer);
+                handlePaymentExpired();
+            }
+        }, 1000);
+    }
+</script>
 </th:block>
 </body>
 </html>
