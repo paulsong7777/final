@@ -52,11 +52,19 @@ public class HeaderModelAdvice {
 
         List<DeliveryAddress> addressList = deliveryAddressService.getAddress(member.getMemberIdx());
         Integer currentDeliveryAddressIdx = deliveryAddressService.getDefaultAddressIdx(member.getMemberIdx());
+
+        String deliveryLabel = addressList.stream()
+                .filter(address -> Objects.equals(address.getDeliveryAddressIdx(), currentDeliveryAddressIdx))
+                .map(DeliveryAddress::getDeliveryLabel)
+                .findFirst()
+                .orElse("배송지 선택");
+
         OrderRoom activeRoom = orderRoomService.findActiveRoomByMember(member.getMemberIdx());
         GroupOrder trackableOrder = groupOrderService.findLatestTrackableByMember(member.getMemberIdx());
 
         model.addAttribute("headerDeliveryAddressList", addressList);
         model.addAttribute("headerCurrentDeliveryAddressIdx", currentDeliveryAddressIdx);
+        model.addAttribute("headerDeliveryLabel", deliveryLabel);
         model.addAttribute("headerHasActiveRoom", activeRoom != null);
         model.addAttribute("headerActiveRoomCode", activeRoom != null ? activeRoom.getRoomCode() : null);
         model.addAttribute("headerHasTrackableOrder", trackableOrder != null);
