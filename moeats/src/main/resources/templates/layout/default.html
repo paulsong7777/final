@@ -16,167 +16,437 @@
     <th:block layout:fragment="pageStyles"></th:block>
     
   <style>
-	    .mo-floating-order-status {
-	        position: relative;
-	        z-index: 1030;
-	    }
-	
-	    .mo-floating-order-status__inner {
-	        display: block;
-	    }
-	
-	    .mo-order-status-fab {
-	        position: fixed;
-	        left: 20px;
-	        top: 94px;
-	        z-index: 1030;
-	        display: flex;
-	        align-items: center;
-	        gap: 12px;
-	        min-width: 240px;
-	        min-height: 60px;
-	        padding: 12px 16px 12px 14px;
-	        border-radius: 18px;
-	        background: rgba(255, 255, 255, 0.96);
-	        border: 1px solid rgba(42, 54, 89, 0.08);
-	        color: var(--mo-navy-strong, #252D59);
-	        text-decoration: none;
-	        box-shadow:
-	            0 18px 36px rgba(37, 45, 89, 0.10),
-	            0 6px 14px rgba(255, 128, 0, 0.08);
-	        backdrop-filter: blur(12px);
-	        transition:
-	            transform 0.15s ease,
-	            box-shadow 0.15s ease,
-	            border-color 0.15s ease;
-	    }
-	
-	    .mo-order-status-fab:hover {
-	        color: var(--mo-navy-strong, #252D59);
-	        transform: translateY(-2px);
-	        border-color: rgba(255, 128, 0, 0.22);
-	        box-shadow:
-	            0 22px 44px rgba(37, 45, 89, 0.14),
-	            0 8px 18px rgba(255, 128, 0, 0.12);
-	    }
-	
-	    .mo-order-status-fab__icon {
-	        width: 36px;
-	        height: 36px;
-	        border-radius: 12px;
-	        display: inline-flex;
-	        align-items: center;
-	        justify-content: center;
-	        flex-shrink: 0;
-	        background: linear-gradient(135deg, var(--mo-primary, #FF8000), #F85E28);
-	        color: #fff;
-	        font-size: 15px;
-	        font-weight: 900;
-	        box-shadow: 0 8px 16px rgba(255, 128, 0, 0.22);
-	    }
-	
-	    .mo-order-status-fab__content {
-	        display: flex;
-	        flex-direction: column;
-	        min-width: 0;
-	        gap: 2px;
-	    }
-	
-	    .mo-order-status-fab__eyebrow {
-	        color: var(--mo-text-soft, #6B7280);
-	        font-size: 11px;
-	        font-weight: 800;
-	        letter-spacing: 0.04em;
-	        text-transform: uppercase;
-	        line-height: 1;
-	    }
-	
-	    .mo-order-status-fab__label {
-	        color: var(--mo-navy-strong, #252D59);
-	        font-size: 15px;
-	        font-weight: 800;
-	        line-height: 1.2;
-	    }
-	
-	    .mo-order-status-fab__arrow {
-	        margin-left: auto;
-	        color: var(--mo-primary, #FF8000);
-	        font-size: 18px;
-	        line-height: 1;
-	        font-weight: 800;
-	        flex-shrink: 0;
-	    }
-	
-	    @media (max-width: 767.98px) {
-	        .mo-floating-order-status {
-	            position: sticky;
-	            top: 68px;
-	            margin-top: -1px;
-	            z-index: 1030;
-	            padding: 0;
-	            background: rgba(255, 255, 255, 0.96);
-	            border-bottom: 1px solid rgba(42, 54, 89, 0.08);
-	            box-shadow: 0 4px 10px rgba(37, 45, 89, 0.03);
-	        }
-	
-	        .mo-floating-order-status__inner {
-	            padding: 0 16px;
-	        }
-	
-	        .mo-order-status-fab {
-	            position: static;
-	            left: auto;
-	            top: auto;
-	            bottom: auto;
-	            width: 100%;
-	            min-width: 0;
-	            min-height: 46px;
-	            margin: 0;
-	            padding: 0;
-	            border-radius: 0;
-	            background: transparent;
-	            border: 0;
-	            box-shadow: none;
-	            backdrop-filter: none;
-	            justify-content: space-between;
-	            gap: 10px;
-	        }
-	
-	        .mo-order-status-fab:hover {
-	            transform: none;
-	            box-shadow: none;
-	            border-color: transparent;
-	        }
-	
-	        .mo-order-status-fab__icon {
-	            width: 28px;
-	            height: 28px;
-	            border-radius: 10px;
-	            font-size: 13px;
-	            box-shadow: none;
-	        }
-	
-	        .mo-order-status-fab__eyebrow {
-	            display: none;
-	        }
-	
-	        .mo-order-status-fab__label {
-	            font-size: 13px;
-	            color: var(--mo-text-soft, #6B7280);
-	        }
-	
-	        .mo-order-status-fab__arrow {
-	            font-size: 15px;
-	        }
-	    }
-	</style>
+    .mo-floating-order-status {
+        position: relative;
+        z-index: 1030;
+    }
+
+    .mo-floating-order-status__inner {
+        display: block;
+    }
+
+    .mo-order-status-fab {
+        position: fixed;
+        left: 20px;
+        top: 94px;
+        z-index: 1030;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 276px;
+        min-height: 64px;
+        padding: 12px 16px 12px 14px;
+        border-radius: 20px;
+        border: 1px solid rgba(42, 54, 89, 0.08);
+        background: rgba(255, 255, 255, 0.96);
+        color: var(--mo-navy-strong, #252D59);
+        text-decoration: none;
+        box-shadow:
+            0 18px 36px rgba(37, 45, 89, 0.10),
+            0 6px 14px rgba(255, 128, 0, 0.08);
+        backdrop-filter: blur(12px);
+        transition:
+            transform 0.15s ease,
+            box-shadow 0.15s ease,
+            border-color 0.15s ease;
+        appearance: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+        outline: none;
+        font-family: inherit;
+    }
+
+    .mo-order-status-fab:hover {
+        color: var(--mo-navy-strong, #252D59);
+        transform: translateY(-2px);
+        border-color: rgba(255, 128, 0, 0.22);
+        box-shadow:
+            0 22px 44px rgba(37, 45, 89, 0.14),
+            0 8px 18px rgba(255, 128, 0, 0.12);
+    }
+
+    .mo-order-status-fab:focus-visible {
+        box-shadow:
+            0 0 0 4px rgba(255, 128, 0, 0.16),
+            0 18px 36px rgba(37, 45, 89, 0.10);
+    }
+
+    .mo-order-status-fab__icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, var(--mo-primary, #FF8000), #F85E28);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 900;
+        box-shadow: 0 8px 16px rgba(255, 128, 0, 0.22);
+    }
+
+    .mo-order-status-fab__content {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        gap: 3px;
+        text-align: left;
+    }
+
+    .mo-order-status-fab__eyebrow {
+        color: var(--mo-text-soft, #6B7280);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        line-height: 1;
+    }
+
+    .mo-order-status-fab__label {
+        color: var(--mo-navy-strong, #252D59);
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .mo-order-status-fab__arrow {
+        margin-left: auto;
+        color: var(--mo-primary, #FF8000);
+        font-size: 18px;
+        line-height: 1;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .mo-order-summary-dialog {
+        max-width: 760px;
+    }
+
+    .mo-order-summary-modal {
+        border: 0;
+        border-radius: 30px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 28px 64px rgba(37, 45, 89, 0.18);
+    }
+
+    .mo-order-summary-modal__header {
+        padding: 26px 26px 10px;
+        border-bottom: 0;
+    }
+
+    .mo-order-summary-modal__eyebrow {
+        color: var(--mo-text-soft, #6B7280);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .mo-order-summary-modal__title-row {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .mo-order-summary-modal__title {
+        margin: 0;
+        color: var(--mo-navy-strong, #252D59);
+        font-size: 2rem;
+        line-height: 1.08;
+        letter-spacing: -0.04em;
+        font-weight: 800;
+    }
+
+    .mo-order-summary-modal__status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(255, 128, 0, 0.12);
+        color: var(--mo-primary, #FF8000);
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .mo-order-summary-modal__status.is-cancelled {
+        background: rgba(248, 94, 40, 0.12);
+        color: var(--mo-accent, #F85E28);
+    }
+
+    .mo-order-summary-modal__body {
+        padding: 6px 26px 28px;
+    }
+
+    .mo-order-summary-loading,
+    .mo-order-summary-error {
+        min-height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mo-order-summary-shell {
+        display: grid;
+        gap: 18px;
+    }
+
+    .mo-order-summary-top {
+        padding: 18px 20px;
+        border-radius: 22px;
+        border: 1px solid rgba(42, 54, 89, 0.08);
+        background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(242,242,242,0.72));
+    }
+
+    .mo-order-summary-top__row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .mo-order-summary-top__label {
+        color: var(--mo-text-soft, #6B7280);
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .mo-order-summary-top__value {
+        color: var(--mo-navy-strong, #252D59);
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .mo-order-summary-stepper {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .mo-order-summary-step {
+        padding: 14px 10px;
+        border-radius: 20px;
+        border: 1px solid rgba(42, 54, 89, 0.08);
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-align: center;
+        min-width: 0;
+        transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+    }
+
+    .mo-order-summary-step.is-done {
+        background: rgba(25, 135, 84, 0.05);
+        border-color: rgba(25, 135, 84, 0.18);
+    }
+
+    .mo-order-summary-step.is-current {
+        background: rgba(255, 128, 0, 0.08);
+        border-color: rgba(255, 128, 0, 0.24);
+        box-shadow: 0 10px 20px rgba(255, 128, 0, 0.10);
+    }
+
+    .mo-order-summary-step__num {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(42, 54, 89, 0.08);
+        color: var(--mo-navy-strong, #252D59);
+        font-size: 12px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .mo-order-summary-step.is-done .mo-order-summary-step__num {
+        background: #198754;
+        color: #fff;
+    }
+
+    .mo-order-summary-step.is-current .mo-order-summary-step__num {
+        background: var(--mo-primary, #FF8000);
+        color: #fff;
+    }
+
+    .mo-order-summary-step__title {
+        color: var(--mo-navy-strong, #252D59);
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.25;
+        word-break: keep-all;
+    }
+
+    .mo-order-summary-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 16px;
+    }
+
+    .mo-order-summary-card {
+        padding: 18px 20px;
+        border-radius: 22px;
+        border: 1px solid rgba(42, 54, 89, 0.08);
+        background: #fff;
+        box-shadow: 0 10px 24px rgba(37, 45, 89, 0.04);
+    }
+
+    .mo-order-summary-card__label {
+        color: var(--mo-text-soft, #6B7280);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+    }
+
+    .mo-order-summary-card__value {
+        margin-top: 10px;
+        color: var(--mo-navy-strong, #252D59);
+        font-size: 1.1rem;
+        font-weight: 800;
+        line-height: 1.45;
+        word-break: keep-all;
+    }
+
+    .mo-order-summary-card__sub {
+        margin-top: 6px;
+        color: var(--mo-text-soft, #6B7280);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .mo-order-summary-card__value--amount {
+        color: var(--mo-primary, #FF8000);
+        font-size: 1.55rem;
+        letter-spacing: -0.03em;
+    }
+
+    @media (max-width: 767.98px) {
+        .mo-floating-order-status {
+            position: sticky;
+            top: 68px;
+            margin-top: -1px;
+            z-index: 1030;
+            padding: 0;
+            background: rgba(255, 255, 255, 0.96);
+            border-bottom: 1px solid rgba(42, 54, 89, 0.08);
+            box-shadow: 0 4px 10px rgba(37, 45, 89, 0.03);
+        }
+
+        .mo-floating-order-status__inner {
+            padding: 0 16px;
+        }
+
+        .mo-order-status-fab {
+            position: static;
+            left: auto;
+            top: auto;
+            bottom: auto;
+            width: 100%;
+            min-width: 0;
+            min-height: 52px;
+            margin: 0;
+            padding: 0;
+            border-radius: 0;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            backdrop-filter: none;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .mo-order-status-fab:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: transparent;
+        }
+
+        .mo-order-status-fab__icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            font-size: 13px;
+            box-shadow: none;
+        }
+
+        .mo-order-status-fab__eyebrow {
+            display: none;
+        }
+
+        .mo-order-status-fab__label {
+            font-size: 13px;
+            color: var(--mo-text-soft, #6B7280);
+        }
+
+        .mo-order-status-fab__arrow {
+            font-size: 15px;
+        }
+
+        .mo-order-summary-dialog {
+            max-width: none;
+            margin: 12px;
+        }
+
+        .mo-order-summary-modal {
+            border-radius: 24px;
+        }
+
+        .mo-order-summary-modal__header {
+            padding: 20px 20px 8px;
+        }
+
+        .mo-order-summary-modal__title {
+            font-size: 1.6rem;
+        }
+
+        .mo-order-summary-modal__body {
+            padding: 4px 20px 22px;
+        }
+
+        .mo-order-summary-stepper,
+        .mo-order-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .mo-order-summary-stepper {
+            gap: 8px;
+        }
+
+        .mo-order-summary-step {
+            flex-direction: row;
+            justify-content: flex-start;
+            text-align: left;
+            padding: 12px 14px;
+        }
+
+        .mo-order-summary-step__title {
+            font-size: 13px;
+        }
+
+        .mo-order-summary-top__row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
     
 </head>
 <body class="mo-body">
 	<div class="mo-app-shell d-flex flex-column min-vh-100">
 	    <th:block th:replace="~{fragments/header :: siteHeader}"></th:block>
 	
-	    <div class="container mo-floating-order-status"
+	  <div class="container mo-floating-order-status"
 		     th:if="${session.member != null
 		             and session.member.memberRoleType == 'USER'
 		             and headerHasTrackableOrder
@@ -186,7 +456,12 @@
 		                class="mo-order-status-fab"
 		                th:attr="data-order-idx=${headerTrackableOrderIdx}"
 		                data-mo-open-order-summary>
-		            주문 현황 보기
+		            <span class="mo-order-status-fab__icon">↗</span>
+		            <span class="mo-order-status-fab__content">
+		                <span class="mo-order-status-fab__eyebrow">LIVE ORDER</span>
+		                <span class="mo-order-status-fab__label">주문 현황 보기</span>
+		            </span>
+		            <span class="mo-order-status-fab__arrow">›</span>
 		        </button>
 		    </div>
 		</div>
@@ -202,57 +477,83 @@
 	</div>
 	
 	<div class="modal fade" id="moOrderSummaryModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
-            <div class="modal-header border-bottom-0 pb-0">
-                <div>
-                    <div style="font-size: 12px; font-weight: 800; color: var(--mo-text-soft); letter-spacing: 0.04em;">
-                        ORDER SUMMARY
+    <div class="modal-dialog modal-dialog-centered mo-order-summary-dialog">
+        <div class="modal-content mo-order-summary-modal">
+            <div class="modal-header mo-order-summary-modal__header">
+                <div class="w-100">
+                    <div class="mo-order-summary-modal__eyebrow">ORDER SUMMARY</div>
+
+                    <div class="mo-order-summary-modal__title-row">
+                        <h5 class="mo-order-summary-modal__title">주문 현황</h5>
+                        <span id="moOrderSummaryStatusBadge" class="mo-order-summary-modal__status">결제 완료</span>
                     </div>
-                    <h5 class="fw-bold m-0 mt-1" style="color: var(--mo-navy-strong);">주문 현황</h5>
                 </div>
+
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
             </div>
 
-            <div class="modal-body pt-3">
-                <div id="moOrderSummaryLoading" class="text-center py-4">
+            <div class="modal-body mo-order-summary-modal__body">
+                <div id="moOrderSummaryLoading" class="mo-order-summary-loading">
                     <div class="spinner-border" role="status" style="color: var(--mo-primary);"></div>
                 </div>
 
                 <div id="moOrderSummaryContent" class="d-none">
-                    <div class="d-grid gap-3">
-                        <div class="p-3 rounded-4 border bg-white">
-                            <div class="text-secondary small fw-bold mb-1">현재 진행 단계</div>
-                            <div id="moOrderSummaryStep" class="fw-bold" style="font-size: 18px; color: var(--mo-navy-strong);">
-                                결제 완료
+                    <div class="mo-order-summary-shell">
+                        <div class="mo-order-summary-top">
+                            <div class="mo-order-summary-top__row">
+                                <div class="mo-order-summary-top__label">주문번호</div>
+                                <div id="moOrderSummaryNumber" class="mo-order-summary-top__value">0</div>
                             </div>
                         </div>
 
-                        <div class="p-3 rounded-4 border bg-white">
-                            <div class="text-secondary small fw-bold mb-1">주문번호</div>
-                            <div id="moOrderSummaryNumber" class="fw-bold" style="font-size: 18px; color: var(--mo-navy-strong);">
-                                000000
+                        <div class="mo-order-summary-stepper">
+                            <div class="mo-order-summary-step" data-mo-order-step="1">
+                                <div class="mo-order-summary-step__num">1</div>
+                                <div class="mo-order-summary-step__title">결제 완료</div>
+                            </div>
+                            <div class="mo-order-summary-step" data-mo-order-step="2">
+                                <div class="mo-order-summary-step__num">2</div>
+                                <div class="mo-order-summary-step__title">주문 확인</div>
+                            </div>
+                            <div class="mo-order-summary-step" data-mo-order-step="3">
+                                <div class="mo-order-summary-step__num">3</div>
+                                <div class="mo-order-summary-step__title">준비 중</div>
+                            </div>
+                            <div class="mo-order-summary-step" data-mo-order-step="4">
+                                <div class="mo-order-summary-step__num">4</div>
+                                <div class="mo-order-summary-step__title">배달 시작</div>
+                            </div>
+                            <div class="mo-order-summary-step" data-mo-order-step="5">
+                                <div class="mo-order-summary-step__num">5</div>
+                                <div class="mo-order-summary-step__title">배달 완료</div>
                             </div>
                         </div>
 
-                        <div class="p-3 rounded-4 border bg-white">
-                            <div class="text-secondary small fw-bold mb-1">주문금액</div>
-                            <div id="moOrderSummaryAmount" class="fw-bold" style="font-size: 18px; color: var(--mo-primary);">
-                                0원
+                        <div class="mo-order-summary-grid">
+                            <div class="mo-order-summary-card">
+                                <div id="moOrderSummaryDeliveryLabel" class="mo-order-summary-card__label">배송지</div>
+                                <div id="moOrderSummaryAddress" class="mo-order-summary-card__value">
+                                    주소 정보 없음
+                                </div>
+                                <div class="mo-order-summary-card__sub">선택한 배송지 기준으로 표시됩니다.</div>
                             </div>
-                        </div>
 
-                        <div class="p-3 rounded-4 border bg-white">
-                            <div class="text-secondary small fw-bold mb-1">배송지 주소</div>
-                            <div id="moOrderSummaryAddress" class="fw-bold" style="font-size: 15px; color: var(--mo-navy-strong); line-height: 1.5;">
-                                주소 정보 없음
+                            <div class="mo-order-summary-card">
+                                <div class="mo-order-summary-card__label">주문금액</div>
+                                <div id="moOrderSummaryAmount" class="mo-order-summary-card__value mo-order-summary-card__value--amount">
+                                    0원
+                                </div>
+                                <div class="mo-order-summary-card__sub">최종 확정된 주문 기준 금액입니다.</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="moOrderSummaryError" class="d-none text-center py-4 text-danger">
-                    주문 정보를 불러오지 못했습니다.
+                <div id="moOrderSummaryError" class="mo-order-summary-error d-none">
+                    <div class="text-center">
+                        <div class="fw-bold mb-2" style="color: var(--mo-navy-strong);">주문 정보를 불러오지 못했습니다.</div>
+                        <div class="text-secondary small">잠시 후 다시 시도해 주세요.</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -273,55 +574,137 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const trigger = document.querySelector('[data-mo-open-order-summary]');
+    const floatingWrap = document.querySelector('.mo-floating-order-status');
     const modalElement = document.getElementById('moOrderSummaryModal');
 
     if (!trigger || !modalElement) {
         return;
     }
 
+    const orderIdx = trigger.getAttribute('data-order-idx');
+    if (!orderIdx) {
+        return;
+    }
+
     const modal = new bootstrap.Modal(modalElement);
+
     const loadingEl = document.getElementById('moOrderSummaryLoading');
     const contentEl = document.getElementById('moOrderSummaryContent');
     const errorEl = document.getElementById('moOrderSummaryError');
 
-    const stepEl = document.getElementById('moOrderSummaryStep');
+    const statusBadgeEl = document.getElementById('moOrderSummaryStatusBadge');
     const numberEl = document.getElementById('moOrderSummaryNumber');
     const amountEl = document.getElementById('moOrderSummaryAmount');
+    const deliveryLabelEl = document.getElementById('moOrderSummaryDeliveryLabel');
     const addressEl = document.getElementById('moOrderSummaryAddress');
+    const stepEls = Array.from(document.querySelectorAll('[data-mo-order-step]'));
 
-    function resetModalState() {
+    let eventSource = null;
+
+    function showLoading() {
         loadingEl.classList.remove('d-none');
         contentEl.classList.add('d-none');
         errorEl.classList.add('d-none');
     }
 
-    trigger.addEventListener('click', async function () {
-        const orderIdx = this.getAttribute('data-order-idx');
-        if (!orderIdx) {
+    function showContent() {
+        loadingEl.classList.add('d-none');
+        contentEl.classList.remove('d-none');
+        errorEl.classList.add('d-none');
+    }
+
+    function showError() {
+        loadingEl.classList.add('d-none');
+        contentEl.classList.add('d-none');
+        errorEl.classList.remove('d-none');
+    }
+
+    function applyStepState(currentStep) {
+        stepEls.forEach(function (stepEl) {
+            const stepNo = Number(stepEl.getAttribute('data-mo-order-step'));
+
+            stepEl.classList.remove('is-current', 'is-done');
+
+            if (currentStep > stepNo) {
+                stepEl.classList.add('is-done');
+                return;
+            }
+
+            if (currentStep === stepNo) {
+                stepEl.classList.add('is-current');
+            }
+        });
+    }
+
+    function applySummary(summary) {
+        const currentStep = Number(summary.currentStep || 0);
+        const orderStatus = summary.orderStatus || '';
+
+        statusBadgeEl.textContent = summary.currentStepLabel || '-';
+        statusBadgeEl.classList.toggle('is-cancelled', orderStatus === 'CANCELLED');
+
+        numberEl.textContent = summary.orderNumber || '-';
+        amountEl.textContent = `${Number(summary.orderAmount || 0).toLocaleString()}원`;
+        deliveryLabelEl.textContent = summary.deliveryLabel || '배송지';
+        addressEl.textContent = summary.deliveryAddress || '주소 정보 없음';
+
+        applyStepState(currentStep);
+
+        if (floatingWrap && (orderStatus === 'COMPLETED' || orderStatus === 'CANCELLED')) {
+            floatingWrap.style.display = 'none';
+        }
+    }
+
+    async function fetchSummary() {
+        const response = await fetch(`/orders/${orderIdx}/summary`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        if (!response.ok) {
+            throw new Error('summary fetch failed');
+        }
+
+        return response.json();
+    }
+
+    async function refreshSummary() {
+        try {
+            const summary = await fetchSummary();
+            applySummary(summary);
+            showContent();
+        } catch (error) {
+            showError();
+        }
+    }
+
+    function connectSummaryChannel() {
+        if (eventSource) {
             return;
         }
 
-        resetModalState();
+        eventSource = new EventSource(`/orders/${orderIdx}/subscribe`);
+
+        ['paid', 'change', 'complete', 'cancel', 'expire'].forEach(function (eventName) {
+            eventSource.addEventListener(eventName, function () {
+                refreshSummary();
+            });
+        });
+
+        eventSource.onerror = function () {
+            console.warn('[order-summary-modal] sse error');
+        };
+    }
+
+    trigger.addEventListener('click', function () {
+        showLoading();
         modal.show();
+        refreshSummary();
+        connectSummaryChannel();
+    });
 
-        try {
-            const response = await fetch(`/orders/${orderIdx}/summary`);
-            if (!response.ok) {
-                throw new Error('summary fetch failed');
-            }
-
-            const data = await response.json();
-
-            stepEl.textContent = data.currentStep ?? '-';
-            numberEl.textContent = data.orderNumber ?? '-';
-            amountEl.textContent = `${Number(data.orderAmount || 0).toLocaleString()}원`;
-            addressEl.textContent = data.deliveryAddress ?? '주소 정보 없음';
-
-            loadingEl.classList.add('d-none');
-            contentEl.classList.remove('d-none');
-        } catch (e) {
-            loadingEl.classList.add('d-none');
-            errorEl.classList.remove('d-none');
+    window.addEventListener('beforeunload', function () {
+        if (eventSource) {
+            eventSource.close();
         }
     });
 });
