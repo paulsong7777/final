@@ -546,14 +546,14 @@
 
         // 1. 뒤로가기 무조건 방지
         history.pushState(null, null, location.href);
-        window.addEventListener('popstate', function(event) {
+        window.addEventListener('popstate', function() {
             if (!isSafeExit) {
                 history.pushState(null, null, location.href);
                 alert("결제를 진행해 주세요. 다른 페이지로 이동할 수 없습니다.");
             }
         });
 
-        // 2. 새로고침, 탭 닫기 방지 (브라우저 기본 강제 알림창 뜸)
+        // 2. 탭 닫기 방지
         window.addEventListener('beforeunload', function(event) {
             if (!isSafeExit) {
                 event.preventDefault();
@@ -561,46 +561,49 @@
             }
         });
 
-        // 3. 화면 내 모든 클릭(링크, 이동 버튼 등) 무조건 차단
+        // 3. 화면 내 모든 클릭(햄버거 메뉴 등) 완벽 차단
         document.addEventListener('click', function(e) {
             if (isSafeExit) return;
 
-            // ① 링크(a 태그) 클릭 원천 차단 (로고, 마이페이지 등)
-            const link = e.target.closest('a');
-            if (link && link.href && !link.href.includes('javascript:') && !link.href.includes('#')) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                alert("결제를 진행해 주세요. 다른 페이지로 이동할 수 없습니다.");
-                return;
-            }
+            // 오직 '내 금액 결제하기' 폼만 클릭 허용
+            const isCheckoutBtn = e.target.closest('form[action*="/checkout/"]');
+            if (isCheckoutBtn) return;
 
-            // ② '방 참여' 등 자바스크립트로 이동시키는 버튼 원천 차단
-            const joinBtn = e.target.closest('[data-mo-open-join]');
-            if (joinBtn) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                alert("결제를 진행해 주세요. 다른 페이지로 이동할 수 없습니다.");
-                return;
-            }
-        }, true); // true: 최우선으로 이벤트를 가로챔
-
-        // 4. 폼(Form) 전송 차단 (오직 결제 버튼만 허용)
-        document.addEventListener('submit', function(e) {
-            const form = e.target;
-            
-            // ① 실제 '결제하기' 폼인 경우에만 통과 (isSafeExit를 true로 변경)
-            if (form.action && form.action.includes('/checkout/')) {
-                isSafeExit = true;
-                return;
-            }
-
-            // ② 로그아웃 등 다른 폼 전송은 무조건 차단
-            if (!isSafeExit) {
+            const clickable = e.target.closest('a, button, input[type="button"], input[type="submit"], [data-bs-toggle], [data-mo-open-join]');
+            if (clickable) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 alert("결제를 진행해 주세요. 다른 페이지로 이동할 수 없습니다.");
             }
         }, true);
+
+        // 4. 오직 결제 폼만 전송 허용
+        document.addEventListener('submit', function(e) {
+            if (isSafeExit) return;
+            const form = e.target;
+            
+            if (form.action && form.action.includes('/checkout/')) {
+                isSafeExit = true;
+                return;
+            }
+
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            alert("결제를 진행해 주세요. 다른 페이지로 이동할 수 없습니다.");
+        }, true);
+
+        // 5. 💣 방 폭파(또는 시간 만료) 감지 자동 튕김 로직
+        setInterval(() => {
+            if (isSafeExit) return; 
+            fetch(window.location.href, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(res => {
+                    if (res.redirected || res.url.includes('/main') || !res.ok) {
+                        alert("주문방이 취소되거나 결제 시간이 만료되어 메인 화면으로 이동합니다.");
+                        isSafeExit = true; 
+                        window.location.href = '/main'; 
+                    }
+                }).catch(() => {});
+        }, 3000);
     </script>
 </th:block>
 </body>
