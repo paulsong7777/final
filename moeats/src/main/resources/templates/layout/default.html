@@ -136,12 +136,60 @@
         border-bottom: 0;
     }
 
-    .mo-order-summary-modal__eyebrow {
-        color: var(--mo-text-soft, #6B7280);
+    .mo-order-summary-modal__meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+
+    .mo-order-summary-modal__chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+        padding: 0 12px;
+        border-radius: 999px;
         font-size: 12px;
         font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+    }
+
+    .mo-order-summary-modal__chip--live {
+        background: rgba(255, 128, 0, 0.12);
+        color: var(--mo-primary, #FF8000);
+    }
+
+    .mo-order-summary-modal__chip--store {
+        background: rgba(42, 54, 89, 0.06);
+        color: var(--mo-navy-strong, #252D59);
+        max-width: 100%;
+    }
+
+    .mo-order-summary-modal__chip-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 220px;
+        display: inline-block;
+    }
+
+    @media (max-width: 767.98px) {
+        .mo-order-summary-modal__meta {
+            margin-bottom: 8px;
+            gap: 6px;
+        }
+
+        .mo-order-summary-modal__chip {
+            min-height: 28px;
+            padding: 0 10px;
+            font-size: 11px;
+        }
+
+        .mo-order-summary-modal__chip-text {
+            max-width: 160px;
+        }
     }
 
     .mo-order-summary-modal__title-row {
@@ -511,12 +559,17 @@
         <div class="modal-content mo-order-summary-modal">
             <div class="modal-header mo-order-summary-modal__header">
                 <div class="w-100">
-                    <div class="mo-order-summary-modal__eyebrow">ORDER SUMMARY</div>
-
-                    <div class="mo-order-summary-modal__title-row">
-                        <h5 class="mo-order-summary-modal__title">주문 현황</h5>
-                        <span id="moOrderSummaryStatusBadge" class="mo-order-summary-modal__status">결제 완료</span>
-                    </div>
+                    <div class="mo-order-summary-modal__meta">
+					    <span class="mo-order-summary-modal__chip mo-order-summary-modal__chip--live">실시간 주문 추적</span>
+					    <span class="mo-order-summary-modal__chip mo-order-summary-modal__chip--store">
+					        <span id="moOrderSummaryHeaderStore" class="mo-order-summary-modal__chip-text">가게 정보 없음</span>
+					    </span>
+					</div>
+					
+					<div class="mo-order-summary-modal__title-row">
+					    <h5 class="mo-order-summary-modal__title">주문 진행 현황</h5>
+					    <span id="moOrderSummaryStatusBadge" class="mo-order-summary-modal__status">결제 완료</span>
+					</div>
                 </div>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
@@ -611,6 +664,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const floatingWrap = document.querySelector('.mo-floating-order-status');
     const modalElement = document.getElementById('moOrderSummaryModal');
     const storeNameEl = document.getElementById('moOrderSummaryStoreName');
+    const headerStoreEl = document.getElementById('moOrderSummaryHeaderStore');
     
     if (!trigger || !modalElement) {
         return;
@@ -674,7 +728,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function applySummary(summary) {
         const currentStep = Number(summary.currentStep || 0);
         const orderStatus = summary.orderStatus || '';
-
+        const storeName = summary.storeName || '가게 정보 없음';
+        if (headerStoreEl) {
+            headerStoreEl.textContent = storeName;
+        }
+        
         statusBadgeEl.textContent = summary.currentStepLabel || '-';
         statusBadgeEl.classList.toggle('is-cancelled', orderStatus === 'CANCELLED');
 
