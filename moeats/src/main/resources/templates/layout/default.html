@@ -16,115 +16,160 @@
     <th:block layout:fragment="pageStyles"></th:block>
     
   <style>
-    .mo-floating-order-status {
-        position: relative;
-        z-index: 1080;
-    }
-
-    .mo-floating-order-status__inner {
-        display: block;
-    }
-
-    .mo-order-status-fab {
-        position: fixed;
-        left: 20px;
-        bottom: 20px;
-        z-index: 1080;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 52px;
-        padding: 0 18px;
-        border-radius: 999px;
-        background: var(--mo-primary, #FF8000);
-        color: #fff;
-        font-size: 14px;
-        font-weight: 800;
-        text-decoration: none;
-        box-shadow: 0 14px 28px rgba(255, 128, 0, 0.28);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .mo-order-status-fab:hover {
-        color: #fff;
-        transform: translateY(-1px);
-        box-shadow: 0 16px 32px rgba(255, 128, 0, 0.32);
-    }
-
-    .mo-order-status-fab__hint,
-    .mo-order-status-fab__cta,
-    .mo-order-status-fab__arrow {
-        display: none;
-    }
-
-    .mo-order-status-fab__label {
-        display: inline-block;
-    }
-
-    @media (max-width: 767.98px) {
-        .mo-floating-order-status {
-            position: sticky;
-            top: 68px;
-            margin-top: -1px;
-            z-index: 1030;
-            padding: 0;
-            background: rgba(255, 255, 255, 0.96);
-            border-bottom: 1px solid rgba(42, 54, 89, 0.08);
-            box-shadow: 0 4px 10px rgba(37, 45, 89, 0.03);
-        }
-
-        .mo-floating-order-status__inner {
-            padding: 0 16px;
-        }
-
-        .mo-order-status-fab {
-            position: static;
-            left: auto;
-            bottom: auto;
-            width: 100%;
-            margin: 0;
-            min-height: 46px;
-            padding: 0;
-            border-radius: 0;
-            background: transparent;
-            color: var(--mo-navy-strong, #252D59);
-            box-shadow: none;
-            justify-content: space-between;
-        }
-
-        .mo-order-status-fab:hover {
-            transform: none;
-            box-shadow: none;
-            color: var(--mo-navy-strong, #252D59);
-        }
-
-        .mo-order-status-fab__label {
-            display: none;
-        }
-
-        .mo-order-status-fab__hint {
-            display: inline-block;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--mo-text-soft, #6B7280);
-        }
-
-        .mo-order-status-fab__cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--mo-primary, #FF8000);
-        }
-
-        .mo-order-status-fab__arrow {
-            display: inline-block;
-            font-size: 15px;
-            line-height: 1;
-        }
-    }
-</style>
+	    .mo-floating-order-status {
+	        position: relative;
+	        z-index: 1030;
+	    }
+	
+	    .mo-floating-order-status__inner {
+	        display: block;
+	    }
+	
+	    .mo-order-status-fab {
+	        position: fixed;
+	        left: 20px;
+	        top: 94px;
+	        z-index: 1030;
+	        display: flex;
+	        align-items: center;
+	        gap: 12px;
+	        min-width: 240px;
+	        min-height: 60px;
+	        padding: 12px 16px 12px 14px;
+	        border-radius: 18px;
+	        background: rgba(255, 255, 255, 0.96);
+	        border: 1px solid rgba(42, 54, 89, 0.08);
+	        color: var(--mo-navy-strong, #252D59);
+	        text-decoration: none;
+	        box-shadow:
+	            0 18px 36px rgba(37, 45, 89, 0.10),
+	            0 6px 14px rgba(255, 128, 0, 0.08);
+	        backdrop-filter: blur(12px);
+	        transition:
+	            transform 0.15s ease,
+	            box-shadow 0.15s ease,
+	            border-color 0.15s ease;
+	    }
+	
+	    .mo-order-status-fab:hover {
+	        color: var(--mo-navy-strong, #252D59);
+	        transform: translateY(-2px);
+	        border-color: rgba(255, 128, 0, 0.22);
+	        box-shadow:
+	            0 22px 44px rgba(37, 45, 89, 0.14),
+	            0 8px 18px rgba(255, 128, 0, 0.12);
+	    }
+	
+	    .mo-order-status-fab__icon {
+	        width: 36px;
+	        height: 36px;
+	        border-radius: 12px;
+	        display: inline-flex;
+	        align-items: center;
+	        justify-content: center;
+	        flex-shrink: 0;
+	        background: linear-gradient(135deg, var(--mo-primary, #FF8000), #F85E28);
+	        color: #fff;
+	        font-size: 15px;
+	        font-weight: 900;
+	        box-shadow: 0 8px 16px rgba(255, 128, 0, 0.22);
+	    }
+	
+	    .mo-order-status-fab__content {
+	        display: flex;
+	        flex-direction: column;
+	        min-width: 0;
+	        gap: 2px;
+	    }
+	
+	    .mo-order-status-fab__eyebrow {
+	        color: var(--mo-text-soft, #6B7280);
+	        font-size: 11px;
+	        font-weight: 800;
+	        letter-spacing: 0.04em;
+	        text-transform: uppercase;
+	        line-height: 1;
+	    }
+	
+	    .mo-order-status-fab__label {
+	        color: var(--mo-navy-strong, #252D59);
+	        font-size: 15px;
+	        font-weight: 800;
+	        line-height: 1.2;
+	    }
+	
+	    .mo-order-status-fab__arrow {
+	        margin-left: auto;
+	        color: var(--mo-primary, #FF8000);
+	        font-size: 18px;
+	        line-height: 1;
+	        font-weight: 800;
+	        flex-shrink: 0;
+	    }
+	
+	    @media (max-width: 767.98px) {
+	        .mo-floating-order-status {
+	            position: sticky;
+	            top: 68px;
+	            margin-top: -1px;
+	            z-index: 1030;
+	            padding: 0;
+	            background: rgba(255, 255, 255, 0.96);
+	            border-bottom: 1px solid rgba(42, 54, 89, 0.08);
+	            box-shadow: 0 4px 10px rgba(37, 45, 89, 0.03);
+	        }
+	
+	        .mo-floating-order-status__inner {
+	            padding: 0 16px;
+	        }
+	
+	        .mo-order-status-fab {
+	            position: static;
+	            left: auto;
+	            top: auto;
+	            bottom: auto;
+	            width: 100%;
+	            min-width: 0;
+	            min-height: 46px;
+	            margin: 0;
+	            padding: 0;
+	            border-radius: 0;
+	            background: transparent;
+	            border: 0;
+	            box-shadow: none;
+	            backdrop-filter: none;
+	            justify-content: space-between;
+	            gap: 10px;
+	        }
+	
+	        .mo-order-status-fab:hover {
+	            transform: none;
+	            box-shadow: none;
+	            border-color: transparent;
+	        }
+	
+	        .mo-order-status-fab__icon {
+	            width: 28px;
+	            height: 28px;
+	            border-radius: 10px;
+	            font-size: 13px;
+	            box-shadow: none;
+	        }
+	
+	        .mo-order-status-fab__eyebrow {
+	            display: none;
+	        }
+	
+	        .mo-order-status-fab__label {
+	            font-size: 13px;
+	            color: var(--mo-text-soft, #6B7280);
+	        }
+	
+	        .mo-order-status-fab__arrow {
+	            font-size: 15px;
+	        }
+	    }
+	</style>
     
 </head>
 <body class="mo-body">
@@ -139,12 +184,12 @@
 		    <div class="mo-floating-order-status__inner">
 		        <a th:href="@{/orders/{orderIdx}(orderIdx=${headerTrackableOrderIdx})}"
 		           class="mo-order-status-fab">
-		            <span class="mo-order-status-fab__label">주문 현황 보기</span>
-		            <span class="mo-order-status-fab__hint">진행 중인 주문이 있어요</span>
-		            <span class="mo-order-status-fab__cta">
-		                주문 현황 보기
-		                <span class="mo-order-status-fab__arrow">›</span>
+		            <span class="mo-order-status-fab__icon">↗</span>
+		            <span class="mo-order-status-fab__content">
+		                <span class="mo-order-status-fab__eyebrow">LIVE ORDER</span>
+		                <span class="mo-order-status-fab__label">주문 현황 보기</span>
 		            </span>
+		            <span class="mo-order-status-fab__arrow">›</span>
 		        </a>
 		    </div>
 		</div>
