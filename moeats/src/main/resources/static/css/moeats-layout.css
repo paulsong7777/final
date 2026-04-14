@@ -2044,8 +2044,18 @@ button {
 
 /* 검색바 */
 .mo-main-search-section {
-    padding-top: 6px;
+    width: 100%;
+    padding-top: 0;
+    margin-top: 28px;
     margin-bottom: 28px;
+}
+
+@media (min-width: 1200px) {
+    .mo-main-search-section {
+        width: min(66.666%, 860px);
+        margin-left: auto;
+        margin-right: auto;
+    }
 }
 
 .mo-main-searchbar {
@@ -2055,10 +2065,15 @@ button {
     gap: 14px;
     min-height: 78px;
     padding: 0 18px;
-    border: 1px solid rgba(42, 54, 89, 0.10);
+    border: 1.5px solid rgba(255, 128, 0, 0.48);
     border-radius: 28px;
     background: #fff;
-    box-shadow: 0 10px 24px rgba(37, 45, 89, 0.05);
+    box-shadow: 0 10px 24px rgba(255, 128, 0, 0.06);
+}
+
+.mo-main-searchbar:focus-within {
+    border-color: rgba(255, 128, 0, 0.78);
+    box-shadow: 0 0 0 4px rgba(255, 128, 0, 0.10);
 }
 
 .mo-main-searchbar__brand {
@@ -2208,7 +2223,9 @@ button {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    min-height: 52px;
+    min-height: 58px;
+    max-height: 58px;
+    overflow: hidden;
     align-content: flex-start;
 }
 
@@ -2225,6 +2242,8 @@ button {
     line-height: 1;
     max-width: 100%;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #storeCardList .mo-store-card--ajax__chip.is-empty {
@@ -2318,13 +2337,14 @@ button {
 
 @media (max-width: 767.98px) {
     .mo-main-search-section {
+        margin-top: 24px;
         margin-bottom: 24px;
     }
 
     .mo-main-searchbar {
         min-height: 60px;
-        gap: 10px;
-        padding: 0 14px;
+        gap: 8px;
+        padding: 0 12px;
         border-radius: 20px;
     }
 
@@ -2336,7 +2356,7 @@ button {
     }
 
     .mo-main-searchbar__input {
-        font-size: 15px;
+        font-size: 14px;
     }
 
     .mo-main-searchbar__submit {

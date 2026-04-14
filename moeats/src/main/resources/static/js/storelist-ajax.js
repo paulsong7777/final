@@ -7,7 +7,17 @@
     const searchButton = document.getElementById('storeSearchBtn');
     const resetButton = document.getElementById('resetStoreFilterBtn');
     const categoryButtons = document.querySelectorAll('.js-category-filter');
+	const DESKTOP_PLACEHOLDER = '함께 고르고, 쉽게 모이고, 한 번에 주문';
+	const MOBILE_PLACEHOLDER = '함께 고르고, 한 번에 주문';
 
+	function syncSearchPlaceholder() {
+	    if (!keywordInput) return;
+
+	    keywordInput.placeholder = window.matchMedia('(max-width: 767.98px)').matches
+	        ? MOBILE_PLACEHOLDER
+	        : DESKTOP_PLACEHOLDER;
+	}
+	
     if (!storeListRoot || !emptyState) return;
 
     const CATEGORY_LABELS = {
@@ -458,5 +468,7 @@
         resetButton.addEventListener('click', resetFilters);
     }
 
+	window.addEventListener('resize', syncSearchPlaceholder);
+	syncSearchPlaceholder();
     loadStores();
 })();
