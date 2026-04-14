@@ -1,0 +1,6 @@
+다음 순서로 mySqlDeveloper에서 실행하면 좋다.
+moeats_all_in_one_full_reset_reseed
+05_toss_payment_transaction_migration_project_aligned
+moeats_seed
+moeats_front_test_dummy_seed_v3_login_signup_room
+moeats_dummy_owner_email_password_update
