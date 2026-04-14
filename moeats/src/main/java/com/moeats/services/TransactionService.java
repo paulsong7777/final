@@ -113,7 +113,7 @@ public class TransactionService {
 //	    Timestamp expiresAt = Timestamp.from(java.time.Instant.now().plus(java.time.Duration.ofMinutes(5)));
 	    // only for smoke test 90sec
 	    Timestamp expiresAt = Timestamp.from(
-	    	    java.time.Instant.now().plus(java.time.Duration.ofSeconds(90))
+	    	    java.time.Instant.now().plus(java.time.Duration.ofSeconds(10))
 	    	);
 	    payment.setPaymentExpiresAt(expiresAt);
 	    paymentService.insert(payment);
