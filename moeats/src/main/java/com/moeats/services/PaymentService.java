@@ -21,6 +21,10 @@ public class PaymentService {
 	@Autowired
 	PaymentShareMapper paymentShareMapper;
 	
+	public Payment findByIdx(int paymentIdx) {
+	    return paymentMapper.findByIdx(paymentIdx);
+	}
+	
 	public Payment findByOrder(int orderIdx) {
 		return paymentMapper.findByOrder(orderIdx);
 	}

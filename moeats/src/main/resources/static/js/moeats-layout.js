@@ -14,8 +14,17 @@
 
 	const createRoomModalEl = document.getElementById('moCreateRoomModal');
 	const mobileCreateRoomSheetEl = document.getElementById('moMobileCreateRoomSheet');
-	
+    const confirmModalEl = document.getElementById('moConfirmModal');
+    const confirmEyebrowEl = document.querySelector('[data-mo-confirm-eyebrow]');
+    const confirmTitleEl = document.querySelector('[data-mo-confirm-title]');
+    const confirmMessageEl = document.querySelector('[data-mo-confirm-message]');
+    const confirmAcceptButton = document.querySelector('[data-mo-confirm-accept]');
+    const confirmCancelButton = document.querySelector('[data-mo-confirm-cancel]');
+    const toastEl = document.getElementById('moGlobalToast');
+    const toastMessageEl = document.querySelector('[data-mo-toast-message]');
+
     const isMobile = () => window.innerWidth < DESKTOP_BREAKPOINT;
+    let pendingConfirmResolve = null;
 
     const getModalInstance = (el) => {
         if (!el || !window.bootstrap) return null;
@@ -25,6 +34,91 @@
     const getOffcanvasInstance = (el) => {
         if (!el || !window.bootstrap) return null;
         return window.bootstrap.Offcanvas.getOrCreateInstance(el);
+    };
+
+	const toastPalette = {
+	    success: {
+	        background: '#252D59',
+	        color: '#ffffff'
+	    },
+	    warning: {
+	        background: '#F85E28',
+	        color: '#ffffff'
+	    },
+	    info: {
+	        background: '#252D59',
+	        color: '#ffffff'
+	    }
+	};
+
+    const showToast = (message, variant = 'info') => {
+        if (!toastEl || !toastMessageEl || !window.bootstrap || !message) return;
+
+        const palette = toastPalette[variant] || toastPalette.info;
+        toastMessageEl.textContent = message;
+        toastEl.style.background = palette.background;
+        toastEl.style.color = palette.color;
+
+        window.bootstrap.Toast.getOrCreateInstance(toastEl, {
+            delay: 2200
+        }).show();
+    };
+
+    const resolvePendingConfirm = (value) => {
+        if (!pendingConfirmResolve) return;
+        const resolver = pendingConfirmResolve;
+        pendingConfirmResolve = null;
+        resolver(value);
+    };
+
+    const openConfirm = ({
+        eyebrow = '확인',
+        title = '한 번 더 확인해 주세요',
+        message = '이 작업을 계속 진행할까요?',
+        confirmText = '확인',
+        cancelText = '취소'
+    } = {}) => {
+        if (!confirmModalEl || !window.bootstrap) {
+            return Promise.resolve(false);
+        }
+
+        if (pendingConfirmResolve) {
+            resolvePendingConfirm(false);
+        }
+
+        if (confirmEyebrowEl) confirmEyebrowEl.textContent = eyebrow;
+        if (confirmTitleEl) confirmTitleEl.textContent = title;
+        if (confirmMessageEl) confirmMessageEl.textContent = message;
+        if (confirmAcceptButton) confirmAcceptButton.textContent = confirmText;
+        if (confirmCancelButton) confirmCancelButton.textContent = cancelText;
+
+        const confirmModal = getModalInstance(confirmModalEl);
+        if (confirmModal) {
+            confirmModal.show();
+        }
+
+        return new Promise((resolve) => {
+            pendingConfirmResolve = resolve;
+        });
+    };
+
+    const getCreateRoomValidationMessage = (form) => {
+        const storeIdx = form.querySelector('input[name="storeIdx"]')?.value;
+        const selectedDeliveryAddressIdx = form.querySelector('input[name="selectedDeliveryAddressIdx"]:checked')?.value;
+        const paymentMode = form.querySelector('input[name="paymentMode"]:checked')?.value;
+
+        if (!storeIdx) return '가게 정보를 다시 확인해 주세요.';
+        if (!selectedDeliveryAddressIdx) return '배송지를 선택해 주세요.';
+        if (!paymentMode) return '결제 방식을 선택해 주세요.';
+        return '';
+    };
+
+    const setCreateRoomFeedback = (form, message = '') => {
+        const feedback = form.querySelector('[data-mo-create-feedback]');
+        if (!feedback) return;
+
+        feedback.textContent = message;
+        feedback.classList.toggle('d-none', !message);
     };
 
     const syncHeaderState = () => {
@@ -72,11 +166,23 @@
 		closeLayer(createRoomModalEl, mobileCreateRoomSheetEl);
     };
 
-    const openLoginLayer = () => {
-        const delayed = closeMobileMenu();
-        closeAllLayers();
+	const getCurrentReturnUrl = () => {
+	    return window.location.pathname + window.location.search + window.location.hash;
+	};
 
-        window.setTimeout(() => {
+	const syncLoginReturnUrl = () => {
+	    const returnUrl = getCurrentReturnUrl();
+	    document.querySelectorAll('.js-login-return-url').forEach((input) => {
+	        input.value = returnUrl;
+	    });
+	};
+	
+	const openLoginLayer = () => {
+	    const delayed = closeMobileMenu();
+	    closeAllLayers();
+	    syncLoginReturnUrl();
+
+	    window.setTimeout(() => {
             if (isMobile()) {
                 const mobileLoginSheet = getOffcanvasInstance(mobileLoginSheetEl);
                 if (mobileLoginSheet) mobileLoginSheet.show();
@@ -156,10 +262,17 @@
 	        const storeNameEl = form.querySelector('[data-mo-store-name]');
 	        const minimumEl = form.querySelector('[data-mo-store-minimum]');
 	        const submitButton = form.querySelector('[data-mo-create-submit]');
+	        const afterCreateInput = form.querySelector('input[name="afterCreate"]');
+            const contextEl = form.querySelector('[data-mo-create-context]');
 
 	        if (storeIdxInput) storeIdxInput.value = payload.storeIdx ?? '';
 	        if (storeNameEl) storeNameEl.textContent = payload.storeName || '가게를 선택해 주세요';
 	        if (minimumEl) minimumEl.textContent = formatMinimumOrderText(payload.minimumOrderAmount);
+	        if (afterCreateInput) afterCreateInput.value = payload.afterCreate || '';
+            if (contextEl) {
+                contextEl.textContent = payload.contextMessage || '선택한 가게와 배송지, 결제 방식을 확인해 주세요.';
+            }
+            setCreateRoomFeedback(form);
 
 	        if (submitButton) {
 	            submitButton.disabled = !validateCreateRoomForm(form);
@@ -168,28 +281,29 @@
 	};
 
 	const validateCreateRoomForm = (form) => {
-	    const storeIdx = form.querySelector('input[name="storeIdx"]')?.value;
-	    const selectedDeliveryAddressIdx = form.querySelector('input[name="selectedDeliveryAddressIdx"]:checked')?.value;
-	    const paymentMode = form.querySelector('input[name="paymentMode"]:checked')?.value;
-
-	    return Boolean(storeIdx && selectedDeliveryAddressIdx && paymentMode);
+	    return !getCreateRoomValidationMessage(form);
 	};
 
 	const bindCreateRoomForms = () => {
 	    document.querySelectorAll('[data-mo-create-room-form]').forEach((form) => {
 	        const refresh = () => {
 	            const submitButton = form.querySelector('[data-mo-create-submit]');
+                const validationMessage = getCreateRoomValidationMessage(form);
 	            if (submitButton) {
-	                submitButton.disabled = !validateCreateRoomForm(form);
+	                submitButton.disabled = Boolean(validationMessage);
 	            }
+                if (!validationMessage) {
+                    setCreateRoomFeedback(form);
+                }
 	        };
 
 	        form.addEventListener('change', refresh);
 
 	        form.addEventListener('submit', (event) => {
-	            if (!validateCreateRoomForm(form)) {
+                const validationMessage = getCreateRoomValidationMessage(form);
+	            if (validationMessage) {
 	                event.preventDefault();
-	                window.alert('가게, 배송지, 결제 방식을 모두 확인해 주세요.');
+                    setCreateRoomFeedback(form, validationMessage);
 	                return;
 	            }
 				
@@ -235,16 +349,24 @@
 
 	window.openCreateRoomSheet = (payload = {}) => {
 	    if (!payload.storeIdx) {
-	        window.alert('가게 정보가 없어 주문방을 생성할 수 없습니다.');
+            showToast('가게 정보를 확인한 뒤 다시 시도해 주세요.', 'warning');
 	        return;
 	    }
 
-	    openCreateRoomLayer({
-	        storeIdx: payload.storeIdx,
-	        storeName: payload.storeName || '',
-	        minimumOrderAmount: payload.minimumOrderAmount || ''
-	    });
-	};;
+		openCreateRoomLayer({
+		    storeIdx: payload.storeIdx,
+		    storeName: payload.storeName || '',
+		    minimumOrderAmount: payload.minimumOrderAmount || '',
+		    afterCreate: payload.afterCreate || '',
+            contextMessage: payload.contextMessage || ''
+		});
+	};
+
+	window.openMoLoginLayer = () => {
+	    openLoginLayer();
+	};
+    window.moShowToast = showToast;
+    window.moOpenConfirm = openConfirm;
 	
 	const bindButtons = () => {
 	    document.querySelectorAll('[data-mo-open-mobile-menu]').forEach((button) => {
@@ -349,6 +471,22 @@
         });
     };
 
+    if (confirmModalEl) {
+        confirmModalEl.addEventListener('hidden.bs.modal', () => {
+            resolvePendingConfirm(false);
+        });
+    }
+
+    if (confirmAcceptButton) {
+        confirmAcceptButton.addEventListener('click', () => {
+            resolvePendingConfirm(true);
+            const confirmModal = getModalInstance(confirmModalEl);
+            if (confirmModal) {
+                confirmModal.hide();
+            }
+        });
+    }
+
     syncHeaderState();
     window.addEventListener('scroll', syncHeaderState, { passive: true });
 
@@ -357,4 +495,52 @@
 	bindCreateRoomForms();
     bindAutoFocus();
     bindResponsiveCleanup();
+	
+	
+	// ==========================================
+	// [공통] 입력창 유효성 검사 (특수문자 차단 및 천지인 호환)
+	// 사용법: input 태그에 class="mo-valid-name" 추가
+	// ==========================================
+	document.addEventListener('DOMContentLoaded', function() {
+	    const targetInputs = document.querySelectorAll('.mo-valid-name');
+	    
+	    targetInputs.forEach(input => {
+	        let isComposing = false;
+
+	        // 한글 조합(천지인 포함) 상태 감지
+	        input.addEventListener('compositionstart', () => isComposing = true);
+	        input.addEventListener('compositionend', () => {
+	            isComposing = false;
+	            filterInput(input);
+	        });
+
+	        // 입력 중: 특수문자 실시간 차단
+	        input.addEventListener('input', function() {
+	            if (isComposing) return; // 조합 중이면 건드리지 않음
+	            filterInput(this);
+	        });
+
+	        function filterInput(el) {
+	            const currentVal = el.value;
+	            // 특수문자 차단 (영어, 숫자, 한글 자모음, 띄어쓰기만 허용)
+	            const regex = /[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣\s]/g; 
+	            
+	            if (regex.test(currentVal)) {
+	                el.value = currentVal.replace(regex, '');
+	            }
+	        }
+
+	        // 포커스 아웃: 단독 자음/모음 찌꺼기 걸러내기
+	        input.addEventListener('blur', function() {
+	            const currentVal = this.value;
+	            const invalidRegex = /[ㄱ-ㅎㅏ-ㅣ]/g; 
+	            
+	            if (invalidRegex.test(currentVal)) {
+                    showToast('자음이나 모음만 단독으로 입력할 수 없습니다. 예: ㅋㅋ, ㅠㅠ', 'warning');
+	                this.value = currentVal.replace(invalidRegex, '');
+	            }
+	        });
+	    });
+	});
+	
 })();

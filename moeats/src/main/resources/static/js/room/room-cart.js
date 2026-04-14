@@ -10,6 +10,7 @@
     if (!root || !menuList) return;
 
     const roomCode = root.dataset.roomCode || '';
+	const nextStep = new URLSearchParams(window.location.search).get('next') || '';
     const cards = Array.from(menuList.querySelectorAll('.rc-card'));
     const stateMap = new Map();
 
@@ -279,6 +280,44 @@
 
         syncCardView(card);
     }
+	
+	async function applyPendingSelection() {
+	    const raw = sessionStorage.getItem('moPendingMenuSelection');
+	    if (!raw) return;
+
+	    let pending;
+	    try {
+	        pending = JSON.parse(raw);
+	    } catch (e) {
+	        sessionStorage.removeItem('moPendingMenuSelection');
+	        return;
+	    }
+
+	    const currentStoreIdx = Number(document.querySelector('.rc-shell')?.dataset?.storeIdx || 0);
+	    if (!pending || Number(pending.storeIdx) !== currentStoreIdx) {
+	        return;
+	    }
+
+	    const targetCard = cards.find((card) => Number(card.dataset.menuIdx || 0) === Number(pending.menuIdx || 0));
+	    if (!targetCard) {
+	        sessionStorage.removeItem('moPendingMenuSelection');
+	        return;
+	    }
+
+	    const state = getCardState(targetCard);
+	    if (!state) return;
+
+	    state.quantity = Math.max(1, Number(pending.quantity || 1));
+	    syncCardView(targetCard);
+	    syncBottomBar();
+
+		await saveCard(targetCard);
+		sessionStorage.removeItem('moPendingMenuSelection');
+
+		if (nextStep === 'confirm' && roomCode) {
+		    window.location.replace(`/rooms/code/${encodeURIComponent(roomCode)}/confirm`);
+		}
+	}
 
     if (searchInput) {
         searchInput.addEventListener('input', renderSearch);
@@ -291,7 +330,8 @@
         });
     }
 
-    cards.forEach(bindRoomCard);
-    syncBottomBar();
-    renderSearch();
+	cards.forEach(bindRoomCard);
+	syncBottomBar();
+	renderSearch();
+	applyPendingSelection();
 })();

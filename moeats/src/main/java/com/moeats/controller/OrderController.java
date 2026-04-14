@@ -59,6 +59,10 @@ public class OrderController {
             @RequestAttribute("groupOrder") GroupOrder groupOrder,
             @RequestAttribute("payment") Payment payment) {
 
+        if (!"PAID".equals(payment.getPaymentStatus())) {
+            return String.format("redirect:/orders/%d/payment", orderIdx);
+        }
+
         final record MemberItems(RoomParticipant roomParticipant, Member member, List<GroupOrderItem> items) {}
 
         Map<Integer, List<GroupOrderItem>> groupOrderItems = groupOrderService.findByOrder(groupOrder.getOrderIdx())
@@ -77,10 +81,12 @@ public class OrderController {
                         groupOrderItems.getOrDefault(roomMember.getMemberIdx(), List.of())))
                 .toList();
 
+        model.addAttribute("orderRoom", orderRoomService.findByIdx(groupOrder.getRoomIdx()));
         model.addAttribute("orderIdx", orderIdx);
         model.addAttribute("groupOrder", groupOrder);
         model.addAttribute("payment", payment);
         model.addAttribute("memberItems", memberItems);
+        model.addAttribute("hideFloatingOrderStatusButton", true);
 
         return "order-detail";
     }
@@ -149,11 +155,20 @@ public class OrderController {
 
     @GetMapping("/orders/{order_idx}/payment/individual")
     public String individualPay(
+            RedirectAttributes ra, // 추가
             Model model,
             @PathVariable("order_idx") int orderIdx,
             @RequestAttribute("groupOrder") GroupOrder groupOrder,
             @RequestAttribute("payment") Payment payment,
-            @RequestAttribute("paymentShare") PaymentShare paymentShare) {
+            @RequestAttribute("paymentShare") PaymentShare paymentShare,
+            @SessionAttribute("member") Member member) { // 추가
+
+        // =============== [방 폭파 및 만료 감지 로직 추가] ===============
+        if (orderRoomService.findActiveRoomByMember(member.getMemberIdx()) == null) {
+            ra.addFlashAttribute("error", "주문방이 폭파되었거나 결제 시간이 만료되었습니다.");
+            return "redirect:/main";
+        }
+        // ==========================================================
 
         if ("PAID".equals(payment.getPaymentStatus()) || "PAID_SELF".equals(paymentShare.getShareStatus())) {
             return String.format("redirect:/orders/%d/payment/wait", orderIdx);
@@ -171,12 +186,20 @@ public class OrderController {
 
     @GetMapping("/orders/{order_idx}/payment/wait")
     public String waitForPayment(
+            RedirectAttributes ra, // 추가
             Model model,
             @PathVariable("order_idx") int orderIdx,
             @RequestAttribute("groupOrder") GroupOrder groupOrder,
             @RequestAttribute("payment") Payment payment,
             @RequestAttribute("paymentShare") PaymentShare paymentShare,
             @SessionAttribute("member") Member member) {
+
+        // =============== [방 폭파 및 만료 감지 로직 추가] ===============
+        if (orderRoomService.findActiveRoomByMember(member.getMemberIdx()) == null) {
+            ra.addFlashAttribute("error", "주문방이 폭파되었거나 결제 시간이 만료되었습니다.");
+            return "redirect:/main";
+        }
+        // ==========================================================
 
         if ("PAID".equals(payment.getPaymentStatus())) {
             return String.format("redirect:/orders/%d", orderIdx);
@@ -282,4 +305,36 @@ public class OrderController {
         model.addAttribute("completedCount", completedCount);
         model.addAttribute("totalCount", paymentShares.size());
     }
+    
+ // =============== [추가할 코드] 결제 취소 및 방 폭파 ===============
+    @PostMapping("/orders/{order_idx}/payment/cancel")
+    public String cancelPayment(
+            RedirectAttributes ra,
+            @PathVariable("order_idx") int orderIdx,
+            @RequestAttribute("groupOrder") GroupOrder groupOrder,
+            @SessionAttribute("member") Member member) {
+
+        // 1. 방장 권한 체크
+        if (groupOrder.getLeaderMemberIdx() != member.getMemberIdx()) {
+            ra.addFlashAttribute("error", "잘못된 접근입니다");
+            return "redirect:/main";
+        }
+
+        // 2. 방 폭파 (RoomController의 cancelRoom 로직과 동일)
+        if (orderRoomService.cancel(groupOrder.getRoomIdx()) == 0) {
+            ra.addFlashAttribute("error", "결제 취소 및 방 폭파 중 오류가 발생했습니다");
+            return String.format("redirect:/orders/%d/payment", orderIdx);
+        }
+
+        // 3. 결제 타이머 정지
+        orderRoomTimer.stop(orderIdx);
+
+        // 4. SSE 알림 발송 (이 코드가 실행되면 대기 중이던 팀원들이 모두 메인 화면으로 튕겨나갑니다)
+        sseService.cancelRoom(groupOrder.getRoomIdx());
+
+        // 5. 방장 본인도 메인 화면으로 이동
+        ra.addFlashAttribute("message", "결제를 취소하여 주문방이 폭파되었습니다.");
+        return "redirect:/main";
+    }
+    // ================================================================
 }

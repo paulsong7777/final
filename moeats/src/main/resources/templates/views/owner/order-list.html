@@ -64,67 +64,65 @@
 
         <div class="mo-surface-card p-0 overflow-hidden">
             <div class="table-responsive">
-                <table class="mo-table" id="orderTable" style="table-layout: fixed;">
-                    <colgroup>
-                        <col style="width: 70px;"> 
-                        <col style="width: 100px;"> 
-                        <col style="width: 140px;"> 
-                        <col style="width: auto;">  
-                        <col style="width: 120px;"> 
-                        <col style="width: 120px;"> 
-                        <col style="width: 110px;"> 
-                    </colgroup>
-                    <thead class="text-center align-middle">
-                        <tr>
-                            <th class="ps-4 text-start">No</th>
-                            <th>주문시간</th>
-                            <th>주문코드(ID)</th>
-                            <th class="text-start">매장명</th>
-                            <th class="text-end">현재 상태</th>
-                            <th>진행상태</th>
-                            <th class="pe-4">상세 내역</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-center" id="orderTableBody">
-                        
-                        <th:block th:if="${not #lists.isEmpty(orderList)}">
-                            <tr th:each="order, stat : ${orderList}" th:data-room-idx="${order.groupOrder.roomIdx ?: 0}" class="order-row">
-                                <td class="ps-4 text-start text-muted small row-num" th:text="${stat.count}">1</td>
-                                <td style="color: var(--mo-text-soft); font-weight: 700;" th:text="${order.groupOrder.createdAt != null ? #dates.format(order.groupOrder.createdAt, 'HH:mm') : '00:00'}">00:00</td>
-                                <td>
-                                    <span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;" 
-                                          th:text="${'ROOM-' + (order.groupOrder.roomIdx ?: 0)}">ORD-001</span>
-                                </td>
-                                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;" th:text="${store.storeName ?: 'MoEats 매장'}">매장명</td>
-                                <td class="text-end fw-bold" style="color: var(--mo-text-soft);" th:text="${order.groupOrder.orderStatus}">WAITING</td>
-                                <td class="status-cell">
-                                    <div th:switch="${order.groupOrder.orderStatus}">
-                                        <span th:case="'WAITING'" class="mo-badge mo-badge--waiting">대기중</span>
-                                        <span th:case="'ACCEPTED'" class="mo-badge mo-badge--accepted">접수완료</span>
-                                        <span th:case="'COOKING'" class="mo-badge mo-badge--cooking">조리중</span>
-                                        <span th:case="'DELIVERING'" class="mo-badge mo-badge--delivering">배달중</span>
-                                        <span th:case="'COMPLETED'" class="mo-badge mo-badge--completed">완료</span>
-                                        <span th:case="*" class="mo-badge">알수없음</span>
-                                    </div>
-                                </td>
-                                <td class="pe-4">
-                                    <a th:href="@{/owners/order/detail(roomIdx=${order.groupOrder.roomIdx ?: 0})}" 
-                                       class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
-                                </td>
-                            </tr>
-                        </th:block>
-                        
-                        <tr th:if="${#lists.isEmpty(orderList)}" id="emptyRow">
-                            <td colspan="7" class="py-5 text-center">
-                                <div class="mo-empty-state mo-empty-state--compact mx-auto border-0 shadow-none bg-transparent">
-                                    <div style="font-size: 48px; margin-bottom: 8px;">🧾</div>
-                                    <p class="mo-empty-state__desc" style="font-weight: 700; color: var(--mo-text-soft);">표시할 주문 내역이 없습니다.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        
-                    </tbody>
-                </table>
+                <table class="mo-table" id="orderTable" style="table-layout: fixed; min-width: 650px;">
+				    <colgroup>
+				        <col style="width: 60px;">  <col style="width: 130px;"> <col style="width: 120px;"> <col style="width: auto;">  <col style="width: 100px;"> <col style="width: 90px;">  </colgroup>
+				    
+				    <thead class="text-center align-middle" style="white-space: nowrap;">
+				        <tr>
+				            <th class="ps-4 text-start">No</th>
+				            <th>주문시간</th>
+				            <th>주문코드(ID)</th>
+				            <th class="text-start">매장명</th>
+				            <th>진행상태</th>
+				            <th class="pe-4">상세 내역</th>
+				        </tr>
+				    </thead>
+				    <tbody class="text-center" id="orderTableBody">
+				        
+				        <th:block th:if="${not #lists.isEmpty(orderList)}">
+				            <tr th:each="order, stat : ${orderList}" th:data-room-idx="${order.groupOrder.roomIdx ?: 0}" class="order-row">
+				                <td class="ps-4 text-start text-muted small row-num" th:text="${stat.count}">1</td>
+				                
+				                <td style="color: var(--mo-text-soft); font-weight: 700; font-size: 13px;" 
+				                    th:text="${order.groupOrder.createdAt != null ? #temporals.format(order.groupOrder.createdAt.toLocalDateTime().plusHours(9), 'yyyy-MM-dd HH:mm') : '-'}">0000-00-00 00:00</td>
+				                
+				                <td>
+				                    <span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;" 
+				                          th:text="${'ROOM-' + (order.groupOrder.roomIdx ?: 0)}">ORD-001</span>
+				                </td>
+				                
+				                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;" th:text="${store.storeName ?: 'MoEats 매장'}">매장명</td>
+				                
+				                <td class="status-cell">
+				                    <div th:switch="${order.groupOrder.orderStatus}">
+				                        <span th:case="'PAID'" class="mo-badge mo-badge--waiting">신규주문</span>
+				                        <span th:case="'ACCEPTED'" class="mo-badge mo-badge--accepted">접수완료</span>
+				                        <span th:case="'PREPARING'" class="mo-badge mo-badge--cooking">조리중</span>
+				                        <span th:case="'READY'" class="mo-badge" style="background: rgba(23, 162, 184, 0.1); color: #17a2b8;">조리완료</span>
+				                        <span th:case="'DELIVERING'" class="mo-badge mo-badge--delivering">배달중</span>
+				                        <span th:case="'COMPLETED'" class="mo-badge mo-badge--completed">완료</span>
+				                        <span th:case="'CANCELLED'" class="mo-badge" style="background: #eee; color: #666;">취소됨</span>
+				                    </div>
+				                </td>
+				                <td class="pe-4">
+				                    <a th:href="@{/owners/order/detail(roomIdx=${order.groupOrder.roomIdx ?: 0})}" 
+				                       class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
+				                </td>
+				            </tr>
+				        </th:block>
+				        
+				        <tr th:if="${#lists.isEmpty(orderList)}" id="emptyRow">
+				            <td colspan="6" class="py-5 text-center">
+				                <div class="mo-empty-state mo-empty-state--compact mx-auto border-0 shadow-none bg-transparent">
+				                    <div style="font-size: 48px; margin-bottom: 8px;">🧾</div>
+				                    <p class="mo-empty-state__desc" style="font-weight: 700; color: var(--mo-text-soft);">표시할 주문 내역이 없습니다.</p>
+				                </div>
+				            </td>
+				        </tr>
+				        
+				    </tbody>
+				</table>
             </div>
         </div>
     </div>
@@ -132,94 +130,133 @@
 
 <th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
-        /*<![CDATA[*/
-        // 10초마다 상태 동기화
-        document.addEventListener('DOMContentLoaded', function() {
-            setInterval(syncOrderStatuses, 10000); 
-        });
+    /*<![CDATA[*/
+ // 📍 정렬을 강제로 실행하는 전용 함수
+ function forceSortTable() {
+     const tbody = document.getElementById('orderTableBody');
+     if (!tbody) return;
+     
+     const rows = Array.from(tbody.querySelectorAll('tr.order-row'));
+     if (rows.length === 0) return;
 
-        async function syncOrderStatuses() {
-            try {
-                // 식별자는 roomIdx 고정 표준 준수
-                const response = await fetch('/owners/order/api/list'); 
-                if (!response.ok) return;
-                const latestOrders = await response.json(); 
-                if (latestOrders && latestOrders.length > 0) {
-                    processOrders(latestOrders);
-                    updateLastRefreshTime();
-                }
-            } catch (error) { console.debug("[Sync] 대기 중..."); }
-        }
+     // data-room-idx (방 번호) 기준으로 무조건 내림차순(최신이 위로) 정렬
+     rows.sort((a, b) => {
+         const idxA = parseInt(a.getAttribute('data-room-idx'), 10) || 0;
+         const idxB = parseInt(b.getAttribute('data-room-idx'), 10) || 0;
+         return idxB - idxA;
+     });
+     
+     // 정렬된 순서대로 테이블에 다시 삽입
+     rows.forEach(row => tbody.appendChild(row));
+     
+     // No 열(1, 2, 3...) 다시 예쁘게 매기기
+     document.querySelectorAll('.row-num').forEach((el, idx) => { 
+         el.innerText = idx + 1; 
+     });
+ }
 
-        function processOrders(orders) {
-            const tbody = document.getElementById('orderTableBody');
-            const emptyRow = document.getElementById('emptyRow');
-            orders.forEach((order) => {
-                let existingRow = document.querySelector(`tr[data-room-idx="${order.groupOrder.roomIdx}"]`);
-                if (existingRow) {
-                    const statusCell = existingRow.querySelector('.status-cell');
-                    const newBadge = getStatusBadgeHtml(order.groupOrder.orderStatus);
-                    if (statusCell.innerHTML.trim() !== newBadge.trim()) {
-                        statusCell.innerHTML = newBadge;
-                        
-                        // 현재 상태 컬럼 텍스트도 같이 업데이트
-                        const statusTextCell = existingRow.querySelector('td:nth-child(5)');
-                        if(statusTextCell) statusTextCell.innerText = order.groupOrder.orderStatus;
+ document.addEventListener('DOMContentLoaded', function() {
+     forceSortTable(); // 화면이 켜지자마자 무조건 정렬 1회 실행!
+     setInterval(syncOrderStatuses, 3000); 
+ });
 
-                        // 상태 변경 시 시각적 효과 (반짝임 - Mo-Eats 오렌지 톤)
-                        existingRow.style.backgroundColor = 'rgba(255, 128, 0, 0.08)';
-                        setTimeout(() => { existingRow.style.backgroundColor = ''; }, 2000);
-                    }
-                } else {
-                    if (emptyRow) emptyRow.remove();
-                    prependNewOrderRow(tbody, order);
-                }
-            });
-            reorderNumbers();
-        }
+ async function syncOrderStatuses() {
+     try {
+         const response = await fetch('/owners/order/api/list'); 
+         if (!response.ok) return;
+         const latestOrders = await response.json(); 
+         if (latestOrders && latestOrders.length > 0) {
+             processOrders(latestOrders);
+             updateLastRefreshTime();
+         }
+     } catch (error) { console.debug("[Sync] 대기 중..."); }
+ }
 
-        function prependNewOrderRow(tbody, order) {
-            const newRow = document.createElement('tr');
-            newRow.setAttribute('data-room-idx', order.groupOrder.roomIdx);
-            newRow.className = 'order-row';
-            newRow.innerHTML = `
-                <td class="ps-4 text-start text-muted small row-num">-</td>
-                <td style="color: var(--mo-text-soft); font-weight: 700;">방금 전</td>
-                <td><span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;">ROOM-${order.groupOrder.roomIdx}</span></td>
-                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;">${store.storeName || 'MoEats 매장'}</td>
-                <td class="text-end fw-bold" style="color: var(--mo-text-soft);">${order.groupOrder.orderStatus}</td>
-                <td class="status-cell">${getStatusBadgeHtml(order.groupOrder.orderStatus)}</td>
-                <td class="pe-4">
-                    <a href="/owners/order/detail?roomIdx=${order.groupOrder.roomIdx}" 
-                       class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
-                </td>
-            `;
-            tbody.prepend(newRow); 
-        }
+ function processOrders(orders) {
+     const tbody = document.getElementById('orderTableBody');
+     const emptyRow = document.getElementById('emptyRow');
+     let hasNewOrder = false;
 
-        function reorderNumbers() {
-            document.querySelectorAll('.row-num').forEach((el, idx) => { el.innerText = idx + 1; });
-        }
+     orders.forEach((order) => {
+         let existingRow = document.querySelector(`tr[data-room-idx="${order.groupOrder.roomIdx}"]`);
+         if (existingRow) {
+             const statusCell = existingRow.querySelector('.status-cell');
+             const newBadge = getStatusBadgeHtml(order.groupOrder.orderStatus);
+             if (statusCell.innerHTML.trim() !== newBadge.trim()) {
+                 statusCell.innerHTML = newBadge;
+                 existingRow.style.backgroundColor = 'rgba(255, 128, 0, 0.08)';
+                 setTimeout(() => { existingRow.style.backgroundColor = ''; }, 2000);
+             }
+         } else {
+             if (emptyRow) emptyRow.remove();
+             prependNewOrderRow(tbody, order);
+             hasNewOrder = true;
+         }
+     });
+     
+     // 새 주문이 추가되었다면 순번이 꼬일 수 있으니 다시 한 번 정렬
+     if (hasNewOrder) {
+         forceSortTable();
+     }
+ }
 
-        // 상태별 뱃지 HTML 반환 (Mo-Eats 스타일)
-        function getStatusBadgeHtml(status) {
-            const badges = {
-                'WAITING': '<span class="mo-badge mo-badge--waiting">대기중</span>',
-                'ACCEPTED': '<span class="mo-badge mo-badge--accepted">접수완료</span>',
-                'COOKING': '<span class="mo-badge mo-badge--cooking">조리중</span>',
-                'DELIVERING': '<span class="mo-badge mo-badge--delivering">배달중</span>',
-                'COMPLETED': '<span class="mo-badge mo-badge--completed">완료</span>'
-            };
-            return badges[status] || '<span class="mo-badge">알수없음</span>';
-        }
+ function prependNewOrderRow(tbody, order) {
+     const newRow = document.createElement('tr');
+     newRow.setAttribute('data-room-idx', order.groupOrder.roomIdx);
+     newRow.className = 'order-row';
+     
+     const storeName = /*[[${store.storeName}]]*/ '매장'; 
+     
+     let timeString = "-";
+     if (order.groupOrder.createdAt) {
+         const dateObj = new Date(order.groupOrder.createdAt);
+         if (!isNaN(dateObj.getTime())) {
+             dateObj.setHours(dateObj.getHours() + 9);
+             
+             const year = dateObj.getFullYear();
+             const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+             const day = String(dateObj.getDate()).padStart(2, '0');
+             const hours = String(dateObj.getHours()).padStart(2, '0');
+             const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+             
+             timeString = `${year}-${month}-${day} <br> ${hours}:${minutes}`;
+         }
+     }
 
-        function updateLastRefreshTime() {
-            const now = new Date();
-            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-            const timeEl = document.getElementById('lastUpdateTime');
-            if(timeEl) timeEl.innerText = timeStr;
-        }
-        /*]]>*/
+     newRow.innerHTML = `
+         <td class="ps-4 text-start text-muted small row-num">-</td>
+         <td style="color: var(--mo-text-soft); font-weight: 700; font-size: 13px;">${timeString}</td>
+         <td><span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;">ROOM-${order.groupOrder.roomIdx}</span></td>
+         <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;">${storeName}</td>
+         <td class="status-cell">${getStatusBadgeHtml(order.groupOrder.orderStatus)}</td>
+         <td class="pe-4">
+             <a href="/owners/order/detail?roomIdx=${order.groupOrder.roomIdx}" 
+                class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
+         </td>
+     `;
+     tbody.prepend(newRow); 
+ }
+
+ function getStatusBadgeHtml(status) {
+     const badges = {
+         'PAID': '<span class="mo-badge mo-badge--waiting">신규주문</span>',
+         'ACCEPTED': '<span class="mo-badge mo-badge--accepted">접수완료</span>',
+         'PREPARING': '<span class="mo-badge mo-badge--cooking">조리중</span>',
+         'READY': '<span class="mo-badge" style="background: rgba(23, 162, 184, 0.1); color: #17a2b8;">조리완료</span>',
+         'DELIVERING': '<span class="mo-badge mo-badge--delivering">배달중</span>',
+         'COMPLETED': '<span class="mo-badge mo-badge--completed">완료</span>',
+         'CANCELLED': '<span class="mo-badge" style="background: #eee; color: #666;">취소됨</span>'
+     };
+     return badges[status] || '<span class="mo-badge">알수없음</span>';
+ }
+
+ function updateLastRefreshTime() {
+     const now = new Date();
+     const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+     const timeEl = document.getElementById('lastUpdateTime');
+     if(timeEl) timeEl.innerText = timeStr;
+ }
+ /*]]>*/
     </script>
 </th:block>
 

@@ -158,28 +158,38 @@
         async function handleDeleteMenu(idx) {
             if(!idx) return;
             if(!confirm("정말로 이 메뉴를 완전히 삭제하시겠습니까?\n삭제 후에는 복구가 불가능합니다.")) return;
+            
             const token = document.querySelector('meta[name="_csrf"]')?.content;
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             try {
-            	const response = await fetch(`/owners/menu/delete`, {
-            	    method: 'POST',
-            	    headers: {
-            	        'Content-Type': 'application/x-www-form-urlencoded', // 이 부분 확인
-            	        ...(header && { [header]: token })
-            	    },
-            	    body: new URLSearchParams({ menuIdx: idx }) // body 데이터 확인
-            	});
-                if(response.ok) {
+                const response = await fetch(`/owners/menu/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        ...(header && { [header]: token })
+                    },
+                    body: new URLSearchParams({ menuIdx: idx })
+                });
+                
+                // 🚨 서버에서 보낸 JSON 응답값({result: true/false})을 읽어옵니다.
+                const data = await response.json();
+
+                // 🚨 통신도 성공하고, DB 삭제 결과(data.result)도 true일 때만 화면에서 지웁니다.
+                if(response.ok && data.result === true) {
                     const wrapper = document.getElementById(`menu-wrapper-${idx}`);
                     if(wrapper) {
                         wrapper.classList.add('fade-out');
                         setTimeout(() => location.reload(), 300);
                     }
                 } else {
-                    alert("삭제 처리에 실패했습니다. (백엔드에 삭제 기능이 있는지 확인하세요!)");
+                    // 삭제 실패 시 서버에서 보낸 메시지나 기본 경고창을 띄웁니다.
+                    alert(data.message || "메뉴 삭제에 실패했습니다.\n(이미 주문 내역에 포함된 메뉴는 삭제할 수 없습니다.)");
                 }
-            } catch(e) { alert("삭제 통신 중 오류가 발생했습니다."); }
+            } catch(e) { 
+                console.error("삭제 에러:", e);
+                alert("삭제 통신 중 오류가 발생했습니다."); 
+            }
         }
         /*]]>*/
     </script>

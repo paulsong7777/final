@@ -21,6 +21,7 @@
             </div>
 
             <form method="post" th:action="@{/login}" class="d-flex flex-column gap-4">
+            	<input type="hidden" name="returnUrl" class="js-login-return-url" th:value="${param.returnUrl}">
                 
                 <div>
                     <label for="memberEmail" class="mo-form-label">이메일</label>

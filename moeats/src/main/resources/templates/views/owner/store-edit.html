@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -12,11 +13,9 @@
         .upload-overlay { opacity: 0; transition: 0.3s ease; background: rgba(37, 45, 89, 0.5); }
         .image-upload-box:hover .upload-overlay { opacity: 1; }
     </style>
-
 </head>
 
 <body>
-
 <section layout:fragment="pageContent">
     <div class="mo-page-container container">
         <div class="row justify-content-center">
@@ -51,7 +50,7 @@
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="mo-form-label">매장명</label>
-                                <input type="text" name="storeName" th:value="${store?.storeName}" class="form-control mo-form-control fw-bold" required>
+                                <input type="text" name="storeName" th:value="${store?.storeName}" class="form-control mo-form-control fw-bold mo-valid-name" required>
                             </div>
                             
                             <div class="col-md-6">
@@ -134,7 +133,6 @@
         }
 
         // 2. 이미지 미리보기 및 드래그 앤 드롭
-
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('storeImg');
 
@@ -145,9 +143,7 @@
                     document.getElementById('uploadContent').classList.add('d-none');
                     document.getElementById('imagePreview').classList.remove('d-none');
                     document.getElementById('previewImg').src = e.target.result;
-
                 }
-
                 reader.readAsDataURL(input.files[0]);
             }
         }
@@ -162,13 +158,11 @@
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault(); 
             dropZone.classList.remove('dragover');
-
             if (e.dataTransfer.files.length) {
                 fileInput.files = e.dataTransfer.files;
                 previewImage(fileInput);
             }
         });
-
 
         // 3. 유효성 검사 (연락처, 매장명)
         document.querySelector('input[name="storePhone"]').addEventListener('input', function(e) {
@@ -222,6 +216,5 @@
         /*]]>*/
     </script>
 </th:block>
-
 </body>
 </html>

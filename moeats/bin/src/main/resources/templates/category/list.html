@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>메뉴 카테고리 목록 - Mo-Eats</title>
+</head>
+<body>
+
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container">
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                
+                <div class="mo-section mb-4">
+                    <div class="mo-section-head d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+                        <div>
+                            <span class="mo-section-label">CATEGORY LIST</span>
+                            <h2 class="mo-section-title mb-1">메뉴 카테고리 관리</h2>
+                            <p class="mo-helper-text mb-0">등록된 메뉴 카테고리를 확인하고 관리할 수 있습니다.</p>
+                        </div>
+                        <a th:href="@{/owners/category/write}" class="mo-btn mo-btn-primary flex-shrink-0">
+                            <i class="bi bi-plus-lg me-2"></i>새 카테고리 추가
+                        </a>
+                    </div>
+                </div>
+
+ <div class="mo-surface-card p-0 overflow-hidden">
+                    
+                    <div class="table-responsive" th:if="${not #lists.isEmpty(storeMenuCategories)}">
+                        <table class="table table-hover align-middle text-center mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="py-3 text-secondary" style="width: 15%;">번호</th>
+                                    <th class="text-start py-3 text-secondary" style="width: 55%;">카테고리 명칭</th>
+                                    <th class="py-3 text-secondary" style="width: 30%;">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="cat, stat : ${storeMenuCategories}" th:id="|row-${cat.menuCategoryIdx}|">
+                                    <td class="text-secondary fw-bold" th:text="${stat.count}">1</td>
+                                    
+                                    <td class="text-start">
+                                        <span class="fw-bold fs-6" style="color: var(--mo-navy-strong);" th:text="${cat.categoryName}">인기 메뉴</span>
+                                    </td>
+                                    
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a th:href="@{/owners/category/{id}(id=${cat.menuCategoryIdx})}" 
+                                               class="mo-btn mo-btn-outline px-3 py-1" style="min-height: 36px; font-size: 13px;">
+                                                상세
+                                            </a>
+                                            <button type="button" 
+                                                    class="mo-btn mo-btn-plain text-danger px-3 py-1" style="min-height: 36px; font-size: 13px;"
+                                                    th:onclick="deleteCategory([[${cat.menuCategoryIdx}]])">
+                                                삭제
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mo-empty-state border-0 shadow-none" th:if="${#lists.isEmpty(storeMenuCategories)}">
+                        <div class="mb-2" style="font-size: 48px;">📁</div>
+                        <h3 class="mo-empty-state__title mo-empty-state__title--sm">등록된 카테고리가 없습니다</h3>
+                        <p class="mo-empty-state__desc mb-3">새로운 카테고리를 추가해 메뉴를 분류해 보세요.</p>
+                        <a th:href="@{/owners/category/write}" class="mo-btn mo-btn-primary">
+                            카테고리 추가하기
+                        </a>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
+<script th:inline="javascript">
+/*<![CDATA[*/
+    async function deleteCategory(idx) {
+        if (!confirm("해당 카테고리를 삭제하시겠습니까?")) return;
+
+        const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        try {
+            const fetchHeaders = {};
+            if (header && token) {
+                fetchHeaders[header] = token;
+            }
+
+            // 7. 삭제 URL을 컨트롤러의 @PathVariable("/{menuCategoryIdx}/delete") 방식과 일치시킴
+            const response = await fetch(`/owners/category/${idx}/delete`, {
+                method: 'POST',
+                headers: fetchHeaders
+            });
+
+            if (response.ok) {
+                const row = document.getElementById(`row-${idx}`);
+                if(row) row.remove();
+                alert("삭제가 완료되었습니다.");
+                
+                const tbody = document.querySelector('tbody');
+                if (tbody && tbody.children.length === 0) {
+                    location.reload();
+                }
+            } else {
+                alert("삭제 실패 (오류 코드: " + response.status + ")");
+            }
+        } catch (error) {
+            console.error('삭제 통신 오류:', error);
+            alert("서버 연결에 실패했습니다.");
+        }
+    }
+/*]]>*/
+</script>
+</th:block>
+</body>
+</html>

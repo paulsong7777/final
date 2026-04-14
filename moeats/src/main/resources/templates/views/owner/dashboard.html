@@ -56,36 +56,78 @@
                     <div class="order-status-scroll flex-grow-1 p-4 bg-light bg-opacity-10">
                         <th:block th:if="${not #lists.isEmpty(orderList)}">
                             
-                            <div th:each="order : ${orderList}" 
-                                 class="mo-address-item mb-3 bg-white p-4 border rounded-4 shadow-sm" 
-                                 th:data-idx="${order.groupOrder.roomIdxorder}"
-                                 onclick="handleCardClick(event, this)"
-                                 style="cursor: pointer; transition: transform 0.2s ease;">
-                                
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="mo-badge border-0 rounded-pill px-2 py-1 fw-bold" style="background: var(--mo-bg); color: var(--mo-text-soft); font-size: 11px;" th:text="${order['orderCode'] ?: 'ROOM-' + order.groupOrder.roomIdxorder}">코드</span>
+                           <div th:each="order : ${orderList}" 
+							     class="mo-address-item mb-3 bg-white p-4 border rounded-4 shadow-sm order-card-for-map" 
+							     th:data-idx="${order.groupOrder.roomIdx}"
+							     th:data-status="${order.groupOrder.orderStatus}"
+							     th:data-address="${order.orderDelivery != null ? order.orderDelivery.deliveryAddress1 : ''}"
+							     onclick="handleCardClick(event, this)"
+							     style="cursor: pointer; transition: transform 0.2s ease;">
+							    
+							    <div class="d-flex justify-content-between align-items-center mb-3">
+								    <div class="fw-bold" style="font-size: 14px; color: var(--mo-text-soft);">
+									<div class="mb-1">
+									    <span class="text-dark" th:text="${leaderNameMap[order.groupOrder.leaderMemberIdx]} + ' 님'">홍길동 님</span>
+									</div>
+								        
+										<div class="mt-2 fw-bold" style="font-size: 15px; color: var(--mo-navy-strong);">
+										    주문시각 : 
+										    <span th:with="targetDate=${order.groupOrder.paymentConfirmedAt ?: order.groupOrder.createdAt}"
+										          th:text="${#temporals.format(targetDate.toLocalDateTime().plusHours(9), 'yyyy-MM-dd HH:mm:ss')}">
+										        13:15:24
+										    </span>
+										</div>
+								    </div>
+								    
+									<div th:switch="${order.groupOrder.orderStatus}">
+									    <span th:case="'PAID'" class="fw-bold fs-6 text-danger">신규 주문</span>
+									    <span th:case="'ACCEPTED'" class="fw-bold fs-6" style="color: var(--mo-primary);">접수완료</span>
+									    <span th:case="'PREPARING'" class="fw-bold fs-6 text-success">조리 중</span>
+									    <span th:case="'READY'" class="fw-bold fs-6 text-info">준비완료</span>
+									    <span th:case="'DELIVERING'" class="fw-bold fs-6 text-primary">배달 중</span>
+									    <span th:case="'COMPLETED'" class="fw-bold fs-6 text-secondary">주문완료</span>
+									    <span th:case="'CANCELLED'" class="fw-bold fs-6 text-muted">주문취소</span>
+									</div>
+								</div>
+							
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h4 class="fw-bold m-0 text-truncate" style="color: var(--mo-navy-strong); font-size: 18px; max-width: 65%;" 
+                                        th:text="${!order.groupOrderItems.isEmpty() ? order.groupOrderItems[0].menuNameSnapshot + (order.groupOrderItems.size() > 1 ? ' 외 ' + (order.groupOrderItems.size() - 1) + '건' : '') : '신규 주문'}">
+                                        메뉴명
+                                    </h4>
                                     
-                                    <div th:switch="${order.groupOrder.orderStatus}">
-                                        <span th:case="'PAID'" class="fw-bold fs-6 text-danger">결제확인</span>
-                                        <span th:case="'ACCEPTED'" class="fw-bold fs-6" style="color: var(--mo-primary);">접수완료</span>
-                                        <span th:case="'PREPARING'" class="fw-bold fs-6 text-success">준비 중</span>
-                                        <span th:case="'READY'" class="fw-bold fs-6 text-info">배달 중</span>
-                                        <span th:case="COMPLETED" class="fw-bold fs-6 text-secondary">배달완료</span>
+                                    <div class="fw-bold" style="color: var(--mo-primary); font-size: 17px;"
+                                         th:text="${#numbers.formatInteger(order.groupOrder.orderTotalAmount, 0, 'COMMA')} + '원'">
+                                        0원
                                     </div>
                                 </div>
+							    
+							    <div class="text-secondary mb-4" style="font-size: 14px; line-height: 1.4;">
+							        <i class="bi bi-geo-alt-fill me-1 text-primary"></i> 
+							        <span class="fw-bold text-dark">배달 주소 :</span>
+							        <span th:text="${order.orderDelivery != null ? order.orderDelivery.deliveryAddress1 : '주소 정보 없음'}">지번/도로명 주소</span>
+							        <span th:if="${order.orderDelivery != null and order.orderDelivery.deliveryAddress2 != null}" th:text="${' ' + order.orderDelivery.deliveryAddress2}">상세주소</span>
+							    </div>
+							
+								<th:block th:switch="${order.groupOrder.orderStatus}">
+								    <button th:case="'PAID'" type="button" class="mo-btn mo-btn-primary w-100 rounded-3 shadow-sm fw-bold" style="min-height: 42px;" 
+								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'ACCEPTED')">주문 접수하기</button>
+								    
+								    <button th:case="'ACCEPTED'" type="button" class="btn w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px; background-color: #ff9800;" 
+								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'PREPARING')">조리 시작하기</button>
+								    
+								    <button th:case="'PREPARING'" type="button" class="btn btn-success w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" 
+								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'READY')">조리 완료처리</button>
 
-                                <h4 class="fw-bold mb-2 text-truncate" style="color: var(--mo-navy-strong); font-size: 18px;" th:text="${order['orderMenu'] ?: '신규 주문'}">메뉴명</h4>
-                                
-                                <div class="text-secondary mb-4 text-truncate" style="font-size: 14px;">
-                                    <i class="bi bi-geo-alt-fill me-1 text-primary"></i> 
-                                    <span th:text="${order.orderDelivery.deliveryAddress1 ?: '주소 정보 없음'}">배달 주소</span>
-                                </div>
-
-                                <button type="button" class="mo-btn mo-btn-primary w-100 rounded-3 shadow-sm" style="min-height: 42px;" 
-                                        th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdxorder}]], 'ACCEPTED')">
-                                    주문 접수하기
-                                </button>
-                            </div>
+								    <button th:case="'READY'" type="button" class="btn btn-info w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" 
+								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'DELIVERING')">준비 완료 처리</button>
+								            
+								    <button th:case="'DELIVERING'" type="button" class="btn w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px; background-color: var(--mo-navy-strong);" 
+								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'COMPLETED')">주문 완료 처리</button>
+								            
+								    <button th:case="'COMPLETED'" type="button" class="btn btn-secondary w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" disabled>처리가 완료된 주문입니다</button>
+								</th:block>
+							</div>
                         </th:block>
                         
                         <div th:if="${#lists.isEmpty(orderList)}" class="mo-empty-state mo-empty-state--compact h-100 border-0 shadow-none bg-transparent">
@@ -111,7 +153,7 @@
                     아직 등록된 매장이 없습니다.<br>
                     모이츠 서비스를 시작하기 위해 매장 정보를 먼저 등록해 주세요.
                 </p>
-                <a th:href="@{/owners/store/new}" class="mo-btn mo-btn-primary rounded-pill px-5" style="min-height: 52px; font-size: 16px;">
+                <a th:href="@{/owner/store/new}" class="mo-btn mo-btn-primary rounded-pill px-5" style="min-height: 52px; font-size: 16px;">
                     내 매장 등록하기
                 </a>
             </div>
@@ -121,23 +163,30 @@
 </section>
 
 <th:block layout:fragment="pageScripts">
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3355be34fede739dcf93c2a5f3ec84f1&libraries=services&autoload=false"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d3a55b23640a650ed1a7da0154a939f7&libraries=services&autoload=false"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
         
         function handleCardClick(event, el) {
             if (event.target.closest('button')) return;
             const roomIdx = el.getAttribute('data-idx');
-
             if (roomIdx) location.href = '/owners/order/detail?roomIdx=' + roomIdx;
-
         }
 
         async function handleStatusUpdate(event, roomIdx, nextStatus) {
             event.preventDefault();
             event.stopPropagation();
-            if(!roomIdx || !confirm("주문을 접수하시겠습니까?")) return;
-
+            
+            const confirmMessageMap = {
+            	    ACCEPTED: '주문을 접수하시겠습니까?',
+            	    PREPARING: '조리를 시작하시겠습니까?',
+            	    READY: '준비 완료 상태로 변경하시겠습니까?',
+            	    COMPLETED: '주문 완료 상태로 변경하시겠습니까?'
+            	};
+            
+            if (!roomIdx || !confirm(confirmMessageMap[nextStatus] || '상태를 변경하시겠습니까?')) {
+                return;
+            }
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
             btn.disabled = true;
@@ -147,21 +196,20 @@
             const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             try {
-
                 const response = await fetch('/owners/order/status_update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         ...(header && { [header]: token })
                     },
-                    body: JSON.stringify({ 
-                        "roomIdx": Number(roomIdx), 
-                        "roomStatus": String(nextStatus) 
+                    body: JSON.stringify({
+                        roomIdx: Number(roomIdx),
+                        nextStatus: String(nextStatus)
                     })
                 });
 
                 if(response.ok) {
-                    location.href = '//order/detail?roomIdx=' + roomIdx;
+                    location.reload();
                 } else {
                     alert("처리 중 오류가 발생했습니다.");
                     btn.disabled = false;
@@ -179,26 +227,122 @@
             const latEl = document.getElementById('store-lat');
             if(!latEl) return; 
 
-            const lat = parseFloat(latEl.value);
-            const lng = parseFloat(document.getElementById('store-lng').value);
+            const storeLat = parseFloat(latEl.value);
+            const storeLng = parseFloat(document.getElementById('store-lng').value);
             const container = document.getElementById('moeats-map');
 
             kakao.maps.load(function() {
                 try {
+                    const storePosition = new kakao.maps.LatLng(storeLat, storeLng);
                     const map = new kakao.maps.Map(container, {
-                        center: new kakao.maps.LatLng(lat, lng),
-                        level: 3
+                        center: storePosition,
+                        level: 5
                     });
-                    new kakao.maps.Marker({ position: new kakao.maps.LatLng(lat, lng), map: map });
+
+                    const bounds = new kakao.maps.LatLngBounds();
+                    bounds.extend(storePosition);
+
+                    // 1. 우리 매장 마커 (빨간색 점 + 텍스트 CustomOverlay)
+                    const storeContent = `
+                        <div style="display: flex; flex-direction: column; align-items: center; transform: translateY(-50%);">
+                            <div style="background-color: white; border: 1.5px solid #E53A40; color: #E53A40; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; margin-bottom: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                🏠 우리 매장
+                            </div>
+                            <div style="width: 18px; height: 18px; background-color: #E53A40; border: 2.5px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+                        </div>
+                    `;
+                    
+                    new kakao.maps.CustomOverlay({
+                        position: storePosition,
+                        content: storeContent,
+                        map: map,
+                        yAnchor: 0.5 // 중앙에 맞춤
+                    });
+
+                    const geocoder = new kakao.maps.services.Geocoder();
+                    const orderCards = document.querySelectorAll('.order-card-for-map');
+                    
+                    orderCards.forEach((card) => {
+                        const status = card.getAttribute('data-status');
+                        const roomIdx = card.getAttribute('data-idx');
+                        const address = card.getAttribute('data-address');
+                        
+                        // 2. 배달 완료(COMPLETED) 및 취소(CANCELLED)된 주문은 지도에 표시하지 않음
+                        if (status === 'COMPLETED' || status === 'CANCELLED') {
+                            return; 
+                        }
+                        
+                        if (address && address.trim() !== '') {
+                            geocoder.addressSearch(address, function(result, reqStatus) {
+                                if (reqStatus === kakao.maps.services.Status.OK) {
+                                    const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                                    // 3-1. 기본 파란색 마커 생성
+                                    const marker = new kakao.maps.Marker({
+                                        map: map,
+                                        position: coords
+                                    });
+
+                                    // 3-2. 마커 바로 위에 주문번호를 띄워주는 CustomOverlay 생성
+                                    const labelContent = `
+                                        <div style="background-color: #2A3659; color: white; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 38px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid white;">
+                                            주문 #${roomIdx}
+                                        </div>
+                                    `;
+                                    
+                                    new kakao.maps.CustomOverlay({
+                                        position: coords,
+                                        content: labelContent,
+                                        map: map,
+                                        yAnchor: 1 // 기준점을 맨 아래로 하여 마커 위로 올라가게 배치
+                                    });
+
+                                    // 지도 범위 재설정
+                                    bounds.extend(coords);
+                                    map.setBounds(bounds);
+                                } 
+                            });
+                        }
+                    });
                     
                     window.addEventListener('resize', () => map.relayout());
-                    // 탭이나 모달 등 전환 시 지도 깨짐 방지
                     setTimeout(() => map.relayout(), 300);
                 } catch (e) { console.error("Map Error:", e); }
             });
         }
+        
+        function initSSE() {
+            const eventSource = new EventSource('/owners/api/sse/connect');
 
-        window.onload = initDashboardMap;
+            eventSource.addEventListener('connect', function(event) {
+                console.log("🟢 실시간 주문 알림(SSE) 연결 완료!");
+            });
+
+            eventSource.addEventListener('new', function(event) {
+                const audio = new Audio('/audio/order_new.wav');
+                
+                audio.onended = function() {
+                    alert("🔔 띵동! 새로운 주문이 들어왔습니다!");
+                    window.location.reload();
+                };
+
+                audio.play().catch(function(error) {
+                    console.log("소리 차단됨 (화면 클릭 필요):", error);
+                    alert("🔔 띵동! 새로운 주문이 들어왔습니다!");
+                    window.location.reload();
+                });
+            });
+
+            eventSource.onerror = function(err) {
+                console.error("🔴 SSE 연결 오류:", err);
+                eventSource.close();
+            };
+        }
+
+        window.addEventListener('load', () => {
+            initDashboardMap();
+            initSSE();
+        });
         /*]]>*/
     </script>
 </th:block>

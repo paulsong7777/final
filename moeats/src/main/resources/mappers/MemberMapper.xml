@@ -37,6 +37,7 @@
 	<!-- 회원 탈퇴 soft delete -->
 	<update id="deleteMember">
 		update member set member_status = 'INACTIVE'
+		where member_idx = #{memberIdx}
 	</update>
 	
 	<!-- 회원 수정 -->

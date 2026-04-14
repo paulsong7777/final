@@ -1,33 +1,17 @@
 (function () {
-    // 1. 주요 요소(DOM) 선점
     const menuList = document.getElementById('menuList');
     const searchInput = document.getElementById('menuSearchInput');
     const emptyState = document.getElementById('menuSearchEmpty');
     const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
-    const cartBtn = document.getElementById('fe02CartBtn');
-    const fabPriceDisplay = document.getElementById('fabTotalPrice');
-
-    // [상태 관리] 장바구니 총액
-    let totalBasketAmount = 0;
 
     if (!menuList) return;
 
-    // 2. 실시간 금액 업데이트 함수 (전역 등록)
-    window.updateFabText = function(amount) {
-        totalBasketAmount += amount;
-        
-        // 표시할 타겟 설정 (스팬이 없으면 버튼 자체에 표시)
-        const target = fabPriceDisplay || createRoomBtn;
-        if (!target) return;
+    const cards = Array.from(menuList.querySelectorAll('.fe02-card'));
 
-        if (totalBasketAmount > 0) {
-            target.innerText = totalBasketAmount.toLocaleString() + "원 담겼어요!";
-        } else {
-            target.innerText = "주문하기";
-        }
-    };
+    function normalize(value) {
+        return String(value ?? '').trim().toLowerCase();
+    }
 
-    // 3. 가게 정보 추출 로직
     function getStoreIdx() {
         const fromButton = createRoomBtn?.dataset.storeIdx;
         if (fromButton && fromButton !== '0') return fromButton;
@@ -39,74 +23,117 @@
         return match ? match[1] : '';
     }
 
-    // 4. 검색 필터링 로직
-    const cards = Array.from(menuList.querySelectorAll('.fe02-card'));
+	function matchesKeyword(card, keyword) {
+	    if (!keyword) return true;
 
-    function render() {
-        const keyword = searchInput?.value.trim().toLowerCase() || '';
-        let visibleCount = 0;
+	    const name = normalize(card.dataset.menuName);
+	    const desc = normalize(card.dataset.menuDesc);
+	    const category = normalize(card.dataset.categoryName);
 
-        cards.forEach((card) => {
-            // HTML 데이터 속성(data-menu-name 등) 기반 검색
-            const name = (card.dataset.menuName || '').toLowerCase();
-            const desc = (card.dataset.menuDesc || '').toLowerCase();
-            const shouldShow = name.includes(keyword) || desc.includes(keyword);
+	    return name.includes(keyword) || desc.includes(keyword) || category.includes(keyword);
+	}
 
-            card.classList.toggle('d-none', !shouldShow);
-            if (shouldShow) visibleCount++;
-        });
+	function buildSections() {
+	    const visibleCards = cards.filter((card) => !card.classList.contains('d-none'));
+	    menuList.innerHTML = '';
 
-        if (emptyState) {
-            emptyState.classList.toggle('d-none', visibleCount > 0);
-        }
-    }
+	    if (!visibleCards.length) {
+	        return;
+	    }
 
-    // 5. 이벤트 리스너 (중복 제거 및 통합)
+	    const groups = new Map();
 
-    // 검색 입력 시
+	    visibleCards.forEach((card) => {
+	        const categoryName = card.dataset.categoryName || '기타 메뉴';
+	        if (!groups.has(categoryName)) {
+	            groups.set(categoryName, []);
+	        }
+	        groups.get(categoryName).push(card);
+	    });
+
+	    groups.forEach((groupCards, categoryName) => {
+	        const section = document.createElement('section');
+	        section.className = 'fe02-section';
+
+	        const head = document.createElement('div');
+	        head.className = 'fe02-section__head';
+
+	        const title = document.createElement('h2');
+	        title.className = 'fe02-section__title';
+	        title.textContent = categoryName;
+
+	        const count = document.createElement('span');
+	        count.className = 'fe02-section__count';
+	        count.textContent = `${groupCards.length}개 메뉴`;
+
+	        const grid = document.createElement('div');
+	        grid.className = 'fe02-section__grid';
+
+	        head.appendChild(title);
+	        head.appendChild(count);
+	        section.appendChild(head);
+	        section.appendChild(grid);
+
+	        groupCards.forEach((card) => {
+	            grid.appendChild(card);
+	        });
+
+	        menuList.appendChild(section);
+	    });
+	}	
+	
+	function render() {
+	    const keyword = normalize(searchInput?.value);
+	    let visible = 0;
+
+	    cards.forEach((card) => {
+	        const shouldShow = matchesKeyword(card, keyword);
+	        card.classList.toggle('d-none', !shouldShow);
+	        if (shouldShow) visible += 1;
+	    });
+
+	    if (emptyState) {
+	        emptyState.classList.toggle('d-none', visible > 0);
+	    }
+
+	    buildSections();
+	}
+
     if (searchInput) {
         searchInput.addEventListener('input', render);
     }
 
-    // [주문하기 / 방 생성] 버튼 클릭 시
-    if (createRoomBtn) {
-        createRoomBtn.addEventListener('click', () => {
-            const storeIdx = getStoreIdx();
-            if (!storeIdx) {
-                window.alert('가게 정보가 없습니다.');
-                return;
-            }
+	if (createRoomBtn) {
+	    createRoomBtn.addEventListener('click', () => {
+	        const storeIdx = getStoreIdx();
+	        const isAuthenticated = createRoomBtn.dataset.authenticated === 'true';
 
-            // A. 모달/시트 오픈 함수가 정의되어 있다면 실행 (현재 페이지 유지)
-            if (typeof window.openCreateRoomSheet === 'function') {
-                window.openCreateRoomSheet({
-                    storeIdx: Number(storeIdx),
-                    storeName: createRoomBtn.dataset.storeName || '',
-                    minimumOrderAmount: createRoomBtn.dataset.minimumOrderAmount || ''
-                });
-            } 
-            // B. 함수가 없다면 페이지 이동 (Fallback)
-            else {
-                window.location.href = `/rooms/new?storeIdx=${encodeURIComponent(storeIdx)}`;
-            }
-        });
-    }
+	        if (!isAuthenticated) {
+	            if (typeof window.openMoLoginLayer === 'function') {
+	                window.openMoLoginLayer();
+	            } else {
+	                window.location.href = '/login';
+	            }
+	            return;
+	        }
 
-    // [장바구니 / 참여중인 방] 버튼 클릭 시
-    if (cartBtn) {
-        cartBtn.addEventListener('click', () => {
-            const shell = document.querySelector('.fe02-shell');
-            const roomCode = shell?.getAttribute('data-room-code') || 
-                             document.querySelector('[data-room-code]')?.dataset.roomCode;
+	        if (!storeIdx) {
+	            window.alert('가게 정보가 없어 주문방 생성으로 이동할 수 없습니다.');
+	            return;
+	        }
 
-            if (roomCode) {
-                window.location.href = `/rooms/${roomCode}`;
-            } else {
-                window.alert('참여 중인 방 정보를 찾을 수 없습니다.');
-            }
-        });
-    }
+	        if (typeof window.openCreateRoomSheet === 'function') {
+	            window.openCreateRoomSheet({
+	                storeIdx: Number(storeIdx),
+	                storeName: createRoomBtn?.dataset.storeName || '',
+	                minimumOrderAmount: createRoomBtn?.dataset.minimumOrderAmount || ''
+	            });
+	            return;
+	        }
 
-    // 초기 실행
+	        window.location.href = `/rooms/new?storeIdx=${encodeURIComponent(storeIdx)}`;
+	    });
+	}
+
     render();
 })();

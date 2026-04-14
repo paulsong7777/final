@@ -18,7 +18,41 @@
 		.fe02-store-hero__content { position: relative; z-index: 1; width: 100%; max-width: 640px; }
 		.fe02-store-hero__eyebrow { color: #FFD7B0; font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 		.fe02-store-hero__title { margin: 8px 0 0; color: #fff; font-size: 32px; font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; }
-		.fe02-store-hero__desc { margin: 8px 0 0; color: rgba(255, 255, 255, 0.92); font-size: 13px; line-height: 1.38; max-width: 420px; }
+		.fe02-store-hero__desc {
+		    margin: 8px 0 0;
+		    color: rgba(255, 255, 255, 0.92);
+		    font-size: 13px;
+		    line-height: 1.55;
+		    max-width: 420px;
+		    display: -webkit-box;
+		    -webkit-line-clamp: 3;
+		    -webkit-box-orient: vertical;
+		    overflow: hidden;
+		}
+		
+		.fe02-store-hero__desc.is-expanded {
+		    display: block;
+		    -webkit-line-clamp: initial;
+		    overflow: visible;
+		}
+		
+		.fe02-store-hero__more {
+		    display: inline-flex;
+		    align-items: center;
+		    gap: 6px;
+		    margin-top: 8px;
+		    padding: 0;
+		    border: 0;
+		    background: transparent;
+		    color: #FFD7B0;
+		    font-size: 12px;
+		    font-weight: 800;
+		    cursor: pointer;
+		}
+		
+		.fe02-store-hero__more.d-none {
+		    display: none !important;
+		}
 		.fe02-store-hero__meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: stretch; }
 		.fe02-store-hero__meta-item { min-width: 0; height: 52px; padding: 6px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.24); display: flex; flex-direction: column; justify-content: center; }
 		.fe02-store-hero__meta-item--minimum { flex: 0 0 116px; max-width: 116px; }
@@ -54,6 +88,81 @@
 			.fe02-card__thumb { width: 84px; min-width: 84px; aspect-ratio: 1/1; border-radius: 14px; align-self: flex-start; }
 			.fe02-order-fab { left: 16px; right: 16px; bottom: 16px; width: auto; min-width: 0; border-radius: 18px; }
 		}
+		/* 품절 상품 카드 스타일 */
+		.fe02-card.is-soldout {
+		    opacity: 0.6;
+		    filter: grayscale(1); /* 이미지를 흑백으로 */
+		    background: #f8f9fa;
+		    cursor: not-allowed;
+		    border-color: rgba(0, 0, 0, 0.05) !important;
+		    pointer-events: none; /* 클릭 원천 차단 */
+		}
+		
+		.fe02-card.is-soldout .fe02-card__thumb {
+		    position: relative;
+		}
+		
+		/* 썸네일 중앙에 '품절' 텍스트 띄우기 */
+		.fe02-card.is-soldout .fe02-card__thumb::after {
+		    content: "품절";
+		    position: absolute;
+		    inset: 0;
+		    background: rgba(0, 0, 0, 0.4);
+		    color: #fff;
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    font-weight: 800;
+		    font-size: 16px;
+		    z-index: 1;
+		}
+		.fe02-section-list {
+		    display: grid;
+		    gap: 20px;
+		}
+		
+		.fe02-section {
+		    display: grid;
+		    gap: 12px;
+		}
+		
+		.fe02-section__head {
+		    display: flex;
+		    align-items: center;
+		    justify-content: space-between;
+		    gap: 12px;
+		}
+		
+		.fe02-section__title {
+		    margin: 0;
+		    color: var(--mo-navy-strong);
+		    font-size: 20px;
+		    font-weight: 800;
+		    letter-spacing: -0.02em;
+		}
+		
+		.fe02-section__count {
+		    color: var(--mo-text-soft);
+		    font-size: 13px;
+		    font-weight: 700;
+		}
+		
+		.fe02-section__grid {
+		    display: grid;
+		    grid-template-columns: repeat(4, minmax(0, 1fr));
+		    gap: 16px;
+		}
+		
+		@media (max-width: 1199.98px) {
+		    .fe02-section__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+		}
+		@media (max-width: 991.98px) {
+		    .fe02-section__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		}
+		@media (max-width: 575.98px) {
+		    .fe02-section__grid { grid-template-columns: 1fr; gap: 12px; }
+		}
+		
 	</style>
 </th:block>
 </head>
@@ -61,14 +170,14 @@
 <body>
 	<section layout:fragment="pageContent">
 		<div class="fe02-shell"
-			th:with="
-				firstMenu=${#lists.isEmpty(menuList) ? null : menuList[0]},
-				currentStoreIdx=${store != null ? store.storeIdx : (firstMenu != null ? firstMenu.storeIdx : 0)},
-				totalCount=${#lists.size(menuList)},
-				soldOutCount=${#aggregates.sum(menuList.![menuStatus == 'SOLD_OUT' ? 1 : 0])},
-				availableCount=${totalCount - soldOutCount},
-				isRoomCart=${orderRoom != null}
-			"
+		    th:with="
+		        firstMenu=${#lists.isEmpty(menuList) ? null : menuList[0]},
+		        currentStoreIdx=${store != null ? store.storeIdx : (firstMenu != null ? firstMenu.storeIdx : 0)},
+		        totalCount=${#lists.size(menuList)},
+		        soldOutCount=${#aggregates.sum(menuList.![menuStatus == 'SOLD_OUT' ? 1 : 0])},
+		        availableCount=${(totalCount ?: 0) - (soldOutCount ?: 0)},
+		        isRoomCart=${orderRoom != null}
+		    "
 			th:attr="
 				data-store-idx=${currentStoreIdx},
 				data-room-mode=${isRoomCart},
@@ -86,9 +195,20 @@
 				</div>
 
 				<div class="fe02-store-hero__content">
-					<div class="fe02-store-hero__eyebrow">가게 상세 페이지</div>
+					<div class="fe02-store-hero__eyebrow">주문할 가게</div>
 					<h1 class="fe02-store-hero__title" th:text="${store?.storeName ?: '가게 정보'}">가게명</h1>
-					<p class="fe02-store-hero__desc" th:text="${store?.storeDescription ?: '메뉴를 확인하고 바로 주문을 시작할 수 있습니다.'}">소개</p>
+					<div class="fe02-store-hero__desc-wrap">
+					    <p id="storeHeroDesc"
+					       class="fe02-store-hero__desc"
+					       th:text="${store?.storeDescription ?: '메뉴를 확인하고 바로 주문을 시작할 수 있습니다.'}">
+					        소개
+					    </p>
+					    <button type="button"
+					            id="storeHeroDescToggle"
+					            class="fe02-store-hero__more d-none">
+					        펼쳐보기
+					    </button>
+					</div>
 
 					<div class="fe02-store-hero__meta">
 						<div class="fe02-store-hero__meta-item fe02-store-hero__meta-item--minimum">
@@ -106,16 +226,22 @@
 				</div>
 			</section>
 
-			<section class="fe02-toolbar">
-				<div class="fe02-search">
-					<span class="fe02-search__icon">🔍</span> 
-					<input type="text" id="menuSearchInput" class="form-control" placeholder="메뉴 이름 또는 설명으로 검색">
-				</div>
+			<section class="fe02-toolbar" th:if="${not #lists.isEmpty(menuList)}">
+			    <div class="fe02-search">
+			        <span class="fe02-search__icon">🔍</span> 
+			        <input type="text" id="menuSearchInput" class="form-control" placeholder="메뉴 이름 또는 설명으로 검색">
+			    </div>
 			</section>
 
-			<section id="menuList" class="fe02-grid">
-				<article class="fe02-card" th:each="menu : ${menuList}"
-					th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? ' is-soldout' : ''">
+			<section id="menuList" class="fe02-section-list">
+				<article class="fe02-card"
+					         th:each="menu : ${menuList}"
+					         th:classappend="${menu.menuStatus == 'SOLD_OUT'} ? ' is-soldout' : ''"
+					         th:attr="
+					             data-menu-name=${menu.menuName},
+					             data-menu-desc=${menu.menuDescription},
+					             data-menu-status=${menu.menuStatus},
+					             data-category-name=${menu.categoryName != null and !#strings.isEmpty(menu.categoryName) ? menu.categoryName : '기타 메뉴'}">
 
 					<div class="fe02-card__thumb">
 						<img th:if="${!#strings.isEmpty(menu.imageUrl)}" th:src="${menu.imageUrl}" th:alt="${menu.menuName}">
@@ -125,17 +251,15 @@
 					<div class="fe02-card__body">
 						<div class="fe02-card__head">
 							<h2 class="fe02-card__name" th:text="${menu.menuName}">메뉴 이름</h2>
-							<span th:class="|fe02-status fe02-status--${menu.menuStatus == 'SOLD_OUT' ? 'soldout' : 'available'}|"
-								  th:text="${menu.menuStatus == 'SOLD_OUT' ? '품절' : '주문 가능'}"></span>
 						</div>
 						<p class="fe02-card__desc" th:text="${menu.menuDescription ?: '메뉴 설명이 없습니다.'}">설명</p>
 
 						<div class="fe02-card__footer">
 							<strong class="fe02-card__price" th:text="${#numbers.formatInteger(menu.menuPrice, 1, 'COMMA')} + '원'">0원</strong>
-							<button type="button" class="mo-btn mo-btn-outline" 
-								th:disabled="${menu.menuStatus == 'SOLD_OUT'}"
-								onclick="openMenuModal(this)"
-								th:attr="data-name=${menu.menuName}, data-desc=${menu.menuDescription}, data-price=${menu.menuPrice}, data-img=${menu.imageUrl}">
+							<button type="button" class="mo-btn mo-btn-outline"
+								        th:disabled="${menu.menuStatus == 'SOLD_OUT'}"
+								        onclick="openMenuLayer(this)"
+								        th:attr="data-menu-idx=${menu.menuIdx}, data-name=${menu.menuName}, data-desc=${menu.menuDescription}, data-price=${menu.menuPrice}, data-img=${menu.imageUrl}">
 								<span th:text="${menu.menuStatus == 'SOLD_OUT' ? '품절' : '메뉴 보기'}">메뉴 보기</span>
 							</button>
 						</div>
@@ -152,7 +276,7 @@
 						</div>
 						<div class="modal-body p-4">
 							<div class="mb-3">
-								<span class="text-uppercase fw-bold" style="color: var(--mo-navy); font-size: 0.75rem; letter-spacing: 1px;">Menu Detail</span>
+								<span class="fw-bold" style="color: var(--mo-navy); font-size: 0.75rem; letter-spacing: 0.08em;">메뉴</span>
 								<h3 id="modalName" class="fw-bold mt-1 mb-2" style="color: var(--mo-navy);">메뉴명</h3>
 								<p id="modalDesc" class="text-secondary mb-0" style="font-size: 0.95rem; line-height: 1.6;">설명</p>
 							</div>
@@ -165,139 +289,250 @@
 									<button class="btn btn-white rounded-circle shadow-sm p-0" style="width: 32px; height: 32px;" onclick="updateModalQty(1)">+</button>
 								</div>
 							</div>
-							<button type="button" class="btn w-100 py-3 fw-bold shadow-sm" onclick="addSelectedToCart()"
-								style="background-color: var(--mo-navy); color: #fff; border-radius: 16px; font-size: 1.1rem;">
-								<span id="modalTotalPrice">0</span>원 담기
+							<button type="button" 
+							        class="btn w-100 py-3 fw-bold shadow-sm" 
+							     	th:onclick="${session.member != null} ? 'addSelectedToCart()' : 'moveToLoginWithReturnUrl()'"
+							        th:styleappend="${session.member != null} 
+							                        ? 'background-color: var(--mo-navy); color: #fff; border-radius: 16px; font-size: 1.1rem;' 
+							                        : 'background-color: #f8f9fa; color: var(--mo-navy); border: 1px solid #ddd; border-radius: 16px; font-size: 1rem;'">
+							    
+							    <span id="modalTotalPrice">0</span>원 
+							    
+							    <span th:text="${session.member != null} ? '담기' : '담기 (로그인 필요)'">담기</span>
 							</button>
 						</div>
 					</div>
 				</div>
 			</div>
+			
+			<div class="offcanvas offcanvas-bottom mo-bottom-sheet" id="commonMenuBottomSheet" tabindex="-1" aria-hidden="true">
+    <div class="mo-bottom-sheet__header">
+        <div class="mo-modal-card__eyebrow">메뉴</div>
+        <h2 class="mo-modal-card__title mb-0" data-menu-layer-name>메뉴명</h2>
+    </div>
+    <div class="mo-bottom-sheet__body">
+        <div class="mo-modal-form mo-modal-form--sheet">
+            <div class="position-relative mb-3">
+                <img data-menu-layer-img src="" class="w-100" style="height: 240px; object-fit: cover; border-radius: 18px;">
+            </div>
 
-			<div id="menuSearchEmpty" class="fe02-empty d-none">
-				<div class="fe02-empty__icon">🍽️</div>
-				<h2 class="fe02-empty__title">조건에 맞는 메뉴가 없습니다</h2>
+            <div class="mb-3">
+                <p data-menu-layer-desc class="text-secondary mb-0" style="font-size: 0.95rem; line-height: 1.6;">설명</p>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="fw-bold fs-5">수량 선택</span>
+                <div class="d-flex align-items-center bg-light rounded-pill p-1" style="border: 1px solid #ddd;">
+                    <button type="button" class="btn btn-white rounded-circle shadow-sm p-0" style="width: 32px; height: 32px;" onclick="updateModalQty(-1)">-</button>
+                    <span id="modalQtyDisplayMobile" class="fw-bold px-3 fs-5">1</span>
+                    <button type="button" class="btn btn-white rounded-circle shadow-sm p-0" style="width: 32px; height: 32px;" onclick="updateModalQty(1)">+</button>
+                </div>
+            </div>
+
+            <button type="button"
+                    class="btn w-100 py-3 fw-bold shadow-sm"
+                    th:onclick="${session.member != null} ? 'addSelectedToCart()' : 'moveToLoginWithReturnUrl()'"
+                    th:styleappend="${session.member != null}
+                                    ? 'background-color: var(--mo-navy); color: #fff; border-radius: 16px; font-size: 1.1rem;'
+                                    : 'background-color: #f8f9fa; color: var(--mo-navy); border: 1px solid #ddd; border-radius: 16px; font-size: 1rem;'">
+                <span data-menu-layer-total>0</span>원
+                <span th:text="${session.member != null} ? '담기' : '담기 (로그인 필요)'">담기</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+			<div id="menuSearchEmpty" class="fe02-empty d-none" th:if="${not #lists.isEmpty(menuList)}">
+			    <div class="fe02-empty__icon">🍽️</div>
+			    <h2 class="fe02-empty__title">조건에 맞는 메뉴가 없습니다</h2>
 			</div>
 			<div th:if="${#lists.isEmpty(menuList)}" class="fe02-empty">
-				<div class="fe02-empty__icon">🍽️</div>
-				<h2 class="fe02-empty__title">등록된 메뉴가 없습니다</h2>
+			    <div class="fe02-empty__icon">🍽️</div>
+			    <h2 class="fe02-empty__title">등록된 메뉴가 없습니다</h2>
 			</div>
 
 			<button type="button" class="fe02-order-fab" id="fe02CreateRoomBtn"
-				th:attr="data-store-idx=${currentStoreIdx}, 
-						 data-store-name=${store?.storeName ?: ''}, 
-						 data-minimum-order-amount=${store?.minimumOrderAmount ?: ''}">
-				<span id="fabTotalPrice">주문하기</span>
+			    th:attr="data-store-idx=${currentStoreIdx}, 
+			             data-store-name=${store?.storeName ?: ''}, 
+			             data-minimum-order-amount=${store?.minimumOrderAmount ?: ''},
+			             data-authenticated=${session.member != null}">
+			    <span id="fabTotalPrice">주문하기</span>
 			</button>
 		</div>
 	</section>
 
 	<th:block layout:fragment="pageScripts">
 		<script>
-			let currentItemPrice = 0;
-			let currentQty = 1;
-
-			// 모달 열기 및 데이터 세팅
-			function openMenuModal(btn) {
-				const name = btn.getAttribute('data-name');
-				const desc = btn.getAttribute('data-desc') || '메뉴 설명이 없습니다.';
-				const price = parseInt(btn.getAttribute('data-price')) || 0;
-				const img = btn.getAttribute('data-img') || ''; // 기본 이미지 경로가 있다면 여기에 넣으세요
-
-				currentItemPrice = price;
-				currentQty = 1;
-
-				document.getElementById('modalName').innerText = name;
-				document.getElementById('modalDesc').innerText = desc;
-				document.getElementById('modalImg').src = img;
-				document.getElementById('modalQtyDisplay').innerText = currentQty;
-				document.getElementById('modalTotalPrice').innerText = price.toLocaleString();
-
-				const modalElement = document.getElementById('commonMenuModal');
-				const myModal = new bootstrap.Modal(modalElement);
-				myModal.show();
-			}
-
-			// 수량 변경 함수
-			function updateModalQty(delta) {
-				currentQty += delta;
-				if (currentQty < 1) currentQty = 1;
-				
-				document.getElementById('modalQtyDisplay').innerText = currentQty;
-				const total = currentItemPrice * currentQty;
-				document.getElementById('modalTotalPrice').innerText = total.toLocaleString();
-			}
-
-			/* [수정된 부분] 장바구니 담기 클릭 시 FAB 버튼 금액 업데이트 */
-	        function addSelectedToCart() {
-	            const name = document.getElementById('modalName').innerText;
-	            const totalAmount = currentItemPrice * currentQty;
-
-	            // FAB 버튼(주문하기)의 텍스트를 현재 선택한 금액으로 업데이트
-	            const fabSpan = document.getElementById('fabTotalPrice');
-	            if (fabSpan) {
-	            	// [누적 합산 방식] 기존 금액에 새 금액을 더함
-	                const prevPrice = parseInt(fabSpan.innerText.replace(/[^0-9]/g, '')) || 0;
-	                const newTotal = prevPrice + totalAmount;
-	                fabSpan.innerText = `${newTotal.toLocaleString()}원 주문하기`;
-	            }
-
-	            // 기존에 js 파일과 연결되어 있던 기능이 있다면 유지
-	            if (typeof window.updateFabText === 'function') {
-	                window.updateFabText(totalAmount);
-	            }
-
-	            alert(`${name} ${currentQty}개를 담았습니다.`);
-	            
-	            const modalElement = document.getElementById('commonMenuModal');
-	            const modalInstance = bootstrap.Modal.getInstance(modalElement);
-	            modalInstance.hide();
-	        }
-
-	        document.addEventListener('DOMContentLoaded', function() {
-	            const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
-
-	            if (createRoomBtn) {
-	                createRoomBtn.addEventListener('click', function() {
-	                    // 1. 데이터 추출
-	                    const pathSegments = window.location.pathname.split('/');
-	                    const storeIdx = pathSegments[pathSegments.indexOf('stores') + 1];
-	                    const fabText = document.getElementById('fabTotalPrice').innerText;
-	                    const totalPrice = parseInt(fabText.replace(/[^0-9]/g, '')) || 0;
-
-	                    if (totalPrice === 0) {
-	                        alert("메뉴를 먼저 선택해주세요!");
-	                        return;
-	                    }
-
-	                    // 2. 가짜 폼(Form) 생성 - 컨트롤러가 redirect를 정상적으로 수행하게 하려면 이 방식이 제일 확실합니다.
-	                    const form = document.createElement('form');
-	                    form.method = 'POST';
-	                    form.action = '/rooms'; // 컨트롤러의 @PostMapping("/rooms")와 일치
-
-	                    // 3. 파라미터 추가 (storeIdx, totalPrice)
-	                    const params = {
-	                        'storeIdx': storeIdx,
-	                        'totalPrice': totalPrice
-	                    };
-
-	                    for (const key in params) {
-	                        const hiddenField = document.createElement('input');
-	                        hiddenField.type = 'hidden';
-	                        hiddenField.name = key;
-	                        hiddenField.value = params[key];
-	                        form.appendChild(hiddenField);
-	                    }
-
-	                    // 4. 폼 전송
-	                    document.body.appendChild(form);
-	                    form.submit();
-	                });
-	            }
-	        });
-	    </script>
-	    <script th:src="@{/js/store/menu-list.js}"></script>
-	</th:block>
+		    let currentItemPrice = 0;
+		    let currentQty = 1;
+		    let currentMenuIdx = 0;
 		
+		    function isMobileMenuLayer() {
+		        return window.innerWidth < 992;
+		    }
+		
+		    function syncMenuQtyView() {
+		        const desktopQty = document.getElementById('modalQtyDisplay');
+		        const mobileQty = document.getElementById('modalQtyDisplayMobile');
+		
+		        if (desktopQty) desktopQty.innerText = currentQty;
+		        if (mobileQty) mobileQty.innerText = currentQty;
+		
+		        const total = currentItemPrice * currentQty;
+		
+		        const desktopTotal = document.getElementById('modalTotalPrice');
+		        if (desktopTotal) desktopTotal.innerText = total.toLocaleString();
+		
+		        document.querySelectorAll('[data-menu-layer-total]').forEach((el) => {
+		            el.innerText = total.toLocaleString();
+		        });
+		    }
+		
+		    function setMenuLayerData(name, desc, price, img) {
+		        document.getElementById('modalName').innerText = name;
+		        document.getElementById('modalDesc').innerText = desc;
+		        document.getElementById('modalImg').src = img;
+		
+		        document.querySelectorAll('[data-menu-layer-name]').forEach((el) => {
+		            el.innerText = name;
+		        });
+		        document.querySelectorAll('[data-menu-layer-desc]').forEach((el) => {
+		            el.innerText = desc;
+		        });
+		        document.querySelectorAll('[data-menu-layer-img]').forEach((el) => {
+		            el.src = img;
+		        });
+		        document.querySelectorAll('[data-menu-layer-total]').forEach((el) => {
+		            el.innerText = price.toLocaleString();
+		        });
+		    }
+		
+		    function openMenuLayer(btn) {
+		        const name = btn.getAttribute('data-name');
+		        const desc = btn.getAttribute('data-desc') || '메뉴 설명이 없습니다.';
+		        const price = parseInt(btn.getAttribute('data-price')) || 0;
+		        const img = btn.getAttribute('data-img') || '';
+		        const menuIdx = parseInt(btn.getAttribute('data-menu-idx')) || 0;
+		
+		        currentItemPrice = price;
+		        currentQty = 1;
+		        currentMenuIdx = menuIdx;
+		
+		        setMenuLayerData(name, desc, price, img);
+		        syncMenuQtyView();
+		
+		        if (isMobileMenuLayer()) {
+		            const offcanvasEl = document.getElementById('commonMenuBottomSheet');
+		            const sheet = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+		            sheet.show();
+		        } else {
+		            const modalElement = document.getElementById('commonMenuModal');
+		            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+		            modal.show();
+		        }
+		    }
+		
+		    function updateModalQty(delta) {
+		        currentQty += delta;
+		        if (currentQty < 1) currentQty = 1;
+		        syncMenuQtyView();
+		    }
+		
+		    function moveToLoginWithReturnUrl() {
+		        const returnUrl = window.location.pathname + window.location.search + window.location.hash;
+		        window.location.href = '/login?returnUrl=' + encodeURIComponent(returnUrl);
+		    }
+		
+		    function addSelectedToCart() {
+		        const name = document.getElementById('modalName').innerText;
+		        const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
+		        const storeIdx = Number(createRoomBtn?.dataset?.storeIdx || 0);
+		
+		        const pending = {
+		            storeIdx: storeIdx,
+		            menuIdx: currentMenuIdx,
+		            quantity: currentQty,
+		            savedAt: Date.now()
+		        };
+		
+		        sessionStorage.setItem('moPendingMenuSelection', JSON.stringify(pending));
+		
+		        const modalElement = document.getElementById('commonMenuModal');
+		        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+		        if (modalInstance) modalInstance.hide();
+		
+		        const offcanvasEl = document.getElementById('commonMenuBottomSheet');
+		        const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
+		        if (offcanvasInstance) offcanvasInstance.hide();
+
+		        if (typeof window.moShowToast === 'function') {
+		            window.moShowToast(`${name} ${currentQty}개를 담았어요.`, 'success');
+		        }
+
+		        if (typeof window.openCreateRoomSheet === 'function') {
+		            window.setTimeout(function () {
+		                window.openCreateRoomSheet({
+		                    storeIdx: Number(createRoomBtn?.dataset?.storeIdx || 0),
+		                    storeName: createRoomBtn?.dataset?.storeName || '',
+		                    minimumOrderAmount: createRoomBtn?.dataset?.minimumOrderAmount || '',
+		                    afterCreate: 'confirm',
+		                    contextMessage: `${name} ${currentQty}개를 장바구니에 담았어요. 주문방 설정만 마치면 바로 이어집니다.`
+		                });
+		            }, 140);
+		        }
+		    }
+		</script>
+		<script th:src="@{/js/store/menu-list.js}"></script>
+		<script th:inline="javascript">
+		document.addEventListener('DOMContentLoaded', function() {
+		    const searchInput = document.getElementById('menuSearchInput');
+		    const menuItems = document.querySelectorAll('.fe02-card');
+		    const emptyState = document.getElementById('menuSearchEmpty');
+
+		    const heroDesc = document.getElementById('storeHeroDesc');
+		    const heroDescToggle = document.getElementById('storeHeroDescToggle');
+
+		    if (heroDesc && heroDescToggle) {
+		        requestAnimationFrame(() => {
+		            const isOverflowing = heroDesc.scrollHeight > heroDesc.clientHeight + 1;
+
+		            if (isOverflowing) {
+		                heroDescToggle.classList.remove('d-none');
+		            }
+
+		            heroDescToggle.addEventListener('click', function() {
+		                const expanded = heroDesc.classList.toggle('is-expanded');
+		                heroDescToggle.textContent = expanded ? '접기' : '펼쳐보기';
+		            });
+		        });
+		    }
+
+		    if (searchInput) {
+		        searchInput.addEventListener('input', function(e) {
+		            const keyword = e.target.value.toLowerCase().trim();
+		            let visibleCount = 0;
+
+		            menuItems.forEach(item => {
+		                const name = (item.getAttribute('data-menu-name') || "").toLowerCase();
+		                const desc = (item.getAttribute('data-menu-desc') || "").toLowerCase();
+
+		                if (name.includes(keyword) || desc.includes(keyword)) {
+		                    item.classList.remove('d-none');
+		                    visibleCount++;
+		                } else {
+		                    item.classList.add('d-none');
+		                }
+		            });
+
+		            if (visibleCount === 0) {
+		                emptyState.classList.remove('d-none');
+		            } else {
+		                emptyState.classList.add('d-none');
+		            }
+		        });
+		    }
+		});
+		    </script>
+	</th:block>
 </body>
 </html>

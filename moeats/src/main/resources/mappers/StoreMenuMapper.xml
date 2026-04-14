@@ -18,12 +18,17 @@
 		delete from store_menu where menu_idx = #{menuIdx}
 	</delete> -->
 	
-	
-	<delete id="deleteMenu">
-    DELETE FROM store_menu 
-    WHERE store_idx = #{storeIdx} 
-      AND menu_idx = #{menuIdx}
-</delete>
+	<update id="deleteMenu">
+	    UPDATE store_menu 
+	    SET menu_status = 'DELETED' 
+	    WHERE store_idx = #{storeIdx} AND menu_idx = #{menuIdx}
+	</update>
+
+<!-- 	<delete id="deleteMenu">
+	    DELETE FROM store_menu 
+	    WHERE store_idx = #{storeIdx} 
+	      AND menu_idx = #{menuIdx}
+	</delete> -->
 	
 	<!-- 메뉴 상태 변경 (활성, 품절, 숨김 등)-->
 	<update id="updateStatus">
@@ -102,38 +107,37 @@
 	      and menu_name like CONCAT('%', #{keyword}, '%')
 	</select> -->
 	<!-- menuListForUser랑 동일하게, 사진때문에 바꿔봅니다.영훈 -->
-	<select id="searchMenuForUser" resultType="StoreMenu">
-	    SELECT
-	        sm.menu_idx,
-	        sm.store_idx,
-	        sm.menu_category_idx,
-	        sm.menu_name,
-	        sm.menu_description,
-	        sm.menu_price,
-	        sm.menu_status,
-	        sm.display_order,
-	        sm.created_at,
-	        sm.updated_at,
-	        smc.category_name,
-	        mi.image_url
-	    FROM store_menu sm
-	    LEFT JOIN store_menu_category smc
-	        ON sm.menu_category_idx = smc.menu_category_idx
-	    LEFT JOIN menu_image mi
-	        ON sm.menu_idx = mi.menu_idx
-	       AND mi.is_primary = TRUE
-	    WHERE sm.store_idx = #{storeIdx}
-	      AND sm.menu_status != 'HIDDEN'
-	      AND (
-	            sm.menu_name LIKE CONCAT('%', #{keyword}, '%')
-	         OR sm.menu_description LIKE CONCAT('%', #{keyword}, '%')
-	      )
-	    ORDER BY
-	        COALESCE(smc.display_order, 9999),
-	        smc.menu_category_idx,
-	        sm.display_order,
-	        sm.menu_idx
-	</select>
+<select id="searchMenuForUser" resultType="StoreMenu">
+    SELECT
+        sm.menu_idx,
+        sm.store_idx,
+        sm.menu_category_idx,
+        sm.menu_name,
+        sm.menu_description,
+        sm.menu_price,
+        sm.menu_status,
+        sm.display_order,
+        sm.created_at,
+        sm.updated_at,
+        smc.category_name,
+        mi.image_url
+    FROM store_menu sm
+    LEFT JOIN store_menu_category smc
+        ON sm.menu_category_idx = smc.menu_category_idx
+    LEFT JOIN menu_image mi
+        ON sm.menu_idx = mi.menu_idx
+       AND mi.is_primary = TRUE
+    WHERE sm.store_idx = #{storeIdx}
+      AND sm.menu_status NOT IN ('HIDDEN', 'DELETED') AND (
+            sm.menu_name LIKE CONCAT('%', #{keyword}, '%')
+         OR sm.menu_description LIKE CONCAT('%', #{keyword}, '%')
+      )
+    ORDER BY
+        COALESCE(smc.display_order, 9999),
+        smc.menu_category_idx,
+        sm.display_order,
+        sm.menu_idx
+</select>
 		
 	
 	
@@ -157,13 +161,16 @@
 	        sm.display_order,
 	        sm.created_at,
 	        sm.updated_at,
-	        smc.category_name,    mi.image_url          FROM store_menu sm
+	        smc.category_name,    
+            mi.image_url          
+        FROM store_menu sm
 	    LEFT JOIN store_menu_category smc
 	        ON sm.menu_category_idx = smc.menu_category_idx
 	    LEFT JOIN menu_image mi
 	        ON sm.menu_idx = mi.menu_idx
-	       AND mi.is_primary = TRUE   WHERE sm.store_idx = #{storeIdx}
-	    ORDER BY
+	       AND mi.is_primary = TRUE   
+        WHERE sm.store_idx = #{storeIdx}
+          AND sm.menu_status != 'DELETED'  ORDER BY
 	        COALESCE(smc.display_order, 9999), smc.menu_category_idx,
 	        sm.display_order,                  sm.menu_idx
 	</select>
@@ -178,7 +185,7 @@
 	</select> -->
 	
 	<!-- 메뉴 이미지 살리려고 이렇게 해봅니다. 영훈 -->
-	<select id="menuListForUser" resultType="StoreMenu">
+<select id="menuListForUser" resultType="StoreMenu">
     SELECT
         sm.menu_idx,
         sm.store_idx,
@@ -199,9 +206,8 @@
         ON sm.menu_idx = mi.menu_idx
        AND mi.is_primary = TRUE
     WHERE sm.store_idx = #{storeIdx}
-      AND sm.menu_status != 'HIDDEN'
-    ORDER BY
-    	CASE WHEN sm.menu_status = 'AVAILABLE' THEN 1 ELSE 2 END,
+      AND sm.menu_status NOT IN ('HIDDEN', 'DELETED') ORDER BY
+        CASE WHEN sm.menu_status = 'AVAILABLE' THEN 1 ELSE 2 END,
         COALESCE(smc.display_order, 9999),
         smc.menu_category_idx,
         sm.display_order,

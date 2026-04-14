@@ -22,6 +22,7 @@
     let activeCategory = 'ALL';
     let currentKeyword = '';
     let allStores = [];
+    let requestSeq = 0;
 
     function escapeHtml(value) {
         return String(value ?? '')
@@ -88,15 +89,13 @@
         return storeIdx ? `/stores/${encodeURIComponent(storeIdx)}/menu` : '#';
     }
 
-    // ✨ [추가] 영업 상태의 우선순위를 정하는 함수 (1: 영업중, 2: 브레이크, 3: 영업종료)
     function getStatusPriority(store) {
         const status = String(store.storeStatus || 'ACTIVE').toUpperCase();
         if (status === 'ACTIVE' || status === 'OPEN') return 1;
         if (status === 'PAUSED' || status === 'BREAK') return 2;
-        return 3; // INACTIVE, CLOSED 등
+        return 3;
     }
 
-    // ✨ [추가] 상태별 화면 표시 텍스트 반환
     function getStatusText(store) {
         const status = String(store.storeStatus || 'ACTIVE').toUpperCase();
         if (status === 'PAUSED' || status === 'BREAK') return '브레이크 타임';
@@ -104,125 +103,112 @@
         return '';
     }
 
-	function buildStoreCard(store) {
-		    const categoryCode = resolveCategoryCode(store);
-		    const imageUrl = resolveImageUrl(store);
-		    const description = resolveDescription(store);
-		    const etaText = resolveEtaText(store);
-		    const minimumOrderAmount = formatPrice(store.minimumOrderAmount);
-		    const storeLink = resolveStoreLink(store);
-		    const storeName = store.storeName || '가게명';
-	        
-	        const statusPriority = getStatusPriority(store); // 1:영업중, 2:브레이크, 3:영업종료
-	        const statusText = getStatusText(store);
+    function buildStoreCard(store) {
+        const categoryCode = resolveCategoryCode(store);
+        const imageUrl = resolveImageUrl(store);
+        const description = resolveDescription(store);
+        const etaText = resolveEtaText(store);
+        const minimumOrderAmount = formatPrice(store.minimumOrderAmount);
+        const storeLink = resolveStoreLink(store);
+        const storeName = store.storeName || '가게명';
 
-	        // --- 스타일 정의 ---
-	        let cardStyle = "";
-	        let imageStyle = "";
-	        let textStyle = "";
-	        let imageOverlay = "";
-	        let actionButtons = "";
+        const statusPriority = getStatusPriority(store);
+        const statusText = getStatusText(store);
+        const isAvailable = statusPriority === 1;
 
-	        if (statusPriority === 1) { 
-	            // [영업 중] 정상 스타일
-	            actionButtons = `
-	                <a href="${storeLink}" class="mo-btn mo-btn-outline flex-fill">상세 보기</a>
-	                <a href="${storeLink}" class="mo-btn mo-btn-primary flex-fill">주문 시작</a>
-	            `;
-	        } else if (statusPriority === 2) { 
-	            // [브레이크 타임] 노란색 포인트 + 약간의 흐림
-	            cardStyle = "opacity: 0.9;";
-	            imageStyle = "filter: sepia(0.3) brightness(0.7);"; // 약간의 따뜻한 느낌 + 어둡게
-	            textStyle = "color: var(--mo-navy-strong);";
-	            
-	            imageOverlay = `
-	                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
-	                     style="background: rgba(255, 193, 7, 0.3); z-index: 2; border: 2px solid #FFC107;">
-	                   <span class="text-white fw-bold fs-5" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5); background: #FFC107; padding: 4px 12px; border-radius: 20px;">
-	                        ⌛ ${statusText}
-	                   </span>
-	                </div>`;
+        let cardStyle = '';
+        let imageStyle = '';
+        let textStyle = '';
+        let imageOverlay = '';
+        let actionButtons = '';
+        let imageLinkStart = '';
+        let imageLinkEnd = '';
 
-	            actionButtons = `
-	                <button class="mo-btn flex-fill" style="background: #FFF9E6; color: #D39E00; border: 1px solid #FFC107; cursor: not-allowed;">
-	                    잠시 쉬는 시간
-	                </button>
-	            `;
-	        } else { 
-	            // [영업 종료] 완전 회색 처리
-	            cardStyle = "opacity: 0.7;";
-	            imageStyle = "filter: grayscale(100%) brightness(0.6);";
-	            textStyle = "color: #999 !important;";
-	            
-	            imageOverlay = `
-	                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
-	                     style="background: rgba(0,0,0,0.5); z-index: 2;">
-	                   <span class="text-white fw-bold fs-5" style="border: 2px solid #fff; padding: 4px 12px;">${statusText}</span>
-	                </div>`;
+        if (isAvailable) {
+            actionButtons = `
+                <a href="${storeLink}" class="mo-btn mo-btn-outline flex-fill">상세 보기</a>
+                <a href="${storeLink}" class="mo-btn mo-btn-primary flex-fill">주문 시작</a>
+            `;
+        } else if (statusPriority === 2) {
+            cardStyle = 'opacity: 0.96;';
+            imageStyle = 'filter: saturate(0.92) brightness(0.88);';
+            textStyle = 'color: var(--mo-navy-strong);';
 
-	            actionButtons = `
-	                <button class="mo-btn flex-fill" style="background: #f8f9fa; color: #adb5bd; border: 1px solid #dee2e6; cursor: not-allowed;">
-	                    영업 준비 중
-	                </button>
-	            `;
-	        }
+            imageOverlay = `
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                     style="background: linear-gradient(180deg, rgba(22, 34, 68, 0.04) 0%, rgba(22, 34, 68, 0.18) 100%); z-index: 2;">
+                   <span class="fw-bold" style="color: #8a6700; background: rgba(255, 248, 214, 0.94); border: 1px solid rgba(255, 193, 7, 0.55); padding: 6px 14px; border-radius: 999px;">
+                        ${statusText}
+                   </span>
+                </div>`;
 
-		    return `
-		        <div class="col-12 col-md-6 col-xl-3 js-store-item" data-category="${escapeHtml(categoryCode)}">
-		            <article class="mo-store-card mo-store-card--ajax h-100" style="${cardStyle}">
-		                <div class="mo-store-card--ajax__image-wrap position-relative">
-	                        ${imageOverlay}
-		                    <a href="${statusPriority === 1 ? storeLink : 'javascript:void(0)'}" class="mo-store-card--ajax__image-link" style="${statusPriority !== 1 ? 'cursor: default;' : ''}">
-		                        <div class="mo-store-card--ajax__image" style="background-image:url('${escapeHtml(imageUrl)}'); ${imageStyle}"></div>
-		                    </a>
-		                </div>
+            actionButtons = `
+                <button type="button" class="mo-btn flex-fill" disabled aria-disabled="true" style="background: #fff8de; color: #8a6700; border: 1px solid rgba(255, 193, 7, 0.45); cursor: default;">
+                    브레이크 타임 안내
+                </button>
+            `;
+        } else {
+            cardStyle = 'opacity: 0.92;';
+            imageStyle = 'filter: grayscale(0.45) brightness(0.72);';
+            textStyle = 'color: #6b7280 !important;';
 
-		                <div class="mo-store-card__body mo-store-card--ajax__body d-flex flex-column">
-		                    <div class="mo-store-card--ajax__top">
-		                        <h3 class="mo-store-card__title mo-store-card--ajax__title js-store-title" style="${textStyle}">${escapeHtml(storeName)}</h3>
-		                        ${statusPriority === 1 ? `<span class="mo-chip mo-store-card--ajax__eta">${escapeHtml(etaText)}</span>` : ''}
-		                    </div>
+            imageOverlay = `
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                     style="background: linear-gradient(180deg, rgba(18, 24, 38, 0.12) 0%, rgba(18, 24, 38, 0.34) 100%); z-index: 2;">
+                   <span class="fw-bold" style="color: #ffffff; background: rgba(31, 41, 55, 0.78); padding: 6px 14px; border-radius: 999px;">${statusText}</span>
+                </div>`;
 
-		                    <div class="mo-store-card--ajax__middle">
-		                        <p class="mo-store-card__desc mo-store-card--ajax__desc js-store-desc" style="${textStyle}">${escapeHtml(description)}</p>
+            actionButtons = `
+                <button type="button" class="mo-btn flex-fill" disabled aria-disabled="true" style="background: #f8fafc; color: #6b7280; border: 1px solid #d7dde5; cursor: default;">
+                    영업 준비 중
+                </button>
+            `;
+        }
 
-		                        <div class="mo-store-card--ajax__minimum-inline">
-		                            <span class="mo-store-card--ajax__minimum-inline-label" style="${textStyle}">최소주문</span>
-		                            <strong class="mo-store-card--ajax__minimum-inline-value" style="${textStyle}">${escapeHtml(minimumOrderAmount)}</strong>
-		                        </div>
-		                    </div>
+        if (isAvailable) {
+            imageLinkStart = `<a href="${storeLink}" class="mo-store-card--ajax__image-link" aria-label="${escapeHtml(storeName)} 상세 보기">`;
+            imageLinkEnd = '</a>';
+        } else {
+            imageLinkStart = '<div class="mo-store-card--ajax__image-link" aria-disabled="true" style="cursor: default;">';
+            imageLinkEnd = '</div>';
+        }
 
-		                    <div class="mo-store-card__actions mo-store-card--ajax__actions mt-auto d-flex gap-2">
-		                        ${actionButtons}
-		                    </div>
-		                </div>
-		            </article>
-		        </div>
-		    `;
-		}
+        return `
+            <div class="col-12 col-md-6 col-xl-3 js-store-item" data-category="${escapeHtml(categoryCode)}">
+                <article class="mo-store-card mo-store-card--ajax h-100" style="${cardStyle}">
+                    <div class="mo-store-card--ajax__image-wrap position-relative">
+                        ${imageOverlay}
+                        ${imageLinkStart}
+                            <div class="mo-store-card--ajax__image" style="background-image:url('${escapeHtml(imageUrl)}'); ${imageStyle}"></div>
+                        ${imageLinkEnd}
+                    </div>
 
-    function matchesCategory(store) {
-        return activeCategory === 'ALL' || resolveCategoryCode(store) === activeCategory;
+                    <div class="mo-store-card__body mo-store-card--ajax__body d-flex flex-column">
+                        <div class="mo-store-card--ajax__top">
+                            <h3 class="mo-store-card__title mo-store-card--ajax__title js-store-title" style="${textStyle}">${escapeHtml(storeName)}</h3>
+                            ${statusPriority === 1 ? `<span class="mo-chip mo-store-card--ajax__eta">${escapeHtml(etaText)}</span>` : ''}
+                        </div>
+
+                        <div class="mo-store-card--ajax__middle">
+                            <p class="mo-store-card__desc mo-store-card--ajax__desc js-store-desc" style="${textStyle}">${escapeHtml(description)}</p>
+
+                            <div class="mo-store-card--ajax__minimum-inline">
+                                <span class="mo-store-card--ajax__minimum-inline-label" style="${textStyle}">최소주문</span>
+                                <strong class="mo-store-card--ajax__minimum-inline-value" style="${textStyle}">${escapeHtml(minimumOrderAmount)}</strong>
+                            </div>
+                        </div>
+
+                        <div class="mo-store-card__actions mo-store-card--ajax__actions mt-auto d-flex gap-2">
+                            ${actionButtons}
+                        </div>
+                    </div>
+                </article>
+            </div>
+        `;
     }
 
-    function matchesKeyword(store) {
-        if (!currentKeyword) return true;
-
-        const searchable = normalize([
-            store.storeName,
-            store.storeDescription,
-            store.description,
-            categoryLabel(resolveCategoryCode(store))
-        ].join(' '));
-
-        return searchable.includes(normalize(currentKeyword));
-    }
-
-    function getFilteredStores() {
-        return allStores
-            .filter((store) => matchesCategory(store) && matchesKeyword(store))
-            // ✨ [추가] 영업중(1) -> 브레이크(2) -> 영업종료(3) 순서로 정렬
-            .sort((a, b) => getStatusPriority(a) - getStatusPriority(b));
+    function sortStores(stores) {
+        return [...stores].sort((a, b) => getStatusPriority(a) - getStatusPriority(b));
     }
 
     function updateSummary(count) {
@@ -231,9 +217,9 @@
     }
 
     function renderStores() {
-        const filteredStores = getFilteredStores();
+        const sortedStores = sortStores(allStores);
 
-        if (!filteredStores.length) {
+        if (!sortedStores.length) {
             storeListRoot.innerHTML = '';
             storeListRoot.classList.add('d-none');
             emptyState.classList.remove('d-none');
@@ -241,43 +227,73 @@
             return;
         }
 
-        storeListRoot.innerHTML = filteredStores.map(buildStoreCard).join('');
+        storeListRoot.innerHTML = sortedStores.map(buildStoreCard).join('');
         storeListRoot.classList.remove('d-none');
         emptyState.classList.add('d-none');
-        updateSummary(filteredStores.length);
+        updateSummary(sortedStores.length);
     }
 
-    // 이하 fetchStores, init 등 기존 로직 동일 (생략 없이 원본 유지)
+    function buildStoreQueryString() {
+        const params = new URLSearchParams();
+
+        if (activeCategory && activeCategory !== 'ALL') {
+            params.set('category', activeCategory);
+        }
+
+        const keyword = String(currentKeyword ?? '').trim();
+        if (keyword) {
+            params.set('keyword', keyword);
+        }
+
+        return params.toString();
+    }
+
     async function fetchStores() {
-        const response = await fetch('/ajax/stores', {
+        const queryString = buildStoreQueryString();
+        const url = queryString ? `/ajax/stores?${queryString}` : '/ajax/stores';
+
+        const response = await fetch(url, {
             method: 'GET',
             headers: { Accept: 'application/json' }
         });
 
-        if (!response.ok) throw new Error('가게 목록을 불러오지 못했습니다.');
+        if (!response.ok) {
+            throw new Error('가게 목록을 불러오지 못했습니다.');
+        }
+
         return response.json();
     }
 
     async function fetchStoreThumbnails(storeIds) {
         if (!storeIds || !storeIds.length) return [];
+
         const params = new URLSearchParams();
         storeIds.forEach((storeId) => {
-            if (storeId !== null && storeId !== undefined && storeId !== '') params.append('storeIds', storeId);
+            if (storeId !== null && storeId !== undefined && storeId !== '') {
+                params.append('storeIds', storeId);
+            }
         });
+
         const response = await fetch(`/api/store-thumbnails?${params.toString()}`, {
             method: 'GET',
             headers: { Accept: 'application/json' }
         });
-        if (!response.ok) throw new Error('가게 썸네일을 불러오지 못했습니다.');
+
+        if (!response.ok) {
+            throw new Error('가게 썸네일을 불러오지 못했습니다.');
+        }
+
         return response.json();
     }
 
     function mergeStoreThumbnails(stores, thumbnails) {
         const thumbnailMap = new Map();
+
         (thumbnails || []).forEach((item) => {
             if (!item) return;
             thumbnailMap.set(String(item.storeIdx), item.storeThumbnailUrl || null);
         });
+
         return (stores || []).map((store) => {
             const storeIdx = String(resolveStoreIdx(store));
             return {
@@ -287,51 +303,69 @@
         });
     }
 
-    function resetFilters() {
-        activeCategory = 'ALL';
-        currentKeyword = '';
-        if (keywordInput) keywordInput.value = '';
-        categoryButtons.forEach((button) => {
-            button.classList.toggle('is-active', normalizeCategoryCode(button.dataset.category) === 'ALL');
-        });
-        renderStores();
-    }
+    async function loadStores() {
+        const currentSeq = ++requestSeq;
 
-    async function init() {
         try {
             const stores = await fetchStores();
             const storeArray = Array.isArray(stores) ? stores : [];
+
             const storeIds = storeArray
                 .map((store) => resolveStoreIdx(store))
                 .filter((storeIdx) => storeIdx !== null && storeIdx !== undefined && storeIdx !== '');
 
+            let mergedStores = storeArray;
+
             try {
                 const thumbnails = await fetchStoreThumbnails(storeIds);
-                allStores = mergeStoreThumbnails(storeArray, thumbnails);
+                mergedStores = mergeStoreThumbnails(storeArray, thumbnails);
             } catch (thumbnailError) {
                 console.error(thumbnailError);
-                allStores = storeArray;
             }
+
+            if (currentSeq !== requestSeq) return;
+
+            allStores = mergedStores;
         } catch (error) {
             console.error(error);
+
+            if (currentSeq !== requestSeq) return;
+
             allStores = [];
         }
+
         renderStores();
+    }
+
+    function resetFilters() {
+        activeCategory = 'ALL';
+        currentKeyword = '';
+
+        if (keywordInput) {
+            keywordInput.value = '';
+        }
+
+        categoryButtons.forEach((button) => {
+            button.classList.toggle('is-active', normalizeCategoryCode(button.dataset.category) === 'ALL');
+        });
+
+        loadStores();
     }
 
     categoryButtons.forEach((button) => {
         button.addEventListener('click', function () {
             categoryButtons.forEach((btn) => btn.classList.remove('is-active'));
             this.classList.add('is-active');
+
             activeCategory = normalizeCategoryCode(this.dataset.category);
-            renderStores();
+            loadStores();
         });
     });
 
     if (searchButton) {
         searchButton.addEventListener('click', function () {
             currentKeyword = keywordInput ? keywordInput.value.trim() : '';
-            renderStores();
+            loadStores();
         });
     }
 
@@ -340,13 +374,14 @@
             if (event.key === 'Enter') {
                 event.preventDefault();
                 currentKeyword = this.value.trim();
-                renderStores();
+                loadStores();
             }
         });
+
         keywordInput.addEventListener('input', function () {
             if (!this.value.trim()) {
                 currentKeyword = '';
-                renderStores();
+                loadStores();
             }
         });
     }
@@ -355,5 +390,5 @@
         resetButton.addEventListener('click', resetFilters);
     }
 
-    init();
+    loadStores();
 })();

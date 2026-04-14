@@ -3,15 +3,18 @@ package com.moeats.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moeats.domain.DeliveryAddress;
@@ -20,260 +23,257 @@ import com.moeats.domain.Store;
 import com.moeats.service.DeliveryAddressService;
 import com.moeats.service.MemberAccountService;
 import com.moeats.service.StoreService;
+import com.moeats.services.GroupOrderService;
+import com.moeats.services.GroupOrderService.GroupOrderRecord;
+import com.moeats.services.sse.SSEService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-@SessionAttributes("member")	// model에 담긴 member를 session에도 자동으로 저장
+@SessionAttributes("member")
 public class MemberController {
-	
-	@Autowired
-	private MemberAccountService memberService;
-	
-	@Autowired
-	private DeliveryAddressService deliveryAddressService;
-	
-	@Autowired
-	private StoreService storeService;
-	
-	
-	// ===== 상수 정의 ======
-	private static final String ROLE_OWNER = "OWNER";
-	private static final String ROLE_USER = "USER";
-	
-	
-	
-	// 이메일 중복 확인 true → 사용 가능 (중복 없음)	false → 이미 존재
-	@GetMapping("/members/email-check")
-	@ResponseBody
-	public boolean checkEmail(@RequestParam("memberEmail") String memberEmail) {
-		return memberService.getMemberFromEmail(memberEmail) == null;
-	}
-	
-	// 비밀번호 실시간 확인 AJAX용
-	@PostMapping("/members/password-check")
-	@ResponseBody
-	public boolean checkPasswordAjax(
-	        @RequestParam("memberPassword") String memberPassword,
-	        @SessionAttribute("member") Member loginUser) {
-	    
-	    // 서비스의 isPassCheck를 호출하여 DB의 암호화된 비번과 비교
-	    return memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
-	}
-	
-	// 회원 수정
-	@PostMapping("/members/me/edit")
-	public String updateMember(Member member,
-			Model model,
-			RedirectAttributes ra,
-			@SessionAttribute("member") Member loginUser,
-			@RequestParam("memberPassword") String memberPassword) {
-		
-		// 1. 현재 비밀번호(oldPassword)가 DB와 일치하는지 먼저 검사
-	    boolean isPassCheck = memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
-	    
-	    if(!isPassCheck) {
-	        // ❌ 틀렸을 경우: 다시 수정 페이지로 보내면서 에러 메시지 전달
-	        ra.addFlashAttribute("error", "현재 비밀번호가 일치하지 않습니다.");
-	        return "redirect:/members/me/edit";
-	    }
-	    
-	    // 2. 맞았을 경우: 정보 업데이트 진행
-	    // (이때 member 객체 안의 memberPassword는 '새로 변경할 비밀번호'가 담겨 있어야 함)
-	    member.setMemberIdx(loginUser.getMemberIdx());
-	    memberService.updateMember(member);
-	    
-	    ra.addFlashAttribute("message", "정보가 수정되었습니다.");
-	    return "redirect:/members/me";
-	}
-	
-	
-	
-	// 회원 수정 폼 요청	sessionMember - 등록된 회원 정보
-	@GetMapping("/members/me/edit")
-	public String updateMemberForm(@SessionAttribute(name="member", required=false) Member sessionMember
-			,Model model		) {
-		if(sessionMember==null) {
-			return "redirect:/login";
-		}
-		// ⭐ 세션의 이메일을 이용해 DB에서 '최신 회원 정보'를 다시 조회합니다.
-		Member latestMember = memberService.getMemberFromEmail(sessionMember.getMemberEmail());
-		
-		// ⭐ 조회한 최신 정보를 'member'라는 이름으로 모델에 담아 화면에 넘깁니다.
-		model.addAttribute("member", latestMember);
-		return "views/members/member-profile-edit";
-	}
-	
-	// 마이페이지 띄우기 폼
-	@GetMapping("/members/me")
-	public String myPage(@SessionAttribute(name="member", required=false) Member member,
-					Model model) {
-		
-	    // USER용 기본 배송지
-	    if("USER".equals(member.getMemberRoleType())) {
-	        DeliveryAddress deliveryAddress = deliveryAddressService.getDefaultAddress(member.getMemberIdx());
-	        model.addAttribute("deliveryAddress", deliveryAddress);
-	        
-	        // 전체 주소 리스트 추가
-	        List<DeliveryAddress> addressList =
-	                deliveryAddressService.getAddress(member.getMemberIdx());
-	        model.addAttribute("addressList", addressList);
-	    }
 
-	    // OWNER용 가게 정보
-	    if("OWNER".equals(member.getMemberRoleType())) {
-	        Store store = storeService.myStore(member.getMemberIdx());
-	        model.addAttribute("store", store);
-	    }
-	    
-		return "views/members/member-profile";
-	}
-	
-	// 로그아웃 처리
-	@PostMapping("/logout")
-	public String logout(HttpSession session) {
-		session.invalidate();
-		return "redirect:/main";
-	}
-	
-	// 로그인 처리
-	@PostMapping("/login")
-	public String login(Model model,
-					@RequestParam("memberEmail") String memberEmail,
-					@RequestParam("memberPassword") String memberPassword,
-					HttpSession session,
-					HttpServletResponse response,
-					RedirectAttributes ra) throws Exception {
-		
-		Member member = memberService.login(memberEmail, memberPassword);
-		
-		if(member == null) {
-			// 원인 분리
-			Member findMember = memberService.getMemberFromEmail(memberEmail);
-			
-			if(findMember == null) {
-				ra.addFlashAttribute("error", "존재하지 않는 아이디 입니다.");
-			}else {
-				ra.addFlashAttribute("error", "아이디 혹은 비밀번호를 확인해주세요.");
-			}
-			return "redirect:/login";
-			
-		}
-		
-		// --- ✅ 로그인 성공 처리 ---
-		model.addAttribute("member", member);
-		session.setAttribute("memberIdx", member.getMemberIdx());
-		
-		// 💡 핵심 추가 로직: 인터셉터가 세션에 남겨둔 '원래 가려던 주소'를 꺼내옵니다.
-		String redirectURI = (String) session.getAttribute("redirectURI");
-		
-		if (redirectURI != null && !redirectURI.isEmpty()) {
-			// 다 쓴 주소 메모는 세션에서 깔끔하게 지워줍니다.
-			session.removeAttribute("redirectURI"); 
-			
-			// 원래 가려던 페이지로 스무스하게 보냅니다!
-			return "redirect:" + redirectURI;
-		}
+    @Autowired
+    private MemberAccountService memberService;
 
-	    // 사업자 회원이면 사업자 대시보드로 리다이렉트
-	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	        return "redirect:/owners/dashboard";
-	    }
-	    
-		// 만약 가려던 주소가 없었다면(그냥 로그인 버튼 누르고 들어온 경우) 메인으로 보냅니다.
-		return "redirect:/main";		
-	}
+    @Autowired
+    private DeliveryAddressService deliveryAddressService;
 
-	// 로그인 폼
-	@GetMapping("/login")
-	public String login() {
-		
-		return "views/members/login";
-	}
-	
-	// 회원가입 - 일반/사업자 분기
-		@PostMapping("/members")
-		public String insertMember(@ModelAttribute("newMember") Member member, RedirectAttributes ra, HttpSession session) {
-	        // 💡 @ModelAttribute("newMember")를 붙여서
-	        // 스프링이 이 객체를 "member"가 아닌 "newMember"로 인식하게 만듭니다.
-	        // 이렇게 하면 @SessionAttributes("member")가 반응하지 않습니다!
+    @Autowired
+    private StoreService storeService;
 
-			try {
-				memberService.insertMember(member);
+    @Autowired
+    private GroupOrderService groupOrderService;
 
-				session.invalidate(); // ⭐ 기존 로그인 세션 제거
+    @Autowired
+    private SSEService sseService;
 
-				return "redirect:/login";
+    private static final String ROLE_OWNER = "OWNER";
+    private static final String ROLE_USER = "USER";
 
-			} catch (Exception e) {
-				ra.addFlashAttribute("error", e.getMessage());
-				return "redirect:/members/createType";
-			}
-		}
-	
-	// 통합 대시보드 분기(역할분기 일반/사업자)
-	@GetMapping("/members/dashboard")
-	public String dashboard(@SessionAttribute("member") Member member,
-					Model model) {
+    private String normalizeReturnUrl(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        if (!raw.startsWith("/") || raw.startsWith("//")) {
+            return null;
+        }
+        return raw;
+    }
 
-	    if (ROLE_OWNER.equals(member.getMemberRoleType())) {
-	    	// 1. 로그인한 점주의 가게 정보를 DB에서 조회
-	        Store store = storeService.myStore(member.getMemberIdx());
-	        
-	        // 2. 화면(HTML)에서 사용하는 변수명인 'storeVo'로 Model에 담아 전달
-	        model.addAttribute("store", store);
+    @GetMapping("/members/me/orders")
+    public String myOrderHistory(@SessionAttribute(name = "member", required = false) Member member, Model model) {
 
-            // 💡 참고: HTML을 보면 주문 내역(orderList)도 필요로 합니다.
-            // 주문 내역을 가져오는 서비스가 있다면 아래처럼 같이 넘겨주어야 실시간 주문 현황도 뜹니다.
-            // List<Order> orderList = orderService.getCurrentOrders(store.getStoreIdx());
-            // model.addAttribute("orderList", orderList);
-	    	
-	    	return "views/owner/dashboard";
-	    }
+        if (ROLE_USER.equals(member.getMemberRoleType())) {
+            DeliveryAddress deliveryAddress = deliveryAddressService.getDefaultAddress(member.getMemberIdx());
+            model.addAttribute("deliveryAddress", deliveryAddress);
 
-	    return "redirect:/main";
-	}
-	
-	// 회원가입 폼 - 사업자
-	@GetMapping("/members/new-owner")
-	public String insertMemberOwner() {
-		
-		return "views/members/auth-signup-owner";
-	}
+            List<DeliveryAddress> addressList = deliveryAddressService.getAddress(member.getMemberIdx());
+            List<GroupOrderRecord> orderList = groupOrderService.findRecentOrdersByMember(member.getMemberIdx());
 
-	// 회원가입 폼 - 일반
-	@GetMapping("/members/new-user")
-	public String insertMemberUSER() {
-		
-		return "views/members/auth-signup-user";
-	}
+            model.addAttribute("orderList", orderList);
+            model.addAttribute("addressList", addressList);
+        }
 
-	// 회원가입 유형 선택 폼(일반/사업자)
-	@GetMapping("/members/createType")
-	public String createType() {
-		
-		return "views/members/create-type";
-	}
-	
-	/*
-	 * // ⭐ 추가: 비밀번호 확인 버튼 클릭 시 AJAX 요청을 처리하는 메서드
-	 * 
-	 * @PostMapping("/members/check-password")
-	 * 
-	 * @ResponseBody // 결과 데이터를 JSON으로 돌려주기 위해 반드시 필요! public Map<String, Object>
-	 * checkPassword(@RequestParam("password") String memberPassword,
-	 * 
-	 * @SessionAttribute("member") Member loginUser) {
-	 * 
-	 * Map<String, Object> response = new HashMap<>();
-	 * 
-	 * // 1. 서비스 호출해서 세션 유저의 비밀번호와 입력받은 비밀번호 비교 boolean isPassCheck =
-	 * memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
-	 * 
-	 * // 2. 결과값 담기 response.put("isValid", isPassCheck);
-	 * 
-	 * return response; // { "isValid": true } 형식으로 JS에 전달됨 }
-	 */
-	
+        return "views/user/user-order-history";
+    }
+
+    @GetMapping("members/me/api/orders/{orderIdx}")
+    @ResponseBody
+    public GroupOrderService.GroupOrderRecord getOrderApi(@PathVariable("orderIdx") int orderIdx) {
+        return groupOrderService.findRecordByIdx(orderIdx);
+    }
+
+    @GetMapping("/members/email-check")
+    @ResponseBody
+    public boolean checkEmail(@RequestParam("memberEmail") String memberEmail) {
+        return memberService.getMemberFromEmail(memberEmail) == null;
+    }
+
+    @PostMapping("/members/password-check")
+    @ResponseBody
+    public boolean checkPasswordAjax(@RequestParam("memberPassword") String memberPassword,
+            @SessionAttribute("member") Member loginUser) {
+        return memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
+    }
+
+    @PostMapping("/members/me/edit")
+    public String updateMember(Member member, Model model, RedirectAttributes ra,
+            @SessionAttribute("member") Member loginUser,
+            @RequestParam("memberPassword") String memberPassword) {
+
+        boolean isPassCheck = memberService.isPassCheck(loginUser.getMemberIdx(), memberPassword);
+
+        if (!isPassCheck) {
+            ra.addFlashAttribute("error", "현재 비밀번호가 일치하지 않습니다.");
+            return "redirect:/members/me/edit";
+        }
+
+        member.setMemberIdx(loginUser.getMemberIdx());
+        memberService.updateMember(member);
+
+        ra.addFlashAttribute("message", "정보가 수정되었습니다.");
+        return "redirect:/members/me";
+    }
+
+    @GetMapping("/members/me/edit")
+    public String updateMemberForm(@SessionAttribute(name = "member", required = false) Member sessionMember,
+            Model model) {
+        if (sessionMember == null) {
+            return "redirect:/login";
+        }
+
+        Member latestMember = memberService.getMemberFromEmail(sessionMember.getMemberEmail());
+        model.addAttribute("member", latestMember);
+        return "views/members/member-profile-edit";
+    }
+
+    @GetMapping("/members/me")
+    public String myPage(@SessionAttribute(name = "member", required = false) Member member, Model model) {
+
+        if (ROLE_USER.equals(member.getMemberRoleType())) {
+            DeliveryAddress deliveryAddress = deliveryAddressService.getDefaultAddress(member.getMemberIdx());
+            model.addAttribute("deliveryAddress", deliveryAddress);
+
+            List<DeliveryAddress> addressList = deliveryAddressService.getAddress(member.getMemberIdx());
+            List<GroupOrderRecord> orderList = groupOrderService.findRecentOrdersByMember(member.getMemberIdx());
+
+            model.addAttribute("orderList", orderList);
+            model.addAttribute("addressList", addressList);
+        }
+
+        if (ROLE_OWNER.equals(member.getMemberRoleType())) {
+            Store store = storeService.myStore(member.getMemberIdx());
+            model.addAttribute("store", store);
+        }
+
+        return "views/members/member-profile";
+    }
+
+    @PostMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/main";
+    }
+
+    @PostMapping("/login")
+    public String login(Model model,
+            @RequestParam("memberEmail") String memberEmail,
+            @RequestParam("memberPassword") String memberPassword,
+            @RequestParam(value = "returnUrl", required = false) String returnUrl,
+            HttpSession session,
+            HttpServletResponse response,
+            RedirectAttributes ra) throws Exception {
+
+        Member member = memberService.login(memberEmail, memberPassword);
+
+        if (member == null) {
+            Member findMember = memberService.getMemberFromEmail(memberEmail);
+
+            if (findMember == null) {
+                ra.addFlashAttribute("error", "존재하지 않는 아이디 입니다.");
+            } else {
+                ra.addFlashAttribute("error", "아이디 혹은 비밀번호를 확인해주세요.");
+            }
+
+            String safeReturnUrl = normalizeReturnUrl(returnUrl);
+            if (safeReturnUrl != null) {
+                return "redirect:/login?returnUrl="
+                        + java.net.URLEncoder.encode(safeReturnUrl, java.nio.charset.StandardCharsets.UTF_8);
+            }
+
+            return "redirect:/login";
+        }
+
+        model.addAttribute("member", member);
+        session.setAttribute("memberIdx", member.getMemberIdx());
+
+        // 📍 1. 점주(OWNER)인지 '가장 먼저' 확인해서 무조건 대시보드로 보냅니다.
+        if (ROLE_OWNER.equals(member.getMemberRoleType())) {
+            return "redirect:/owners/dashboard";
+        }
+
+        // 📍 2. 일반 유저(USER)인 경우, 이전 페이지(returnUrl)가 있으면 거기로 돌려보냅니다.
+        String safeReturnUrl = normalizeReturnUrl(returnUrl);
+        if (safeReturnUrl != null) {
+            session.removeAttribute("redirectURI");
+            return "redirect:" + safeReturnUrl;
+        }
+
+        // 📍 3. 세션에 저장된 URI가 있으면 거기로 보냅니다.
+        String redirectURI = normalizeReturnUrl((String) session.getAttribute("redirectURI"));
+        if (redirectURI != null) {
+            session.removeAttribute("redirectURI");
+            return "redirect:" + redirectURI;
+        }
+
+        // 📍 4. 위 조건에 아무것도 해당하지 않으면 기본 메인 페이지로 보냅니다.
+        return "redirect:/main";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "views/members/login";
+    }
+
+    @PostMapping("/members")
+    public String insertMember(@ModelAttribute("newMember") Member member, RedirectAttributes ra, HttpSession session) {
+
+        try {
+            memberService.insertMember(member);
+            session.invalidate();
+            return "redirect:/login";
+
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/members/createType";
+        }
+    }
+
+    @GetMapping("/members/dashboard")
+    public String dashboard(@SessionAttribute("member") Member member, Model model) {
+
+        if (ROLE_OWNER.equals(member.getMemberRoleType())) {
+            Store store = storeService.myStore(member.getMemberIdx());
+            model.addAttribute("store", store);
+            return "views/owner/dashboard";
+        }
+
+        return "redirect:/main";
+    }
+
+    @GetMapping("/members/new-owner")
+    public String insertMemberOwner() {
+        return "views/members/auth-signup-owner";
+    }
+
+    @GetMapping("/members/new-user")
+    public String insertMemberUSER() {
+        return "views/members/auth-signup-user";
+    }
+
+    @GetMapping("/members/createType")
+    public String createType() {
+        return "views/members/create-type";
+    }
+
+    @GetMapping(value = "/members/api/sse/orders/{orderIdx}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @ResponseBody
+    public SseEmitter connectOrderSse(@PathVariable("orderIdx") int orderIdx) {
+        return sseService.joinOrder(orderIdx);
+    }
+
+    @PostMapping("/members/me/withdraw")
+    @ResponseBody
+    public boolean withdrawMember(@SessionAttribute("member") Member loginUser, HttpSession session) {
+        try {
+            memberService.deleteMember(loginUser.getMemberIdx());
+            session.invalidate();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
