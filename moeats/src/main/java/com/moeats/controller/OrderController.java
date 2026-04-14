@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.moeats.mapper.StoreMapper;
 import com.moeats.service.DeliveryAddressService;
 import com.moeats.domain.GroupOrder;
 import com.moeats.domain.GroupOrderItem;
@@ -57,6 +58,9 @@ public class OrderController {
     @Autowired
     TransactionService transactionService;
 
+    @Autowired
+    StoreMapper storeMapper;
+    
     @GetMapping("/orders/{order_idx}")
     public String orderDetail(
             Model model,
@@ -101,6 +105,7 @@ public class OrderController {
             int currentStep,
             String currentStepLabel,
             String orderNumber,
+            String storeName,
             Integer orderAmount,
             String deliveryLabel,
             String deliveryAddress
@@ -138,6 +143,24 @@ public class OrderController {
             @SessionAttribute("member") Member member) {
 
         GroupOrderService.GroupOrderRecord record = groupOrderService.findRecordByIdx(orderIdx);
+        var orderRoom = orderRoomService.findByIdx(groupOrder.getRoomIdx());
+
+        String orderNumber = String.valueOf(orderIdx);
+        if (orderRoom != null
+                && orderRoom.getRoomCode() != null
+                && !orderRoom.getRoomCode().isBlank()) {
+            orderNumber = orderRoom.getRoomCode();
+        }
+
+        String storeName = "가게 정보 없음";
+        if (groupOrder.getStoreIdx() > 0) {
+            var store = storeMapper.findByStoreIdx(groupOrder.getStoreIdx());
+            if (store != null
+                    && store.getStoreName() != null
+                    && !store.getStoreName().isBlank()) {
+                storeName = store.getStoreName();
+            }
+        }
 
         String deliveryLabel = "배송지";
         String deliveryAddress = "주소 정보 없음";
@@ -169,7 +192,8 @@ public class OrderController {
                 groupOrder.getOrderStatus(),
                 resolveOrderStep(groupOrder.getOrderStatus()),
                 resolveOrderStepLabel(groupOrder.getOrderStatus()),
-                String.valueOf(orderIdx),
+                orderNumber,
+                storeName,
                 groupOrder.getOrderTotalAmount(),
                 deliveryLabel,
                 deliveryAddress

@@ -8,9 +8,6 @@
 
     <th:block layout:fragment="pageStyles">
         <style>
-            .od-page-shell {
-                overflow-x: hidden;
-            }
 
             .od-stack,
             .od-main-grid,
@@ -409,57 +406,60 @@
             }
 
             @media (max-width: 767.98px) {
-                .od-top-card,
-                .od-panel,
-                .od-summary-card,
-                .od-member-card,
-                .od-note-box {
-                    padding: 16px;
-                    border-radius: 20px;
-                }
-
-                .od-top-title {
-                    font-size: 2rem;
-                }
-
-                .od-panel__title {
-                    font-size: 1.55rem;
-                }
-
-                .od-status-bar {
-                    grid-template-columns: repeat(5, minmax(72px, 1fr));
-                    gap: 6px;
-                }
-
-                .od-status-step {
-                    min-height: 58px;
-                    padding: 8px 4px;
-                    flex-direction: column;
-                    gap: 5px;
-                }
-
-                .od-status-step__num {
-                    width: 24px;
-                    height: 24px;
-                    font-size: 11px;
-                }
-
-                .od-status-step__title {
-                    font-size: 11px;
-                    line-height: 1.15;
-                }
-
-                .od-row,
-                .od-line-item {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                .od-line-item__value {
-                    text-align: right;
-                    white-space: normal;
-                }
-            }
+			    .od-top-card,
+			    .od-panel,
+			    .od-summary-card,
+			    .od-member-card,
+			    .od-note-box {
+			        padding: 16px;
+			        border-radius: 20px;
+			    }
+			
+			    .od-top-title {
+			        font-size: 2rem;
+			    }
+			
+			    .od-panel__title {
+			        font-size: 1.55rem;
+			    }
+			
+			    .od-status-bar {
+			        grid-template-columns: repeat(5, minmax(0, 1fr));
+			        gap: 4px;
+			    }
+			
+			    .od-status-step {
+			        min-height: 56px;
+			        padding: 8px 2px;
+			        flex-direction: column;
+			        gap: 4px;
+			    }
+			
+			    .od-status-step__num {
+			        width: 22px;
+			        height: 22px;
+			        font-size: 10px;
+			    }
+			
+			    .od-status-step__title {
+			        font-size: 10px;
+			        line-height: 1.15;
+			        letter-spacing: -0.02em;
+			        white-space: normal;
+			        word-break: keep-all;
+			    }
+			
+			    .od-row,
+			    .od-line-item {
+			        flex-direction: column;
+			        align-items: stretch;
+			    }
+			
+			    .od-line-item__value {
+			        text-align: right;
+			        white-space: normal;
+			    }
+			}
         </style>
     </th:block>
 </head>

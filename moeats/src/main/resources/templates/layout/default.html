@@ -331,114 +331,144 @@
         letter-spacing: -0.03em;
     }
 
-    @media (max-width: 767.98px) {
-        .mo-floating-order-status {
-            position: sticky;
-            top: 68px;
-            margin-top: -1px;
-            z-index: 1030;
-            padding: 0;
-            background: rgba(255, 255, 255, 0.96);
-            border-bottom: 1px solid rgba(42, 54, 89, 0.08);
-            box-shadow: 0 4px 10px rgba(37, 45, 89, 0.03);
-        }
-
-        .mo-floating-order-status__inner {
-            padding: 0 16px;
-        }
-
-        .mo-order-status-fab {
-            position: static;
-            left: auto;
-            top: auto;
-            bottom: auto;
-            width: 100%;
-            min-width: 0;
-            min-height: 52px;
-            margin: 0;
-            padding: 0;
-            border-radius: 0;
-            background: transparent;
-            border: 0;
-            box-shadow: none;
-            backdrop-filter: none;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .mo-order-status-fab:hover {
-            transform: none;
-            box-shadow: none;
-            border-color: transparent;
-        }
-
-        .mo-order-status-fab__icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 10px;
-            font-size: 13px;
-            box-shadow: none;
-        }
-
-        .mo-order-status-fab__eyebrow {
-            display: none;
-        }
-
-        .mo-order-status-fab__label {
-            font-size: 13px;
-            color: var(--mo-text-soft, #6B7280);
-        }
-
-        .mo-order-status-fab__arrow {
-            font-size: 15px;
-        }
-
-        .mo-order-summary-dialog {
-            max-width: none;
-            margin: 12px;
-        }
-
-        .mo-order-summary-modal {
-            border-radius: 24px;
-        }
-
-        .mo-order-summary-modal__header {
-            padding: 20px 20px 8px;
-        }
-
-        .mo-order-summary-modal__title {
-            font-size: 1.6rem;
-        }
-
-        .mo-order-summary-modal__body {
-            padding: 4px 20px 22px;
-        }
-
-        .mo-order-summary-stepper,
-        .mo-order-summary-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .mo-order-summary-stepper {
-            gap: 8px;
-        }
-
-        .mo-order-summary-step {
-            flex-direction: row;
-            justify-content: flex-start;
-            text-align: left;
-            padding: 12px 14px;
-        }
-
-        .mo-order-summary-step__title {
-            font-size: 13px;
-        }
-
-        .mo-order-summary-top__row {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-    }
+	@media (max-width: 767.98px) {
+	    .mo-floating-order-status {
+	        position: sticky;
+	        top: 68px;
+	        margin-top: -1px;
+	        z-index: 1030;
+	        padding: 0;
+	        background: rgba(255, 255, 255, 0.96);
+	        border-bottom: 1px solid rgba(42, 54, 89, 0.08);
+	        box-shadow: 0 4px 10px rgba(37, 45, 89, 0.03);
+	    }
+	
+	    .mo-floating-order-status__inner {
+	        padding: 0 16px;
+	    }
+	
+	    .mo-order-status-fab {
+	        position: static;
+	        left: auto;
+	        top: auto;
+	        bottom: auto;
+	        width: 100%;
+	        min-width: 0;
+	        min-height: 52px;
+	        margin: 0;
+	        padding: 0;
+	        border-radius: 0;
+	        background: transparent;
+	        border: 0;
+	        box-shadow: none;
+	        backdrop-filter: none;
+	        justify-content: space-between;
+	        gap: 10px;
+	    }
+	
+	    .mo-order-status-fab:hover {
+	        transform: none;
+	        box-shadow: none;
+	        border-color: transparent;
+	    }
+	
+	    .mo-order-status-fab__icon {
+	        width: 28px;
+	        height: 28px;
+	        border-radius: 10px;
+	        font-size: 13px;
+	        box-shadow: none;
+	    }
+	
+	    .mo-order-status-fab__eyebrow {
+	        display: none;
+	    }
+	
+	    .mo-order-status-fab__label {
+	        font-size: 13px;
+	        color: var(--mo-text-soft, #6B7280);
+	    }
+	
+	    .mo-order-status-fab__arrow {
+	        font-size: 15px;
+	    }
+	
+	    .mo-order-summary-dialog {
+	        max-width: none;
+	        width: 100%;
+	        margin: 0;
+	        min-height: 100%;
+	        align-items: flex-end;
+	    }
+	
+	    .mo-order-summary-modal {
+	        width: 100%;
+	        margin-top: auto;
+	        border-radius: 24px 24px 0 0;
+	        box-shadow: 0 -18px 42px rgba(37, 45, 89, 0.18);
+	    }
+	
+	    .mo-order-summary-modal__header {
+	        padding: 14px 20px 8px;
+	        position: relative;
+	    }
+	
+	    .mo-order-summary-modal__header::before {
+	        content: "";
+	        display: block;
+	        width: 52px;
+	        height: 5px;
+	        border-radius: 999px;
+	        background: rgba(42, 54, 89, 0.14);
+	        margin: 0 auto 14px;
+	    }
+	
+	    .mo-order-summary-modal__title {
+	        font-size: 1.45rem;
+	    }
+	
+	    .mo-order-summary-modal__body {
+	        padding: 4px 20px 22px;
+	    }
+	
+	    .mo-order-summary-shell {
+	        gap: 14px;
+	    }
+	
+	    .mo-order-summary-top__row {
+	        flex-direction: row;
+	        align-items: center;
+	    }
+	
+	    .mo-order-summary-stepper {
+	        grid-template-columns: repeat(5, minmax(76px, 1fr));
+	        gap: 8px;
+	        overflow-x: auto;
+	        padding-bottom: 4px;
+	        -webkit-overflow-scrolling: touch;
+	        scrollbar-width: none;
+	    }
+	
+	    .mo-order-summary-stepper::-webkit-scrollbar {
+	        display: none;
+	    }
+	
+	    .mo-order-summary-step {
+	        flex-direction: column;
+	        justify-content: center;
+	        text-align: center;
+	        min-width: 76px;
+	        padding: 12px 8px;
+	    }
+	
+	    .mo-order-summary-step__title {
+	        font-size: 12px;
+	    }
+	
+	    .mo-order-summary-grid {
+	        grid-template-columns: 1fr;
+	    }
+	}
 </style>
     
 </head>
@@ -501,7 +531,7 @@
                     <div class="mo-order-summary-shell">
                         <div class="mo-order-summary-top">
                             <div class="mo-order-summary-top__row">
-                                <div class="mo-order-summary-top__label">주문번호</div>
+                                <div class="mo-order-summary-top__label">주문방 코드</div>
                                 <div id="moOrderSummaryNumber" class="mo-order-summary-top__value">0</div>
                             </div>
                         </div>
@@ -528,6 +558,10 @@
                                 <div class="mo-order-summary-step__title">배달 완료</div>
                             </div>
                         </div>
+                        <div class="mo-order-summary-card">
+						    <div class="mo-order-summary-card__label">주문 가게</div>
+						    <div id="moOrderSummaryStoreName" class="mo-order-summary-card__value">가게 정보 없음</div>
+						</div>
 
                         <div class="mo-order-summary-grid">
                             <div class="mo-order-summary-card">
@@ -576,7 +610,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const trigger = document.querySelector('[data-mo-open-order-summary]');
     const floatingWrap = document.querySelector('.mo-floating-order-status');
     const modalElement = document.getElementById('moOrderSummaryModal');
-
+    const storeNameEl = document.getElementById('moOrderSummaryStoreName');
+    
     if (!trigger || !modalElement) {
         return;
     }
@@ -643,6 +678,7 @@ document.addEventListener('DOMContentLoaded', function () {
         statusBadgeEl.textContent = summary.currentStepLabel || '-';
         statusBadgeEl.classList.toggle('is-cancelled', orderStatus === 'CANCELLED');
 
+        storeNameEl.textContent = summary.storeName || '가게 정보 없음';
         numberEl.textContent = summary.orderNumber || '-';
         amountEl.textContent = `${Number(summary.orderAmount || 0).toLocaleString()}원`;
         deliveryLabelEl.textContent = summary.deliveryLabel || '배송지';
