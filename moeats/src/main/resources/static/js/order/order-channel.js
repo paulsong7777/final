@@ -125,15 +125,21 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = '/orders/' + orderIdx;
     });
 
-    eventSource.addEventListener('expire', function (event) {
-        console.log('[order-channel] expire', event.data);
-        alert('결제 시간이 만료되었습니다.');
-        if (navigationLocked) {
-            return;
-        }
-        navigationLocked = true;
-        window.location.href = '/orders/' + orderIdx;
-    });
+	eventSource.addEventListener('expire', function (event) {
+	        console.log('[order-channel] expire', event.data);
+	        if (navigationLocked) {
+	            return;
+	        }
+	        navigationLocked = true;
+
+	        // 화면(HTML)에 만료 처리 함수가 있으면 위임, 없으면 기본 알림 후 이동
+	        if (typeof window.handlePaymentExpired === 'function') {
+	            window.handlePaymentExpired();
+	        } else {
+	            alert('세션이 만료되어 주문이 취소되었습니다.');
+	            window.location.href = '/main'; 
+	        }
+	    });
 
     eventSource.addEventListener('change', function (event) {
         console.log('[order-channel] change', event.data);
