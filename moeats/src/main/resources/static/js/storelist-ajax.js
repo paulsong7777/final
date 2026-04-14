@@ -73,11 +73,7 @@
     }
 
     function resolveDescription(store) {
-        return store.storeDescription || store.description || '단체 주문에 적합한 대표 인기 메뉴 운영';
-    }
-
-    function resolveEtaText(store) {
-        return store.etaText || '20~30분';
+        return store.storeDescription || store.description || '';
     }
 
     function resolveStoreIdx(store) {
@@ -103,103 +99,65 @@
         return '';
     }
 
+    function buildStatusBadge(store) {
+        const statusText = getStatusText(store);
+        if (!statusText) return '';
+        return `<span class="mo-store-card--ajax__status">${escapeHtml(statusText)}</span>`;
+    }
+
+    function buildCardAction(store, isAvailable) {
+        const storeLink = resolveStoreLink(store);
+
+        if (isAvailable) {
+            return `<a href="${storeLink}" class="mo-btn mo-btn-primary w-100">주문 시작</a>`;
+        }
+
+        const statusText = getStatusText(store) || '현재 주문 불가';
+        return `<button type="button" class="mo-btn w-100" disabled aria-disabled="true" style="background:#f8fafc; color:#6b7280; border:1px solid #d7dde5; cursor:default;">${escapeHtml(statusText)}</button>`;
+    }
+
     function buildStoreCard(store) {
         const categoryCode = resolveCategoryCode(store);
         const imageUrl = resolveImageUrl(store);
         const description = resolveDescription(store);
-        const etaText = resolveEtaText(store);
         const minimumOrderAmount = formatPrice(store.minimumOrderAmount);
         const storeLink = resolveStoreLink(store);
         const storeName = store.storeName || '가게명';
+        const categoryName = categoryLabel(categoryCode);
 
         const statusPriority = getStatusPriority(store);
-        const statusText = getStatusText(store);
         const isAvailable = statusPriority === 1;
-
-        let cardStyle = '';
-        let imageStyle = '';
-        let textStyle = '';
-        let imageOverlay = '';
-        let actionButtons = '';
-        let imageLinkStart = '';
-        let imageLinkEnd = '';
-
-        if (isAvailable) {
-            actionButtons = `
-                <a href="${storeLink}" class="mo-btn mo-btn-outline flex-fill">상세 보기</a>
-                <a href="${storeLink}" class="mo-btn mo-btn-primary flex-fill">주문 시작</a>
-            `;
-        } else if (statusPriority === 2) {
-            cardStyle = 'opacity: 0.96;';
-            imageStyle = 'filter: saturate(0.92) brightness(0.88);';
-            textStyle = 'color: var(--mo-navy-strong);';
-
-            imageOverlay = `
-                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-                     style="background: linear-gradient(180deg, rgba(22, 34, 68, 0.04) 0%, rgba(22, 34, 68, 0.18) 100%); z-index: 2;">
-                   <span class="fw-bold" style="color: #8a6700; background: rgba(255, 248, 214, 0.94); border: 1px solid rgba(255, 193, 7, 0.55); padding: 6px 14px; border-radius: 999px;">
-                        ${statusText}
-                   </span>
-                </div>`;
-
-            actionButtons = `
-                <button type="button" class="mo-btn flex-fill" disabled aria-disabled="true" style="background: #fff8de; color: #8a6700; border: 1px solid rgba(255, 193, 7, 0.45); cursor: default;">
-                    브레이크 타임 안내
-                </button>
-            `;
-        } else {
-            cardStyle = 'opacity: 0.92;';
-            imageStyle = 'filter: grayscale(0.45) brightness(0.72);';
-            textStyle = 'color: #6b7280 !important;';
-
-            imageOverlay = `
-                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-                     style="background: linear-gradient(180deg, rgba(18, 24, 38, 0.12) 0%, rgba(18, 24, 38, 0.34) 100%); z-index: 2;">
-                   <span class="fw-bold" style="color: #ffffff; background: rgba(31, 41, 55, 0.78); padding: 6px 14px; border-radius: 999px;">${statusText}</span>
-                </div>`;
-
-            actionButtons = `
-                <button type="button" class="mo-btn flex-fill" disabled aria-disabled="true" style="background: #f8fafc; color: #6b7280; border: 1px solid #d7dde5; cursor: default;">
-                    영업 준비 중
-                </button>
-            `;
-        }
-
-        if (isAvailable) {
-            imageLinkStart = `<a href="${storeLink}" class="mo-store-card--ajax__image-link" aria-label="${escapeHtml(storeName)} 상세 보기">`;
-            imageLinkEnd = '</a>';
-        } else {
-            imageLinkStart = '<div class="mo-store-card--ajax__image-link" aria-disabled="true" style="cursor: default;">';
-            imageLinkEnd = '</div>';
-        }
+        const statusBadge = !isAvailable ? buildStatusBadge(store) : '';
 
         return `
             <div class="col-12 col-md-6 col-xl-3 js-store-item" data-category="${escapeHtml(categoryCode)}">
-                <article class="mo-store-card mo-store-card--ajax h-100" style="${cardStyle}">
+                <article class="mo-store-card mo-store-card--ajax h-100 ${!isAvailable ? 'is-unavailable' : ''}">
                     <div class="mo-store-card--ajax__image-wrap position-relative">
-                        ${imageOverlay}
-                        ${imageLinkStart}
-                            <div class="mo-store-card--ajax__image" style="background-image:url('${escapeHtml(imageUrl)}'); ${imageStyle}"></div>
-                        ${imageLinkEnd}
+                        <a href="${storeLink}" class="mo-store-card--ajax__image-link" aria-label="${escapeHtml(storeName)} 상세 보기">
+                            <div class="mo-store-card--ajax__image" style="background-image:url('${escapeHtml(imageUrl)}');"></div>
+                        </a>
+                        <div class="mo-store-card--ajax__overlay-top">
+                            <span class="mo-store-card--ajax__category">${escapeHtml(categoryName)}</span>
+                            ${statusBadge}
+                        </div>
                     </div>
 
                     <div class="mo-store-card__body mo-store-card--ajax__body d-flex flex-column">
-                        <div class="mo-store-card--ajax__top">
-                            <h3 class="mo-store-card__title mo-store-card--ajax__title js-store-title" style="${textStyle}">${escapeHtml(storeName)}</h3>
-                            ${statusPriority === 1 ? `<span class="mo-chip mo-store-card--ajax__eta">${escapeHtml(etaText)}</span>` : ''}
-                        </div>
+                        <a href="${storeLink}" class="mo-store-card--ajax__title-link">
+                            <h3 class="mo-store-card__title mo-store-card--ajax__title js-store-title">${escapeHtml(storeName)}</h3>
+                        </a>
 
-                        <div class="mo-store-card--ajax__middle">
-                            <p class="mo-store-card__desc mo-store-card--ajax__desc js-store-desc" style="${textStyle}">${escapeHtml(description)}</p>
+                        <p class="mo-store-card__desc mo-store-card--ajax__desc js-store-desc">${escapeHtml(description || '가게 소개가 아직 등록되지 않았습니다.')}</p>
 
-                            <div class="mo-store-card--ajax__minimum-inline">
-                                <span class="mo-store-card--ajax__minimum-inline-label" style="${textStyle}">최소주문</span>
-                                <strong class="mo-store-card--ajax__minimum-inline-value" style="${textStyle}">${escapeHtml(minimumOrderAmount)}</strong>
+                        <div class="mo-store-card--ajax__meta-row">
+                            <div class="mo-store-card--ajax__meta-item">
+                                <span class="mo-store-card--ajax__meta-label">최소주문</span>
+                                <strong class="mo-store-card--ajax__meta-value">${escapeHtml(minimumOrderAmount)}</strong>
                             </div>
                         </div>
 
-                        <div class="mo-store-card__actions mo-store-card--ajax__actions mt-auto d-flex gap-2">
-                            ${actionButtons}
+                        <div class="mo-store-card__actions mo-store-card--ajax__actions mt-auto">
+                            ${buildCardAction(store, isAvailable)}
                         </div>
                     </div>
                 </article>

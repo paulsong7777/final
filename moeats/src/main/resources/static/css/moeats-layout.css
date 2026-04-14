@@ -1405,3 +1405,631 @@ button {
 .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer {
     display: none;
 }
+/* =========================================================
+   FE-01 Production Surgery
+   header/footer untouched
+   append only
+========================================================= */
+
+.mo-page-main > .container.mo-page-container {
+    max-width: 1280px;
+}
+
+.mo-main-page {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+}
+
+.mo-main-hero {
+    padding-top: 4px;
+}
+
+.mo-main-hero__surface {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+    gap: 24px;
+    padding: 34px 34px 30px;
+    border-radius: 32px;
+    border: 1px solid rgba(42, 54, 89, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(255, 128, 0, 0.14), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.92));
+    box-shadow: 0 18px 40px rgba(37, 45, 89, 0.06);
+}
+
+.mo-main-hero__copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.mo-main-hero__title {
+    margin: 0;
+    color: var(--mo-navy-strong);
+    font-size: 38px;
+    line-height: 1.18;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+}
+
+.mo-main-hero__desc {
+    margin: 0;
+    max-width: 640px;
+    color: var(--mo-text-soft);
+    font-size: 15px;
+    line-height: 1.75;
+}
+
+.mo-main-search-card {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    padding: 22px;
+    border-radius: 24px;
+    border: 1px solid rgba(42, 54, 89, 0.08);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 28px rgba(37, 45, 89, 0.05);
+}
+
+.mo-main-search-card__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.mo-main-search-card__field-wrap {
+    position: relative;
+    min-width: 0;
+}
+
+.mo-main-search-card__icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8A93A6;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.mo-main-search-card__field {
+    min-height: 56px;
+    padding-left: 44px;
+    font-size: 15px;
+    border-radius: 16px;
+}
+
+.mo-main-search-card__submit {
+    min-width: 132px;
+    min-height: 56px;
+    border-radius: 16px;
+}
+
+.mo-main-search-card__helper {
+    color: var(--mo-text-soft);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.mo-main-store-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.mo-main-store-section__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+#storeCardList .mo-store-card--ajax {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: 26px;
+    overflow: hidden;
+    border: 1px solid rgba(42, 54, 89, 0.08);
+    box-shadow: 0 10px 24px rgba(37, 45, 89, 0.05);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+#storeCardList .mo-store-card--ajax:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 128, 0, 0.20);
+    box-shadow: 0 18px 34px rgba(37, 45, 89, 0.09);
+}
+
+#storeCardList .mo-store-card--ajax.is-unavailable:hover {
+    transform: none;
+}
+
+#storeCardList .mo-store-card--ajax__image-wrap {
+    padding: 16px 16px 0;
+}
+
+#storeCardList .mo-store-card--ajax__image-link {
+    display: block;
+}
+
+#storeCardList .mo-store-card--ajax__image {
+    width: 100%;
+    height: 212px;
+    min-height: 212px;
+    border-radius: 18px;
+    background-size: cover;
+    background-position: center;
+    background-color: #dfe4ec;
+}
+
+#storeCardList .mo-store-card--ajax__body {
+    padding: 18px 18px 20px;
+    gap: 14px;
+}
+
+#storeCardList .mo-store-card--ajax__header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#storeCardList .mo-store-card--ajax__category,
+#storeCardList .mo-store-card--ajax__eta,
+#storeCardList .mo-store-card--ajax__status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+#storeCardList .mo-store-card--ajax__category {
+    background: rgba(42, 54, 89, 0.06);
+    color: var(--mo-navy-strong);
+}
+
+#storeCardList .mo-store-card--ajax__eta {
+    background: rgba(255, 128, 0, 0.10);
+    color: var(--mo-primary);
+}
+
+#storeCardList .mo-store-card--ajax__status-badge {
+    background: rgba(42, 54, 89, 0.10);
+    color: var(--mo-navy-strong);
+}
+
+#storeCardList .mo-store-card--ajax__title-link {
+    color: inherit;
+}
+
+#storeCardList .mo-store-card--ajax__title {
+    margin: 0;
+    min-height: 54px;
+    color: var(--mo-navy-strong);
+    font-size: 21px;
+    line-height: 1.28;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#storeCardList .mo-store-card--ajax__desc {
+    margin: 0;
+    min-height: 46px;
+    color: var(--mo-text-soft);
+    font-size: 14px;
+    line-height: 1.62;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#storeCardList .mo-store-card--ajax__desc.is-empty {
+    color: #99A1B2;
+}
+
+#storeCardList .mo-store-card--ajax__meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(42, 54, 89, 0.08);
+}
+
+#storeCardList .mo-store-card--ajax__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#storeCardList .mo-store-card--ajax__meta-label {
+    color: #8A93A6;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+#storeCardList .mo-store-card--ajax__meta-value {
+    color: var(--mo-navy-strong);
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+}
+
+#storeCardList .mo-store-card--ajax__actions {
+    margin-top: auto;
+    gap: 0;
+}
+
+#storeCardList .mo-store-card--ajax__actions .mo-btn {
+    min-height: 46px;
+    border-radius: 14px;
+    font-size: 14px;
+}
+
+@media (max-width: 1199.98px) {
+    .mo-main-hero__surface {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .mo-main-page {
+        gap: 28px;
+    }
+
+    .mo-main-hero__surface {
+        padding: 28px 24px 24px;
+        border-radius: 28px;
+    }
+
+    .mo-main-hero__title {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .mo-main-hero__surface {
+        padding: 22px 18px 18px;
+        gap: 18px;
+    }
+
+    .mo-main-hero__title {
+        font-size: 27px;
+    }
+
+    .mo-main-hero__desc {
+        font-size: 14px;
+        line-height: 1.68;
+    }
+
+    .mo-main-search-card {
+        padding: 16px;
+        border-radius: 20px;
+    }
+
+    .mo-main-search-card__row {
+        grid-template-columns: 1fr;
+    }
+
+    .mo-main-search-card__submit {
+        width: 100%;
+    }
+
+    .mo-main-store-section__head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #storeCardList .mo-store-card--ajax__image-wrap {
+        padding: 14px 14px 0;
+    }
+
+    #storeCardList .mo-store-card--ajax__image {
+        height: 180px;
+        min-height: 180px;
+    }
+
+    #storeCardList .mo-store-card--ajax__body {
+        padding: 16px 16px 18px;
+        gap: 12px;
+    }
+
+    #storeCardList .mo-store-card--ajax__title {
+        min-height: 48px;
+        font-size: 19px;
+    }
+
+    #storeCardList .mo-store-card--ajax__meta-value {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .mo-main-page {
+        gap: 24px;
+    }
+
+    .mo-main-hero__surface {
+        padding: 18px 16px 16px;
+        border-radius: 24px;
+    }
+
+    .mo-main-hero__title {
+        font-size: 24px;
+    }
+
+    .mo-main-search-card__field {
+        min-height: 52px;
+    }
+
+    #storeCardList .col-12 {
+        width: 100%;
+    }
+}
+/* FE-01 current-base card only patch
+   - 상단 검색 영역 미수정
+   - 데스크톱 4열 압축 카드
+   - 모바일 가로형 카드 유지
+   - ETA 제거
+   - 주문 시작 버튼 1개
+*/
+
+#storeCardList .mo-store-card--ajax {
+    border-radius: 24px;
+    overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+#storeCardList .mo-store-card--ajax:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 128, 0, 0.22);
+    box-shadow: 0 18px 36px rgba(37, 45, 89, 0.11), 0 8px 18px rgba(255, 128, 0, 0.10);
+}
+
+#storeCardList .mo-store-card--ajax__image-wrap {
+    position: relative;
+}
+
+#storeCardList .mo-store-card--ajax__image-link {
+    display: block;
+    color: inherit;
+}
+
+#storeCardList .mo-store-card--ajax__overlay-top {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    pointer-events: none;
+}
+
+#storeCardList .mo-store-card--ajax__category,
+#storeCardList .mo-store-card--ajax__status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    backdrop-filter: blur(8px);
+}
+
+#storeCardList .mo-store-card--ajax__category {
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--mo-navy-strong);
+    border: 1px solid rgba(42, 54, 89, 0.08);
+}
+
+#storeCardList .mo-store-card--ajax__status {
+    background: rgba(31, 41, 55, 0.82);
+    color: #fff;
+}
+
+#storeCardList .mo-store-card--ajax__title-link {
+    color: inherit;
+}
+
+#storeCardList .mo-store-card--ajax__title-link:hover {
+    color: inherit;
+}
+
+#storeCardList .mo-store-card--ajax__title {
+    margin: 0;
+}
+
+#storeCardList .mo-store-card--ajax__meta-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    margin-top: auto;
+}
+
+#storeCardList .mo-store-card--ajax__meta-item {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    gap: 2px;
+}
+
+#storeCardList .mo-store-card--ajax__meta-label {
+    color: #8A93A6;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+#storeCardList .mo-store-card--ajax__meta-value {
+    color: var(--mo-navy-strong);
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+#storeCardList .mo-store-card--ajax__actions {
+    margin-top: 10px;
+}
+
+#storeCardList .mo-store-card--ajax__actions .mo-btn {
+    min-height: 36px;
+    font-size: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* 모바일: 현행처럼 가로형 카드 유지 */
+@media (max-width: 767.98px) {
+    #storeCardList .mo-store-card--ajax {
+        display: grid;
+        grid-template-columns: 108px minmax(0, 1fr);
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    #storeCardList .mo-store-card--ajax__image-wrap {
+        padding: 12px 0 12px 12px;
+    }
+
+    #storeCardList .mo-store-card--ajax__image {
+        width: 100%;
+        height: 100%;
+        min-height: 112px;
+        border-radius: 18px;
+        background-size: cover;
+        background-position: center;
+        background-color: #dfe4ec;
+    }
+
+    #storeCardList .mo-store-card--ajax__body {
+        min-width: 0;
+        padding: 12px 12px 12px 0;
+        gap: 8px;
+    }
+
+    #storeCardList .mo-store-card--ajax__title {
+        font-size: 16px;
+        line-height: 1.25;
+        min-height: 40px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    #storeCardList .mo-store-card--ajax__desc {
+        margin: 0;
+        color: var(--mo-text-soft);
+        font-size: 12px;
+        line-height: 1.45;
+        min-height: 34px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+/* 태블릿 이상: 4열 압축 세로 카드 + 1:1 이미지 */
+@media (min-width: 768px) {
+    #storeCardList .mo-store-card--ajax {
+        display: block;
+    }
+
+    #storeCardList .mo-store-card--ajax__image-wrap {
+        padding: 10px 10px 0;
+    }
+
+    #storeCardList .mo-store-card--ajax__image {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        height: auto;
+        min-height: 0;
+        border-radius: 18px;
+        background-size: cover;
+        background-position: center;
+        background-color: #dfe4ec;
+    }
+
+    #storeCardList .mo-store-card--ajax__body {
+        padding: 12px 12px 12px;
+        min-width: 0;
+        gap: 9px;
+    }
+
+    #storeCardList .mo-store-card--ajax__title {
+        font-size: 16px;
+        line-height: 1.25;
+        min-height: 40px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    #storeCardList .mo-store-card--ajax__desc {
+        margin: 0;
+        color: var(--mo-text-soft);
+        font-size: 11px;
+        line-height: 1.45;
+        min-height: 32px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+@media (min-width: 1200px) {
+    #storeCardList .mo-store-card--ajax__body {
+        padding: 10px 10px 10px;
+        gap: 8px;
+    }
+
+    #storeCardList .mo-store-card--ajax__title {
+        font-size: 15px;
+        min-height: 38px;
+    }
+
+    #storeCardList .mo-store-card--ajax__desc {
+        font-size: 10px;
+        min-height: 30px;
+    }
+
+    #storeCardList .mo-store-card--ajax__meta-value {
+        font-size: 14px;
+    }
+
+    #storeCardList .mo-store-card--ajax__actions .mo-btn {
+        min-height: 34px;
+        font-size: 11px;
+    }
+}
+						
