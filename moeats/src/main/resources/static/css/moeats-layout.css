@@ -1393,8 +1393,8 @@ button {
 }
 
 /* =========================
-   Payment flow compact mode
-   - 결제 화면에서는 푸터/플로팅 주문 상태를 얇게 처리
+   Payment flow hide mode
+   - 결제 화면에서는 푸터와 플로팅 주문 버튼 제거
 ========================= */
 .mo-app-shell:has(.mo-page-shell--with-bottom-dock) .mo-floating-order-status,
 .mo-app-shell:has(.mo-page-shell--payment-flow) .mo-floating-order-status {
@@ -1403,68 +1403,5 @@ button {
 
 .mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer,
 .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer {
-    margin-top: 16px;
-}
-
-.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__inner,
-.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__inner {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    padding-top: 14px;
-    padding-bottom: 8px;
-}
-
-.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-brand--footer .mo-brand__text,
-.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-brand--footer .mo-brand__text {
-    font-size: 20px;
-}
-
-.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__headline,
-.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__headline {
-    margin-top: 8px;
-    font-size: 15px;
-    line-height: 1.35;
-}
-
-.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__description,
-.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__content,
-.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__description,
-.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__content {
     display: none;
-}
-
-.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__bottom,
-.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__bottom {
-    border-top: 0;
-}
-
-.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__bottom-inner,
-.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__bottom-inner {
-    min-height: 34px;
-    padding: 0 0 10px;
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.52);
-}
-
-@media (max-width: 767.98px) {
-    .mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer,
-    .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer {
-        margin-top: 12px;
-    }
-
-    .mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__inner,
-    .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__inner {
-        padding-top: 12px;
-        padding-bottom: 6px;
-    }
-
-    .mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__headline,
-    .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__headline {
-        font-size: 14px;
-    }
-
-    .mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__bottom-inner,
-    .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__bottom-inner {
-        padding: 0 0 8px;
-    }
 }
