@@ -233,19 +233,6 @@
                     </div>
 
                     <div class="d-flex flex-column gap-3 mt-4">
-                        <button type="button" th:if="${safeOrder.orderStatus == 'PAID'}" class="mo-btn mo-btn-primary w-100 py-3 fs-6" 
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'ACCEPTED')">주문 접수하기</button>
-                        
-                        <button type="button" th:if="${safeOrder.orderStatus == 'ACCEPTED'}" class="btn btn-warning w-100 py-3 fs-6 text-white border-0" style="background-color: #ff9800; font-weight: bold;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'PREPARING')">조리 시작하기</button>
-                        
-                        <button type="button" th:if="${safeOrder.orderStatus == 'PREPARING'}" class="btn btn-success w-100 py-3 fs-6 border-0 text-white" style="font-weight: bold;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'READY')">조리 완료 (배달 출발)</button>
-
-                        <button type="button" th:if="${safeOrder.orderStatus == 'READY'}" class="mo-btn w-100 py-3 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">배달 완료 처리</button>
-                                
-                                <hr class="my-4" style="border-top: 2px dashed rgba(42, 54, 89, 0.15); opacity: 1;">
 
                     <div class="mb-4">
                         <div class="fw-bold mb-3" style="color: var(--mo-navy-strong);">주문 메뉴</div>

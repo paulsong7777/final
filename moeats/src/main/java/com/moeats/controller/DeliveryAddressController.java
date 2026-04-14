@@ -93,11 +93,18 @@ public class DeliveryAddressController {
 	// 등록
 	@PostMapping("/members/me/addresses")
 	public String insertAddress(@ModelAttribute DeliveryAddress deliveryAddress,
-	        @SessionAttribute("memberIdx") int memberIdx) {
+	        @SessionAttribute("memberIdx") int memberIdx,
+	        RedirectAttributes ra) { // ✨ 에러 메시지 전달을 위해 추가
 		
 	    deliveryAddress.setMemberIdx(memberIdx);
 
-	    deliveryAddressService.insertAddress(deliveryAddress);
+	    try {
+	        deliveryAddressService.insertAddress(deliveryAddress);
+	    } catch (RuntimeException e) {
+	        // ✨ 좌표 변환 실패 시 500 에러 대신 사용자에게 메시지 전달
+	        ra.addFlashAttribute("error", "해당 주소의 좌표를 찾을 수 없습니다. 주소를 다시 확인해주세요.");
+	        return "redirect:/members/me/addresses/new"; // 등록 폼으로 돌려보냄
+	    }
 	    
 		return "redirect:/members/me/addresses";
 	}

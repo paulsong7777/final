@@ -109,8 +109,18 @@
         function execDaumPostcode() {
             new daum.Postcode({
                 oncomplete: function(data) {
-                    // 도로명 주소 변수
-                    var addr = data.roadAddress; 
+                    var addr = ''; // 최종 주소 변수
+
+                    // 💡 [수정] 사용자가 도로명 주소를 선택했든 지번 주소를 선택했든 튕기지 않고 정확히 가져오기
+                    if (data.userSelectedType === 'R') { // 도로명 주소 선택
+                        addr = data.roadAddress;
+                    } else { // 지번 주소 선택 (J)
+                        addr = data.jibunAddress;
+                    }
+
+                    // 💡 [추가] 프론트엔드 단에서도 혹시 모를 괄호 데이터 1차 제거
+                    addr = addr.replace(/\(.*?\)/g, '').trim();
+
                     // 주소 정보를 해당 필드에 넣는다.
                     document.getElementById("storeAddress1").value = addr;
                     // 커서를 상세주소 필드로 이동한다.
