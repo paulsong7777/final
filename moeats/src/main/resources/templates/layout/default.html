@@ -475,9 +475,9 @@
 	        font-size: 1.45rem;
 	    }
 	
-	    .mo-order-summary-modal__body {
-	        padding: 4px 20px 22px;
-	    }
+	   .mo-order-summary-modal__body {
+		    padding: 4px 16px 20px;
+		}
 	
 	    .mo-order-summary-shell {
 	        gap: 14px;
@@ -492,33 +492,33 @@
 	        display: none;
 	    }
 	
-	   .mo-order-summary-stepper {
-		    grid-template-columns: repeat(5, minmax(68px, 1fr));
-		    gap: 6px;
-		    overflow-x: auto;
-		    padding-bottom: 2px;
-		    -webkit-overflow-scrolling: touch;
-		    scrollbar-width: none;
+	  .mo-order-summary-stepper {
+		    grid-template-columns: repeat(5, minmax(0, 1fr));
+		    gap: 4px;
+		    overflow: visible;
+		    padding-bottom: 0;
 		}
 		
 		.mo-order-summary-step {
 		    flex-direction: column;
 		    justify-content: center;
 		    text-align: center;
-		    min-width: 68px;
-		    padding: 10px 6px;
-		    border-radius: 16px;
+		    min-width: 0;
+		    padding: 9px 4px;
+		    border-radius: 14px;
 		}
 		
 		.mo-order-summary-step__num {
-		    width: 26px;
-		    height: 26px;
-		    font-size: 11px;
+		    width: 24px;
+		    height: 24px;
+		    font-size: 10px;
 		}
 		
 		.mo-order-summary-step__title {
-		    font-size: 11px;
-		    line-height: 1.2;
+		    font-size: 10px;
+		    line-height: 1.15;
+		    letter-spacing: -0.02em;
+		    word-break: keep-all;
 		}
 	
 	    .mo-order-summary-grid {
