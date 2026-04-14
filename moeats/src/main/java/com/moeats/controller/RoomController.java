@@ -34,6 +34,10 @@ import com.moeats.services.TransactionService;
 import com.moeats.services.sse.SSEService;
 import com.moeats.timer.OrderRoomTimer;
 
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
 @Controller
 public class RoomController {
 
@@ -65,6 +69,28 @@ public class RoomController {
 	public record MemberItem(RoomParticipant roomParticipant, Member member, List<CartItem> items,
 			Integer totalAmount) {
 	}
+	
+//	private void ensureUnselectedForEditing(OrderRoom orderRoom, Member member) {
+//	    if (orderRoom == null || orderRoom.isJoinLocked()) {
+//	        return;
+//	    }
+//	    if (!"OPEN".equals(orderRoom.getRoomStatus()) && !"SELECTING".equals(orderRoom.getRoomStatus())) {
+//	        return;
+//	    }
+//
+//	    RoomParticipant roomParticipant = orderRoomService.findJoinedRoomMember(
+//	            orderRoom.getRoomIdx(),
+//	            member.getMemberIdx()
+//	    );
+//
+//	    if (roomParticipant == null || !"SELECTED".equals(roomParticipant.getSelectionStatus())) {
+//	        return;
+//	    }
+//
+//	    if (orderRoomService.unselect(roomParticipant.getRoomParticipantIdx()) > 0) {
+//	        sseService.participantUpdate(orderRoom.getRoomIdx());
+//	    }
+//	}
 
 	private String redirectToActiveRoomIfExists(Member member, RedirectAttributes ra) {
 		OrderRoom activeRoom = orderRoomService.findActiveRoomByMember(member.getMemberIdx());
@@ -102,7 +128,10 @@ public class RoomController {
 	}
 
 	@PostMapping("/rooms")
-	public String roomCreate(RedirectAttributes ra, OrderRoom orderRoom, @SessionAttribute("member") Member member) {
+	public String roomCreate(RedirectAttributes ra,
+	                         OrderRoom orderRoom,
+	                         @RequestParam(name = "afterCreate", required = false) String afterCreate,
+	                         @SessionAttribute("member") Member member) {
 		String activeRedirect = redirectToActiveRoomIfExists(member, ra);
 		if (activeRedirect != null) {
 			return activeRedirect;
@@ -119,7 +148,34 @@ public class RoomController {
 			ra.addFlashAttribute("error", "방을 생성하는 중 오류가 발생했습니다");
 			return "redirect:/rooms/new";
 		}
-		return "redirect:/rooms/code/" + code;
+		 if ("confirm".equals(afterCreate)) {
+		    OrderRoom createdRoom = orderRoomService.findByCode(code);
+		    if (createdRoom == null) {
+		        ra.addFlashAttribute("error", "생성된 주문방 정보를 찾을 수 없습니다.");
+		        return "redirect:/main";
+		    }
+
+		    if (orderRoomService.findJoinedRoomMember(createdRoom.getRoomIdx(), member.getMemberIdx()) == null) {
+		        RoomParticipant leaderParticipant = new RoomParticipant();
+		        leaderParticipant.setRoomIdx(createdRoom.getRoomIdx());
+		        leaderParticipant.setMemberIdx(member.getMemberIdx());
+		        leaderParticipant.setParticipantRole("LEADER");
+
+		        if (createdRoom.isJoinLocked() || orderRoomService.join(leaderParticipant) == 0) {
+		            ra.addFlashAttribute("error", "주문방 생성 후 참여 처리에 실패했습니다.");
+		            return "redirect:/rooms/code/" + code;
+		        }
+
+		        safeRoomSse("participantUpdate", () -> sseService.participantUpdate(createdRoom.getRoomIdx()));
+		    }
+
+		   
+		        return "redirect:/rooms/code/" + code + "/cart?next=confirm";
+		    }
+		    if ("cart".equals(afterCreate)) {
+		        return "redirect:/rooms/code/" + code + "/cart";
+		    }
+		    return "redirect:/rooms/code/" + code;
 	}
 
 	@GetMapping("/rooms/code/{room_code}")
@@ -136,21 +192,22 @@ public class RoomController {
 		}
 
 		if (orderRoomService.findJoinedRoomMember(orderRoom.getRoomIdx(), member.getMemberIdx()) == null) {
-			RoomParticipant roomParticipant = new RoomParticipant();
-			roomParticipant.setRoomIdx(orderRoom.getRoomIdx());
-			roomParticipant.setMemberIdx(member.getMemberIdx());
+		    RoomParticipant roomParticipant = new RoomParticipant();
+		    roomParticipant.setRoomIdx(orderRoom.getRoomIdx());
+		    roomParticipant.setMemberIdx(member.getMemberIdx());
 
-			if (orderRoom.getLeaderMemberIdx() == member.getMemberIdx()) {
-				roomParticipant.setParticipantRole("LEADER");
-			} else {
-				roomParticipant.setParticipantRole("PARTICIPANT");
-			}
+		    if (orderRoom.getLeaderMemberIdx() == member.getMemberIdx()) {
+		        roomParticipant.setParticipantRole("LEADER");
+		    } else {
+		        roomParticipant.setParticipantRole("PARTICIPANT");
+		    }
 
-			if (orderRoom.isJoinLocked() || orderRoomService.join(roomParticipant) == 0) {
-				ra.addFlashAttribute("error", "더이상 방에 참여할 수 없습니다");
-				return "redirect:/rooms/join";
-			}
-			sseService.participantUpdate(orderRoom.getRoomIdx());
+		    if (orderRoom.isJoinLocked() || orderRoomService.join(roomParticipant) == 0) {
+		        ra.addFlashAttribute("error", "이미 나갔거나 내보내진 주문방에는 다시 참여할 수 없습니다.");
+		        return "redirect:/main";
+		    }
+
+		    safeRoomSse("participantUpdate", () -> sseService.participantUpdate(orderRoom.getRoomIdx()));
 		}
 
 		List<GroupCartItem> groupCartItems = groupCartItemService.findByRoom(orderRoom.getRoomIdx());
@@ -201,7 +258,10 @@ public class RoomController {
 		boolean isLeader = myState != null && "LEADER".equals(myState.getParticipantRole());
 		boolean allSelected = participantCount > 0 && completedCount == participantCount;
 
+		Store store = storeService.getStoreByIdx(orderRoom.getStoreIdx());
+
 		model.addAttribute("orderRoom", orderRoom);
+		model.addAttribute("store", store);
 		model.addAttribute("isLeader", isLeader);
 		model.addAttribute("participantCount", participantCount);
 		model.addAttribute("completedCount", completedCount);
@@ -245,6 +305,8 @@ public class RoomController {
 			@RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member,
 			Model model) {
 
+//		ensureUnselectedForEditing(orderRoom, member);
+		
 		List<StoreMenu> menuList = storeMenuService.menuListForUser(orderRoom.getStoreIdx());
 		Store store = storeService.getStoreByIdx(orderRoom.getStoreIdx());
 
@@ -267,6 +329,8 @@ public class RoomController {
 	public String confirmRoom(Model model, @PathVariable("room_code") String roomCode,
 			@RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member) {
 
+//		ensureUnselectedForEditing(orderRoom, member);
+		
 		List<GroupCartItem> groupCartItems = groupCartItemService.findRoomMember(orderRoom.getRoomIdx(),
 				member.getMemberIdx());
 
@@ -339,9 +403,11 @@ public class RoomController {
 	}
 
 	@PostMapping("/rooms/code/{room_code}/kick")
-	public String kickRoom(RedirectAttributes ra, @RequestParam(defaultValue = "0") int kickMemberIdx,
-			@PathVariable("room_code") String roomCode, @RequestAttribute("orderRoom") OrderRoom orderRoom,
-			@SessionAttribute("member") Member member) {
+	public String kickRoom(RedirectAttributes ra,
+	        @RequestParam(name = "kickMemberIdx", defaultValue = "0") int kickMemberIdx,
+	        @PathVariable("room_code") String roomCode,
+	        @RequestAttribute("orderRoom") OrderRoom orderRoom,
+	        @SessionAttribute("member") Member member) {
 		if (orderRoom.getLeaderMemberIdx() != member.getMemberIdx()) {
 			ra.addFlashAttribute("error", "잘못된 접근입니다");
 			return "redirect:/main";
@@ -388,8 +454,7 @@ public class RoomController {
 
 	@PostMapping("/rooms/code/{room_code}/checkout")
 	public String checkout(RedirectAttributes ra, @PathVariable("room_code") String roomCode,
-			@RequestParam(defaultValue = "0") int representativeMemberIdx,
-			@RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member) {
+	        @RequestAttribute("orderRoom") OrderRoom orderRoom, @SessionAttribute("member") Member member) {
 		if (orderRoom.getLeaderMemberIdx() != member.getMemberIdx()) {
 			ra.addFlashAttribute("error", "잘못된 접근입니다");
 			return String.format("redirect:/rooms/code/%s", roomCode);
@@ -398,16 +463,52 @@ public class RoomController {
 			ra.addFlashAttribute("error", "아직 선택이 완료되지 않은 참여자가 있습니다");
 			return String.format("redirect:/rooms/code/%s", roomCode);
 		}
+		Store store = storeService.getStoreByIdx(orderRoom.getStoreIdx());
+		if (store == null) {
+			ra.addFlashAttribute("error", "가게 정보를 찾을 수 없습니다");
+			return String.format("redirect:/rooms/code/%s", roomCode);
+		}
+		int activeRoomAmount = groupCartItemService.findRoomAmount(orderRoom.getRoomIdx());
+		boolean hasActiveCart = groupCartItemService.findRoomMemberAmount(orderRoom.getRoomIdx()).stream()
+				.anyMatch(groupCartItem -> groupCartItem.getItemTotalAmount() > 0);
+		if (!hasActiveCart || activeRoomAmount <= 0) {
+			ra.addFlashAttribute("error", "활성 참여자의 주문이 없어 결제를 진행할 수 없습니다");
+			return String.format("redirect:/rooms/code/%s", roomCode);
+		}
+		if (activeRoomAmount < store.getMinimumOrderAmount()) {
+			ra.addFlashAttribute("error", "최소주문금액을 충족해야 결제를 진행할 수 있습니다");
+			return String.format("redirect:/rooms/code/%s", roomCode);
+		}
 		Map<String, Object> res;
 		try {
 			res = transactionService.beginPayment(orderRoom);
 		} catch (Exception e) {
-			ra.addFlashAttribute("error", "오류가 발생하여 결제화면으로 넘어가지 못했습니다");
-			return String.format("redirect:/rooms/code/%s", roomCode);
+		    log.error(
+		        "checkout failed. roomCode={}, roomIdx={}, roomStatus={}, leaderMemberIdx={}, selectedDeliveryAddressIdx={}",
+		        roomCode,
+		        orderRoom.getRoomIdx(),
+		        orderRoom.getRoomStatus(),
+		        orderRoom.getLeaderMemberIdx(),
+		        orderRoom.getSelectedDeliveryAddressIdx(),
+		        e
+		    );
+		    ra.addFlashAttribute("error", "오류가 발생하여 결제화면으로 넘어가지 못했습니다");
+		    return String.format("redirect:/rooms/code/%s", roomCode);
 		}
 		GroupOrder groupOrder = (GroupOrder) res.get("groupOrder");
 		orderRoomTimer.start(groupOrder.getOrderIdx(), orderRoom.getExpiresAt());
-		sseService.beginOrder(orderRoom.getRoomIdx(), groupOrder.getOrderIdx());
+		safeRoomSse("beginOrder", () -> sseService.beginOrder(orderRoom.getRoomIdx(), groupOrder.getOrderIdx()));
 		return String.format("redirect:/orders/%d/payment", groupOrder.getOrderIdx());
 	}
+	
+	private void safeRoomSse(String action, Runnable task) {
+	    try {
+	        task.run();
+	    } catch (Exception e) {
+	        log.warn("SSE push skipped. action={}", action, e);
+	    }
+	}
+	
+	
+	
 }
