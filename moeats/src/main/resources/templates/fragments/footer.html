@@ -3,47 +3,99 @@
 <th:block th:fragment="siteFooter">
     <footer class="mo-footer mt-auto">
         <div class="container mo-footer__inner">
-            <div class="mo-footer__brand-card">
+            <div class="mo-footer__brand">
                 <div class="mo-brand mo-brand--footer">
                     <span class="mo-brand__symbol">M</span>
                     <span class="mo-brand__text">Mo-Eats</span>
                 </div>
-                <p class="mo-footer__brand-copy">
-                    함께 주문을 모으고, 빠르게 확정하는 그룹 오더 서비스
+
+                <p class="mo-footer__headline">
+                    함께 고르고, 쉽게 모이고, 한 번에 주문.
+                </p>
+
+                <p class="mo-footer__description">
+                    같은 가게의 메뉴를 빠르게 모아 대표결제 또는 각자결제로 자연스럽게 이어지는 그룹 오더 서비스입니다.
                 </p>
             </div>
 
-            <div class="mo-footer__links row g-4">
-                <div class="col-6 col-lg-3">
-                    <div class="mo-footer__title">서비스</div>
-                    <a th:href="@{/}" class="mo-footer__link">가게찾기</a>
-                    <a th:href="@{/stores}" class="mo-footer__link">가게 상세</a>
-                    <a th:href="@{/stores}" class="mo-footer__link">메뉴 탐색</a>
-                </div>
-                <div class="col-6 col-lg-3">
-                    <div class="mo-footer__title">주문</div>
-                    <a th:href="@{/rooms/join}" class="mo-footer__link">주문방 참여</a>
-                    <a th:href="@{/orders}" class="mo-footer__link">주문 진행</a>
-                    <a th:href="@{/orders/history}" class="mo-footer__link">주문 내역</a>
-                </div>
-                <div class="col-6 col-lg-3">
-                    <div class="mo-footer__title">계정</div>
-                    <a th:href="@{/login}" class="mo-footer__link">로그인</a>
-                    <a th:href="@{/account/addresses}" class="mo-footer__link">주소록</a>
-                    <a th:href="@{/orders}" class="mo-footer__link">내 주문</a>
-                </div>
-                <div class="col-6 col-lg-3">
-                    <div class="mo-footer__title">운영</div>
-                    <a th:href="@{/owner/orders}" class="mo-footer__link">점주센터</a>
-                    <span class="mo-footer__link mo-footer__link--muted">Tier 1 기준 운영 화면</span>
-                    <span class="mo-footer__link mo-footer__link--muted">DELIVERY / ONSITE 정식 분기는 추후 확장</span>
-                </div>
+            <div class="mo-footer__content">
+                <section class="mo-footer__section">
+                    <h3 class="mo-footer__title">서비스</h3>
+                    <a th:href="@{/}" class="mo-footer__link">홈</a>
+                    <a th:href="@{/stores}" class="mo-footer__link">가게 찾기</a>
+                </section>
+
+                <section class="mo-footer__section"
+                         th:if="${session.member != null and session.member.memberRoleType == 'USER'}">
+                    <h3 class="mo-footer__title">내 정보</h3>
+                    <a th:href="@{/members/me}" class="mo-footer__link">마이페이지</a>
+                    <a th:href="@{/members/me/addresses}" class="mo-footer__link">배송지 관리</a>
+                    <a th:href="@{/members/me/orders}" class="mo-footer__link">주문 내역</a>
+                </section>
+
+                <section class="mo-footer__section"
+                         th:if="${session.member == null}">
+                    <h3 class="mo-footer__title">내 정보</h3>
+                    <button type="button"
+                            class="mo-footer__link mo-footer__link--button"
+                            data-mo-open-login>
+                        로그인
+                    </button>
+                    <a th:href="@{/members/createType}" class="mo-footer__link">회원가입</a>
+                </section>
+
+                <section class="mo-footer__section"
+                         th:if="${session.member != null and session.member.memberRoleType == 'OWNER'}">
+                    <h3 class="mo-footer__title">점주</h3>
+                    <a th:href="@{/owners/dashboard}" class="mo-footer__link">대시보드</a>
+                    <a th:href="@{/owners/order/list}" class="mo-footer__link">주문 내역 조회</a>
+                    <a th:href="@{/owners/menu}" class="mo-footer__link">메뉴 관리</a>
+                </section>
+
+                <section class="mo-footer__section mo-footer__section--download">
+                    <h3 class="mo-footer__title">앱 다운로드</h3>
+
+                    <div class="mo-store-badge-group">
+                        <a href="#"
+                           class="mo-store-badge"
+                           aria-label="Google Play에서 Mo-Eats 앱 다운로드">
+                            <span class="mo-store-badge__icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" class="mo-store-badge__svg">
+                                    <path d="M4.5 3.5L14.9 12L4.5 20.5V3.5Z" fill="currentColor"/>
+                                    <path d="M14.9 12L18.2 9.3C19.4 8.4 19.4 7.1 18.2 6.2L15.6 4.2L12 7.2L14.9 12Z" fill="currentColor" opacity=".78"/>
+                                    <path d="M14.9 12L18.2 14.7C19.4 15.6 19.4 16.9 18.2 17.8L15.6 19.8L12 16.8L14.9 12Z" fill="currentColor" opacity=".78"/>
+                                    <path d="M12 7.2L15.6 4.2L6.8 1.1C5.5.6 4.5 1.2 4.5 2.5V3.5L12 7.2Z" fill="currentColor" opacity=".58"/>
+                                    <path d="M12 16.8L15.6 19.8L6.8 22.9C5.5 23.4 4.5 22.8 4.5 21.5V20.5L12 16.8Z" fill="currentColor" opacity=".58"/>
+                                </svg>
+                            </span>
+                            <span class="mo-store-badge__text">
+                                <span class="mo-store-badge__meta">GET IT ON</span>
+                                <span class="mo-store-badge__title">Google Play</span>
+                            </span>
+                        </a>
+
+                        <a href="#"
+                           class="mo-store-badge"
+                           aria-label="App Store에서 Mo-Eats 앱 다운로드">
+                            <span class="mo-store-badge__icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" class="mo-store-badge__svg">
+                                    <path d="M16.7 12.6C16.7 10.6 18.3 9.7 18.4 9.6C17.5 8.3 16 8.1 15.5 8.1C14.2 8 13 8.9 12.3 8.9C11.6 8.9 10.6 8.1 9.5 8.1C7.9 8.1 6.4 9.1 5.6 10.6C4 13.3 5.2 17.3 6.8 19.5C7.6 20.6 8.5 21.9 9.7 21.8C10.9 21.8 11.3 21 12.7 21C14 21 14.5 21.8 15.7 21.8C17 21.8 17.8 20.6 18.6 19.5C19.5 18.2 19.9 16.9 19.9 16.8C19.8 16.8 16.7 15.6 16.7 12.6Z" fill="currentColor"/>
+                                    <path d="M14.7 6.8C15.3 6.1 15.8 5.1 15.6 4C14.7 4 13.6 4.6 13 5.3C12.4 6 11.9 7 12.1 8.1C13.1 8.2 14.1 7.6 14.7 6.8Z" fill="currentColor" opacity=".75"/>
+                                </svg>
+                            </span>
+                            <span class="mo-store-badge__text">
+                                <span class="mo-store-badge__meta">Download on the</span>
+                                <span class="mo-store-badge__title">App Store</span>
+                            </span>
+                        </a>
+                    </div>
+                </section>
             </div>
         </div>
+
         <div class="mo-footer__bottom">
             <div class="container mo-footer__bottom-inner">
                 <span>© 2026 Mo-Eats. All rights reserved.</span>
-                <span>Bootstrap 5.3 / Thymeleaf Layout 기준</span>
             </div>
         </div>
     </footer>

@@ -534,74 +534,228 @@ button {
 /* =========================
    Footer
 ========================= */
-.mo-footer {
-    background: var(--mo-navy-strong);
-    color: #fff;
-}
-
-.mo-footer__inner {
-    padding-top: 36px;
-    padding-bottom: 24px;
-    display: grid;
-    gap: 24px;
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 2.05fr);
-}
-
-.mo-footer__brand-card {
-    max-width: 360px;
-    padding: 18px 20px;
-    border-radius: 18px;
-    background: #fff;
-}
-
-.mo-brand--footer .mo-brand__text {
-    color: var(--mo-navy-strong);
-    font-size: 24px;
-}
-
-.mo-footer__brand-copy {
-    margin: 10px 0 0;
-    color: var(--mo-text-soft);
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.mo-footer__title {
-    margin-bottom: 14px;
-    font-size: 14px;
-    font-weight: 800;
-    color: #fff;
-}
-
-.mo-footer__link {
-    display: block;
-    color: rgba(255, 255, 255, 0.80);
-    font-size: 14px;
-    line-height: 1.9;
-    text-decoration: none;
-}
-
-.mo-footer__link:hover {
-    color: #fff;
-}
-
-.mo-footer__link--muted {
-    cursor: default;
-}
-
-.mo-footer__bottom {
-    border-top: 1px solid rgba(255, 255, 255, 0.10);
-}
-
-.mo-footer__bottom-inner {
-    min-height: 62px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    color: rgba(255, 255, 255, 0.62);
-    font-size: 13px;
-}
+	.mo-footer {
+	    background: var(--mo-navy-strong);
+	    color: #fff;
+	    margin-top: 40px;
+	}
+	
+	.mo-footer__inner {
+	    padding-top: 28px;
+	    padding-bottom: 20px;
+	    display: grid;
+	    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.85fr);
+	    gap: 28px;
+	    align-items: start;
+	}
+	
+	.mo-footer__brand {
+	    min-width: 0;
+	}
+	
+	.mo-brand--footer .mo-brand__text {
+	    color: #fff;
+	    font-size: 22px;
+	}
+	
+	.mo-footer__headline {
+	    margin: 14px 0 0;
+	    color: #fff;
+	    font-size: 20px;
+	    line-height: 1.4;
+	    letter-spacing: -0.03em;
+	    font-weight: 800;
+	    word-break: keep-all;
+	}
+	
+	.mo-footer__description {
+	    margin: 10px 0 0;
+	    max-width: 430px;
+	    color: rgba(255, 255, 255, 0.74);
+	    font-size: 13px;
+	    line-height: 1.8;
+	    word-break: keep-all;
+	}
+	
+	.mo-footer__content {
+	    display: grid;
+	    grid-template-columns: repeat(3, minmax(0, 1fr));
+	    gap: 24px 20px;
+	}
+	
+	.mo-footer__section {
+	    min-width: 0;
+	}
+	
+	.mo-footer__title {
+	    margin: 0 0 12px;
+	    color: #fff;
+	    font-size: 14px;
+	    font-weight: 800;
+	    letter-spacing: -0.01em;
+	}
+	
+	.mo-footer__link {
+	    display: block;
+	    color: rgba(255, 255, 255, 0.82);
+	    font-size: 14px;
+	    line-height: 1.9;
+	    text-decoration: none;
+	    transition: color .18s ease, transform .18s ease;
+	}
+	
+	.mo-footer__link:hover {
+	    color: #fff;
+	    transform: translateX(2px);
+	}
+	
+	.mo-footer__link--button {
+	    width: 100%;
+	    padding: 0;
+	    border: 0;
+	    background: transparent;
+	    text-align: left;
+	    font-family: inherit;
+	    cursor: pointer;
+	}
+	
+	.mo-footer__section--download {
+	    min-width: 0;
+	}
+	
+	.mo-store-badge-group {
+	    display: flex;
+	    flex-direction: column;
+	    gap: 10px;
+	}
+	
+	.mo-store-badge {
+	    display: flex;
+	    align-items: center;
+	    gap: 12px;
+	    min-height: 54px;
+	    padding: 10px 14px;
+	    border-radius: 16px;
+	    border: 1px solid rgba(255, 255, 255, 0.12);
+	    background: rgba(255, 255, 255, 0.06);
+	    color: #fff;
+	    text-decoration: none;
+	    transition: transform .18s ease, border-color .18s ease, background-color .18s ease;
+	}
+	
+	.mo-store-badge:hover {
+	    color: #fff;
+	    transform: translateY(-1px);
+	    border-color: rgba(255, 255, 255, 0.22);
+	    background: rgba(255, 255, 255, 0.10);
+	}
+	
+	.mo-store-badge__icon {
+	    width: 34px;
+	    height: 34px;
+	    border-radius: 10px;
+	    display: inline-flex;
+	    align-items: center;
+	    justify-content: center;
+	    background: rgba(255, 255, 255, 0.10);
+	    flex-shrink: 0;
+	}
+	
+	.mo-store-badge__svg {
+	    width: 18px;
+	    height: 18px;
+	    display: block;
+	}
+	
+	.mo-store-badge__text {
+	    display: flex;
+	    flex-direction: column;
+	    min-width: 0;
+	    line-height: 1.2;
+	}
+	
+	.mo-store-badge__meta {
+	    color: rgba(255, 255, 255, 0.62);
+	    font-size: 10px;
+	    font-weight: 700;
+	    letter-spacing: 0.08em;
+	    text-transform: uppercase;
+	}
+	
+	.mo-store-badge__title {
+	    margin-top: 3px;
+	    color: #fff;
+	    font-size: 15px;
+	    font-weight: 800;
+	    letter-spacing: -0.01em;
+	}
+	
+	.mo-footer__bottom {
+	    border-top: 1px solid rgba(255, 255, 255, 0.08);
+	}
+	
+	.mo-footer__bottom-inner {
+	    min-height: 52px;
+	    display: flex;
+	    align-items: center;
+	    justify-content: flex-start;
+	    gap: 12px;
+	    color: rgba(255, 255, 255, 0.56);
+	    font-size: 12px;
+	}
+	
+	@media (max-width: 1199.98px) {
+	    .mo-footer__inner {
+	        grid-template-columns: 1fr;
+	        gap: 22px;
+	    }
+	
+	    .mo-footer__content {
+	        grid-template-columns: repeat(2, minmax(0, 1fr));
+	    }
+	}
+	
+	@media (max-width: 767.98px) {
+	    .mo-footer {
+	        margin-top: 32px;
+	    }
+	
+	    .mo-footer__inner {
+	        padding-top: 22px;
+	        padding-bottom: 16px;
+	        gap: 18px;
+	    }
+	
+	    .mo-footer__headline {
+	        font-size: 18px;
+	        line-height: 1.45;
+	    }
+	
+	    .mo-footer__description {
+	        font-size: 12px;
+	        line-height: 1.7;
+	    }
+	
+	    .mo-footer__content {
+	        grid-template-columns: 1fr;
+	        gap: 18px;
+	    }
+	
+	    .mo-store-badge {
+	        min-height: 50px;
+	        padding: 10px 12px;
+	        border-radius: 14px;
+	    }
+	
+	    .mo-store-badge__title {
+	        font-size: 14px;
+	    }
+	
+	    .mo-footer__bottom-inner {
+	        min-height: auto;
+	        padding: 14px 0 16px;
+	    }
+	}
 
 /* =========================
    Mobile Menu
@@ -1230,5 +1384,17 @@ button {
         font-size: 12px;
         padding-left: 10px;
         padding-right: 10px;
+    }
+}
+/* =========================
+   Bottom fixed action overlap guard
+========================= */
+.mo-page-shell--with-bottom-dock {
+    padding-bottom: 132px;
+}
+
+@media (max-width: 767.98px) {
+    .mo-page-shell--with-bottom-dock {
+        padding-bottom: 156px;
     }
 }
