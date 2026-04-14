@@ -1033,6 +1033,11 @@
                                 결제 단계가 시작되어 협업 수정은 잠긴 상태입니다. 이후 흐름은 결제 화면과 주문 상세 화면에서 이어집니다.
                             </div>
                         </div>
+                        <div class="rd-action-row mt-2" th:if="${orderIdx != null}">
+                            <a th:href="@{/orders/{id}/payment(id=${orderIdx})}" class="mo-btn mo-btn-primary w-100 text-center text-decoration-none">
+                                결제 화면으로 돌아가기
+                            </a>
+                        </div>
                     </div>
 
                     <div class="rd-action-stack" th:if="${orderRoom.roomStatus == 'ORDER_CONFIRMED'}">
@@ -1041,6 +1046,11 @@
                             <div class="rd-aside-box__desc">
                                 결제가 끝났습니다. 이제 주문 상세 화면에서 점주 처리 상태를 실시간으로 확인하면 됩니다.
                             </div>
+                        </div>
+                        <div class="rd-action-row mt-2" th:if="${orderIdx != null}">
+                            <a th:href="@{/orders/{id}(id=${orderIdx})}" class="mo-btn mo-btn-primary w-100 text-center text-decoration-none">
+                                주문 상세 화면으로 이동
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -1077,7 +1087,32 @@
                 </div>
             </div>
         </div>
-    </section>
+        <div class="rd-mobile-sticky"
+             th:if="${orderRoom.roomStatus == 'PAYMENT_PENDING' and orderIdx != null}">
+            <div class="rd-mobile-sticky__meta">
+                <div class="rd-mobile-sticky__title" style="color: #fff;">결제 진행 중</div>
+                <div class="rd-mobile-sticky__desc" style="color: rgba(255,255,255,0.8);">결제 화면에서 완료해 주세요.</div>
+            </div>
+            <div class="rd-mobile-sticky__action">
+                <a th:href="@{/orders/{id}/payment(id=${orderIdx})}" class="mo-btn mo-btn-primary w-100 text-center text-decoration-none">
+                    결제 이동
+                </a>
+            </div>
+        </div>
+
+        <div class="rd-mobile-sticky"
+             th:if="${orderRoom.roomStatus == 'ORDER_CONFIRMED' and orderIdx != null}">
+            <div class="rd-mobile-sticky__meta">
+                <div class="rd-mobile-sticky__title" style="color: #fff;">주문 확정 완료</div>
+                <div class="rd-mobile-sticky__desc" style="color: rgba(255,255,255,0.8);">주문 상세 내역을 확인하세요.</div>
+            </div>
+            <div class="rd-mobile-sticky__action">
+                <a th:href="@{/orders/{id}(id=${orderIdx})}" class="mo-btn mo-btn-primary w-100 text-center text-decoration-none">
+                    상세 이동
+                </a>
+            </div>
+        </div>
+        </section>
 </section>
 
 <th:block layout:fragment="pageScripts">
