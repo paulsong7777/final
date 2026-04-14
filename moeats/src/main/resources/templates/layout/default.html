@@ -16,64 +16,115 @@
     <th:block layout:fragment="pageStyles"></th:block>
     
   <style>
-	    .mo-floating-order-status {
-	        position: relative;
-	        z-index: 1080;
-	    }
-	
-	    .mo-order-status-fab {
-	        position: fixed;
-	        left: 20px;
-	        bottom: 20px;
-	        z-index: 1080;
-	        display: inline-flex;
-	        align-items: center;
-	        justify-content: center;
-	        min-height: 52px;
-	        padding: 0 18px;
-	        border-radius: 999px;
-	        background: var(--mo-primary, #FF8000);
-	        color: #fff;
-	        font-size: 14px;
-	        font-weight: 800;
-	        text-decoration: none;
-	        box-shadow: 0 14px 28px rgba(255, 128, 0, 0.28);
-	        transition: transform 0.15s ease, box-shadow 0.15s ease;
-	    }
-	
-	    .mo-order-status-fab:hover {
-	        color: #fff;
-	        transform: translateY(-1px);
-	        box-shadow: 0 16px 32px rgba(255, 128, 0, 0.32);
-	    }
-	
-	    @media (max-width: 767.98px) {
-	        .mo-floating-order-status {
-	            position: sticky;
-	            top: 68px;
-	            margin-top: -1px;
-	            z-index: 1030;
-	            padding: 0;
-	            background: rgba(255, 255, 255, 0.96);
-	            border-bottom: 1px solid rgba(42, 54, 89, 0.08);
-	            box-shadow: 0 4px 10px rgba(37, 45, 89, 0.03);
-	        }
-	
-	        .mo-order-status-fab {
-	            position: static;
-	            left: auto;
-	            bottom: auto;
-	            display: flex;
-	            width: calc(100% - 24px);
-	            margin: 8px 12px 10px;
-	            min-height: 42px;
-	            padding: 0 14px;
-	            font-size: 13px;
-	            border-radius: 12px;
-	            box-shadow: none;
-	        }
-	    }
-	</style>
+    .mo-floating-order-status {
+        position: relative;
+        z-index: 1080;
+    }
+
+    .mo-floating-order-status__inner {
+        display: block;
+    }
+
+    .mo-order-status-fab {
+        position: fixed;
+        left: 20px;
+        bottom: 20px;
+        z-index: 1080;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        padding: 0 18px;
+        border-radius: 999px;
+        background: var(--mo-primary, #FF8000);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 14px 28px rgba(255, 128, 0, 0.28);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .mo-order-status-fab:hover {
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 16px 32px rgba(255, 128, 0, 0.32);
+    }
+
+    .mo-order-status-fab__hint,
+    .mo-order-status-fab__cta,
+    .mo-order-status-fab__arrow {
+        display: none;
+    }
+
+    .mo-order-status-fab__label {
+        display: inline-block;
+    }
+
+    @media (max-width: 767.98px) {
+        .mo-floating-order-status {
+            position: sticky;
+            top: 68px;
+            margin-top: -1px;
+            z-index: 1030;
+            padding: 0;
+            background: rgba(255, 255, 255, 0.96);
+            border-bottom: 1px solid rgba(42, 54, 89, 0.08);
+            box-shadow: 0 4px 10px rgba(37, 45, 89, 0.03);
+        }
+
+        .mo-floating-order-status__inner {
+            padding: 0 16px;
+        }
+
+        .mo-order-status-fab {
+            position: static;
+            left: auto;
+            bottom: auto;
+            width: 100%;
+            margin: 0;
+            min-height: 46px;
+            padding: 0;
+            border-radius: 0;
+            background: transparent;
+            color: var(--mo-navy-strong, #252D59);
+            box-shadow: none;
+            justify-content: space-between;
+        }
+
+        .mo-order-status-fab:hover {
+            transform: none;
+            box-shadow: none;
+            color: var(--mo-navy-strong, #252D59);
+        }
+
+        .mo-order-status-fab__label {
+            display: none;
+        }
+
+        .mo-order-status-fab__hint {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--mo-text-soft, #6B7280);
+        }
+
+        .mo-order-status-fab__cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--mo-primary, #FF8000);
+        }
+
+        .mo-order-status-fab__arrow {
+            display: inline-block;
+            font-size: 15px;
+            line-height: 1;
+        }
+    }
+</style>
     
 </head>
 <body class="mo-body">
@@ -88,7 +139,12 @@
 		    <div class="mo-floating-order-status__inner">
 		        <a th:href="@{/orders/{orderIdx}(orderIdx=${headerTrackableOrderIdx})}"
 		           class="mo-order-status-fab">
-		            주문 현황 보기
+		            <span class="mo-order-status-fab__label">주문 현황 보기</span>
+		            <span class="mo-order-status-fab__hint">진행 중인 주문이 있어요</span>
+		            <span class="mo-order-status-fab__cta">
+		                주문 현황 보기
+		                <span class="mo-order-status-fab__arrow">›</span>
+		            </span>
 		        </a>
 		    </div>
 		</div>
