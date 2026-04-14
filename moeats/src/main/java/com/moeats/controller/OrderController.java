@@ -86,6 +86,7 @@ public class OrderController {
         model.addAttribute("groupOrder", groupOrder);
         model.addAttribute("payment", payment);
         model.addAttribute("memberItems", memberItems);
+        model.addAttribute("hideFloatingOrderStatusButton", true);
 
         return "order-detail";
     }
