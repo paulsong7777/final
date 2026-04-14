@@ -534,228 +534,175 @@ button {
 /* =========================
    Footer
 ========================= */
-	.mo-footer {
-	    background: var(--mo-navy-strong);
-	    color: #fff;
-	    margin-top: 40px;
-	}
-	
-	.mo-footer__inner {
-	    padding-top: 28px;
-	    padding-bottom: 20px;
-	    display: grid;
-	    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.85fr);
-	    gap: 28px;
-	    align-items: start;
-	}
-	
-	.mo-footer__brand {
-	    min-width: 0;
-	}
-	
-	.mo-brand--footer .mo-brand__text {
-	    color: #fff;
-	    font-size: 22px;
-	}
-	
-	.mo-footer__headline {
-	    margin: 14px 0 0;
-	    color: #fff;
-	    font-size: 20px;
-	    line-height: 1.4;
-	    letter-spacing: -0.03em;
-	    font-weight: 800;
-	    word-break: keep-all;
-	}
-	
-	.mo-footer__description {
-	    margin: 10px 0 0;
-	    max-width: 430px;
-	    color: rgba(255, 255, 255, 0.74);
-	    font-size: 13px;
-	    line-height: 1.8;
-	    word-break: keep-all;
-	}
-	
-	.mo-footer__content {
-	    display: grid;
-	    grid-template-columns: repeat(3, minmax(0, 1fr));
-	    gap: 24px 20px;
-	}
-	
-	.mo-footer__section {
-	    min-width: 0;
-	}
-	
-	.mo-footer__title {
-	    margin: 0 0 12px;
-	    color: #fff;
-	    font-size: 14px;
-	    font-weight: 800;
-	    letter-spacing: -0.01em;
-	}
-	
-	.mo-footer__link {
-	    display: block;
-	    color: rgba(255, 255, 255, 0.82);
-	    font-size: 14px;
-	    line-height: 1.9;
-	    text-decoration: none;
-	    transition: color .18s ease, transform .18s ease;
-	}
-	
-	.mo-footer__link:hover {
-	    color: #fff;
-	    transform: translateX(2px);
-	}
-	
-	.mo-footer__link--button {
-	    width: 100%;
-	    padding: 0;
-	    border: 0;
-	    background: transparent;
-	    text-align: left;
-	    font-family: inherit;
-	    cursor: pointer;
-	}
-	
-	.mo-footer__section--download {
-	    min-width: 0;
-	}
-	
-	.mo-store-badge-group {
-	    display: flex;
-	    flex-direction: column;
-	    gap: 10px;
-	}
-	
-	.mo-store-badge {
-	    display: flex;
-	    align-items: center;
-	    gap: 12px;
-	    min-height: 54px;
-	    padding: 10px 14px;
-	    border-radius: 16px;
-	    border: 1px solid rgba(255, 255, 255, 0.12);
-	    background: rgba(255, 255, 255, 0.06);
-	    color: #fff;
-	    text-decoration: none;
-	    transition: transform .18s ease, border-color .18s ease, background-color .18s ease;
-	}
-	
-	.mo-store-badge:hover {
-	    color: #fff;
-	    transform: translateY(-1px);
-	    border-color: rgba(255, 255, 255, 0.22);
-	    background: rgba(255, 255, 255, 0.10);
-	}
-	
-	.mo-store-badge__icon {
-	    width: 34px;
-	    height: 34px;
-	    border-radius: 10px;
-	    display: inline-flex;
-	    align-items: center;
-	    justify-content: center;
-	    background: rgba(255, 255, 255, 0.10);
-	    flex-shrink: 0;
-	}
-	
-	.mo-store-badge__svg {
-	    width: 18px;
-	    height: 18px;
-	    display: block;
-	}
-	
-	.mo-store-badge__text {
-	    display: flex;
-	    flex-direction: column;
-	    min-width: 0;
-	    line-height: 1.2;
-	}
-	
-	.mo-store-badge__meta {
-	    color: rgba(255, 255, 255, 0.62);
-	    font-size: 10px;
-	    font-weight: 700;
-	    letter-spacing: 0.08em;
-	    text-transform: uppercase;
-	}
-	
-	.mo-store-badge__title {
-	    margin-top: 3px;
-	    color: #fff;
-	    font-size: 15px;
-	    font-weight: 800;
-	    letter-spacing: -0.01em;
-	}
-	
-	.mo-footer__bottom {
-	    border-top: 1px solid rgba(255, 255, 255, 0.08);
-	}
-	
-	.mo-footer__bottom-inner {
-	    min-height: 52px;
-	    display: flex;
-	    align-items: center;
-	    justify-content: flex-start;
-	    gap: 12px;
-	    color: rgba(255, 255, 255, 0.56);
-	    font-size: 12px;
-	}
-	
-	@media (max-width: 1199.98px) {
-	    .mo-footer__inner {
-	        grid-template-columns: 1fr;
-	        gap: 22px;
-	    }
-	
-	    .mo-footer__content {
-	        grid-template-columns: repeat(2, minmax(0, 1fr));
-	    }
-	}
-	
-	@media (max-width: 767.98px) {
-	    .mo-footer {
-	        margin-top: 32px;
-	    }
-	
-	    .mo-footer__inner {
-	        padding-top: 22px;
-	        padding-bottom: 16px;
-	        gap: 18px;
-	    }
-	
-	    .mo-footer__headline {
-	        font-size: 18px;
-	        line-height: 1.45;
-	    }
-	
-	    .mo-footer__description {
-	        font-size: 12px;
-	        line-height: 1.7;
-	    }
-	
-	    .mo-footer__content {
-	        grid-template-columns: 1fr;
-	        gap: 18px;
-	    }
-	
-	    .mo-store-badge {
-	        min-height: 50px;
-	        padding: 10px 12px;
-	        border-radius: 14px;
-	    }
-	
-	    .mo-store-badge__title {
-	        font-size: 14px;
-	    }
-	
-	    .mo-footer__bottom-inner {
-	        min-height: auto;
-	        padding: 14px 0 16px;
-	    }
-	}
+.mo-footer {
+    background: var(--mo-navy-strong);
+    color: #fff;
+    margin-top: 28px;
+}
+
+.mo-footer__inner {
+    padding-top: 24px;
+    padding-bottom: 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1.92fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.mo-footer__brand {
+    min-width: 0;
+}
+
+.mo-brand--footer .mo-brand__text {
+    color: #fff;
+    font-size: 21px;
+}
+
+.mo-footer__headline {
+    margin: 12px 0 0;
+    color: #fff;
+    font-size: 18px;
+    line-height: 1.36;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+    word-break: keep-all;
+}
+
+.mo-footer__description {
+    margin: 8px 0 0;
+    max-width: 390px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
+    line-height: 1.7;
+    word-break: keep-all;
+}
+
+.mo-footer__content {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px 16px;
+}
+
+.mo-footer__section {
+    min-width: 0;
+}
+
+.mo-footer__title {
+    margin: 0 0 10px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.mo-footer__link {
+    display: block;
+    color: rgba(255, 255, 255, 0.80);
+    font-size: 13px;
+    line-height: 1.85;
+    text-decoration: none;
+    transition: color .18s ease, transform .18s ease;
+}
+
+.mo-footer__link:hover {
+    color: #fff;
+    transform: translateX(2px);
+}
+
+.mo-footer__link--button {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.mo-footer__section--download {
+    min-width: 0;
+}
+
+.mo-store-badge-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mo-store-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 46px;
+    padding: 8px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    text-decoration: none;
+    transition: transform .18s ease, border-color .18s ease, background-color .18s ease;
+}
+
+.mo-store-badge:hover {
+    color: #fff;
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.10);
+}
+
+.mo-store-badge__icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.10);
+    flex-shrink: 0;
+}
+
+.mo-store-badge__svg {
+    width: 17px;
+    height: 17px;
+    display: block;
+}
+
+.mo-store-badge__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.mo-store-badge__meta {
+    color: rgba(255, 255, 255, 0.60);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.mo-store-badge__title {
+    margin-top: 2px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.mo-footer__bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mo-footer__bottom-inner {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 11px;
+}
 
 /* =========================
    Mobile Menu
@@ -1030,6 +977,11 @@ button {
 @media (max-width: 1199.98px) {
     .mo-footer__inner {
         grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .mo-footer__content {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -1103,10 +1055,6 @@ button {
         padding: 18px;
     }
 
-    .mo-footer__brand-card {
-        padding: 16px 18px;
-    }
-
     .mo-section-title {
         font-size: 20px;
     }
@@ -1132,9 +1080,44 @@ button {
         font-size: 22px;
     }
 
+    .mo-footer {
+        margin-top: 22px;
+    }
+
+    .mo-footer__inner {
+        padding-top: 18px;
+        padding-bottom: 12px;
+        gap: 14px;
+    }
+
+    .mo-footer__headline {
+        font-size: 16px;
+        line-height: 1.4;
+    }
+
+    .mo-footer__description {
+        font-size: 11px;
+        line-height: 1.65;
+    }
+
+    .mo-footer__content {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .mo-store-badge {
+        min-height: 44px;
+        padding: 8px 10px;
+        border-radius: 12px;
+    }
+
+    .mo-store-badge__title {
+        font-size: 13px;
+    }
+
     .mo-footer__bottom-inner {
         min-height: auto;
-        padding: 16px 0;
+        padding: 12px 0 14px;
         flex-direction: column;
         align-items: flex-start;
     }
@@ -1178,7 +1161,6 @@ button {
         width: min(92vw, 360px);
     }
 }
-
 
 /* =========================
    AJAX Store Card Compact Override
@@ -1386,15 +1368,103 @@ button {
         padding-right: 10px;
     }
 }
+
 /* =========================
-   Bottom fixed action overlap guard
+   Payment flow layout guard
+   - 기존 with-bottom-dock / 신규 payment-flow 둘 다 대응
 ========================= */
-.mo-page-shell--with-bottom-dock {
-    padding-bottom: 132px;
+.mo-page-shell--with-bottom-dock,
+.mo-page-shell--payment-flow {
+    padding-bottom: 168px !important;
+}
+
+@media (max-width: 991.98px) {
+    .mo-page-shell--with-bottom-dock,
+    .mo-page-shell--payment-flow {
+        padding-bottom: 182px !important;
+    }
 }
 
 @media (max-width: 767.98px) {
-    .mo-page-shell--with-bottom-dock {
-        padding-bottom: 156px;
+    .mo-page-shell--with-bottom-dock,
+    .mo-page-shell--payment-flow {
+        padding-bottom: 210px !important;
+    }
+}
+
+/* =========================
+   Payment flow compact mode
+   - 결제 화면에서는 푸터/플로팅 주문 상태를 얇게 처리
+========================= */
+.mo-app-shell:has(.mo-page-shell--with-bottom-dock) .mo-floating-order-status,
+.mo-app-shell:has(.mo-page-shell--payment-flow) .mo-floating-order-status {
+    display: none;
+}
+
+.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer,
+.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer {
+    margin-top: 16px;
+}
+
+.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__inner,
+.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__inner {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding-top: 14px;
+    padding-bottom: 8px;
+}
+
+.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-brand--footer .mo-brand__text,
+.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-brand--footer .mo-brand__text {
+    font-size: 20px;
+}
+
+.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__headline,
+.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__headline {
+    margin-top: 8px;
+    font-size: 15px;
+    line-height: 1.35;
+}
+
+.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__description,
+.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__content,
+.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__description,
+.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__content {
+    display: none;
+}
+
+.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__bottom,
+.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__bottom {
+    border-top: 0;
+}
+
+.mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__bottom-inner,
+.mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__bottom-inner {
+    min-height: 34px;
+    padding: 0 0 10px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.52);
+}
+
+@media (max-width: 767.98px) {
+    .mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer,
+    .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer {
+        margin-top: 12px;
+    }
+
+    .mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__inner,
+    .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__inner {
+        padding-top: 12px;
+        padding-bottom: 6px;
+    }
+
+    .mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__headline,
+    .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__headline {
+        font-size: 14px;
+    }
+
+    .mo-page-main:has(.mo-page-shell--with-bottom-dock) + .mo-footer .mo-footer__bottom-inner,
+    .mo-page-main:has(.mo-page-shell--payment-flow) + .mo-footer .mo-footer__bottom-inner {
+        padding: 0 0 8px;
     }
 }
