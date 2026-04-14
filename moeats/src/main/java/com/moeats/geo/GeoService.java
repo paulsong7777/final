@@ -124,8 +124,12 @@ public class GeoService {
         if (address == null) {
             return "";
         }
+        
+        // 💡 [추가된 핵심 코드] 정규식을 사용해 괄호 '(' 와 ')' 사이의 모든 문자를 공백으로 치환 후 제거
+        String normalized = address.replaceAll("\\(.*?\\)", "").trim();
 
-        String normalized = address.trim().replaceAll("\\s+", " ");
+        // 기존 연속된 공백 제거 로직
+        normalized = normalized.replaceAll("\\s+", " ");
 
         if (normalized.startsWith("대구 ")) {
             normalized = normalized.replaceFirst("^대구\\s+", "대구광역시 ");

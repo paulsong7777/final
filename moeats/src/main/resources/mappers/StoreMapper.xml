@@ -3,16 +3,18 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moeats.mapper.StoreMapper">
 
- <select id="storeList" resultType="Store">
+<select id="storeList" resultType="Store">
         SELECT *
         FROM (
             SELECT
                 s.*,
                 (
                     6371 * ACOS(
-                        COS(RADIANS(#{userLat})) * COS(RADIANS(s.latitude)) *
-                        COS(RADIANS(s.longitude) - RADIANS(#{userLng})) +
-                        SIN(RADIANS(#{userLat})) * SIN(RADIANS(s.latitude))
+                        LEAST(1.0, 
+                            COS(RADIANS(#{userLat})) * COS(RADIANS(s.latitude)) *
+                            COS(RADIANS(s.longitude) - RADIANS(#{userLng})) +
+                            SIN(RADIANS(#{userLat})) * SIN(RADIANS(s.latitude))
+                        )
                     )
                 ) AS distance
             FROM store s
