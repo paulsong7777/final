@@ -488,30 +488,38 @@
 	        align-items: center;
 	    }
 	
-	    .mo-order-summary-stepper {
-	        grid-template-columns: repeat(5, minmax(76px, 1fr));
-	        gap: 8px;
-	        overflow-x: auto;
-	        padding-bottom: 4px;
-	        -webkit-overflow-scrolling: touch;
-	        scrollbar-width: none;
-	    }
-	
-	    .mo-order-summary-stepper::-webkit-scrollbar {
+	    	    .mo-order-summary-stepper::-webkit-scrollbar {
 	        display: none;
 	    }
 	
-	    .mo-order-summary-step {
-	        flex-direction: column;
-	        justify-content: center;
-	        text-align: center;
-	        min-width: 76px;
-	        padding: 12px 8px;
-	    }
-	
-	    .mo-order-summary-step__title {
-	        font-size: 12px;
-	    }
+	   .mo-order-summary-stepper {
+		    grid-template-columns: repeat(5, minmax(68px, 1fr));
+		    gap: 6px;
+		    overflow-x: auto;
+		    padding-bottom: 2px;
+		    -webkit-overflow-scrolling: touch;
+		    scrollbar-width: none;
+		}
+		
+		.mo-order-summary-step {
+		    flex-direction: column;
+		    justify-content: center;
+		    text-align: center;
+		    min-width: 68px;
+		    padding: 10px 6px;
+		    border-radius: 16px;
+		}
+		
+		.mo-order-summary-step__num {
+		    width: 26px;
+		    height: 26px;
+		    font-size: 11px;
+		}
+		
+		.mo-order-summary-step__title {
+		    font-size: 11px;
+		    line-height: 1.2;
+		}
 	
 	    .mo-order-summary-grid {
 	        grid-template-columns: 1fr;
@@ -584,7 +592,7 @@
                     <div class="mo-order-summary-shell">
                         <div class="mo-order-summary-top">
                             <div class="mo-order-summary-top__row">
-                                <div class="mo-order-summary-top__label">주문방 코드</div>
+                                <div class="mo-order-summary-top__label">주문번호</div>
                                 <div id="moOrderSummaryNumber" class="mo-order-summary-top__value">0</div>
                             </div>
                         </div>
@@ -611,11 +619,7 @@
                                 <div class="mo-order-summary-step__title">배달 완료</div>
                             </div>
                         </div>
-                        <div class="mo-order-summary-card">
-						    <div class="mo-order-summary-card__label">주문 가게</div>
-						    <div id="moOrderSummaryStoreName" class="mo-order-summary-card__value">가게 정보 없음</div>
-						</div>
-
+                       
                         <div class="mo-order-summary-grid">
                             <div class="mo-order-summary-card">
                                 <div id="moOrderSummaryDeliveryLabel" class="mo-order-summary-card__label">배송지</div>
@@ -663,7 +667,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const trigger = document.querySelector('[data-mo-open-order-summary]');
     const floatingWrap = document.querySelector('.mo-floating-order-status');
     const modalElement = document.getElementById('moOrderSummaryModal');
-    const storeNameEl = document.getElementById('moOrderSummaryStoreName');
     const headerStoreEl = document.getElementById('moOrderSummaryHeaderStore');
     
     if (!trigger || !modalElement) {
@@ -732,11 +735,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (headerStoreEl) {
             headerStoreEl.textContent = storeName;
         }
-        
+
         statusBadgeEl.textContent = summary.currentStepLabel || '-';
         statusBadgeEl.classList.toggle('is-cancelled', orderStatus === 'CANCELLED');
 
-        storeNameEl.textContent = summary.storeName || '가게 정보 없음';
         numberEl.textContent = summary.orderNumber || '-';
         amountEl.textContent = `${Number(summary.orderAmount || 0).toLocaleString()}원`;
         deliveryLabelEl.textContent = summary.deliveryLabel || '배송지';
