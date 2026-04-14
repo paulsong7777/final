@@ -2417,3 +2417,9 @@ button {
         min-height: 24px;
     }
 }			
+.mo-store-badge--button {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    text-align: left;
+    cursor: pointer;
+}

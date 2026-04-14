@@ -22,7 +22,7 @@
                 <section class="mo-footer__section">
                     <h3 class="mo-footer__title">서비스</h3>
                     <a th:href="@{/}" class="mo-footer__link">홈</a>
-                    <a th:href="@{/stores}" class="mo-footer__link">가게 찾기</a>
+                    <a href="#" class="mo-footer__link">가게 찾기</a>
                 </section>
 
                 <section class="mo-footer__section"
@@ -56,9 +56,9 @@
                     <h3 class="mo-footer__title">앱 다운로드</h3>
 
                     <div class="mo-store-badge-group">
-                        <a href="#"
-                           class="mo-store-badge"
-                           aria-label="Google Play에서 Mo-Eats 앱 다운로드">
+                        <button type="button"
+							        class="mo-store-badge mo-store-badge--button"
+							        aria-label="Google Play 준비 중">
                             <span class="mo-store-badge__icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" class="mo-store-badge__svg">
                                     <path d="M4.5 3.5L14.9 12L4.5 20.5V3.5Z" fill="currentColor"/>
@@ -72,11 +72,11 @@
                                 <span class="mo-store-badge__meta">GET IT ON</span>
                                 <span class="mo-store-badge__title">Google Play</span>
                             </span>
-                        </a>
+                        </button>
 
-                        <a href="#"
-                           class="mo-store-badge"
-                           aria-label="App Store에서 Mo-Eats 앱 다운로드">
+                        <button type="button"
+							        class="mo-store-badge mo-store-badge--button"
+							        aria-label="App Store 준비 중">
                             <span class="mo-store-badge__icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" class="mo-store-badge__svg">
                                     <path d="M16.7 12.6C16.7 10.6 18.3 9.7 18.4 9.6C17.5 8.3 16 8.1 15.5 8.1C14.2 8 13 8.9 12.3 8.9C11.6 8.9 10.6 8.1 9.5 8.1C7.9 8.1 6.4 9.1 5.6 10.6C4 13.3 5.2 17.3 6.8 19.5C7.6 20.6 8.5 21.9 9.7 21.8C10.9 21.8 11.3 21 12.7 21C14 21 14.5 21.8 15.7 21.8C17 21.8 17.8 20.6 18.6 19.5C19.5 18.2 19.9 16.9 19.9 16.8C19.8 16.8 16.7 15.6 16.7 12.6Z" fill="currentColor"/>
@@ -87,7 +87,7 @@
                                 <span class="mo-store-badge__meta">Download on the</span>
                                 <span class="mo-store-badge__title">App Store</span>
                             </span>
-                        </a>
+                        </button>
                     </div>
                 </section>
             </div>
