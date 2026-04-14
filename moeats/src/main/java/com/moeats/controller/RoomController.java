@@ -27,6 +27,7 @@ import com.moeats.domain.StoreMenu;
 import com.moeats.service.StoreMenuService;
 import com.moeats.service.StoreService;
 import com.moeats.services.GroupCartItemService;
+import com.moeats.services.GroupOrderService;
 import com.moeats.services.MenuService;
 import com.moeats.services.OrderMemberQueryService;
 import com.moeats.services.OrderRoomService;
@@ -59,6 +60,8 @@ public class RoomController {
 	StoreService storeService;
 	@Autowired
 	OrderRoomTimer orderRoomTimer;
+	@Autowired
+	GroupOrderService groupOrderService;
 
 	public record MemberParticipant(RoomParticipant roomParticipant, Member member) {
 	}
@@ -257,7 +260,19 @@ public class RoomController {
 
 		boolean isLeader = myState != null && "LEADER".equals(myState.getParticipantRole());
 		boolean allSelected = participantCount > 0 && completedCount == participantCount;
-
+		
+		// =============== [추가할 부분] ===============
+	    // 방 상태가 결제 대기(PAYMENT_PENDING)이거나 주문 확정(ORDER_CONFIRMED)일 때 orderIdx를 Model에 담습니다.
+	    if ("PAYMENT_PENDING".equals(orderRoom.getRoomStatus()) || "ORDER_CONFIRMED".equals(orderRoom.getRoomStatus())) {
+	        // 주의: GroupOrderService에 roomIdx를 기반으로 GroupOrder를 조회하는 메서드가 필요합니다.
+	        // 프로젝트에 구현해 두신 메서드명(예: findByRoomIdx, getOrderByRoom 등)으로 변경해 주세요.
+	        GroupOrder activeOrder = groupOrderService.findByRoom(orderRoom.getRoomIdx());
+	        if (activeOrder != null) {
+	            model.addAttribute("orderIdx", activeOrder.getOrderIdx());
+	        }
+	    }
+	    // =============================================
+		
 		Store store = storeService.getStoreByIdx(orderRoom.getStoreIdx());
 
 		model.addAttribute("orderRoom", orderRoom);
