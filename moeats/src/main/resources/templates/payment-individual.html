@@ -548,7 +548,7 @@
                 </form>
             </div>
         </div>
-
+		<input type="hidden" id="storeIdx" th:value="${groupOrder.storeIdx}">
         <input type="hidden" id="orderIdx" th:value="${orderIdx}">
         <input type="hidden" id="orderSsePageType" value="payment-individual">
         <input type="hidden" id="paymentExpiresAtMs" th:if="${payment.paymentExpiresAt != null}" th:value="${payment.paymentExpiresAt.time}">
@@ -671,6 +671,53 @@
             }
         }, 1000);
     }
+    
+    // --- 가게 영업 상태 실시간 감지 로직 ---
+document.addEventListener('DOMContentLoaded', function() {
+    const storeIdxStr = document.getElementById('storeIdx')?.value 
+                     || document.getElementById('roomDetailRoot')?.getAttribute('data-store-idx');
+    const currentStoreIdx = parseInt(storeIdxStr, 10);
+
+    if (currentStoreIdx > 0) {
+        const storeStatusTimer = setInterval(() => {
+            fetch(`/api/stores/${currentStoreIdx}/status`)
+                .then(res => res.json())
+                .then(data => {
+                    const status = data.storeStatus;
+                    
+                    // 💡 DB 기준 영업중 상태는 'ACTIVE' 입니다.
+                    const openStatuses = ['ACTIVE']; 
+
+                    // 현재 상태가 null이 아니고, 'ACTIVE'가 아니라면 튕겨냅니다.
+                    if (status && !openStatuses.includes(status)) {
+                        clearInterval(storeStatusTimer);
+                        
+                        if (typeof isSafeExit !== 'undefined') {
+                            isSafeExit = true;
+                        }
+
+                        // DB 상태값이 'PAUSED'면 브레이크 타임, 'INACTIVE'면 영업 종료로 처리
+                        const message = status === 'PAUSED' 
+                            ? '가게가 잠시 주문을 정지(브레이크 타임)하여 더 이상 주문할 수 없습니다.' 
+                            : '가게 영업이 종료되어 주문이 불가합니다.';
+
+                        if (typeof window.moOpenAlert === 'function') {
+                            window.moOpenAlert({
+                                eyebrow: '주문 불가 안내',
+                                title: '가게 영업 상태 변경',
+                                message: message,
+                                confirmText: '홈으로 이동'
+                            }).then(() => window.location.href = '/main');
+                        } else {
+                            alert(message);
+                            window.location.href = '/main';
+                        }
+                    }
+                })
+                .catch(e => console.error("가게 상태 체크 오류:", e));
+        }, 5000);
+    }
+});
 </script>
 </th:block>
 </body>

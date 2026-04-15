@@ -693,6 +693,7 @@
          id="roomDetailRoot"
          class="rd-page-shell"
          th:attr="data-room-code=${orderRoom.roomCode},
+         			data-store-idx=${orderRoom.storeIdx},
                   data-room-status=${orderRoom.roomStatus},
                   data-room-grand-total=${roomGrandTotal},
                   data-minimum-order-amount=${store != null ? store.minimumOrderAmount : 0}">
@@ -1171,6 +1172,54 @@
             btn.style.cssText = 'background-color: #f1f3f5; color: #8A93A6; border: 1px solid #e9ecef; cursor: pointer;';
         }
     };
+    
+ // --- 가게 영업 상태 실시간 감지 로직 ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const storeIdxStr = document.getElementById('storeIdx')?.value 
+                         || document.getElementById('roomDetailRoot')?.getAttribute('data-store-idx');
+        const currentStoreIdx = parseInt(storeIdxStr, 10);
+
+        if (currentStoreIdx > 0) {
+            const storeStatusTimer = setInterval(() => {
+                fetch(`/api/stores/${currentStoreIdx}/status`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const status = data.storeStatus;
+                        const openStatuses = ['ACTIVE']; 
+
+                        if (status && !openStatuses.includes(status)) {
+                            clearInterval(storeStatusTimer);
+                            
+                            if (typeof isSafeExit !== 'undefined') {
+                                isSafeExit = true;
+                            }
+
+                            const message = status === 'PAUSED' 
+                                ? '가게가 잠시 주문을 정지(브레이크 타임)하여 더 이상 주문할 수 없습니다.' 
+                                : '가게 영업이 종료되어 주문이 불가합니다.';
+
+                            // 💡 [핵심 수정] 튕겨내기 직전에 서버로 방 폭파 요청을 먼저 보냅니다!
+                            fetch(`/api/stores/${currentStoreIdx}/explode-room`, { method: 'POST' })
+                                .finally(() => {
+                                    // 방 폭파 요청 처리가 끝나면(성공하든 실패하든) 유저를 알림과 함께 쫓아냅니다.
+                                    if (typeof window.moOpenAlert === 'function') {
+                                        window.moOpenAlert({
+                                            eyebrow: '주문 불가 안내',
+                                            title: '가게 영업 상태 변경',
+                                            message: message,
+                                            confirmText: '홈으로 이동'
+                                        }).then(() => window.location.href = '/main');
+                                    } else {
+                                        alert(message);
+                                        window.location.href = '/main';
+                                    }
+                                });
+                        }
+                    })
+                    .catch(e => console.error("가게 상태 체크 오류:", e));
+            }, 5000);
+        }
+    });
 	</script>
 </th:block>
 </body>

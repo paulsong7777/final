@@ -6,42 +6,52 @@
 <head>
     <title>주문 내역 관리 - Mo-Eats</title>
     <style>
-        /* Mo-Eats 스타일 테이블 커스텀 */
-        .mo-table {
-            width: 100%;
-            margin-bottom: 0;
-            color: var(--mo-text);
-            vertical-align: middle;
-        }
-        .mo-table th {
-            font-weight: 800;
-            color: var(--mo-text-soft);
-            background-color: #fafafa;
-            border-bottom: 1px solid rgba(42, 54, 89, 0.1);
-            padding: 14px 12px;
-            font-size: 13px;
-        }
-        .mo-table td {
-            padding: 16px 12px;
-            border-bottom: 1px solid rgba(42, 54, 89, 0.05);
-            font-size: 14px;
-        }
-        .mo-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-        .mo-table tbody tr:hover td {
-            background-color: rgba(42, 54, 89, 0.02);
-        }
-        
-        /* 테이블 내부 뱃지 커스텀 (상태별 컬러) */
-        .mo-badge--waiting { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
-        .mo-badge--accepted { background: rgba(255, 128, 0, 0.1); color: var(--mo-primary); }
-        .mo-badge--cooking { background: rgba(40, 167, 69, 0.1); color: #28a745; }
-        .mo-badge--delivering { background: rgba(23, 162, 184, 0.1); color: #17a2b8; }
-        .mo-badge--completed { background: rgba(42, 54, 89, 0.1); color: var(--mo-navy-strong); }
-        
-        .order-row { transition: background-color 0.3s ease; }
-    </style>
+    /* 기존 스타일 상단에 추가/수정 */
+    .mo-table {
+        width: 100% !important; /* 테이블이 부모 너비를 가득 채우도록 강제 */
+        table-layout: fixed;   /* 너비 고정을 위해 필수 */
+    }
+
+    .mo-table th, .mo-table td {
+        text-align: center;
+        vertical-align: middle;
+        padding: 16px 8px; /* 패딩 최적화 */
+    }
+
+    /* 마지막 상세 내역 버튼이 있는 td의 우측 패딩 조정 */
+    .mo-table td.pe-4, .mo-table th.pe-4 {
+        padding-right: 24px !important;
+    }
+
+    /* 버튼 너비 최적화 */
+    .mo-table .mo-btn-outline {
+        width: 100%;
+        max-width: 100px; /* 버튼이 너무 커지지 않게 제한 */
+        margin: 0 auto;
+    }
+    .mo-amount-cell {
+        font-family: 'Pretendard', sans-serif;
+        font-size: 16px; /* 크기를 살짝 더 키웠습니다 */
+        font-weight: 800;
+        /* 주황빛이 도는 세련된 레드 (Deep Orange Red) */
+        color: #ff4d00; 
+        letter-spacing: -0.5px;
+        /* 약간의 그림자를 주면 글자가 더 선명해집니다 */
+        text-shadow: 0.5px 0.5px 0px rgba(0,0,0,0.05);
+    }
+
+    .mo-amount-unit {
+        font-size: 12px;
+        font-weight: 600;
+        color: #888; /* '원'은 차분하게 유지하여 숫자를 강조 */
+        margin-left: 2px;
+    }
+
+    /* 신규 주문일 때 금액에 포인트를 주고 싶다면 */
+    .order-row.new-highlight .mo-amount-cell {
+        color: var(--mo-primary); /* 오렌지색 등 강조색 */
+    }
+</style>
 </head>
 
 <body>
@@ -62,62 +72,47 @@
             </div>
         </div>
 
-        <div class="mo-surface-card p-0 overflow-hidden">
-            <div class="table-responsive">
-                <table class="mo-table" id="orderTable" style="table-layout: fixed; min-width: 650px;">
+			<div class="mo-surface-card p-0 overflow-hidden">
+			    <div class="table-responsive">
+			        <table class="mo-table" id="orderTable" style="table-layout: fixed; width: 100%;">
 				    <colgroup>
-				        <col style="width: 60px;">  <col style="width: 130px;"> <col style="width: 120px;"> <col style="width: auto;">  <col style="width: 100px;"> <col style="width: 90px;">  </colgroup>
+				        <col style="width: 80px;">  <col style="width: 180px;"> <col style="width: 160px;"> <col style="width: 140px;"> <col style="width: auto;">  <col style="width: 120px;"> </colgroup>
 				    
-				    <thead class="text-center align-middle" style="white-space: nowrap;">
+				    <thead class="text-center align-middle">
 				        <tr>
 				            <th class="ps-4 text-start">No</th>
 				            <th>주문시간</th>
 				            <th>주문코드(ID)</th>
-				            <th>진행상태</th>
+				            <th>총 금액</th> <th>진행상태</th>
 				            <th class="pe-4">상세 내역</th>
 				        </tr>
 				    </thead>
 				    <tbody class="text-center" id="orderTableBody">
-				        
 				        <th:block th:if="${not #lists.isEmpty(orderList)}">
 				            <tr th:each="order, stat : ${orderList}" th:data-room-idx="${order.groupOrder.roomIdx ?: 0}" class="order-row">
 				                <td class="ps-4 text-start text-muted small row-num" th:text="${stat.count}">1</td>
-				                
 				                <td style="color: var(--mo-text-soft); font-weight: 700; font-size: 13px;" 
 				                    th:text="${order.groupOrder.createdAt != null ? #temporals.format(order.groupOrder.createdAt.toLocalDateTime().plusHours(9), 'yyyy-MM-dd HH:mm') : '-'}">0000-00-00 00:00</td>
-				                
 				                <td>
 				                    <span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;" 
 				                          th:text="${'ROOM-' + (order.groupOrder.roomIdx ?: 0)}">ORD-001</span>
 				                </td>
 				                
+								<td class="text-end pe-4"> <div class="mo-amount-cell">
+							        <span th:text="${#numbers.formatInteger(order.groupOrder.orderTotalAmount, 0, 'COMMA')}">0</span>
+							        <span class="mo-amount-unit">원</span>
+							    </div>
+							</td>
+				
 				                <td class="status-cell">
-				                    <div th:switch="${order.groupOrder.orderStatus}">
-				                        <span th:case="'PAID'" class="mo-badge mo-badge--waiting">신규주문</span>
-				                        <span th:case="'ACCEPTED'" class="mo-badge mo-badge--accepted">접수완료</span>
-				                        <span th:case="'PREPARING'" class="mo-badge mo-badge--cooking">조리중</span>
-				                        <span th:case="'READY'" class="mo-badge" style="background: rgba(23, 162, 184, 0.1); color: #17a2b8;">조리완료</span>
-				                        <span th:case="'DELIVERING'" class="mo-badge mo-badge--delivering">배달중</span>
-				                        <span th:case="'COMPLETED'" class="mo-badge mo-badge--completed">완료</span>
-				                        <span th:case="'CANCELLED'" class="mo-badge" style="background: #eee; color: #666;">취소됨</span>
-				                    </div>
-				                </td>
-				                <td class="pe-4">
-				                    <a th:href="@{/owners/order/detail(roomIdx=${order.groupOrder.roomIdx ?: 0})}" 
-				                       class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
-				                </td>
-				            </tr>
+				                    </td>
+				                </tr>
 				        </th:block>
 				        
 				        <tr th:if="${#lists.isEmpty(orderList)}" id="emptyRow">
 				            <td colspan="6" class="py-5 text-center">
-				                <div class="mo-empty-state mo-empty-state--compact mx-auto border-0 shadow-none bg-transparent">
-				                    <div style="font-size: 48px; margin-bottom: 8px;">🧾</div>
-				                    <p class="mo-empty-state__desc" style="font-weight: 700; color: var(--mo-text-soft);">표시할 주문 내역이 없습니다.</p>
-				                </div>
-				            </td>
+				                </td>
 				        </tr>
-				        
 				    </tbody>
 				</table>
             </div>
@@ -136,25 +131,29 @@
      const rows = Array.from(tbody.querySelectorAll('tr.order-row'));
      if (rows.length === 0) return;
 
-     // data-room-idx (방 번호) 기준으로 무조건 내림차순(최신이 위로) 정렬
+     // 1. 최신순 정렬 (roomIdx 내림차순)
      rows.sort((a, b) => {
          const idxA = parseInt(a.getAttribute('data-room-idx'), 10) || 0;
          const idxB = parseInt(b.getAttribute('data-room-idx'), 10) || 0;
          return idxB - idxA;
      });
      
-     // 정렬된 순서대로 테이블에 다시 삽입
      rows.forEach(row => tbody.appendChild(row));
      
-     // No 열(1, 2, 3...) 다시 예쁘게 매기기
+     // 2. No 열 번호 다시 매기기 (역순 번호 부여)
+     const totalRows = rows.length;
      document.querySelectorAll('.row-num').forEach((el, idx) => { 
-         el.innerText = idx + 1; 
+         // 최상단 행에 가장 큰 번호를 부여 (예: 10, 9, 8 ... 1)
+         el.innerText = totalRows - idx; 
      });
  }
 
  document.addEventListener('DOMContentLoaded', function() {
-     forceSortTable(); // 화면이 켜지자마자 무조건 정렬 1회 실행!
-     setInterval(syncOrderStatuses, 3000); 
+     forceSortTable();      // 1. 기존 HTML에 있는 데이터 정렬
+     syncOrderStatuses();   // 2. 서버에서 최신 데이터 즉시 한 번 더 가져오기 (추가됨)
+     
+     // 3. 이후 5초마다 주기적으로 실행
+     setInterval(syncOrderStatuses, 5000); 
  });
 
  async function syncOrderStatuses() {
@@ -202,35 +201,47 @@
      newRow.setAttribute('data-room-idx', order.groupOrder.roomIdx);
      newRow.className = 'order-row';
      
-     const storeName = /*[[${store.storeName}]]*/ '매장'; 
-     
+     // 1. 금액 포맷팅 (DB에서 넘어온 필드명 확인: orderTotalAmount)
+     const amount = order.groupOrder.orderTotalAmount || 0;
+     const formattedAmount = (order.groupOrder.orderTotalAmount || 0).toLocaleString();
+
+     // 2. 시간 포맷팅 (에러 방지를 위한 안전한 처리)
      let timeString = "-";
-     if (order.groupOrder.createdAt) {
-         const dateObj = new Date(order.groupOrder.createdAt);
+     const rawDate = order.groupOrder.createdAt;
+     if (rawDate) {
+         const dateObj = new Date(rawDate);
          if (!isNaN(dateObj.getTime())) {
-             dateObj.setHours(dateObj.getHours() + 9);
-             
-             const year = dateObj.getFullYear();
-             const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-             const day = String(dateObj.getDate()).padStart(2, '0');
-             const hours = String(dateObj.getHours()).padStart(2, '0');
-             const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-             
-             timeString = `${year}-${month}-${day} <br> ${hours}:${minutes}`;
+             // 한국 시간 보정 (서버 환경에 따라 필요시)
+             dateObj.setHours(dateObj.getHours() + 9); 
+             const Y = dateObj.getFullYear();
+             const M = String(dateObj.getMonth() + 1).padStart(2, '0');
+             const D = String(dateObj.getDate()).padStart(2, '0');
+             const h = String(dateObj.getHours()).padStart(2, '0');
+             const m = String(dateObj.getMinutes()).padStart(2, '0');
+             timeString = `${Y}-${M}-${D} ${h}:${m}`;
          }
      }
+     
 
      newRow.innerHTML = `
-         <td class="ps-4 text-start text-muted small row-num">-</td>
-         <td style="color: var(--mo-text-soft); font-weight: 700; font-size: 13px;">${timeString}</td>
-         <td><span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;">ROOM-${order.groupOrder.roomIdx}</span></td>
-         <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;">${storeName}</td>
-         <td class="status-cell">${getStatusBadgeHtml(order.groupOrder.orderStatus)}</td>
-         <td class="pe-4">
-             <a href="/owners/order/detail?roomIdx=${order.groupOrder.roomIdx}" 
-                class="mo-btn mo-btn-outline" style="min-height: 32px; padding: 0 14px; font-size: 12px; width: 100%;">보기</a>
-         </td>
-     `;
+        <td class="ps-4 text-start text-muted small row-num">-</td>
+        <td style="color: var(--mo-text-soft); font-weight: 700; font-size: 13px;">${timeString}</td>
+        <td>
+            <span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 10px; border-radius: 6px;">
+                ROOM-${order.groupOrder.roomIdx}
+            </span>
+        </td>
+        <td class="text-end pe-4">
+            <div class="mo-amount-cell">
+                ${formattedAmount}<span class="mo-amount-unit">원</span>
+            </div>
+        </td>
+        <td class="status-cell">${getStatusBadgeHtml(order.groupOrder.orderStatus)}</td>
+        <td class="pe-4">
+            <a href="/owners/order/detail?roomIdx=${order.groupOrder.roomIdx}" 
+               class="mo-btn mo-btn-outline">보기</a>
+        </td>
+    `;
      tbody.prepend(newRow); 
  }
 
