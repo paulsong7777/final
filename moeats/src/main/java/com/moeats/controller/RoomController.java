@@ -483,6 +483,12 @@ public class RoomController {
 			ra.addFlashAttribute("error", "가게 정보를 찾을 수 없습니다");
 			return String.format("redirect:/rooms/code/%s", roomCode);
 		}
+		
+		if (!"OPEN".equals(store.getStoreStatus())) {
+	        ra.addFlashAttribute("error", "현재 가게가 브레이크 타임이거나 영업이 종료되어 결제를 진행할 수 없습니다.");
+	        return String.format("redirect:/rooms/code/%s", roomCode);
+	    }
+		
 		int activeRoomAmount = groupCartItemService.findRoomAmount(orderRoom.getRoomIdx());
 		boolean hasActiveCart = groupCartItemService.findRoomMemberAmount(orderRoom.getRoomIdx()).stream()
 				.anyMatch(groupCartItem -> groupCartItem.getItemTotalAmount() > 0);

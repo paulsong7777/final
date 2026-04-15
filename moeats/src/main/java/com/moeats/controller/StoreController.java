@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -427,5 +428,44 @@ public class StoreController {
         }
         // SSEService의 storeMap에 현재 사장님의 매장 번호로 구독(연결)을 시작합니다.
         return sseService.joinStore(store.getStoreIdx());
+    }
+    
+    @GetMapping("/api/stores/{storeIdx}/status")
+    @ResponseBody
+    public Map<String, String> getStoreStatusApi(@PathVariable("storeIdx") int storeIdx) {
+        Store store = storeService.getStoreByIdx(storeIdx);
+        
+        if (store == null) {
+            return Map.of("storeStatus", "CLOSED");
+        }
+        
+        // 상태값이 null일 경우 기본값을 영업중(OPEN)으로 간주합니다.
+        String status = store.getStoreStatus() != null ? store.getStoreStatus() : "OPEN";
+        return Map.of("storeStatus", status);
+    }
+    
+ // StoreController.java 내부 아무 곳에나 추가
+
+    @PostMapping("/api/stores/{storeIdx}/explode-room")
+    @ResponseBody
+    public Map<String, Boolean> explodeRoomDueToStoreStatus(
+            @PathVariable("storeIdx") int storeIdx,
+            @SessionAttribute("member") Member member) {
+        
+        // 1. 가게 정보를 가져와서 진짜 영업중이 아닌지(ACTIVE가 아닌지) 확인합니다.
+        Store store = storeService.getStoreByIdx(storeIdx);
+        
+        if (store != null && !"ACTIVE".equals(store.getStoreStatus())) {
+            // 2. 현재 로그인한 유저가 속해있는 진행 중인 주문방을 찾습니다.
+            com.moeats.domain.OrderRoom activeRoom = orderRoomService.findActiveRoomByMember(member.getMemberIdx());
+            
+            // 3. 방이 존재하고, 그 방이 상태가 바뀐 해당 가게의 방이 맞다면 폭파시킵니다!
+            if (activeRoom != null && activeRoom.getStoreIdx() == storeIdx) {
+                orderRoomService.cancel(activeRoom.getRoomIdx()); // 방 삭제(폭파)
+                sseService.cancelRoom(activeRoom.getRoomIdx());   // 다른 사람들에게도 폭파됨을 알림
+                return Map.of("result", true);
+            }
+        }
+        return Map.of("result", false);
     }
 }
