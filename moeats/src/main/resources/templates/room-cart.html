@@ -69,13 +69,47 @@
                 line-height: 1.08;
                 letter-spacing: -0.03em;
             }
-
-            .rc-store-hero__desc {
+            
+			.rc-store-hero__desc {
                 margin: 8px 0 0;
                 color: rgba(255, 255, 255, 0.92);
                 font-size: 13px;
                 line-height: 1.38;
                 max-width: 480px;
+                
+                /* ▼ 펼쳐보기 기능용 추가 ▼ */
+                display: -webkit-box;
+                -webkit-line-clamp: 2; /* 2줄까지만 표시 (원하면 3으로 변경) */
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                word-break: keep-all;
+            }
+
+            /* 펼쳐졌을 때 */
+            .rc-store-hero__desc.is-expanded {
+                display: block;
+                -webkit-line-clamp: initial;
+                overflow: visible;
+            }
+
+            /* 버튼 스타일 추가 */
+            .rc-store-desc-toggle {
+                display: inline-flex;
+                align-items: center;
+                margin-top: 6px;
+                padding: 0;
+                border: 0;
+                background: transparent;
+                color: #FFD7B0; /* 어두운 배경에 맞춘 주황계열 텍스트 */
+                font-size: 12px;
+                font-weight: 800;
+                cursor: pointer;
+                text-decoration: underline;
+                text-underline-offset: 2px;
+            }
+
+            .rc-store-desc-toggle.d-none {
+                display: none !important;
             }
 
             .rc-store-hero__meta {
@@ -608,11 +642,12 @@
                     가게명
                 </h1>
 
-                <p class="rc-store-hero__desc"
+				<p class="rc-store-hero__desc js-store-desc-text"
                    th:text="${store != null and store.storeDescription != null and !#strings.isEmpty(store.storeDescription) ? store.storeDescription : '메뉴를 담고 주문 확인 단계로 넘어갈 수 있습니다.'}">
                     가게 소개
                 </p>
-
+                
+                <button type="button" class="rc-store-desc-toggle js-store-desc-toggle d-none">펼쳐보기</button>
                 <div class="rc-store-hero__meta">
                     <div class="rc-store-hero__meta-item rc-store-hero__meta-item--minimum">
                         <span class="rc-store-hero__meta-label">최소주문금액</span>
@@ -749,6 +784,36 @@
 
 <th:block layout:fragment="pageScripts">
     <script th:src="@{/js/room/room-cart.js}"></script>
-</th:block>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 가게 소개 펼쳐보기 로직
+            const storeDescText = document.querySelector('.js-store-desc-text');
+            const storeDescToggle = document.querySelector('.js-store-desc-toggle');
+
+            if (storeDescText && storeDescToggle) {
+                // 글꼴 렌더링 후 정확한 높이 계산을 위해 약간의 지연 시간 부여
+                setTimeout(() => {
+                    // 실제 텍스트 높이가 제한된 2줄 높이보다 클 경우 버튼 노출 (d-none 제거)
+                    if (storeDescText.scrollHeight > storeDescText.clientHeight) {
+                        storeDescToggle.classList.remove('d-none');
+
+                        // 버튼 클릭 이벤트
+                        storeDescToggle.addEventListener('click', function() {
+                            storeDescText.classList.toggle('is-expanded');
+                            
+                            // 상태에 따라 버튼 텍스트 변경
+                            if (storeDescText.classList.contains('is-expanded')) {
+                                storeDescToggle.textContent = '접기';
+                            } else {
+                                storeDescToggle.textContent = '펼쳐보기';
+                            }
+                        });
+                    }
+                }, 100);
+            }
+        });
+    </script>
+    </th:block>
 </body>
 </html>
