@@ -563,6 +563,10 @@
     let isExpired = false;
     let lastGuardToastAt = 0;
 
+    window.moPrepareSafeExit = function () {
+        isSafeExit = true;
+    };
+    
     const GUARD_TOAST_INTERVAL = 1200;
 
     const showGuardToast = (message, variant = 'warning') => {

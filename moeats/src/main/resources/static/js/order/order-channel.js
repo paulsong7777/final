@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let countdownHandled = false;
     let navigationLocked = false;
 
+	function prepareSafeExit() {
+	       if (typeof window.moPrepareSafeExit === 'function') {
+	           window.moPrepareSafeExit();
+	       }
+	   }	
+	
     document.querySelectorAll('form[data-payment-complete-form="true"]').forEach(function (form) {
         form.addEventListener('submit', function (event) {
             if (form.dataset.submitting === 'true') {
@@ -130,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         navigationLocked = true;
+		prepareSafeExit();
         window.location.href = '/orders/' + orderIdx;
     });
 
@@ -177,6 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         navigationLocked = true;
+		prepareSafeExit();
         window.location.href = '/orders/' + orderIdx;
     });
 
