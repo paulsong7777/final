@@ -92,27 +92,36 @@ public class DeliveryAddressController {
 	// 등록
 	@PostMapping("/members/me/addresses")
 	public String insertAddress(@ModelAttribute DeliveryAddress deliveryAddress,
+	        @RequestParam(value = "returnUrl", required = false) String returnUrl, // ✨ 파라미터 받기
 	        @SessionAttribute("memberIdx") int memberIdx,
-	        RedirectAttributes ra) { // ✨ 에러 메시지 전달을 위해 추가
-		
+	        RedirectAttributes ra) {
+	    
 	    deliveryAddress.setMemberIdx(memberIdx);
 
 	    try {
 	        deliveryAddressService.insertAddress(deliveryAddress);
 	    } catch (RuntimeException e) {
-	        // ✨ 좌표 변환 실패 시 500 에러 대신 사용자에게 메시지 전달
 	        ra.addFlashAttribute("error", "해당 주소의 좌표를 찾을 수 없습니다. 주소를 다시 확인해주세요.");
-	        return "redirect:/members/me/addresses/new"; // 등록 폼으로 돌려보냄
+	        if (returnUrl != null && !returnUrl.isBlank()) {
+	            ra.addAttribute("returnUrl", returnUrl); // 에러 시 파라미터 유지
+	        }
+	        return "redirect:/members/me/addresses/new";
 	    }
 	    
-		return "redirect:/members/me/addresses";
+	    // ✨ returnUrl이 존재하면 원래 있던 가게 메뉴 페이지로 돌려보냄
+	    if (returnUrl != null && !returnUrl.isBlank()) {
+	        return "redirect:" + returnUrl;
+	    }
+	    
+	    return "redirect:/members/me/addresses";
 	}
 	
 	// 주소 등록 폼 띄우기
 	@GetMapping("/members/me/addresses/new")
-	public String insertAddress() {
-		
-		return "views/address-create";
+	public String insertAddress(@RequestParam(value = "returnUrl", required = false) String returnUrl, Model model) {
+	    // ✨ 뷰로 returnUrl을 전달
+	    model.addAttribute("returnUrl", returnUrl);
+	    return "views/address-create";
 	}
 	
 	// 기본 배송지 변경

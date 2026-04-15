@@ -31,6 +31,8 @@
             <div class="col-12 col-xl-8">
                 <div class="mo-surface-card">
                     <form th:action="@{/members/me/addresses}" method="post" class="row g-3">
+                    
+                    	<input type="hidden" name="returnUrl" th:value="${returnUrl}">
 
                         <div class="col-12 col-md-6">
                             <label for="deliveryLabel" class="mo-form-label">배송지 이름</label>

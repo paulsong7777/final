@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -72,6 +71,27 @@
 		.fe02-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 		.fe02-card__name { margin: 0; color: var(--mo-navy-strong); font-size: 18px; font-weight: 800; line-height: 1.35; letter-spacing: -0.02em; }
 		.fe02-card__desc { margin: 6px 0 0; color: var(--mo-text-soft); font-size: 13px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+		.fe02-card__desc.is-expanded {
+		    display: block;
+		    -webkit-line-clamp: initial;
+		    overflow: visible;
+		}
+		.fe02-card__desc-toggle {
+		    display: inline-flex;
+		    align-items: center;
+		    margin-top: 4px;
+		    padding: 0;
+		    border: 0;
+		    background: transparent;
+		    color: #94A3B8;
+		    font-size: 11px;
+		    font-weight: 700;
+		    cursor: pointer;
+		}
+		.fe02-card__desc-toggle.d-none {
+		    display: none !important;
+		}
+		
 		.fe02-card__footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
 		.fe02-card__price { color: var(--mo-navy-strong); font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
 		.fe02-status { display: inline-flex; align-items: center; justify-content: center; min-height: 30px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
@@ -91,18 +111,17 @@
 		/* 품절 상품 카드 스타일 */
 		.fe02-card.is-soldout {
 		    opacity: 0.6;
-		    filter: grayscale(1); /* 이미지를 흑백으로 */
+		    filter: grayscale(1);
 		    background: #f8f9fa;
 		    cursor: not-allowed;
 		    border-color: rgba(0, 0, 0, 0.05) !important;
-		    pointer-events: none; /* 클릭 원천 차단 */
+		    pointer-events: none;
 		}
 		
 		.fe02-card.is-soldout .fe02-card__thumb {
 		    position: relative;
 		}
 		
-		/* 썸네일 중앙에 '품절' 텍스트 띄우기 */
 		.fe02-card.is-soldout .fe02-card__thumb::after {
 		    content: "품절";
 		    position: absolute;
@@ -448,7 +467,6 @@
 		        const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
 		        const storeIdx = Number(createRoomBtn?.dataset?.storeIdx || 0);
 		        
-		        // 1. 배송지 존재 여부 체크 (배송지 리스트 아이템 개수로 확인)
 		        const addressList = document.querySelectorAll('#moAddressModal .mo-address-item');
 		        const hasAddress = addressList.length > 0;
 
@@ -462,7 +480,7 @@
 		            const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
 		            if (offcanvasInstance) offcanvasInstance.hide();
 
-		            // 공통 컨펌 모달 활용 (알림창 하나만 띄움)
+		            // 공통 컨펌 모달 활용
 		            const confirmModalEl = document.getElementById('moConfirmModal');
 		            if (confirmModalEl) {
 		                confirmModalEl.querySelector('[data-mo-confirm-title]').textContent = '어디로 배달해 드릴까요? 🛵';
@@ -471,17 +489,30 @@
 		                
 		                const acceptBtn = confirmModalEl.querySelector('[data-mo-confirm-accept]');
 		                acceptBtn.textContent = '주소 등록하기';
+
+		                // ✨ 수정 포인트 1: 버튼 클릭 이벤트 설정 (내부에 DOMContentLoaded 같은 건 넣지 않습니다)
 		                acceptBtn.onclick = function() {
-		                    window.location.href = '/members/me/addresses/new';
+		                    const pending = {
+		                        storeIdx: storeIdx,
+		                        menuIdx: currentMenuIdx,
+		                        quantity: currentQty,
+		                        menuName: name, 
+		                        savedAt: Date.now()
+		                    };
+		                    sessionStorage.setItem('moPendingMenuSelection', JSON.stringify(pending));
+		                    sessionStorage.setItem('moAutoResumeCheckout', 'true'); // 복귀 트리거 저장
+
+		                    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+		                    window.location.href = '/members/me/addresses/new?returnUrl=' + returnUrl;
 		                };
 
 		                const confirmModal = new bootstrap.Modal(confirmModalEl);
 		                confirmModal.show();
 		            }
-		            return; // 중단
+		            return; 
 		        }
 
-		        // 2. 배송지가 있을 때만 실행되는 로직 (세션 저장 및 주문방 생성 유도)
+		        // 배송지가 이미 있을 때 (정상 장바구니 담기)
 		        const pending = {
 		            storeIdx: storeIdx,
 		            menuIdx: currentMenuIdx,
@@ -491,7 +522,6 @@
 
 		        sessionStorage.setItem('moPendingMenuSelection', JSON.stringify(pending));
 
-		        // 모달 닫기
 		        const modalElement = document.getElementById('commonMenuModal');
 		        const modalInstance = bootstrap.Modal.getInstance(modalElement);
 		        if (modalInstance) modalInstance.hide();
@@ -519,6 +549,7 @@
 		</script>
 		<script th:src="@{/js/store/menu-list.js}"></script>
 		<script th:inline="javascript">
+		// ✨ 수정 포인트 2: 페이지가 완전히 렌더링된 후 단 한 번만 실행되는 전역 이벤트 리스너
 		document.addEventListener('DOMContentLoaded', function() {
 		    const searchInput = document.getElementById('menuSearchInput');
 		    const menuItems = document.querySelectorAll('.fe02-card');
@@ -527,6 +558,7 @@
 		    const heroDesc = document.getElementById('storeHeroDesc');
 		    const heroDescToggle = document.getElementById('storeHeroDescToggle');
 
+		    // 상단 설명 접기/펼치기
 		    if (heroDesc && heroDescToggle) {
 		        requestAnimationFrame(() => {
 		            const isOverflowing = heroDesc.scrollHeight > heroDesc.clientHeight + 1;
@@ -542,6 +574,7 @@
 		        });
 		    }
 
+		    // 메뉴 검색
 		    if (searchInput) {
 		        searchInput.addEventListener('input', function(e) {
 		            const keyword = e.target.value.toLowerCase().trim();
@@ -566,8 +599,45 @@
 		            }
 		        });
 		    }
+
+		    // ✨ 주소 등록 후 돌아왔을 때 세션 스토리지 확인 후 팝업 자동 실행 로직
+		    if (sessionStorage.getItem('moAutoResumeCheckout') === 'true') {
+		        // 무한루프 방지를 위해 실행 플래그 즉시 삭제
+		        sessionStorage.removeItem('moAutoResumeCheckout');
+
+		        const pendingData = sessionStorage.getItem('moPendingMenuSelection');
+		        if (pendingData) {
+		            try {
+		                const pending = JSON.parse(pendingData);
+		                const currentStoreIdx = document.querySelector('.fe02-shell').getAttribute('data-store-idx');
+		                
+		                // 다른 가게를 들어간 게 아니라 방금 담으려던 그 가게가 맞다면
+		                if (pending.storeIdx == currentStoreIdx) {
+		                    // 화면 렌더링을 기다리기 위해 0.4초 딜레이
+		                    setTimeout(() => {
+		                        if (typeof window.moShowToast === 'function') {
+		                            window.moShowToast(`주소가 등록되었습니다! ${pending.menuName} ${pending.quantity}개를 주문방에 담습니다.`, 'success');
+		                        }
+		                        
+		                        if (typeof window.openCreateRoomSheet === 'function') {
+		                            const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
+		                            window.openCreateRoomSheet({
+		                                storeIdx: pending.storeIdx,
+		                                storeName: createRoomBtn?.dataset.storeName || '',
+		                                minimumOrderAmount: createRoomBtn?.dataset.minimumOrderAmount || '',
+		                                afterCreate: 'confirm',
+		                                contextMessage: `${pending.menuName} ${pending.quantity}개를 장바구니에 담았어요. 주문방 설정만 마치면 바로 이어집니다.`
+		                            });
+		                        }
+		                    }, 400);
+		                }
+		            } catch (e) {
+		                console.error("장바구니 복구 중 오류 발생:", e);
+		            }
+		        }
+		    }
 		});
-		    </script>
+		</script>
 	</th:block>
 </body>
 </html>
