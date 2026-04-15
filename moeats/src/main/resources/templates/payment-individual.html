@@ -645,7 +645,8 @@
     }, true);
 
     // 1. 백엔드 세션 만료 폴링 감지
-    setInterval(() => {
+// 💡 (수정) 화면 새로고침 없이 '필요한 요소만 핀셋으로' 업데이트하는 전역 함수
+    window.updatePaymentUI = () => {
         if (isSafeExit || isExpired) return;
 
         fetch(window.location.href, {
@@ -653,12 +654,43 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(res => {
+            // 방이 폭파되었거나 메인으로 튕겨야 하는 상황
             if (res.redirected || res.url.includes('/main') || !res.ok) {
                 handlePaymentExpired();
+                throw new Error('Redirected or Error');
+            }
+            return res.text();
+        })
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // 1) 타이머를 피해 '결제 완료 인원' 숫자만 교체합니다.
+            const currentCards = document.querySelectorAll('.pay-summary-grid .pay-summary-card');
+            const newCards = doc.querySelectorAll('.pay-summary-grid .pay-summary-card');
+            
+            // HTML 구조상 마지막 카드가 '결제 완료 인원' 카드입니다.
+            if (currentCards.length > 0 && newCards.length > 0) {
+                const currentCountValue = currentCards[currentCards.length - 1].querySelector('.pay-summary-card__value');
+                const newCountValue = newCards[newCards.length - 1].querySelector('.pay-summary-card__value');
+                
+                if (currentCountValue && newCountValue) {
+                    currentCountValue.innerHTML = newCountValue.innerHTML;
+                }
+            }
+
+            // 2) 하단 참여자 리스트(결제 대기 -> 완료 상태) 부드럽게 교체
+            const currentList = document.querySelector('.pay-list');
+            const newList = doc.querySelector('.pay-list');
+            if (currentList && newList) {
+                currentList.innerHTML = newList.innerHTML;
             }
         })
         .catch(() => {});
-    }, 3000);
+    };
+
+    // 기존의 세션 폴링 로직을 방금 만든 함수로 대체 (3초마다 백그라운드 갱신)
+    setInterval(window.updatePaymentUI, 3000);
 
     // 2. 프론트엔드 자체 남은 시간 감지
     const expiresAtEl = document.getElementById('paymentExpiresAtMs');

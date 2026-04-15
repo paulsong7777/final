@@ -102,7 +102,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (pageType === 'payment-wait'
             || pageType === 'payment-individual'
             || pageType === 'payment-representative') {
-            window.location.reload();
+            // window.location.reload();
+			// ✅ 변경: 아까 만든 전역 함수를 호출해서 부드럽게 화면 갱신
+			    if (typeof window.updatePaymentUI === 'function') {
+			        window.updatePaymentUI();
+			    }
         }
     });
 
