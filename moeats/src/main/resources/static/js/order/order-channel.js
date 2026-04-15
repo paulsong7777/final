@@ -106,6 +106,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+	/*eventSource.addEventListener('paid', function (event) {
+	    console.log('[order-channel] paid', event.data);
+	
+	    // 결제 진행 화면에서는 beforeunload 가드와 충돌하므로 새로고침하지 않는다.
+	    if (pageType === 'payment-individual' || pageType === 'payment-representative') {
+	        return;
+	    }
+	
+	    // 대기 화면에서는 완료 인원 수만 갱신되도록 기존 동작 유지
+	    if (pageType === 'payment-wait') {
+	        window.location.reload();
+	    }
+	});*/
+
     eventSource.addEventListener('complete', function (event) {
         console.log('[order-channel] complete', event.data);
         if (navigationLocked) {

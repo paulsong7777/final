@@ -685,7 +685,136 @@
                     justify-content: flex-end;
                 }
             }
-        </style>
+            
+		    .rd-top-info-grid {
+		        margin-top: 20px;
+		        display: grid;
+		        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		        gap: 14px;
+		        align-items: stretch;
+		    }
+		
+		    .rd-info-card {
+		        min-width: 0;
+		        padding: 20px 22px;
+		        border-radius: 22px;
+		        border: 1px solid rgba(42, 54, 89, 0.08);
+		        background: #fff;
+		        box-shadow: 0 10px 24px rgba(37, 45, 89, 0.04);
+		    }
+		
+		    .rd-info-card--code {
+		        border-color: rgba(255, 128, 0, 0.18);
+		        background: rgba(255, 128, 0, 0.04);
+		    }
+		
+		    .rd-info-card--store {
+		        border-color: rgba(42, 54, 89, 0.10);
+		        background: linear-gradient(180deg, rgba(42, 54, 89, 0.03), #fff);
+		    }
+		
+		    .rd-info-card__label {
+		        color: #8A93A6;
+		        font-size: 12px;
+		        font-weight: 800;
+		        letter-spacing: 0.04em;
+		    }
+		
+		    .rd-info-card__main {
+		        margin-top: 10px;
+		        display: flex;
+		        align-items: center;
+		        justify-content: space-between;
+		        gap: 12px;
+		        flex-wrap: wrap;
+		    }
+		
+		    .rd-info-card__code {
+		        display: inline-flex;
+		        align-items: center;
+		        justify-content: center;
+		        min-height: 72px;
+		        padding: 0 22px;
+		        border-radius: 20px;
+		        background: #fff;
+		        color: var(--mo-primary);
+		        font-size: clamp(2rem, 2.8vw, 3rem);
+		        font-weight: 900;
+		        letter-spacing: 0.22em;
+		        line-height: 1;
+		        box-shadow: 0 12px 28px rgba(255, 128, 0, 0.10);
+		    }
+		
+		    .rd-info-card__desc {
+		        margin: 10px 0 0;
+		        color: var(--mo-text-soft);
+		        font-size: 13px;
+		        line-height: 1.6;
+		    }
+		
+		    .rd-store-name {
+		        margin-top: 10px;
+		        color: var(--mo-navy-strong);
+		        font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+		        font-weight: 800;
+		        line-height: 1.35;
+		        letter-spacing: -0.03em;
+		        word-break: keep-all;
+		    }
+		
+		    .rd-store-meta {
+		        margin-top: 12px;
+		        display: flex;
+		        flex-wrap: wrap;
+		        gap: 8px;
+		    }
+		
+		    .rd-store-meta__item {
+		        display: inline-flex;
+		        align-items: center;
+		        justify-content: center;
+		        min-height: 32px;
+		        padding: 0 12px;
+		        border-radius: 999px;
+		        background: rgba(42, 54, 89, 0.08);
+		        color: var(--mo-navy-strong);
+		        font-size: 12px;
+		        font-weight: 800;
+		        line-height: 1;
+		        white-space: nowrap;
+		    }
+		
+		    @media (max-width: 767.98px) {
+		        .rd-top-info-grid {
+		            grid-template-columns: 1fr;
+		            gap: 12px;
+		        }
+		
+		        .rd-info-card,
+		        .rd-info-card--code,
+		        .rd-info-card--store {
+		            padding: 16px;
+		            border-radius: 20px;
+		        }
+		
+		        .rd-info-card__main {
+		            flex-direction: column;
+		            align-items: stretch;
+		        }
+		
+		        .rd-info-card__code {
+		            width: 100%;
+		            min-height: 68px;
+		            font-size: 1.9rem;
+		            letter-spacing: 0.18em;
+		        }
+		
+		        .rd-info-card__main .mo-btn {
+		            width: 100%;
+		        }
+		    }
+		</style>
+            
     </th:block>
 </head>
 <body>
@@ -717,16 +846,38 @@
                 </div>
             </div>
 
-            <div class="rd-code-section">
-                <div class="rd-code-section__label">방 코드</div>
-                <div class="rd-code-section__main">
-                    <span class="rd-code-section__value" th:text="${orderRoom.roomCode}">215341</span>
-                    <button type="button"
-                            class="mo-btn mo-btn-outline js-copy-room-code"
-                            th:data-room-code="${orderRoom.roomCode}">코드 복사</button>
-                </div>
-                <p class="rd-code-section__desc">코드 공유로 주문에 초대해 보세요.</p>
-            </div>
+            <div class="rd-top-info-grid">
+			    <div class="rd-info-card rd-info-card--code">
+			        <div class="rd-info-card__label">방 코드</div>
+			        <div class="rd-info-card__main">
+			            <span class="rd-info-card__code"
+			                  th:text="${orderRoom.roomCode}">215341</span>
+			            <button type="button"
+			                    class="mo-btn mo-btn-outline js-copy-room-code"
+			                    th:data-room-code="${orderRoom.roomCode}">코드 복사</button>
+			        </div>
+			        <p class="rd-info-card__desc">코드 공유로 주문에 초대해 보세요.</p>
+			    </div>
+			
+			    <div class="rd-info-card rd-info-card--store" th:if="${store != null}">
+			        <div class="rd-info-card__label">현재 주문 가게</div>
+			        <div class="rd-store-name" th:text="${store.storeName}">가게명</div>
+			
+			        <div class="rd-store-meta">
+			            <span class="rd-store-meta__item"
+			                  th:text="'최소주문 ' + ${#numbers.formatInteger(store.minimumOrderAmount, 0, 'COMMA')} + '원'">
+			                최소주문 15,000원
+			            </span>
+			
+			            <span class="rd-store-meta__item" th:if="${store.supportsDelivery}">배달 가능</span>
+			            <span class="rd-store-meta__item" th:if="${store.supportsOnsite}">현장 가능</span>
+			        </div>
+			
+			        <p class="rd-info-card__desc">
+			            현재 이 가게 기준으로 함께 주문을 진행 중입니다.
+			        </p>
+			    </div>
+			</div>
 
             <div class="rd-flow-wrap">
                 <div class="rd-flow-label">현재 진행 단계</div>
