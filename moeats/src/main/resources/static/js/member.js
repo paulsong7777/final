@@ -141,79 +141,108 @@ $(function(){
         $("#memberPhone").val(p1 + "-" + p2 + "-" + p3);
     });
 
-    // 회원가입
-    $("#signupForm").on("submit", function(){
-        const emailId = $("#email_id").val().trim();
-        const emailDomain = $("#email_domain").val();
-        const password = $("#memberPassword").val().trim();
-        const password1 = $("#memberPassword1").val().trim();
-        const nickname = $("#memberNickname").val().trim();
-        const p1 = $("#phone1").val().trim();
-        const p2 = $("#phone2").val().trim();
-        const p3 = $("#phone3").val().trim();
+	// 회원가입
+	$("#signupForm").on("submit", function(e){
+	    e.preventDefault(); // 🚨 비동기 모달을 사용하기 위해 기본 폼 전송을 중단합니다.
 
-        if(emailId === ""){
-            notify("이메일 아이디를 입력해주세요");
-            return false;
-        }
-		if(!emailIdRegex.test(emailId)){
-		    notify("이메일 아이디는 영문/숫자 조합 5~20자로 입력해주세요.");
-		    return false;
-		}
-        if(emailDomain === ""){
-            notify("이메일 도메인을 선택해주세요");
-            return false;
-        }
-        $("#memberEmail").val(emailId + "@" + emailDomain);
+	    const emailId = $("#email_id").val().trim();
+	    const emailDomain = $("#email_domain").val();
+	    const password = $("#memberPassword").val().trim();
+	    const password1 = $("#memberPassword1").val().trim();
+	    const nickname = $("#memberNickname").val().trim();
+	    const p1 = $("#phone1").val().trim();
+	    const p2 = $("#phone2").val().trim();
+	    const p3 = $("#phone3").val().trim();
 
-        if(password === ""){
-            notify("비밀번호를 입력해주세요");
-            return false;
-        }
-        if(password1 === ""){
-            notify("비밀번호 확인을 입력해주세요");
-            return false;
-        }
-		if(password != password1){
-			notify("비밀번호가 일치하지 않습니다.");
-			return false;
-		}
-        if(!passwordRegex.test(password)){
-            notify("비밀번호는 8~20자, 대소문자/숫자/특수문자를 포함해야 합니다.");
-            return false;
-        }
-        if(nickname === ""){
-            notify("별명을 입력해주세요");
-            return false;
-        }
-		if(!nicknameRegex.test(nickname)){
-		    notify("닉네임은 한글, 영어, 숫자만 사용 가능하며 10자 이하로 입력해주세요.");
-		    return false;
-		}
-        if(p1.length !== 3 || p2.length !== 4 || p3.length !== 4){
-            notify("전화번호 형식을 확인해주세요");
-            return false;
-        }
-        if(!/^\d+$/.test(p1+p2+p3)){
-            notify("전화번호는 숫자만 입력해주세요");
-            return false;
-        }
-		if($("#isIdCheck").val() !== "true"){
-		    notify("이메일 중복 확인을 해주세요");
-		    return false;
-		}
-		if(!$("#agreeTerms").is(":checked") || !$("#agreePrivacy").is(":checked")){
-		    notify("약관 동의가 필요합니다.");
-		    return false;
-		}
-		
-        $("#memberPhone").val(p1 + "-" + p2 + "-" + p3);
-		
-		// 가입 확인은 Toast가 아닌 기존 confirm(또는 커스텀 모달)이 적합합니다.
-		if(!confirm("회원가입 하시겠습니까?")){
-			return false;
-		}
-    });
+	    if(emailId === ""){
+	        notify("이메일 아이디를 입력해주세요");
+	        return false;
+	    }
+	    if(!emailIdRegex.test(emailId)){
+	        notify("이메일 아이디는 영문/숫자 조합 5~20자로 입력해주세요.");
+	        return false;
+	    }
+	    if(emailDomain === ""){
+	        notify("이메일 도메인을 선택해주세요");
+	        return false;
+	    }
+	    $("#memberEmail").val(emailId + "@" + emailDomain);
+
+	    if(password === ""){
+	        notify("비밀번호를 입력해주세요");
+	        return false;
+	    }
+	    if(password1 === ""){
+	        notify("비밀번호 확인을 입력해주세요");
+	        return false;
+	    }
+	    if(password != password1){
+	        notify("비밀번호가 일치하지 않습니다.");
+	        return false;
+	    }
+	    if(!passwordRegex.test(password)){
+	        notify("비밀번호는 8~20자, 대소문자/숫자/특수문자를 포함해야 합니다.");
+	        return false;
+	    }
+	    if(nickname === ""){
+	        notify("별명을 입력해주세요");
+	        return false;
+	    }
+	    if(!nicknameRegex.test(nickname)){
+	        notify("닉네임은 한글, 영어, 숫자만 사용 가능하며 10자 이하로 입력해주세요.");
+	        return false;
+	    }
+	    if(p1.length !== 3 || p2.length !== 4 || p3.length !== 4){
+	        notify("전화번호 형식을 확인해주세요");
+	        return false;
+	    }
+	    if(!/^\d+$/.test(p1+p2+p3)){
+	        notify("전화번호는 숫자만 입력해주세요");
+	        return false;
+	    }
+	    if($("#isIdCheck").val() !== "true"){
+	        notify("이메일 중복 확인을 해주세요");
+	        return false;
+	    }
+	    if(!$("#agreeTerms").is(":checked") || !$("#agreePrivacy").is(":checked")){
+	        notify("약관 동의가 필요합니다.");
+	        return false;
+	    }
+	    
+	    $("#memberPhone").val(p1 + "-" + p2 + "-" + p3);
+	    
+	    // 🔥 커스텀 모달 호출 (Promise 방식)
+	    window.moOpenConfirm({
+	        title: '회원가입',
+	        message: '회원가입 하시겠습니까?',
+	        confirmText: '가입완료',
+	        cancelText: '취소'
+	    }).then(function(isConfirmed) {
+	        if (isConfirmed) {
+	            // [옵션 1] AJAX를 이용해 비동기로 가입 처리 후 Toast 알림 띄우기 (이전 답변 방식)
+	            const formData = $("#signupForm").serialize();
+	            $.ajax({
+	                url: "/members",
+	                type: "POST",
+	                data: formData,
+	                success: function(res){
+	                    notify("회원가입이 완료되었습니다! 환영합니다.", "success");
+	                    setTimeout(function(){
+	                        location.href = "/main"; 
+	                    }, 1500);
+	                },
+	                error: function(){
+	                    notify("회원가입 처리 중 오류가 발생했습니다.");
+	                }
+	            });
+
+	            /* // [옵션 2] 만약 AJAX 없이 기존처럼 일반 HTML 폼 전송을 하고 싶다면 위 AJAX 코드를 지우고 아래 코드를 사용하세요.
+	            // (주의: jQuery의 submit()을 호출하면 이벤트가 다시 발생해 무한루프에 빠지므로 순수 JS로 전송해야 합니다.)
+	            // HTMLFormElement.prototype.submit.call(document.getElementById("signupForm"));
+	            */
+	        }
+	    });
+	});
 	
 	// 실시간 입력 제한 (Toast 남발을 방지하기 위해 최대 글자수 초과 시에만 notify 호출)
 	// =========================
