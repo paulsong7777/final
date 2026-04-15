@@ -485,7 +485,7 @@ public class RoomController {
 			return String.format("redirect:/rooms/code/%s", roomCode);
 		}
 		
-		if (!"OPEN".equals(store.getStoreStatus())) {
+		if (!"ACTIVE".equals(store.getStoreStatus())) {
 	        ra.addFlashAttribute("error", "현재 가게가 브레이크 타임이거나 영업이 종료되어 결제를 진행할 수 없습니다.");
 	        return String.format("redirect:/rooms/code/%s", roomCode);
 	    }
