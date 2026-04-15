@@ -420,27 +420,66 @@
     <script th:src="@{/js/order/order-channel.js}"></script>
 
     <script>
-        // 대기 화면용 만료 처리 함수 (버튼 교체 없이 안내 후 이동만 수행)
-   	window.handlePaymentExpired = async () => {
-        if (isExpired) return;
-        isExpired = true;
-        isSafeExit = true;
+        let isExpired = false;
+        let isSafeExit = false;
 
-        if (typeof window.moOpenAlert === 'function') {
-            await window.moOpenAlert({
-                eyebrow: '주문 취소 안내',
-                title: '결제 시간이 지났어요',
-                message: '안전한 이용을 위해 메인 화면으로 돌아갈게요.',
-                confirmText: '홈으로 이동'
-            });
-            window.location.href = '/main';
-        } else {
-            alert('결제 시간이 지났습니다.');
-            window.location.href = '/main';
-        }
-    };
+        // 1. 시간 만료 처리 함수
+        window.handlePaymentExpired = async () => {
+            if (isExpired) return;
+            isExpired = true;
+            isSafeExit = true;
+
+            if (typeof window.moOpenAlert === 'function') {
+                await window.moOpenAlert({
+                    eyebrow: '주문 취소 안내',
+                    title: '결제 시간이 지났어요',
+                    message: '안전한 이용을 위해 메인 화면으로 돌아갈게요.',
+                    confirmText: '홈으로 이동'
+                });
+                window.location.href = '/main';
+            } else {
+                alert('결제 시간이 지났습니다.');
+                window.location.href = '/main';
+            }
+        };
+
+        // 2. 방장 결제 취소 시 쫓아내는 함수
+        window.handleRoomCancelled = async () => {
+            if (isSafeExit) return;
+            isSafeExit = true;
+
+            if (typeof window.moOpenAlert === 'function') {
+                await window.moOpenAlert({
+                    eyebrow: '주문 취소 안내',
+                    title: '주문방이 종료되었어요',
+                    message: '방장이 결제를 취소하여 메인 화면으로 돌아갑니다.',
+                    confirmText: '홈으로 이동'
+                });
+                window.location.href = '/main';
+            } else {
+                alert('방장이 결제를 취소하여 주문방이 종료되었습니다.');
+                window.location.href = '/main';
+            }
+        };
+
+        // 💡 3. 핵심 추가 부분: 3초마다 현재 방 상태 체크 (Polling)
+        setInterval(() => {
+            if (isSafeExit || isExpired) return;
+
+            fetch(window.location.href, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => {
+                // 방장이 취소해서 서버가 현재 페이지 접근을 막고 /main 등으로 리다이렉트 시키거나 에러(4xx, 5xx)를 뱉으면
+                if (res.redirected || res.url.includes('/main') || !res.ok) {
+                    handleRoomCancelled(); 
+                }
+            })
+            .catch(() => {});
+        }, 3000);
+
     </script>
-</th:block>
 </th:block>
 </body>
 </html>
