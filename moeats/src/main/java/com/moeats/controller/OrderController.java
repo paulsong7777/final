@@ -91,6 +91,7 @@ public class OrderController {
                 .toList();
 
         model.addAttribute("orderRoom", orderRoomService.findByIdx(groupOrder.getRoomIdx()));
+        model.addAttribute("store", storeMapper.findByStoreIdx(groupOrder.getStoreIdx()));
         model.addAttribute("orderIdx", orderIdx);
         model.addAttribute("groupOrder", groupOrder);
         model.addAttribute("payment", payment);
