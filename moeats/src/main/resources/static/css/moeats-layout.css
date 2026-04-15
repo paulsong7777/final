@@ -1080,46 +1080,95 @@ button {
         font-size: 22px;
     }
 
-    .mo-footer {
-        margin-top: 22px;
+       .mo-footer {
+        margin-top: 20px;
     }
 
     .mo-footer__inner {
-        padding-top: 18px;
-        padding-bottom: 12px;
-        gap: 14px;
+        padding-top: 16px;
+        padding-bottom: 10px;
+        gap: 12px;
+    }
+
+    .mo-brand--footer .mo-brand__text {
+        font-size: 18px;
     }
 
     .mo-footer__headline {
-        font-size: 16px;
-        line-height: 1.4;
+        margin-top: 10px;
+        font-size: 15px;
+        line-height: 1.35;
     }
 
     .mo-footer__description {
-        font-size: 11px;
-        line-height: 1.65;
+        display: none;
     }
 
     .mo-footer__content {
-        grid-template-columns: 1fr;
-        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 14px;
+        align-items: start;
+    }
+
+    .mo-footer__section {
+        min-width: 0;
+    }
+
+    .mo-footer__section--download {
+        grid-column: 1 / -1;
+    }
+
+    .mo-footer__title {
+        margin-bottom: 8px;
+        font-size: 12px;
+    }
+
+    .mo-footer__link {
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .mo-store-badge-group {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
     }
 
     .mo-store-badge {
-        min-height: 44px;
+        min-height: 42px;
         padding: 8px 10px;
         border-radius: 12px;
+        gap: 8px;
+    }
+
+    .mo-store-badge__icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+    }
+
+    .mo-store-badge__svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .mo-store-badge__meta {
+        display: none;
     }
 
     .mo-store-badge__title {
-        font-size: 13px;
+        margin-top: 0;
+        font-size: 12px;
+        line-height: 1.2;
     }
 
     .mo-footer__bottom-inner {
         min-height: auto;
-        padding: 12px 0 14px;
-        flex-direction: column;
-        align-items: flex-start;
+        padding: 10px 0 12px;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        font-size: 10px;
     }
 
     .mo-address-item__head {
