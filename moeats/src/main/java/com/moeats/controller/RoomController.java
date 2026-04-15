@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -530,6 +531,39 @@ public class RoomController {
 	    }
 	}
 	
-	
+	@GetMapping("/api/rooms/explode-by-store")
+	@ResponseBody
+	public Map<String, Boolean> explodeRoomDueToStoreStatus(
+	        @RequestParam("storeIdx") int storeIdx,
+	        @SessionAttribute("member") Member member) {
+	    
+	    Store store = storeService.getStoreByIdx(storeIdx);
+	    
+	    // 가게가 진짜 영업중(ACTIVE)이 아닌지 검증
+	    if (store != null && !"ACTIVE".equals(store.getStoreStatus())) {
+	        OrderRoom activeRoom = orderRoomService.findActiveRoomByMember(member.getMemberIdx());
+	        
+	        if (activeRoom != null && activeRoom.getStoreIdx() == storeIdx) {
+	            
+	            // 💡 [핵심 수정] 방의 현재 상태를 확인합니다.
+	            String roomStatus = activeRoom.getRoomStatus();
+	            
+	            // 결제 중일 때는 cancel()로 폭파
+	            if ("PAYMENT_PENDING".equals(roomStatus)) {
+	                orderRoomService.cancel(activeRoom.getRoomIdx());
+	            } 
+	            // 메뉴를 고르는 중일 때는 close()로 폭파
+	            else if ("OPEN".equals(roomStatus) || "SELECTING".equals(roomStatus)) {
+	                orderRoomService.close(activeRoom.getRoomIdx());
+	            }
+	            
+	            // 다른 참여자들에게 방 폭파 알림 전송
+	            sseService.cancelRoom(activeRoom.getRoomIdx());
+	            
+	            return Map.of("result", true);
+	        }
+	    }
+	    return Map.of("result", false);
+	}
 	
 }

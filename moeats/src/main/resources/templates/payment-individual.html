@@ -673,51 +673,57 @@
     }
     
     // --- 가게 영업 상태 실시간 감지 로직 ---
-document.addEventListener('DOMContentLoaded', function() {
-    const storeIdxStr = document.getElementById('storeIdx')?.value 
-                     || document.getElementById('roomDetailRoot')?.getAttribute('data-store-idx');
-    const currentStoreIdx = parseInt(storeIdxStr, 10);
+    document.addEventListener('DOMContentLoaded', function() {
+        const storeIdxStr = document.getElementById('storeIdx')?.value 
+                         || document.getElementById('roomDetailRoot')?.getAttribute('data-store-idx');
+        const currentStoreIdx = parseInt(storeIdxStr, 10);
 
-    if (currentStoreIdx > 0) {
-        const storeStatusTimer = setInterval(() => {
-            fetch(`/api/stores/${currentStoreIdx}/status`)
-                .then(res => res.json())
-                .then(data => {
-                    const status = data.storeStatus;
-                    
-                    // 💡 DB 기준 영업중 상태는 'ACTIVE' 입니다.
-                    const openStatuses = ['ACTIVE']; 
+        if (currentStoreIdx > 0) {
+            const storeStatusTimer = setInterval(() => {
+                fetch(`/api/stores/${currentStoreIdx}/status`)
+                    .then(res => res.json())
+                    .then(async data => { // 💡 async 키워드 추가
+                        const status = data.storeStatus;
+                        const openStatuses = ['ACTIVE']; 
 
-                    // 현재 상태가 null이 아니고, 'ACTIVE'가 아니라면 튕겨냅니다.
-                    if (status && !openStatuses.includes(status)) {
-                        clearInterval(storeStatusTimer);
-                        
-                        if (typeof isSafeExit !== 'undefined') {
-                            isSafeExit = true;
+                        if (status && !openStatuses.includes(status)) {
+                            clearInterval(storeStatusTimer); // 반복 체크 중지
+                            
+                            if (typeof isSafeExit !== 'undefined') {
+                                isSafeExit = true;
+                            }
+
+                            // 1️⃣ 💡 [핵심] RoomController로 방 폭파 요청을 보내고, 끝날 때까지 기다립니다.
+                            try {
+                            	// 💡 method: 'POST' 옵션을 지워버리면 기본값인 GET으로 날아갑니다!
+                            	await fetch(`/api/rooms/explode-by-store?storeIdx=${currentStoreIdx}`);
+                            } catch (e) {
+                                console.error("방 폭파 요청 실패:", e);
+                            }
+
+                            // 2️⃣ 서버에서 방 폭파 처리가 완료된 후, 유저에게 알림을 띄우고 이동시킵니다.
+                            const message = status === 'PAUSED' 
+                                ? '가게가 잠시 주문을 정지(브레이크 타임)하여 더 이상 주문할 수 없습니다.' 
+                                : '가게 영업이 종료되어 주문이 불가합니다.';
+
+                            if (typeof window.moOpenAlert === 'function') {
+                                await window.moOpenAlert({
+                                    eyebrow: '주문 불가 안내',
+                                    title: '가게 영업 상태 변경',
+                                    message: message,
+                                    confirmText: '홈으로 이동'
+                                });
+                                window.location.href = '/main';
+                            } else {
+                                alert(message);
+                                window.location.href = '/main';
+                            }
                         }
-
-                        // DB 상태값이 'PAUSED'면 브레이크 타임, 'INACTIVE'면 영업 종료로 처리
-                        const message = status === 'PAUSED' 
-                            ? '가게가 잠시 주문을 정지(브레이크 타임)하여 더 이상 주문할 수 없습니다.' 
-                            : '가게 영업이 종료되어 주문이 불가합니다.';
-
-                        if (typeof window.moOpenAlert === 'function') {
-                            window.moOpenAlert({
-                                eyebrow: '주문 불가 안내',
-                                title: '가게 영업 상태 변경',
-                                message: message,
-                                confirmText: '홈으로 이동'
-                            }).then(() => window.location.href = '/main');
-                        } else {
-                            alert(message);
-                            window.location.href = '/main';
-                        }
-                    }
-                })
-                .catch(e => console.error("가게 상태 체크 오류:", e));
-        }, 5000);
-    }
-});
+                    })
+                    .catch(e => console.error("가게 상태 체크 오류:", e));
+            }, 5000);
+        }
+    });
 </script>
 </th:block>
 </body>
