@@ -115,15 +115,21 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = '/orders/' + orderIdx;
     });
 
-    eventSource.addEventListener('cancel', function (event) {
-        console.log('[order-channel] cancel', event.data);
-        alert('결제가 취소되었습니다.');
-        if (navigationLocked) {
-            return;
-        }
-        navigationLocked = true;
-        window.location.href = '/orders/' + orderIdx;
-    });
+	eventSource.addEventListener('cancel', function (event) {
+	        console.log('[order-channel] cancel', event.data);
+	        if (navigationLocked) {
+	            return;
+	        }
+	        navigationLocked = true;
+
+	        // 💡 화면(HTML)에 커스텀 취소 함수가 있으면 실행, 없으면 기본 알림
+	        if (typeof window.handleRoomCancelled === 'function') {
+	            window.handleRoomCancelled();
+	        } else {
+	            alert('주문방이 취소되었습니다.');
+	            window.location.href = '/main';
+	        }
+	    });
 
 	eventSource.addEventListener('expire', function (event) {
 	        console.log('[order-channel] expire', event.data);

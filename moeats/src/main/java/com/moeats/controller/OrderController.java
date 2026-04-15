@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.moeats.mapper.StoreMapper;
+import com.moeats.service.DeliveryAddressService;
 import com.moeats.domain.GroupOrder;
 import com.moeats.domain.GroupOrderItem;
 import com.moeats.domain.Member;
@@ -31,6 +34,9 @@ import com.moeats.timer.OrderRoomTimer;
 @Controller
 public class OrderController {
 
+    @Autowired
+    DeliveryAddressService deliveryAddressService;
+	
     @Autowired
     GroupOrderService groupOrderService;
 
@@ -52,6 +58,9 @@ public class OrderController {
     @Autowired
     TransactionService transactionService;
 
+    @Autowired
+    StoreMapper storeMapper;
+    
     @GetMapping("/orders/{order_idx}")
     public String orderDetail(
             Model model,
@@ -90,6 +99,107 @@ public class OrderController {
 
         return "order-detail";
     }
+    
+    public record OrderSummaryResponse(
+            String orderStatus,
+            int currentStep,
+            String currentStepLabel,
+            String orderNumber,
+            String storeName,
+            Integer orderAmount,
+            String deliveryLabel,
+            String deliveryAddress
+    ) {}
+
+    private int resolveOrderStep(String orderStatus) {
+        return switch (orderStatus) {
+            case "PAID" -> 1;
+            case "ACCEPTED" -> 2;
+            case "PREPARING" -> 3;
+            case "READY", "DELIVERING" -> 4;
+            case "COMPLETED" -> 5;
+            default -> 0;
+        };
+    }
+
+    private String resolveOrderStepLabel(String orderStatus) {
+        return switch (orderStatus) {
+            case "PAYMENT_PENDING" -> "결제 대기";
+            case "PAID" -> "결제 완료";
+            case "ACCEPTED" -> "주문 확인";
+            case "PREPARING" -> "준비 중";
+            case "READY", "DELIVERING" -> "배달 시작";
+            case "COMPLETED" -> "배달 완료";
+            case "CANCELLED" -> "주문 취소";
+            default -> orderStatus;
+        };
+    }
+
+    @GetMapping("/orders/{order_idx}/summary")
+    @ResponseBody
+    public OrderSummaryResponse orderSummary(
+            @PathVariable("order_idx") int orderIdx,
+            @RequestAttribute("groupOrder") GroupOrder groupOrder,
+            @SessionAttribute("member") Member member) {
+
+        GroupOrderService.GroupOrderRecord record = groupOrderService.findRecordByIdx(orderIdx);
+        var orderRoom = orderRoomService.findByIdx(groupOrder.getRoomIdx());
+
+        String orderNumber = String.valueOf(orderIdx);
+        if (orderRoom != null
+                && orderRoom.getRoomCode() != null
+                && !orderRoom.getRoomCode().isBlank()) {
+            orderNumber = orderRoom.getRoomCode();
+        }
+
+        String storeName = "가게 정보 없음";
+        if (groupOrder.getStoreIdx() > 0) {
+            var store = storeMapper.findByStoreIdx(groupOrder.getStoreIdx());
+            if (store != null
+                    && store.getStoreName() != null
+                    && !store.getStoreName().isBlank()) {
+                storeName = store.getStoreName();
+            }
+        }
+
+        String deliveryLabel = "배송지";
+        String deliveryAddress = "주소 정보 없음";
+
+        if (record != null && record.orderDelivery() != null) {
+            int sourceDeliveryAddressIdx = record.orderDelivery().getSourceDeliveryAddressIdx();
+
+            if (sourceDeliveryAddressIdx > 0) {
+                var sourceAddress = deliveryAddressService.addressByIdx(member.getMemberIdx(), sourceDeliveryAddressIdx);
+                if (sourceAddress != null
+                        && sourceAddress.getDeliveryLabel() != null
+                        && !sourceAddress.getDeliveryLabel().isBlank()) {
+                    deliveryLabel = sourceAddress.getDeliveryLabel();
+                }
+            }
+
+            String address1 = record.orderDelivery().getDeliveryAddress1();
+            String address2 = record.orderDelivery().getDeliveryAddress2();
+
+            deliveryAddress = (address1 != null ? address1 : "")
+                    + ((address2 != null && !address2.isBlank()) ? " " + address2 : "");
+
+            if (deliveryAddress.isBlank()) {
+                deliveryAddress = "주소 정보 없음";
+            }
+        }
+
+        return new OrderSummaryResponse(
+                groupOrder.getOrderStatus(),
+                resolveOrderStep(groupOrder.getOrderStatus()),
+                resolveOrderStepLabel(groupOrder.getOrderStatus()),
+                orderNumber,
+                storeName,
+                groupOrder.getOrderTotalAmount(),
+                deliveryLabel,
+                deliveryAddress
+        );
+    }
+    
 
     @GetMapping("/orders/{order_idx}/payment")
     public String orderPayment(
@@ -326,7 +436,7 @@ public class OrderController {
         orderRoomTimer.stop(orderIdx);
         sseService.cancelRoom(groupOrder.getRoomIdx());
 
-        ra.addFlashAttribute("message", "결제를 취소하여 주문방이 폭파되었습니다.");
+        // ra.addFlashAttribute("message", "결제를 취소하여 주문방이 폭파되었습니다.");
         return "redirect:/main";
     }
 }

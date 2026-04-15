@@ -111,19 +111,19 @@
 							
 								<th:block th:switch="${order.groupOrder.orderStatus}">
 								    <button th:case="'PAID'" type="button" class="mo-btn mo-btn-primary w-100 rounded-3 shadow-sm fw-bold" style="min-height: 42px;" 
-								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'ACCEPTED')">주문 접수하기</button>
+								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'ACCEPTED')|">주문 접수하기</button>
 								    
 								    <button th:case="'ACCEPTED'" type="button" class="btn w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px; background-color: #ff9800;" 
-								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'PREPARING')">조리 시작하기</button>
+								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'PREPARING')|">조리 시작하기</button>
 								    
 								    <button th:case="'PREPARING'" type="button" class="btn btn-success w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" 
-								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'READY')">조리 완료처리</button>
-
+								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'READY')|">조리 완료처리</button>
+								
 								    <button th:case="'READY'" type="button" class="btn btn-info w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" 
-								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'DELIVERING')">준비 완료 처리</button>
+								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'DELIVERING')|">준비 완료 처리</button>
 								            
 								    <button th:case="'DELIVERING'" type="button" class="btn w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px; background-color: var(--mo-navy-strong);" 
-								            th:onclick="handleStatusUpdate(event, [[${order.groupOrder.roomIdx}]], 'COMPLETED')">주문 완료 처리</button>
+								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'COMPLETED')|">주문 완료 처리</button>
 								            
 								    <button th:case="'COMPLETED'" type="button" class="btn btn-secondary w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" disabled>처리가 완료된 주문입니다</button>
 								</th:block>
@@ -165,185 +165,249 @@
 <th:block layout:fragment="pageScripts">
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d3a55b23640a650ed1a7da0154a939f7&libraries=services&autoload=false"></script>
     <script th:inline="javascript">
-        /*<![CDATA[*/
+    /*<![CDATA[*/
+    
+    function handleCardClick(event, el) {
+        if (event.target.closest('button')) return;
+        const roomIdx = el.getAttribute('data-idx');
+        if (roomIdx) location.href = '/owners/order/detail?roomIdx=' + roomIdx;
+    }
+
+    // 💡 기본 confirm() 대신 moOpenConfirm을 사용하도록 async/await 구조로 변경
+  async function handleStatusUpdate(event, roomIdx, nextStatus) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // 💡 핵심 해결책: await로 멈추기 전에 클릭한 버튼을 미리 저장해 둡니다.
+        const btn = event.currentTarget;
         
-        function handleCardClick(event, el) {
-            if (event.target.closest('button')) return;
-            const roomIdx = el.getAttribute('data-idx');
-            if (roomIdx) location.href = '/owners/order/detail?roomIdx=' + roomIdx;
+        if (!roomIdx) return;
+
+        const modalConfigMap = {
+            ACCEPTED: {
+                eyebrow: '주문 접수',
+                title: '주문을 접수할까요?',
+                message: '주문을 수락하고 조리 대기 상태로 넘어갑니다.',
+                confirmText: '접수하기'
+            },
+            PREPARING: {
+                eyebrow: '조리 시작',
+                title: '조리를 시작할까요?',
+                message: '메뉴 조리가 시작되었음을 알립니다.',
+                confirmText: '조리 시작하기'
+            },
+            READY: {
+                eyebrow: '준비 완료',
+                title: '조리가 모두 끝났나요?',
+                message: '배달/픽업을 위한 모든 준비가 완료 처리됩니다.',
+                confirmText: '준비 완료 처리'
+            },
+            COMPLETED: {
+                eyebrow: '주문 완료',
+                title: '주문을 최종 완료할까요?',
+                message: '고객에게 전달이 완료된 주문을 최종 마감합니다.',
+                confirmText: '최종 완료 처리'
+            }
+        };
+
+        const targetConfig = modalConfigMap[nextStatus] || {
+            eyebrow: '상태 변경',
+            title: '상태를 업데이트할까요?',
+            message: '주문 상태를 다음 단계로 변경합니다.',
+            confirmText: '변경하기'
+        };
+
+        const isConfirmed = await window.moOpenConfirm({
+            eyebrow: targetConfig.eyebrow,
+            title: targetConfig.title,
+            message: targetConfig.message,
+            confirmText: targetConfig.confirmText,
+            cancelText: '취소'
+        });
+
+        if (!isConfirmed) {
+            return; 
         }
 
-        async function handleStatusUpdate(event, roomIdx, nextStatus) {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            const confirmMessageMap = {
-            	    ACCEPTED: '주문을 접수하시겠습니까?',
-            	    PREPARING: '조리를 시작하시겠습니까?',
-            	    READY: '준비 완료 상태로 변경하시겠습니까?',
-            	    COMPLETED: '주문 완료 상태로 변경하시겠습니까?'
-            	};
-            
-            if (!roomIdx || !confirm(confirmMessageMap[nextStatus] || '상태를 변경하시겠습니까?')) {
-                return;
-            }
-            const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+        // 이제 여기서 미리 저장해둔 btn 변수를 안전하게 사용할 수 있습니다!
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
 
-            const token = document.querySelector('meta[name="_csrf"]')?.content;
-            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+        const token = document.querySelector('meta[name="_csrf"]')?.content;
+        const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-            try {
-                const response = await fetch('/owners/order/status_update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(header && { [header]: token })
-                    },
-                    body: JSON.stringify({
-                        roomIdx: Number(roomIdx),
-                        nextStatus: String(nextStatus)
-                    })
+        try {
+            const response = await fetch('/owners/order/status_update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(header && { [header]: token })
+                },
+                body: JSON.stringify({
+                    roomIdx: Number(roomIdx),
+                    nextStatus: String(nextStatus)
+                })
+            });
+
+            if (response.ok) {
+                location.reload();
+            } else {
+                await window.moOpenAlert({
+                    eyebrow: '오류 발생',
+                    title: '처리 실패',
+                    message: '처리 중 오류가 발생했습니다.',
+                    confirmText: '확인'
                 });
-
-                if(response.ok) {
-                    location.reload();
-                } else {
-                    alert("처리 중 오류가 발생했습니다.");
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                }
-            } catch(err) {
-                console.error("Fetch Error:", err);
-                alert("네트워크 오류가 발생했습니다.");
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
-        }
-
-        function initDashboardMap() {
-            const latEl = document.getElementById('store-lat');
-            if(!latEl) return; 
-
-            const storeLat = parseFloat(latEl.value);
-            const storeLng = parseFloat(document.getElementById('store-lng').value);
-            const container = document.getElementById('moeats-map');
-
-            kakao.maps.load(function() {
-                try {
-                    const storePosition = new kakao.maps.LatLng(storeLat, storeLng);
-                    const map = new kakao.maps.Map(container, {
-                        center: storePosition,
-                        level: 5
-                    });
-
-                    const bounds = new kakao.maps.LatLngBounds();
-                    bounds.extend(storePosition);
-
-                    // 1. 우리 매장 마커 (빨간색 점 + 텍스트 CustomOverlay)
-                    const storeContent = `
-                        <div style="display: flex; flex-direction: column; align-items: center; transform: translateY(-50%);">
-                            <div style="background-color: white; border: 1.5px solid #E53A40; color: #E53A40; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; margin-bottom: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                🏠 우리 매장
-                            </div>
-                            <div style="width: 18px; height: 18px; background-color: #E53A40; border: 2.5px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
-                        </div>
-                    `;
-                    
-                    new kakao.maps.CustomOverlay({
-                        position: storePosition,
-                        content: storeContent,
-                        map: map,
-                        yAnchor: 0.5 // 중앙에 맞춤
-                    });
-
-                    const geocoder = new kakao.maps.services.Geocoder();
-                    const orderCards = document.querySelectorAll('.order-card-for-map');
-                    
-                    orderCards.forEach((card) => {
-                        const status = card.getAttribute('data-status');
-                        const roomIdx = card.getAttribute('data-idx');
-                        const address = card.getAttribute('data-address');
-                        
-                        // 2. 배달 완료(COMPLETED) 및 취소(CANCELLED)된 주문은 지도에 표시하지 않음
-                        if (status === 'COMPLETED' || status === 'CANCELLED') {
-                            return; 
-                        }
-                        
-                        if (address && address.trim() !== '') {
-                            geocoder.addressSearch(address, function(result, reqStatus) {
-                                if (reqStatus === kakao.maps.services.Status.OK) {
-                                    const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-
-                                    // 3-1. 기본 파란색 마커 생성
-                                    const marker = new kakao.maps.Marker({
-                                        map: map,
-                                        position: coords
-                                    });
-
-                                    // 3-2. 마커 바로 위에 주문번호를 띄워주는 CustomOverlay 생성
-                                    const labelContent = `
-                                        <div style="background-color: #2A3659; color: white; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 38px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid white;">
-                                            주문 #${roomIdx}
-                                        </div>
-                                    `;
-                                    
-                                    new kakao.maps.CustomOverlay({
-                                        position: coords,
-                                        content: labelContent,
-                                        map: map,
-                                        yAnchor: 1 // 기준점을 맨 아래로 하여 마커 위로 올라가게 배치
-                                    });
-
-                                    // 지도 범위 재설정
-                                    bounds.extend(coords);
-                                    map.setBounds(bounds);
-                                } 
-                            });
-                        }
-                    });
-                    
-                    window.addEventListener('resize', () => map.relayout());
-                    setTimeout(() => map.relayout(), 300);
-                } catch (e) { console.error("Map Error:", e); }
+        } catch(err) {
+            console.error("Fetch Error:", err);
+            await window.moOpenAlert({
+                eyebrow: '네트워크 오류',
+                title: '연결 실패',
+                message: '서버와 통신하는 중 문제가 발생했습니다.',
+                confirmText: '확인'
             });
+            btn.disabled = false;
+            btn.innerHTML = originalText;
         }
-        
-        function initSSE() {
-            const eventSource = new EventSource('/owners/api/sse/connect');
+    }
 
-            eventSource.addEventListener('connect', function(event) {
-                console.log("🟢 실시간 주문 알림(SSE) 연결 완료!");
-            });
+    function initDashboardMap() {
+        const latEl = document.getElementById('store-lat');
+        if(!latEl) return; 
 
-            eventSource.addEventListener('new', function(event) {
-                const audio = new Audio('/audio/order_new.wav');
-                
-                audio.onended = function() {
-                    alert("🔔 띵동! 새로운 주문이 들어왔습니다!");
-                    window.location.reload();
-                };
+        const storeLat = parseFloat(latEl.value);
+        const storeLng = parseFloat(document.getElementById('store-lng').value);
+        const container = document.getElementById('moeats-map');
 
-                audio.play().catch(function(error) {
-                    console.log("소리 차단됨 (화면 클릭 필요):", error);
-                    alert("🔔 띵동! 새로운 주문이 들어왔습니다!");
-                    window.location.reload();
+        kakao.maps.load(function() {
+            try {
+                const storePosition = new kakao.maps.LatLng(storeLat, storeLng);
+                const map = new kakao.maps.Map(container, {
+                    center: storePosition,
+                    level: 5
                 });
-            });
 
-            eventSource.onerror = function(err) {
-                console.error("🔴 SSE 연결 오류:", err);
-                eventSource.close();
-            };
-        }
+                const bounds = new kakao.maps.LatLngBounds();
+                bounds.extend(storePosition);
 
-        window.addEventListener('load', () => {
-            initDashboardMap();
-            initSSE();
+                // 1. 우리 매장 마커
+                const storeContent = `
+                    <div style="display: flex; flex-direction: column; align-items: center; transform: translateY(-50%);">
+                        <div style="background-color: white; border: 1.5px solid #E53A40; color: #E53A40; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; margin-bottom: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            🏠 우리 매장
+                        </div>
+                        <div style="width: 18px; height: 18px; background-color: #E53A40; border: 2.5px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+                    </div>
+                `;
+                
+                new kakao.maps.CustomOverlay({
+                    position: storePosition,
+                    content: storeContent,
+                    map: map,
+                    yAnchor: 0.5 
+                });
+
+                const geocoder = new kakao.maps.services.Geocoder();
+                const orderCards = document.querySelectorAll('.order-card-for-map');
+                
+                orderCards.forEach((card) => {
+                    const status = card.getAttribute('data-status');
+                    const roomIdx = card.getAttribute('data-idx');
+                    const address = card.getAttribute('data-address');
+                    
+                    if (status === 'COMPLETED' || status === 'CANCELLED') {
+                        return; 
+                    }
+                    
+                    if (address && address.trim() !== '') {
+                        geocoder.addressSearch(address, function(result, reqStatus) {
+                            if (reqStatus === kakao.maps.services.Status.OK) {
+                                const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                                const marker = new kakao.maps.Marker({
+                                    map: map,
+                                    position: coords
+                                });
+
+                                const labelContent = `
+                                    <div style="background-color: #2A3659; color: white; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 38px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid white;">
+                                        주문 #${roomIdx}
+                                    </div>
+                                `;
+                                
+                                new kakao.maps.CustomOverlay({
+                                    position: coords,
+                                    content: labelContent,
+                                    map: map,
+                                    yAnchor: 1 
+                                });
+
+                                bounds.extend(coords);
+                                map.setBounds(bounds);
+                            } 
+                        });
+                    }
+                });
+                
+                window.addEventListener('resize', () => map.relayout());
+                setTimeout(() => map.relayout(), 300);
+            } catch (e) { console.error("Map Error:", e); }
         });
-        /*]]>*/
+    }
+
+    function initSSE() {
+        const eventSource = new EventSource('/owners/api/sse/connect');
+
+        eventSource.addEventListener('connect', function(event) {
+            console.log("🟢 실시간 주문 알림(SSE) 연결 완료!");
+        });
+
+        eventSource.addEventListener('new', function(event) {
+            const audio = new Audio('/audio/order_new.wav');
+            
+            // 💡 SSE 신규 알림 시 alert 대신 예쁜 Toast나 Alert 사용
+            audio.onended = async function() {
+                if (window.moShowToast) {
+                    window.moShowToast("🔔 띵동! 새로운 주문이 들어왔습니다!", "success");
+                }
+                // 알림 확인 후 즉시 리로드하면 모달/토스트가 바로 닫히므로 
+                // 약간의 딜레이를 주거나 moOpenAlert으로 사용자의 확인을 받은 뒤 리로드하는 것이 좋습니다.
+                await window.moOpenAlert({
+                    eyebrow: '신규 주문',
+                    title: '주문 접수 알림',
+                    message: '새로운 주문이 들어왔습니다. 주문 내역을 확인해 주세요.',
+                    confirmText: '확인하기'
+                });
+                window.location.reload();
+            };
+
+            audio.play().catch(async function(error) {
+                console.log("소리 차단됨 (화면 클릭 필요):", error);
+                await window.moOpenAlert({
+                    eyebrow: '신규 주문',
+                    title: '주문 접수 알림',
+                    message: '새로운 주문이 들어왔습니다. 주문 내역을 확인해 주세요.',
+                    confirmText: '확인하기'
+                });
+                window.location.reload();
+            });
+        });
+
+        eventSource.onerror = function(err) {
+            console.error("🔴 SSE 연결 오류:", err);
+            eventSource.close();
+        };
+    }
+
+    window.addEventListener('load', () => {
+        initDashboardMap();
+        initSSE();
+    });
+    /*]]>*/
     </script>
 </th:block>
 </body>

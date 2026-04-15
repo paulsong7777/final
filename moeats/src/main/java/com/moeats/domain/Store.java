@@ -38,8 +38,7 @@ public class Store {
     // 가게상세 페이지 상단 히어로용 대표 이미지(썸네일)
     private String heroImageUrl;
 
+    
+    // FE-01 대표 메뉴 칩용
+    private String menuPreviewText;
 }
-
-
-
-

@@ -432,7 +432,7 @@
     </th:block>
 </head>
 <body>
-<section layout:fragment="pageContent" class="pay-page-shell">
+<section layout:fragment="pageContent" class="pay-page-shell mo-page-shell--payment-flow">
     <section class="mo-section pay-stack">
         <div class="pay-hero">
             <div class="pay-hero__head">
@@ -581,34 +581,24 @@
     };
 
     // 💡 핵심: 시간 만료 처리 함수 (order-channel.js 통제용 전역 등록)
-    window.handlePaymentExpired = () => {
-        if (isExpired) return; // 중복 실행 방지
+ 	// 시간 만료 처리 함수 (Alert 팝업 적용)
+    window.handlePaymentExpired = async () => {
+        if (isExpired) return;
         isExpired = true;
-        isSafeExit = true; // 화면 이동 방어벽 해제
+        isSafeExit = true;
 
-        // 1. 단일 알림창 (메시지 통일)
-        showGuardToast('세션이 만료되어 주문이 취소되었습니다.', 'danger'); 
-
-        // 2. 3초 뒤 하단 스티키 버튼 및 텍스트 교체
-        setTimeout(() => {
-            const actionContainer = document.querySelector('.pay-sticky__action');
-            if (actionContainer) {
-                actionContainer.innerHTML = `
-                    <button type="button" class="mo-btn mo-btn-outline" 
-                            style="width: 100%; background: #fff; border: 1px solid var(--mo-accent); color: var(--mo-accent);" 
-                            onclick="window.location.href='/main'">
-                        세션만료(홈으로 이동)
-                    </button>
-                `;
-            }
-            
-            // 안내 문구 변경
-            const descContainer = document.querySelector('.pay-sticky__desc');
-            if (descContainer) {
-                descContainer.innerText = '세션이 만료되어 주문이 취소되었습니다.';
-                descContainer.style.color = 'var(--mo-accent)';
-            }
-        }, 3000);
+        if (typeof window.moOpenAlert === 'function') {
+            await window.moOpenAlert({
+                eyebrow: '주문 취소 안내',
+                title: '결제 시간이 지났어요',
+                message: '안전한 이용을 위해 메인 화면으로 돌아갈게요.',
+                confirmText: '홈으로 이동'
+            });
+            window.location.href = '/main';
+        } else {
+            alert('결제 시간이 지났습니다.');
+            window.location.href = '/main';
+        }
     };
 
     history.pushState({ paymentGuard: true }, '', location.href);

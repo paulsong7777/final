@@ -71,36 +71,52 @@
         resolver(value);
     };
 
-    const openConfirm = ({
-        eyebrow = '확인',
-        title = '한 번 더 확인해 주세요',
-        message = '이 작업을 계속 진행할까요?',
-        confirmText = '확인',
-        cancelText = '취소'
-    } = {}) => {
-        if (!confirmModalEl || !window.bootstrap) {
-            return Promise.resolve(false);
-        }
+	// 기존 openConfirm 수정 (hideCancel 옵션 추가)
+	    const openConfirm = ({
+	        eyebrow = '확인',
+	        title = '한 번 더 확인해 주세요',
+	        message = '이 작업을 계속 진행할까요?',
+	        confirmText = '확인',
+	        cancelText = '취소',
+	        hideCancel = false // 💡 취소 버튼 숨김 여부 옵션
+	    } = {}) => {
+	        if (!confirmModalEl || !window.bootstrap) {
+	            return Promise.resolve(false);
+	        }
 
-        if (pendingConfirmResolve) {
-            resolvePendingConfirm(false);
-        }
+	        if (pendingConfirmResolve) {
+	            resolvePendingConfirm(false);
+	        }
 
-        if (confirmEyebrowEl) confirmEyebrowEl.textContent = eyebrow;
-        if (confirmTitleEl) confirmTitleEl.textContent = title;
-        if (confirmMessageEl) confirmMessageEl.textContent = message;
-        if (confirmAcceptButton) confirmAcceptButton.textContent = confirmText;
-        if (confirmCancelButton) confirmCancelButton.textContent = cancelText;
+	        if (confirmEyebrowEl) confirmEyebrowEl.textContent = eyebrow;
+	        if (confirmTitleEl) confirmTitleEl.textContent = title;
+	        if (confirmMessageEl) confirmMessageEl.textContent = message;
+	        if (confirmAcceptButton) confirmAcceptButton.textContent = confirmText;
+	        
+	        // 💡 취소 버튼 텍스트 설정 및 숨김 처리
+	        if (confirmCancelButton) {
+	            confirmCancelButton.textContent = cancelText;
+	            // hideCancel이 true면 버튼을 아예 숨김(display: none)
+	            confirmCancelButton.style.display = hideCancel ? 'none' : '';
+	        }
 
-        const confirmModal = getModalInstance(confirmModalEl);
-        if (confirmModal) {
-            confirmModal.show();
-        }
+	        const confirmModal = getModalInstance(confirmModalEl);
+	        if (confirmModal) {
+	            confirmModal.show();
+	        }
 
-        return new Promise((resolve) => {
-            pendingConfirmResolve = resolve;
-        });
-    };
+	        return new Promise((resolve) => {
+	            pendingConfirmResolve = resolve;
+	        });
+	    };
+
+	    // 💡 1버튼 전용 moOpenAlert 함수 (내부적으로 openConfirm 호출)
+	    const openAlert = (options) => {
+	        return openConfirm({ 
+	            ...options, 
+	            hideCancel: true // 무조건 취소 버튼 숨김
+	        });
+	    };
 
     const getCreateRoomValidationMessage = (form) => {
         const storeIdx = form.querySelector('input[name="storeIdx"]')?.value;
@@ -367,6 +383,7 @@
 	};
     window.moShowToast = showToast;
     window.moOpenConfirm = openConfirm;
+	window.moOpenAlert = openAlert;
 	
 	const bindButtons = () => {
 	    document.querySelectorAll('[data-mo-open-mobile-menu]').forEach((button) => {

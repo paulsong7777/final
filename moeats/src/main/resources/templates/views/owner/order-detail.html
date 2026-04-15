@@ -254,19 +254,19 @@
 
                     <div class="d-flex flex-column gap-3">
                         <button type="button" th:if="${safeOrder.orderStatus == 'PAID'}" class="mo-btn mo-btn-primary w-100 py-3 fs-6" 
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'ACCEPTED')">주문 접수하기</button>
+                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'ACCEPTED')|">주문 접수하기</button>
                         
                         <button type="button" th:if="${safeOrder.orderStatus == 'ACCEPTED'}" class="btn btn-warning w-100 py-3 fs-6 text-white border-0" style="background-color: #ff9800; font-weight: bold;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'PREPARING')">조리 시작하기</button>
+                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'PREPARING')|">조리 시작하기</button>
                         
                         <button type="button" th:if="${safeOrder.orderStatus == 'PREPARING'}" class="btn btn-success w-100 py-3 fs-6 border-0 text-white" style="font-weight: bold;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'READY')">준비 완료 처리</button>
+                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'READY')|">준비 완료 처리</button>
 
                         <button type="button" th:if="${safeOrder.orderStatus == 'READY'}" class="btn btn-info w-100 py-3 fs-6 border-0 text-white" style="font-weight: bold;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'DELIVERING')">배달 시작하기</button>
+                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'DELIVERING')|">배달 시작하기</button>
                                 
                         <button type="button" th:if="${safeOrder.orderStatus == 'DELIVERING'}" class="mo-btn w-100 py-3 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff;"
-                                th:onclick="moveStatus([[${safeOrder.roomIdx}]], 'COMPLETED')">주문 완료 처리</button>
+                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'COMPLETED')|">주문 완료 처리</button>
 
                         <div th:if="${safeOrder.orderStatus == 'COMPLETED'}" class="p-3 text-center rounded-3 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy-strong);">
                             처리가 완료된 주문입니다.
@@ -301,25 +301,104 @@
 <th:block layout:fragment="pageScripts">
     <script th:inline="javascript">
         /*<![CDATA[*/
-        async function moveStatus(roomIdx, nextStatus) {
-            const toastEl = document.getElementById('statusToast');
-            if (toastEl) new bootstrap.Toast(toastEl).show();
+        async function moveStatus(event, roomIdx, nextStatus) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // 💡 멈추기 전 버튼 미리 저장
+            const btn = event.currentTarget;
+            if (!roomIdx) return;
+
+            // 상태별 커스텀 모달 내용 정의
+            const modalConfigMap = {
+                ACCEPTED: {
+                    eyebrow: '주문 접수',
+                    title: '주문을 접수할까요?',
+                    message: '주문을 수락하고 조리 대기 상태로 넘어갑니다.',
+                    confirmText: '접수하기'
+                },
+                PREPARING: {
+                    eyebrow: '조리 시작',
+                    title: '조리를 시작할까요?',
+                    message: '메뉴 조리가 시작되었음을 알립니다.',
+                    confirmText: '조리 시작하기'
+                },
+                READY: {
+                    eyebrow: '준비 완료',
+                    title: '조리가 모두 끝났나요?',
+                    message: '배달/픽업을 위한 모든 준비가 완료 처리됩니다.',
+                    confirmText: '준비 완료 처리'
+                },
+                DELIVERING: {
+                    eyebrow: '배달 시작',
+                    title: '배달을 시작할까요?',
+                    message: '기사님이 픽업하여 배달을 시작 상태로 변경합니다.',
+                    confirmText: '배달 시작'
+                },
+                COMPLETED: {
+                    eyebrow: '주문 완료',
+                    title: '주문을 최종 완료할까요?',
+                    message: '고객에게 전달이 완료된 주문을 최종 마감합니다.',
+                    confirmText: '최종 완료 처리'
+                }
+            };
+
+            const targetConfig = modalConfigMap[nextStatus] || {
+                eyebrow: '상태 변경',
+                title: '상태를 업데이트할까요?',
+                message: '주문 상태를 다음 단계로 변경합니다.',
+                confirmText: '변경하기'
+            };
+
+            // 커스텀 Confirm 모달 띄우기
+            const isConfirmed = await window.moOpenConfirm({
+                eyebrow: targetConfig.eyebrow,
+                title: targetConfig.title,
+                message: targetConfig.message,
+                confirmText: targetConfig.confirmText,
+                cancelText: '취소'
+            });
+
+            if (!isConfirmed) return;
+
+            // 로딩 UI 처리
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
             try {
                 const response = await fetch('/owners/order/status_update', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    // 🚨 핵심 수정 부분: 백엔드가 인식할 수 있도록 "roomStatus"로 이름표를 바꿔서 보냅니다!
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        ...(header && { [header]: token })
+                    },
                     body: JSON.stringify({ 
                         "roomIdx": Number(roomIdx), 
                         "roomStatus": String(nextStatus) 
                     })
                 });
+                
                 const data = await response.json();
-                if (!response.ok || !data.result) throw new Error('fail');
-                window.location.reload(); // 성공 시 현재 페이지 새로고침
+                
+                if (response.ok && data.result) {
+                    window.location.reload(); 
+                } else {
+                    throw new Error('fail');
+                }
             } catch (error) {
-                alert('상태 변경에 실패했습니다.');
+                // 에러 발생 시 커스텀 Alert 띄우기
+                await window.moOpenAlert({
+                    eyebrow: '오류 발생',
+                    title: '상태 변경 실패',
+                    message: '처리 중 오류가 발생했습니다. 다시 시도해주세요.',
+                    confirmText: '확인'
+                });
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
         /*]]>*/

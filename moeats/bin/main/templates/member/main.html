@@ -7,85 +7,31 @@
 </head>
 <body>
 
-
 <section layout:fragment="pageContent">
-    <div class="container">
+    <div class="container mo-main-page">
 
-        <!-- 상단 탐색 바 -->
-        <section class="mo-section pt-3 pb-3">
-            <div class="row g-4">
-                <div class="col-12">
-                    <div class="mo-surface-card">
-                        <div class="d-flex flex-column gap-3">
-                            <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-2">
-    <div>
-        <div class="mo-section-label">가게 찾기</div>
-        <h2 class="mo-section-title mb-1">원하는 가게를 바로 찾아보세요</h2>
-        <p class="mo-helper-text mb-0">가게명이나 메뉴명으로 빠르게 검색할 수 있습니다.</p>
-    </div>
-</div>
+        <section class="mo-main-search-section">
+            <div class="mo-main-searchbar" role="search">
+                <div class="mo-main-searchbar__brand" aria-hidden="true">M</div>
 
-<th:block th:if="${not #strings.isEmpty(keyword)}">
-    
-    <div class="alert mt-3" style="background-color: var(--main-navy); color: white; border-radius: 8px;">
-        <div class="d-flex justify-content-between align-items-center">
-            <span>
-                "<strong>[[${keyword}]]</strong>"에 대한 검색 결과, 
-                총 <strong>[[${totalCount}]]</strong>건이 발견되었습니다.
-            </span>
-            <a th:href="@{menuList}" class="btn btn-sm btn-outline-light">전체메뉴 보기</a>
-        </div>
-    </div>
+                <label for="storeKeyword" class="visually-hidden">가게명 또는 메뉴명 검색</label>
+                <input type="text"
+                       id="storeKeyword"
+                       class="mo-main-searchbar__input"
+                       placeholder="함께 고르고, 쉽게 모이고, 한 번에 주문">
 
-    <div class="mt-4">
-        <th:block th:if="${not #lists.isEmpty(mList)}">
-            <div th:each="menu : ${mList}" class="card mb-3 shadow-sm border-0" style="border-left: 5px solid var(--main-navy) !important;">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="fw-bold mb-1" th:text="${menu.name}">메뉴명</h5>
-                        <p class="text-muted mb-0 small">
-                            가격: <span class="text-primary fw-bold" th:text="${#numbers.formatInteger(menu.price, 0, 'COMMA')} + '원'">0원</span>
-                        </p>
-                    </div>
-                    <a th:href="@{menuDetail(id=${menu.id}, keyword=${keyword})}" class="btn btn-sm btn-light">상세보기</a>
-                </div>
-            </div>
-        </th:block>
-
-        <th:block th:if="${#lists.isEmpty(mList)}">
-            <div class="text-center py-5 bg-light rounded shadow-sm">
-                <i class="bi bi-search d-block mb-3 text-muted" style="font-size: 2rem;"></i>
-                <p class="text-muted">"<strong>[[${keyword}]]</strong>"를 포함한 메뉴를 찾을 수 없습니다.</p>
-                <small>단어의 철자가 틀리지 않았는지 확인해 보세요.</small>
-            </div>
-        </th:block>
-    </div>
-
-</th:block>
-
-                            <div class="row g-2 align-items-center">
-                                <div class="col-12 col-lg">
-                                    <label for="storeKeyword" class="visually-hidden">가게명 또는 메뉴명 검색</label>
-                                    <input type="text"
-                                           id="storeKeyword"
-                                           class="form-control mo-form-control"
-                                           placeholder="예: 치킨, 피자, 카페">
-                                </div>
-                                <div class="col-12 col-lg-auto">
-                                    <button type="button"
-                                            id="storeSearchBtn"
-                                            class="mo-btn mo-btn-primary mo-btn-search w-100">
-                                        검색하기
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <button type="button"
+                        id="storeSearchBtn"
+                        class="mo-main-searchbar__submit"
+                        aria-label="검색">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"></circle>
+                        <path d="M16 16L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                    </svg>
+                </button>
             </div>
         </section>
 
-        <!-- 가게 리스트 -->
         <section class="mo-section pt-0">
             <div class="mo-section-head mb-3">
                 <div>
@@ -126,13 +72,6 @@
 <th:block layout:fragment="pageScripts">
     <script th:src="@{/js/storelist-ajax.js}"></script>
 </th:block>
-
-<div class="wrap">
-    <h1>Mo-Eats 메인</h1>
-    <p>현재 통합 브랜치 기준 최소 진입 화면입니다.</p>
-    <a href="/login">로그인</a>
-    <a href="/member/new-user">회원가입</a>
-</div>
 
 </body>
 </html>
