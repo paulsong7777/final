@@ -108,71 +108,82 @@
 <th:block layout:fragment="pageScripts">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script th:src="@{/js/member.js}"></script>
 
     <script th:inline="javascript">
         $(function() {
-            
-        	// 1. 기존 전화번호 분리 세팅
-        	const originPhone = $("#originPhone").val();
-
-        	if(originPhone) {
-        	    if(originPhone.includes("-")) {
-        	        // 1) 하이픈(-)이 포함된 경우 (010-1234-5678)
-        	        const phoneParts = originPhone.split("-");
-        	        if(phoneParts.length === 3){
-        	            $("#phone1").val(phoneParts[0]);
-        	            $("#phone2").val(phoneParts[1]);
-        	            $("#phone3").val(phoneParts[2]);
-        	        }
-        	    } else if(originPhone.length >= 10) {
-        	        // 2) 하이픈 없이 숫자만 있는 경우 (01012345678)
-        	        $("#phone1").val(originPhone.substring(0, 3)); // 010
-        	        if(originPhone.length === 11) { // 11자리
-        	            $("#phone2").val(originPhone.substring(3, 7));
-        	            $("#phone3").val(originPhone.substring(7, 11));
-        	        } else { // 10자리 (예전 번호)
-        	            $("#phone2").val(originPhone.substring(3, 6));
-        	            $("#phone3").val(originPhone.substring(6, 10));
-        	        }
-        	    }
-        	}
-        	
-            // 2. 전화번호 실시간 입력 제한 (숫자만 입력 및 경고창)
-            $("#phone1, #phone2, #phone3").on("input", function() {
-                let currentVal = $(this).val();
-                if (/[^0-9]/.test(currentVal)) {
-                    alert("전화번호는 숫자만 입력 가능합니다.");
-                    $(this).val(currentVal.replace(/[^0-9]/g, ''));
+            // [추가] 공통 알림 함수
+            function notify(message, variant = 'warning') {
+                if (typeof window.moShowToast === 'function') {
+                    window.moShowToast(message, variant);
+                } else {
+                    alert(message);
                 }
-            });
+            }
 
-            // 모달 띄우기 함수
+            // 모달 띄우기 함수 (보안 확인용 유지)
             function showModal(msg) {
                 $("#modalMessage").html(msg);
                 $("#passwordResultModal").modal("show");
             }
+            
+            // 1. 기존 전화번호 분리 세팅
+            const originPhone = $("#originPhone").val();
+            if(originPhone) {
+                if(originPhone.includes("-")) {
+                    const phoneParts = originPhone.split("-");
+                    if(phoneParts.length === 3){
+                        $("#phone1").val(phoneParts[0]);
+                        $("#phone2").val(phoneParts[1]);
+                        $("#phone3").val(phoneParts[2]);
+                    }
+                } else if(originPhone.length >= 10) {
+                    $("#phone1").val(originPhone.substring(0, 3));
+                    if(originPhone.length === 11) {
+                        $("#phone2").val(originPhone.substring(3, 7));
+                        $("#phone3").val(originPhone.substring(7, 11));
+                    } else {
+                        $("#phone2").val(originPhone.substring(3, 6));
+                        $("#phone3").val(originPhone.substring(6, 10));
+                    }
+                }
+            }
+            
+            // 2. 전화번호 실시간 입력 제한 (Toast 알림 적용)
+            $("#phone1, #phone2, #phone3").on("input", function() {
+                let currentVal = $(this).val();
+                if (/[^0-9]/.test(currentVal)) {
+                    notify("전화번호는 숫자만 입력 가능합니다.");
+                    $(this).val(currentVal.replace(/[^0-9]/g, ''));
+                }
+            });
 
-        	 // 3. 기존 비밀번호 확인 로직 (AJAX 연동)
+            // 3. 비밀번호 입력 제한 (최대 20자)
+            $("#memberPassword, #pass1, #pass2").on("input", function() {
+                let val = $(this).val();
+                if (val.length > 20) {
+                    $(this).val(val.substring(0, 20));
+                    notify("비밀번호는 최대 20자까지 가능합니다.");
+                }
+            });
+
+            // 4. 기존 비밀번호 확인 로직 (AJAX)
             $("#btnPassCheck").on("click", function() {
                 const password = $("#memberPassword").val();
 
                 if (!password) {
-                    showModal("기존 비밀번호를 입력해주세요.");
+                    notify("기존 비밀번호를 입력해주세요.");
                     $("#memberPassword").focus();
                     return;
                 }
 
-                // 서버로 비밀번호 확인 요청
                 $.ajax({
-                    url: "/members/password-check", // 비밀번호 확인용 전용 경로 (아래 2번 참고)
+                    url: "/members/password-check",
                     type: "POST",
                     data: { memberPassword: password },
                     success: function(res) {
-                        // res가 true(일치) 또는 false(불일치)로 온다고 가정
                         if (res === true) {
-                            showModal('<span style="color: #28a745;">✔️ 인증되었습니다. 정보를 수정하실 수 있습니다.</span>');
+                            showModal('<span style="color: #252D59;">✔️ 인증되었습니다. 정보를 수정하실 수 있습니다.</span>');
                             
                             $("#memberPassword").prop("readonly", true).css("background-color", "var(--mo-bg)");
                             $("#btnPassCheck").prop("disabled", true)
@@ -181,68 +192,80 @@
                                               .addClass("mo-btn-plain")
                                               .css("color", "#28a745");
                             
-                            $("#submitBtn").removeClass("fake-disabled"); // 버튼 활성화
+                            $("#submitBtn").removeClass("fake-disabled"); 
                         } else {
-                            showModal('<span style="color: #dc3545;">❌ 비밀번호가 틀렸습니다. 다시 확인해주세요.</span>');
+                            showModal('<span style="color: #F85E28;">❌ 비밀번호가 틀렸습니다. 다시 확인해주세요.</span>');
                             $("#memberPassword").val("").focus();
-                            $("#submitBtn").addClass("fake-disabled"); // 버튼 다시 비활성화
+                            $("#submitBtn").addClass("fake-disabled");
                         }
                     },
                     error: function() {
-                        alert("서버 통신 중 오류가 발생했습니다.");
+                        notify("서버 통신 중 오류가 발생했습니다.");
                     }
                 });
             });
 
-            // 4. 폼 제출 시 유효성 검사
-            $("#memberUpdateForm").on("submit", function(e) {
-                // 기존 비밀번호 인증 여부 확인
+         // 5. 폼 제출 시 유효성 검사 및 커스텀 컨펌 적용
+            $("#memberUpdateForm").on("submit", async function(e) {
+                e.preventDefault(); // 기본 제출 동작을 일단 멈춤
+
+                // 1) 기존 비밀번호 인증 여부 확인
                 if ($("#submitBtn").hasClass("fake-disabled")) {
-                    e.preventDefault();
-                    showModal("먼저 기존 비밀번호 확인을 진행해주세요.");
+                    notify("먼저 기존 비밀번호 확인을 진행해주세요.");
                     $("#memberPassword").focus();
                     return false;
                 }
 
-                // 새 비밀번호 유효성 검사 (입력한 경우에만 체크)
+                // 2) 새 비밀번호 및 전화번호 유효성 검사 (생략 없이 기존 로직 수행)
                 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
                 const pass1 = $("#pass1").val().trim();
                 const pass2 = $("#pass2").val().trim();
 
                 if (pass1 !== "") {
                     if (!passwordRegex.test(pass1)) {
-                        e.preventDefault();
-                        alert("새 비밀번호는 8~20자, 대소문자/숫자/특수문자를 포함해야 합니다.");
+                        notify("새 비밀번호는 8~20자, 대소문자/숫자/특수문자를 포함해야 합니다.");
                         $("#pass1").focus();
                         return false;
                     }
                     if (pass1 !== pass2) {
-                        e.preventDefault();
-                        alert("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+                        notify("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
                         $("#pass2").focus();
                         return false;
                     }
                 }
 
-                // 전화번호 유효성 검사
                 const p1 = $("#phone1").val().trim();
                 const p2 = $("#phone2").val().trim();
                 const p3 = $("#phone3").val().trim();
 
                 if(p1.length !== 3 || p2.length !== 4 || p3.length !== 4){
-                    e.preventDefault();
-                    alert("전화번호 형식을 확인해주세요 (예: 010-1234-5678)");
+                    notify("전화번호 형식을 확인해주세요.");
                     return false;
                 }
 
-                if(!/^\d+$/.test(p1+p2+p3)){
-                    e.preventDefault();
-                    alert("전화번호는 숫자만 입력해주세요");
-                    return false;
-                }
-
-                // 유효성 검사 통과 시 히든 input에 전화번호 병합하여 저장
+                // 유효성 검사 통과 시 번호 병합
                 $("#memberPhone").val(p1 + "-" + p2 + "-" + p3);
+
+                // 3) 🔥 [핵심] 예쁜 커스텀 컨펌 모달 띄우기
+                if (typeof window.moOpenConfirm === 'function') {
+                    const result = await window.moOpenConfirm({
+                        eyebrow: 'Profile Update',
+                        title: '회원 정보 수정',
+                        message: '입력하신 정보로 회원 정보를 수정하시겠습니까?',
+                        confirmText: '수정하기',
+                        cancelText: '취소'
+                    });
+
+                    if (result) {
+                        // 사용자가 '수정하기'를 눌렀을 때만 폼 제출
+                        this.submit(); 
+                    }
+                } else {
+                    // 만약 공통 스크립트가 로드되지 않았을 경우를 대비한 폴백
+                    if(confirm("회원 정보를 수정하시겠습니까?")) {
+                        this.submit();
+                    }
+                }
             });
         });
     </script>
