@@ -204,6 +204,28 @@
             return confirm("입력하신 정보로 매장을 등록하시겠습니까?");
         };
         // 드래그 앤 드롭 등 기존 스크립트 생략...
+        
+		// 💡 페이지가 로드될 때 실행되는 알림창 로직
+        document.addEventListener('DOMContentLoaded', async function() {
+            // ✅ 컨트롤러에서 보낸 "moAlert" 키 값을 정확히 받습니다.
+            let moAlertMsg = /*[[${moAlert}]]*/ null;
+            
+            if (moAlertMsg) {
+                // 커스텀 알림 함수가 존재하는지 확인
+                if (typeof window.moOpenAlert === 'function') {
+                    // 만들어두신 1버튼 전용 moOpenAlert 실행
+                    window.moOpenAlert({
+                        eyebrow: '알림',
+                        title: '매장 등록 안내',
+                        message: moAlertMsg,
+                        confirmText: '확인'
+                    });
+                } else {
+                    // 혹시 JS 로드가 늦어 함수를 못 찾으면 기본 알림으로 대비
+                    alert(moAlertMsg);
+                }
+            }
+        });
         /*]]>*/
     </script>
 </th:block>

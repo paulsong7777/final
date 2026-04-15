@@ -1,5 +1,10 @@
 $(function(){
+	
+	const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
+	const nicknameRegex = /^[가-힣a-zA-Z0-9]{1,10}$/;
+	const emailIdRegex = /^[a-zA-Z0-9]{5,20}$/;
 
+	
 	function toggleSubmitBtn() {
 	    if ($("#signupForm").length === 0) return;
 
@@ -61,6 +66,12 @@ $(function(){
 	        alert("이메일을 입력하세요");
 	        return;
 	    }
+		
+		if(!emailIdRegex.test(emailId)){
+			        alert("이메일 아이디는 영문/숫자 조합 5~20자로 입력해주세요.");
+			        $("#email_id").focus(); // 정규식에 맞지 않으면 해당 창으로 포커스
+			        return;
+		}
 
 	    const email = emailId + "@" + emailDomain;
 
@@ -138,14 +149,6 @@ $(function(){
         }
     }
 
-    // =========================
-    // 기존 코드 유지
-    // =========================
-
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
-	const nicknameRegex = /^[가-힣a-zA-Z0-9]{1,10}$/;
-	const emailIdRegex = /^[a-zA-Z0-9]{5,20}$/;
-	
     // 회원정보 수정
     $("#updateForm").on("submit", function(){
 

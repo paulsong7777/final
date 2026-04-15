@@ -447,6 +447,40 @@
 		        const name = document.getElementById('modalName').innerText;
 		        const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
 		        const storeIdx = Number(createRoomBtn?.dataset?.storeIdx || 0);
+		        
+		     // [추가] 배송지 등록 여부 체크
+		        // 서버에서 넘겨준 headerDeliveryAddressList가 비어있는지 확인 (Thymeleaf 변수 활용)
+		        /*[[${#lists.isEmpty(headerDeliveryAddressList)}]]*/ 
+		        const isAddressEmpty = [[${#lists.isEmpty(headerDeliveryAddressList)}]];
+
+		        if (isAddressEmpty) {
+		            // 1. 현재 열려있는 메뉴 모달/바텀시트 닫기
+		            const modalElement = document.getElementById('commonMenuModal');
+		            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+		            if (modalInstance) modalInstance.hide();
+
+		            const offcanvasEl = document.getElementById('commonMenuBottomSheet');
+		            const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
+		            if (offcanvasInstance) offcanvasInstance.hide();
+
+		            // 2. 공통 컨펌 모달(moConfirmModal) 활용하여 알림 띄우기
+		            const confirmModalEl = document.getElementById('moConfirmModal');
+		            if (confirmModalEl) {
+		                confirmModalEl.querySelector('[data-mo-confirm-title]').textContent = '어디로 배달해 드릴까요? 🛵';
+		                confirmModalEl.querySelector('[data-mo-confirm-message]').innerHTML = 
+		                    '주문방을 만들기 위해 배송지 등록이 필요해요.<br>맛있는 음식을 받을 주소를 먼저 등록하러 갈까요?';
+		                
+		                const acceptBtn = confirmModalEl.querySelector('[data-mo-confirm-accept]');
+		                acceptBtn.textContent = '주소 등록하기';
+		                acceptBtn.onclick = function() {
+		                    window.location.href = '/members/me/addresses/new';
+		                };
+
+		                const confirmModal = new bootstrap.Modal(confirmModalEl);
+		                confirmModal.show();
+		            }
+		            return; // 배송지가 없으면 여기서 중단
+		        }
 		
 		        const pending = {
 		            storeIdx: storeIdx,

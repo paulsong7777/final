@@ -86,8 +86,9 @@ public class StoreController {
 			Model model,
 			@SessionAttribute("member") Member member) {
 		Store store = storeService.myStore(member.getMemberIdx());
-	    if ( store==null ) {
-	    	ra.addFlashAttribute("error", "가게가 없습니다");
+		if ( store==null ) {
+            // 💡 "error" 대신 "moAlert" 키를 사용하고 문구를 부드럽게 수정
+	    	ra.addFlashAttribute("moAlert", "원활한 매장 관리를 위해 가게를 먼저 등록해주세요.");
 	    	return "redirect:/owners/store/new";
 	    }
 	    List<GroupOrderRecord> groupOrderList = groupOrderService.findRecordByStore(store.getStoreIdx());
@@ -113,7 +114,8 @@ public class StoreController {
 			@SessionAttribute("member") Member member) { 
 		Store store = storeService.myStore(member.getMemberIdx());
 		if ( store==null ) {
-			ra.addFlashAttribute("error", "가게가 없습니다");
+            // 🚨 "error" 대신 "moAlert" 사용
+			ra.addFlashAttribute("moAlert", "원활한 매장 관리를 위해 가게를 먼저 등록해주세요.");
 			return "redirect:/owners/store/new";
 		}
 		List<GroupOrderRecord> groupOrders = groupOrderService.findRecordByStore(store.getStoreIdx());

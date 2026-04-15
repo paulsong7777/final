@@ -28,7 +28,6 @@ public class DeliveryAddressController {
 
 	
 	// 삭제
-	// 기본 배송지 삭제 막기 위해서 갈아엎는..다....아..아...ㅅㅂ..
 	/*
 	 * @PostMapping("/members/me/addresses/{deliveryAddressIdx}/delete") public
 	 * String deleteAddress( @PathVariable("deliveryAddressIdx") int

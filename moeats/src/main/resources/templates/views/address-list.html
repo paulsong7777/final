@@ -74,7 +74,7 @@
 <body>
 
 <section layout:fragment="pageContent">
-    <section class="mo-section">
+    <!-- <section class="mo-section">
     <div class="d-flex flex-column gap-3 mb-3">
     <div class="mo-alert mo-alert--success"
          th:if="${message != null}"
@@ -104,7 +104,7 @@
                 </a>
             </div>
         </div>
-    </section>
+    </section> -->
 
     <section class="mo-section">
         <div class="row g-4" th:if="${addressList != null and !#lists.isEmpty(addressList)}">
@@ -177,15 +177,15 @@
     기본 배송지는 삭제 불가
 </button>
 
-    <form th:if="${defaultAddressIdx != address.deliveryAddressIdx}"
-      th:action="@{/members/me/addresses/{deliveryAddressIdx}/delete(deliveryAddressIdx=${address.deliveryAddressIdx})}"
-      method="post"
-      class="flex-fill"
-      onsubmit="return confirm('이 배송지를 삭제하시겠습니까?');">
-        <button type="submit" class="mo-btn mo-btn-danger w-100">
-            삭제
-        </button>
-    </form>
+	<form th:if="${defaultAddressIdx != address.deliveryAddressIdx}"
+	      th:action="@{/members/me/addresses/{deliveryAddressIdx}/delete(deliveryAddressIdx=${address.deliveryAddressIdx})}"
+	      method="post"
+	      class="flex-fill"
+	      onsubmit="handleDeleteSubmit(event, this);">
+	    <button type="submit" class="mo-btn mo-btn-danger w-100">
+	        삭제
+	    </button>
+	</form>
 </div>
                 </article>
             </div>
@@ -204,6 +204,54 @@
     </section>
 </section>
 
+<th:block layout:fragment="pageScripts">
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener("DOMContentLoaded", async function() {
+        // 1. 컨트롤러에서 RedirectAttributes로 넘긴 값을 가져옵니다.
+        const successMessage = /*[[${message}]]*/ null;
+        const errorMessage = /*[[${error}]]*/ null;
 
+        // 2. 성공 메시지가 있으면 모달을 띄웁니다.
+        if (successMessage) {
+            await window.moOpenAlert({
+                eyebrow: '알림',
+                title: '처리 완료',
+                message: successMessage,
+                confirmText: '확인'
+            });
+        }
+
+        // 3. 에러 메시지가 있으면 모달을 띄웁니다.
+        if (errorMessage) {
+            await window.moOpenAlert({
+                eyebrow: '오류',
+                title: '처리 불가',
+                message: errorMessage,
+                confirmText: '확인'
+            });
+        }
+    });
+
+    // 4. 배송지 삭제 시 커스텀 확인창 띄우기
+    async function handleDeleteSubmit(event, formElement) {
+        event.preventDefault(); // 기본 form 제출 동작을 막음
+
+        const isConfirmed = await window.moOpenConfirm({
+            eyebrow: '배송지 관리',
+            title: '배송지를 삭제할까요?',
+            message: '한 번 삭제한 배송지 정보는 복구할 수 없습니다.',
+            confirmText: '삭제하기',
+            cancelText: '취소'
+        });
+
+        // 확인 버튼을 눌렀을 때만 폼을 수동으로 제출
+        if (isConfirmed) {
+            formElement.submit(); 
+        }
+    }
+    /*]]>*/
+    </script>
+</th:block>
 </body>
 </html>

@@ -73,7 +73,6 @@
 				            <th class="ps-4 text-start">No</th>
 				            <th>주문시간</th>
 				            <th>주문코드(ID)</th>
-				            <th class="text-start">매장명</th>
 				            <th>진행상태</th>
 				            <th class="pe-4">상세 내역</th>
 				        </tr>
@@ -91,8 +90,6 @@
 				                    <span style="font-size: 13px; font-weight: 800; color: var(--mo-navy); background: rgba(42, 54, 89, 0.05); padding: 4px 8px; border-radius: 6px;" 
 				                          th:text="${'ROOM-' + (order.groupOrder.roomIdx ?: 0)}">ORD-001</span>
 				                </td>
-				                
-				                <td class="text-start fw-bold text-truncate" style="color: var(--mo-navy-strong); font-size: 15px;" th:text="${store.storeName ?: 'MoEats 매장'}">매장명</td>
 				                
 				                <td class="status-cell">
 				                    <div th:switch="${order.groupOrder.orderStatus}">

@@ -655,12 +655,33 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
 
-<script th:if="${error != null}" th:inline="javascript">
-    alert([[${error}]]);
-</script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+document.addEventListener("DOMContentLoaded", async function() {
+    const successMessage = /*[[${message}]]*/ null;
+    const errorMessage = /*[[${error}]]*/ null;
 
-<script th:if="${message != null}" th:inline="javascript">
-    alert([[${message}]]);
+    // 성공 메시지가 있을 때 커스텀 모달 띄우기
+    if (successMessage && window.moOpenAlert) {
+        await window.moOpenAlert({
+            eyebrow: '알림',
+            title: '처리 완료',
+            message: successMessage,
+            confirmText: '확인'
+        });
+    }
+
+    // 에러 메시지가 있을 때 커스텀 모달 띄우기
+    if (errorMessage && window.moOpenAlert) {
+        await window.moOpenAlert({
+            eyebrow: '오류',
+            title: '처리 불가',
+            message: errorMessage,
+            confirmText: '확인'
+        });
+    }
+});
+/*]]>*/
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {

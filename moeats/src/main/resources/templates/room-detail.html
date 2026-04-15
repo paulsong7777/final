@@ -989,24 +989,26 @@
                     <div class="rd-action-stack" th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
                         <div th:if="${isLeader}">
                             <div class="rd-action-row">
-                                <form class="rd-inline-form js-confirm-checkout"
-                                      th:if="${allSelected}"
-                                      th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
-                                      method="post">
-                                    <button type="submit" class="mo-btn mo-btn-primary">결제 시작하기</button>
-                                </form>
-
-                                <button type="button"
-                                        class="mo-btn mo-btn-primary"
-                                        th:unless="${allSelected}"
-                                        disabled>결제 진행 대기</button>
-
-                                <form class="rd-inline-form js-confirm-cancel"
-                                      th:action="@{/rooms/code/{code}/close(code=${orderRoom.roomCode})}"
-                                      method="post">
-                                    <button type="submit" class="mo-btn mo-btn-outline">주문방 종료</button>
-                                </form>
-                            </div>
+							    <form id="checkoutForm"
+							          th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
+							          method="post"
+							          style="display: none;"></form>
+							
+							    <button type="button"
+							            id="dynamicCheckoutBtn"
+							            class="mo-btn"
+							            th:classappend="${allSelected} ? 'mo-btn-primary' : 'js-alert-unselected'"
+							            th:style="${allSelected} ? '' : 'background-color: #f1f3f5; color: #8A93A6; border: 1px solid #e9ecef; cursor: pointer;'"
+							            th:text="${allSelected} ? '결제 시작하기' : '결제 진행 대기'"
+							            th:data-all-selected="${allSelected}">
+							    </button>
+							
+							    <form class="rd-inline-form js-confirm-cancel"
+							          th:action="@{/rooms/code/{code}/close(code=${orderRoom.roomCode})}"
+							          method="post">
+							        <button type="submit" class="mo-btn mo-btn-outline">주문방 종료</button>
+							    </form>
+							</div>
 
                         </div>
 
@@ -1074,11 +1076,11 @@
                       method="post">
                     <button type="submit" class="mo-btn mo-btn-primary">결제 시작</button>
                 </form>
-
-                <div class="small text-secondary text-end"
-                     th:if="${!allSelected}">
-                    전원이 선택을 마치면 여기에서 바로 결제를 시작할 수 있습니다.
-                </div>
+			
+				<button type="button"
+			        class="mo-btn js-alert-unselected"
+			        style="background-color: #f1f3f5; color: #8A93A6; border: 1px solid #e9ecef; cursor: pointer; width: 100%;"
+			        th:unless="${allSelected}">결제 진행 대기</button>
             </div>
 
             <div class="rd-mobile-sticky__action" th:unless="${isLeader}">
@@ -1117,6 +1119,59 @@
 
 <th:block layout:fragment="pageScripts">
     <script th:src="@{/js/room/room-detail.js}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkoutBtn = document.getElementById('dynamicCheckoutBtn');
+        const checkoutForm = document.getElementById('checkoutForm');
+
+        // 1. 버튼 클릭 이벤트 처리
+        if(checkoutBtn) {
+            checkoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // data 속성으로 현재 모두 선택되었는지 확인
+                const isAllSelected = this.getAttribute('data-all-selected') === 'true';
+
+                if (isAllSelected) {
+                    // 모두 선택되었으면 결제 진행 폼 서브밋
+                    checkoutForm.submit();
+                } else {
+                    // 아직 미선택 인원이 있으면 알림창 띄우기
+                    if (typeof window.moOpenAlert === 'function') {
+                        window.moOpenAlert({
+                            title: '결제 진행 안내',
+                            message: '모든 참여자가 메뉴 선택을 완료해야 결제를 시작할 수 있습니다.',
+                            confirmText: '확인'
+                        });
+                    } else {
+                        alert('모든 참여자가 메뉴 선택을 완료해야 결제를 시작할 수 있습니다.');
+                    }
+                }
+            });
+        }
+    });
+
+    // 2. 실시간 상태 변경 함수 (웹소켓이나 Ajax 응답에서 호출하여 사용하세요)
+    window.updateCheckoutButtonState = function(isAllSelected) {
+        const btn = document.getElementById('dynamicCheckoutBtn');
+        if (!btn) return;
+
+        // data 속성 업데이트
+        btn.setAttribute('data-all-selected', isAllSelected);
+
+        if (isAllSelected) {
+            // 활성화 상태: 주황색 디자인 및 텍스트 변경
+            btn.textContent = '결제 시작하기';
+            btn.className = 'mo-btn mo-btn-primary';
+            btn.style.cssText = ''; // 회색 인라인 스타일 제거
+        } else {
+            // 비활성화 상태: 회색 디자인 및 텍스트 변경
+            btn.textContent = '결제 진행 대기';
+            btn.className = 'mo-btn js-alert-unselected';
+            btn.style.cssText = 'background-color: #f1f3f5; color: #8A93A6; border: 1px solid #e9ecef; cursor: pointer;';
+        }
+    };
+	</script>
 </th:block>
 </body>
 </html>
