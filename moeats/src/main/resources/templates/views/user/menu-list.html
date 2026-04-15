@@ -448,13 +448,12 @@
 		        const createRoomBtn = document.getElementById('fe02CreateRoomBtn');
 		        const storeIdx = Number(createRoomBtn?.dataset?.storeIdx || 0);
 		        
-		     // [추가] 배송지 등록 여부 체크
-		        // 서버에서 넘겨준 headerDeliveryAddressList가 비어있는지 확인 (Thymeleaf 변수 활용)
-		        /*[[${#lists.isEmpty(headerDeliveryAddressList)}]]*/ 
-		        const isAddressEmpty = [[${#lists.isEmpty(headerDeliveryAddressList)}]];
+		        // 1. 배송지 존재 여부 체크 (배송지 리스트 아이템 개수로 확인)
+		        const addressList = document.querySelectorAll('#moAddressModal .mo-address-item');
+		        const hasAddress = addressList.length > 0;
 
-		        if (isAddressEmpty) {
-		            // 1. 현재 열려있는 메뉴 모달/바텀시트 닫기
+		        if (!hasAddress) {
+		            // 기존 열려있는 메뉴 상세 창 닫기
 		            const modalElement = document.getElementById('commonMenuModal');
 		            const modalInstance = bootstrap.Modal.getInstance(modalElement);
 		            if (modalInstance) modalInstance.hide();
@@ -463,7 +462,7 @@
 		            const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
 		            if (offcanvasInstance) offcanvasInstance.hide();
 
-		            // 2. 공통 컨펌 모달(moConfirmModal) 활용하여 알림 띄우기
+		            // 공통 컨펌 모달 활용 (알림창 하나만 띄움)
 		            const confirmModalEl = document.getElementById('moConfirmModal');
 		            if (confirmModalEl) {
 		                confirmModalEl.querySelector('[data-mo-confirm-title]').textContent = '어디로 배달해 드릴까요? 🛵';
@@ -479,22 +478,24 @@
 		                const confirmModal = new bootstrap.Modal(confirmModalEl);
 		                confirmModal.show();
 		            }
-		            return; // 배송지가 없으면 여기서 중단
+		            return; // 중단
 		        }
-		
+
+		        // 2. 배송지가 있을 때만 실행되는 로직 (세션 저장 및 주문방 생성 유도)
 		        const pending = {
 		            storeIdx: storeIdx,
 		            menuIdx: currentMenuIdx,
 		            quantity: currentQty,
 		            savedAt: Date.now()
 		        };
-		
+
 		        sessionStorage.setItem('moPendingMenuSelection', JSON.stringify(pending));
-		
+
+		        // 모달 닫기
 		        const modalElement = document.getElementById('commonMenuModal');
 		        const modalInstance = bootstrap.Modal.getInstance(modalElement);
 		        if (modalInstance) modalInstance.hide();
-		
+
 		        const offcanvasEl = document.getElementById('commonMenuBottomSheet');
 		        const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
 		        if (offcanvasInstance) offcanvasInstance.hide();
@@ -506,9 +507,9 @@
 		        if (typeof window.openCreateRoomSheet === 'function') {
 		            window.setTimeout(function () {
 		                window.openCreateRoomSheet({
-		                    storeIdx: Number(createRoomBtn?.dataset?.storeIdx || 0),
-		                    storeName: createRoomBtn?.dataset?.storeName || '',
-		                    minimumOrderAmount: createRoomBtn?.dataset?.minimumOrderAmount || '',
+		                    storeIdx: storeIdx,
+		                    storeName: createRoomBtn?.dataset.storeName || '',
+		                    minimumOrderAmount: createRoomBtn?.dataset.minimumOrderAmount || '',
 		                    afterCreate: 'confirm',
 		                    contextMessage: `${name} ${currentQty}개를 장바구니에 담았어요. 주문방 설정만 마치면 바로 이어집니다.`
 		                });

@@ -103,12 +103,14 @@
         searchInput.addEventListener('input', render);
     }
 
+	// menu-list.js 내부의 createRoomBtn 이벤트 리스너 수정
 	if (createRoomBtn) {
 	    createRoomBtn.addEventListener('click', () => {
 	        const storeIdx = getStoreIdx();
 	        const isAuthenticated = createRoomBtn.dataset.authenticated === 'true';
 
 	        if (!isAuthenticated) {
+	            // 로그인 유도 로직 (기존 유지)
 	            if (typeof window.openMoLoginLayer === 'function') {
 	                window.openMoLoginLayer();
 	            } else {
@@ -117,11 +119,30 @@
 	            return;
 	        }
 
-	        if (!storeIdx) {
-	            window.alert('가게 정보가 없어 주문방 생성으로 이동할 수 없습니다.');
-	            return;
+	        // [추가] 배송지 등록 여부 체크 (header.html의 배송지 리스트 활용)
+	        // 전역 함수나 변수가 없다면 UI 요소 존재 여부로 판단 가능
+	        const addressItems = document.querySelectorAll('#moAddressModal .mo-address-item');
+	        if (addressItems.length === 0) {
+	            // 배송지가 없는 경우 공통 컨펌 모달 띄우기
+	            const confirmModalEl = document.getElementById('moConfirmModal');
+	            if (confirmModalEl) {
+	                confirmModalEl.querySelector('[data-mo-confirm-title]').textContent = '배송지를 먼저 등록해주세요 🛵';
+	                confirmModalEl.querySelector('[data-mo-confirm-message]').innerHTML = 
+	                    '주문방을 만들기 위해 배송지 정보가 필요합니다.<br>주소 등록 페이지로 이동할까요?';
+	                
+	                const acceptBtn = confirmModalEl.querySelector('[data-mo-confirm-accept]');
+	                acceptBtn.textContent = '주소 등록하기';
+	                acceptBtn.onclick = function() {
+	                    window.location.href = '/members/me/addresses/new';
+	                };
+
+	                const confirmModal = new bootstrap.Modal(confirmModalEl);
+	                confirmModal.show();
+	                return; // 프로세스 중단
+	            }
 	        }
 
+	        // 기존 주문방 생성 시트 호출 로직 (기존 유지)
 	        if (typeof window.openCreateRoomSheet === 'function') {
 	            window.openCreateRoomSheet({
 	                storeIdx: Number(storeIdx),
@@ -130,7 +151,6 @@
 	            });
 	            return;
 	        }
-
 	        window.location.href = `/rooms/new?storeIdx=${encodeURIComponent(storeIdx)}`;
 	    });
 	}
