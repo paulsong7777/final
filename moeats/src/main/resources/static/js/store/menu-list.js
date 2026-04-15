@@ -22,6 +22,27 @@
         const match = window.location.pathname.match(/\/stores\/(\d+)\/menu/);
         return match ? match[1] : '';
     }
+	
+	function showCreateRoomError(message) {
+	    if (!message) return;
+
+	    if (typeof window.moOpenAlert === 'function') {
+	        window.moOpenAlert({
+	            eyebrow: '주문방',
+	            title: '주문방을 열 수 없어요',
+	            message: message,
+	            confirmText: '확인'
+	        });
+	        return;
+	    }
+
+	    if (typeof window.moShowToast === 'function') {
+	        window.moShowToast(message, 'warning');
+	        return;
+	    }
+
+	    window.alert(message);
+	}
 
 	function matchesKeyword(card, keyword) {
 	    if (!keyword) return true;
@@ -117,10 +138,10 @@
 	            return;
 	        }
 
-	        if (!storeIdx) {
-	            window.alert('가게 정보가 없어 주문방 생성으로 이동할 수 없습니다.');
-	            return;
-	        }
+			if (!storeIdx) {
+			    showCreateRoomError('가게 정보를 다시 확인한 뒤 시도해 주세요.');
+			    return;
+			}
 
 	        if (typeof window.openCreateRoomSheet === 'function') {
 	            window.openCreateRoomSheet({

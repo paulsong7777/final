@@ -22,6 +22,17 @@
         return Number(value || 0).toLocaleString('ko-KR') + '원';
     }
 
+	function warn(message) {
+	    if (!message) return;
+
+	    if (typeof window.moShowToast === 'function') {
+	        window.moShowToast(message, 'warning');
+	        return;
+	    }
+
+	    window.alert(message);
+	}
+	
     function matchesKeyword(card, keyword) {
         if (!keyword) return true;
 
@@ -183,10 +194,10 @@
         const state = getCardState(card);
         if (!state || !roomCode) return;
 
-        if (!state.cartItemIdx && state.quantity <= 0) {
-            window.alert('수량을 먼저 선택해 주세요.');
-            return;
-        }
+		if (!state.cartItemIdx && state.quantity <= 0) {
+		    warn('수량을 먼저 선택해 주세요.');
+		    return;
+		}
 
         state.pending = true;
         syncCardView(card);
@@ -233,9 +244,9 @@
 
                 state.cartItemIdx = result.cartItemIdx || null;
             }
-        } catch (error) {
-            window.alert('장바구니 반영 중 오류가 발생했습니다.');
-        } finally {
+			} catch (error) {
+			    warn('장바구니 반영 중 오류가 발생했습니다.');
+			} finally {
             state.pending = false;
             syncCardView(card);
             syncBottomBar();
