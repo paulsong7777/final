@@ -290,30 +290,31 @@ public class RoomController {
 
 	@GetMapping("/rooms/join")
 	public String joinRoom(@RequestParam(name = "roomCode", required = false) String roomCode,
-			@SessionAttribute("member") Member member, RedirectAttributes ra) {
+	        @SessionAttribute("member") Member member, RedirectAttributes ra) {
 
-		if (roomCode != null && !roomCode.isBlank()) {
-			String normalized = roomCode.replaceAll("\\D", "");
+	    if (roomCode == null || roomCode.isBlank()) {
+	        String activeRedirect = redirectToActiveRoomIfExists(member, ra);
+	        if (activeRedirect != null) {
+	            return activeRedirect;
+	        }
 
-			if (!normalized.matches("\\d{6}")) {
-				ra.addFlashAttribute("error", "방 코드는 6자리 숫자여야 합니다");
-				return "redirect:/main";
-			}
+	        ra.addFlashAttribute("error", "방 코드를 입력해 주세요.");
+	        return "redirect:/main";
+	    }
 
-			String activeRedirect = redirectToDifferentActiveRoom(member, normalized, ra);
-			if (activeRedirect != null) {
-				return activeRedirect;
-			}
+	    String normalized = roomCode.replaceAll("\\D", "");
 
-			return "redirect:/rooms/code/" + normalized;
-		}
+	    if (!normalized.matches("\\d{6}")) {
+	        ra.addFlashAttribute("error", "방 코드는 6자리 숫자여야 합니다");
+	        return "redirect:/main";
+	    }
 
-		String activeRedirect = redirectToActiveRoomIfExists(member, ra);
-		if (activeRedirect != null) {
-			return activeRedirect;
-		}
+	    String activeRedirect = redirectToDifferentActiveRoom(member, normalized, ra);
+	    if (activeRedirect != null) {
+	        return activeRedirect;
+	    }
 
-		return "room-join";
+	    return "redirect:/rooms/code/" + normalized;
 	}
 
 	@GetMapping("/rooms/code/{room_code}/cart")
