@@ -30,7 +30,7 @@
         <div class="row justify-content-center">
             <div class="col-12 col-xl-8">
                 <div class="mo-surface-card">
-                    <form th:action="@{/members/me/addresses}" method="post" class="row g-3">
+                    <form id="addressForm" th:action="@{/members/me/addresses}" method="post" class="row g-3">
                     
                     	<input type="hidden" name="returnUrl" th:value="${returnUrl}">
 
@@ -54,15 +54,15 @@
                                    required>
                         </div>
 
-                        <div class="col-12">
-                            <label for="recipientPhone" class="mo-form-label">연락처</label>
-                            <input type="text"
-                                   id="recipientPhone"
-                                   name="recipientPhone"
-                                   class="form-control mo-form-control mo-valid-name"
-                                   placeholder="010-0000-0000"
-                                   required>
-                        </div>
+						<div class="col-12">
+						        <label for="recipientPhone" class="mo-form-label">연락처</label>
+						        <input type="text"
+						               id="recipientPhone"
+						               name="recipientPhone"
+						               class="form-control mo-form-control"
+						               placeholder="010-0000-0000"
+						               required>
+						    </div>
 
                         <div class="col-12 col-md-4">
                             <label for="zipCode" class="mo-form-label">우편번호</label>
@@ -130,18 +130,165 @@
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script>
         (function () {
+            // 1. 카카오 우편번호 검색 로직
             const searchButton = document.getElementById('btnAddressSearch');
-            if (!searchButton) return;
+            if (searchButton) {
+                searchButton.addEventListener('click', function () {
+                    new daum.Postcode({
+                        oncomplete: function (data) {
+                            document.getElementById('zipCode').value = data.zonecode || '';
+                            document.getElementById('deliveryAddress1').value = data.roadAddress || data.address || '';
+                            document.getElementById('deliveryAddress2').focus();
+                        }
+                    }).open();
+                });
+            }
 
-            searchButton.addEventListener('click', function () {
-                new daum.Postcode({
-                    oncomplete: function (data) {
-                        document.getElementById('zipCode').value = data.zonecode || '';
-                        document.getElementById('deliveryAddress1').value = data.roadAddress || data.address || '';
-                        document.getElementById('deliveryAddress2').focus();
+            const addressForm = document.getElementById('addressForm');
+            const phoneInput = document.getElementById('recipientPhone');
+            const address1Input = document.getElementById('deliveryAddress1'); // 기본주소
+            const address2Input = document.getElementById('deliveryAddress2'); // 상세주소
+            
+            // 검사할 텍스트 입력창 ID 목록 (자음/모음 단독 입력 방지용)
+            const textInputIds = ['deliveryLabel', 'recipientName', 'deliveryAddress2', 'deliveryRequest'];
+
+            // -----------------------------------------------------------
+            // 2. 상세주소 실시간 유효성 검사 (숫자, 한글, 공백, , . - 만 허용)
+            // -----------------------------------------------------------
+            if (address2Input) {
+                let isAddrComposing = false;
+                address2Input.addEventListener('compositionstart', () => isAddrComposing = true);
+                address2Input.addEventListener('compositionend', () => {
+                    isAddrComposing = false;
+                    address2Input.dispatchEvent(new Event('input'));
+                });
+
+                address2Input.addEventListener('input', function() {
+                    if (isAddrComposing) return;
+
+                    let originalVal = this.value;
+                    const invalidRegex = /[^0-9가-힣ㄱ-ㅎㅏ-ㅣ\s,\.-]/g;
+
+                    if (invalidRegex.test(originalVal)) {
+                        if (typeof window.moShowToast === 'function') {
+                            window.moShowToast('상세주소는 한글, 숫자, 특수문자(, . -)만 입력 가능합니다.', 'warning');
+                        }
+                        this.value = originalVal.replace(invalidRegex, '');
                     }
-                }).open();
+                });
+            }
+
+            // -----------------------------------------------------------
+            // 3. 자음/모음 단독 입력 시 자동 삭제 (전체 텍스트 필드)
+            // -----------------------------------------------------------
+            textInputIds.forEach(id => {
+                const inputEl = document.getElementById(id);
+                if (inputEl) {
+                    inputEl.addEventListener('blur', function(e) {
+                        const standaloneRegex = /[ㄱ-ㅎㅏ-ㅣ]/g; 
+                        
+                        if (standaloneRegex.test(this.value)) {
+                            this.value = this.value.replace(standaloneRegex, '');
+                            
+                            if (typeof window.moShowToast === 'function') {
+                                window.moShowToast('자음이나 모음 단독 입력은 자동으로 삭제되었습니다.', 'warning');
+                            }
+                        }
+                    });
+                }
             });
+
+            // -----------------------------------------------------------
+            // 4. 연락처 실시간 제어
+            // -----------------------------------------------------------
+            if (phoneInput) {
+                let isPhoneComposing = false;
+                phoneInput.addEventListener('compositionstart', () => isPhoneComposing = true);
+                phoneInput.addEventListener('compositionend', () => {
+                    isPhoneComposing = false;
+                    phoneInput.dispatchEvent(new Event('input'));
+                });
+
+                phoneInput.addEventListener('input', function() {
+                    if (isPhoneComposing) return; 
+
+                    let originalVal = this.value;
+                    const invalidRegex = /[^0-9-]/g;
+
+                    if (invalidRegex.test(originalVal)) {
+                        if (typeof window.moShowToast === 'function') {
+                            window.moShowToast('숫자와 하이픈(-)만 입력 가능합니다.', 'warning');
+                        }
+                    }
+
+                    let val = originalVal.replace(invalidRegex, '');
+                    
+                    const maxLength = 13;
+                    if (val.length > maxLength) {
+                        if (typeof window.moShowToast === 'function') {
+                            window.moShowToast(`연락처는 최대 ${maxLength}자리까지만 입력 가능합니다.`, 'warning');
+                        }
+                        val = val.substring(0, maxLength); 
+                    }
+                    
+                    this.value = val;
+                });
+            }
+
+            // -----------------------------------------------------------
+            // 5. 폼 전송 시 최종 유효성 검사
+            // -----------------------------------------------------------
+            if (addressForm) {
+                addressForm.addEventListener('submit', function(e) {
+                    
+                    // (1) 기본주소(deliveryAddress1) 필수 입력 검사
+                    if (address1Input && address1Input.value.trim() === '') {
+                        e.preventDefault();
+                        if (typeof window.moShowToast === 'function') {
+                            window.moShowToast('주소 검색을 이용하여 기본주소를 입력해 주세요.', 'warning');
+                        }
+                        // 주소를 입력할 수 있도록 주소 검색 버튼으로 포커스 이동
+                        if (searchButton) searchButton.focus();
+                        return; // 아래 검사 생략하고 전송 중단
+                    }
+
+                    // (2) 텍스트 입력창 낱자(자음/모음) 검사 및 자동 삭제 확인
+                    for (const id of textInputIds) {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            const standaloneRegex = /[ㄱ-ㅎㅏ-ㅣ]/g;
+                            if (standaloneRegex.test(el.value)) {
+                                el.value = el.value.replace(standaloneRegex, '');
+                            }
+                            
+                            // 낱자 삭제 후 필수 입력칸이 비었을 때 차단
+                            if (el.hasAttribute('required') && el.value.trim() === '') {
+                                e.preventDefault();
+                                if (typeof window.moShowToast === 'function') {
+                                    window.moShowToast('필수 입력 항목을 올바르게 입력해 주세요.', 'warning');
+                                }
+                                el.focus();
+                                return; 
+                            }
+                        }
+                    }
+
+                    // (3) 연락처 정규식 검사
+                    if (phoneInput) {
+                        const phoneVal = phoneInput.value.trim();
+                        const phoneRegex = /^\d{2,3}-\d{3,4}-\d{4}$/;
+
+                        if (!phoneRegex.test(phoneVal)) {
+                            e.preventDefault(); 
+                            
+                            if (typeof window.moShowToast === 'function') {
+                                window.moShowToast('올바른 연락처 형식(예: 010-1234-5678)으로 입력해 주세요.', 'warning');
+                            }
+                            phoneInput.focus();
+                        }
+                    }
+                });
+            }
         })();
     </script>
 </th:block>
