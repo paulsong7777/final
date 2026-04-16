@@ -419,67 +419,104 @@
 <th:block layout:fragment="pageScripts">
     <script th:src="@{/js/order/order-channel.js}"></script>
 
-    <script>
-        let isExpired = false;
-        let isSafeExit = false;
+   <script>
+    let isExpired = false;
+    let isSafeExit = false;
 
-        // 1. 시간 만료 처리 함수
-        window.handlePaymentExpired = async () => {
-            if (isExpired) return;
-            isExpired = true;
-            isSafeExit = true;
+    // 1. 시간 만료 처리 함수
+    window.handlePaymentExpired = async () => {
+        if (isExpired) return;
+        isExpired = true;
+        isSafeExit = true;
 
-            if (typeof window.moOpenAlert === 'function') {
-                await window.moOpenAlert({
-                    eyebrow: '주문 취소 안내',
-                    title: '결제 시간이 지났어요',
-                    message: '안전한 이용을 위해 메인 화면으로 돌아갈게요.',
-                    confirmText: '홈으로 이동'
-                });
-                window.location.href = '/main';
-            } else {
-                alert('결제 시간이 지났습니다.');
-                window.location.href = '/main';
+        if (typeof window.moOpenAlert === 'function') {
+            await window.moOpenAlert({
+                eyebrow: '주문 취소 안내',
+                title: '결제 시간이 지났어요',
+                message: '안전한 이용을 위해 메인 화면으로 돌아갈게요.',
+                confirmText: '홈으로 이동'
+            });
+            window.location.href = '/main';
+        } else {
+            alert('결제 시간이 지났습니다.');
+            window.location.href = '/main';
+        }
+    };
+
+    // 2. 방장 결제 취소 시 쫓아내는 함수
+    window.handleRoomCancelled = async () => {
+        if (isSafeExit) return;
+        isSafeExit = true;
+
+        if (typeof window.moOpenAlert === 'function') {
+            await window.moOpenAlert({
+                eyebrow: '주문 취소 안내',
+                title: '주문방이 종료되었어요',
+                message: '방장이 결제를 취소하여 메인 화면으로 돌아갑니다.',
+                confirmText: '홈으로 이동'
+            });
+            window.location.href = '/main';
+        } else {
+            alert('방장이 결제를 취소하여 주문방이 종료되었습니다.');
+            window.location.href = '/main';
+        }
+    };
+
+    // 3. wait 화면용 부분 갱신 함수
+    window.updatePaymentUI = () => {
+        if (isSafeExit || isExpired) return;
+
+        fetch(window.location.href, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+            if (res.redirected || res.url.includes('/main') || !res.ok) {
+                handleRoomCancelled();
+                throw new Error('redirected');
             }
-        };
+            return res.text();
+        })
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
 
-        // 2. 방장 결제 취소 시 쫓아내는 함수
-        window.handleRoomCancelled = async () => {
-            if (isSafeExit) return;
-            isSafeExit = true;
+            // 완료 인원 / 내 상태 카드 갱신
+            const currentCards = document.querySelectorAll('.wait-summary-grid .wait-summary-card');
+            const newCards = doc.querySelectorAll('.wait-summary-grid .wait-summary-card');
 
-            if (typeof window.moOpenAlert === 'function') {
-                await window.moOpenAlert({
-                    eyebrow: '주문 취소 안내',
-                    title: '주문방이 종료되었어요',
-                    message: '방장이 결제를 취소하여 메인 화면으로 돌아갑니다.',
-                    confirmText: '홈으로 이동'
-                });
-                window.location.href = '/main';
-            } else {
-                alert('방장이 결제를 취소하여 주문방이 종료되었습니다.');
-                window.location.href = '/main';
-            }
-        };
+            if (currentCards.length > 0 && newCards.length > 0) {
+                const currentCountValue = currentCards[0].querySelector('.wait-summary-card__value');
+                const newCountValue = newCards[0].querySelector('.wait-summary-card__value');
 
-        // 💡 3. 핵심 추가 부분: 3초마다 현재 방 상태 체크 (Polling)
-        setInterval(() => {
-            if (isSafeExit || isExpired) return;
-
-            fetch(window.location.href, {
-                method: 'GET',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => {
-                // 방장이 취소해서 서버가 현재 페이지 접근을 막고 /main 등으로 리다이렉트 시키거나 에러(4xx, 5xx)를 뱉으면
-                if (res.redirected || res.url.includes('/main') || !res.ok) {
-                    handleRoomCancelled(); 
+                if (currentCountValue && newCountValue) {
+                    currentCountValue.innerHTML = newCountValue.innerHTML;
                 }
-            })
-            .catch(() => {});
-        }, 3000);
 
-    </script>
+                const currentMyStatusValue =
+                    currentCards[currentCards.length - 1].querySelector('.wait-summary-card__value');
+                const newMyStatusValue =
+                    newCards[newCards.length - 1].querySelector('.wait-summary-card__value');
+
+                if (currentMyStatusValue && newMyStatusValue) {
+                    currentMyStatusValue.textContent = newMyStatusValue.textContent;
+                }
+            }
+
+            // 참여자별 결제 상태 리스트 갱신
+            const currentList = document.querySelector('.wait-list');
+            const newList = doc.querySelector('.wait-list');
+
+            if (currentList && newList) {
+                currentList.innerHTML = newList.innerHTML;
+            }
+        })
+        .catch(() => {});
+    };
+
+    // 4. SSE 누락이나 네트워크 흔들림 보정용 폴링
+    setInterval(window.updatePaymentUI, 3000);
+</script>
 </th:block>
 </body>
 </html>
