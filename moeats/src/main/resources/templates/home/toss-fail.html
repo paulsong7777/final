@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 실패</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; background: #fff7ed; color: #1f2937; margin: 0; }
+        .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 60px; }
+        .card { background: #ffffff; border-radius: 18px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); padding: 28px; }
+        h1 { margin: 0 0 14px; color: #9a3412; }
+        .warn { color: #c2410c; font-weight: 700; margin-bottom: 18px; }
+        .row { padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
+        .label { font-weight: 700; color: #334155; display: inline-block; width: 160px; }
+        a { display: inline-block; margin-top: 24px; color: #FF8000; font-weight: 700; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>결제가 실패하거나 취소되었습니다.</h1>
+        <p class="warn">실패 정보는 payment_transaction 테이블에 기록됩니다. orderId가 없는 취소 케이스도 있을 수 있습니다.</p>
+
+        <div class="row"><span class="label">오류코드</span><span th:text="${code}">-</span></div>
+        <div class="row"><span class="label">오류메시지</span><span th:text="${message}">-</span></div>
+        <div class="row"><span class="label">orderId</span><span th:text="${orderId}">-</span></div>
+
+        <a th:href="@{/sandbox/toss}">테스트 페이지로 돌아가기</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>메뉴 정보 수정 - Mo-Eats</title>
+    <style>
+        .image-upload-box { border: 2px dashed var(--mo-line-strong); transition: all 0.2s ease; }
+        .image-upload-box:hover { border-color: var(--mo-primary); background-color: rgba(255, 128, 0, 0.04) !important; }
+        .image-upload-badge { background: rgba(37, 45, 89, 0.75); border-radius: 10px; }
+    </style>
+</head>
+
+<body>
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container">
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+                
+                <div class="mo-section text-center mb-5">
+                    <span class="mo-section-label">MENU EDIT</span>
+                    <h2 class="mo-section-title">메뉴 정보 수정</h2>
+                    <p class="mo-store-card__desc mt-2">등록된 메뉴의 정보를 최신 상태로 업데이트합니다.</p>
+                </div>
+
+                <div class="mo-surface-card p-4 p-md-5">
+                    
+                    <div class="mb-4 pb-3 border-bottom">
+                        <a th:href="@{/owners/menu}" class="text-decoration-none fw-bold" style="color: var(--mo-text-soft);">
+                            <i class="bi bi-arrow-left me-1"></i> 목록으로 돌아가기
+                        </a>
+                    </div>
+
+                    <form id="menuEditForm" enctype="multipart/form-data">
+                        <input type="hidden" name="menuIdx" th:value="${storeMenu?.menuIdx}">
+						<input type="hidden" name="menuStatus" th:value="${storeMenu?.menuStatus}">
+                        <div class="mb-4">
+                            <label class="mo-form-label">카테고리</label>
+                            <div class="d-flex gap-2">
+                                <select id="categorySelect" name="menuCategoryIdx" class="form-select mo-form-control flex-grow-1" required>
+                                    <option value="">카테고리를 선택하세요</option>
+                                    <option th:each="cat : ${storeMenuCategories}" 
+                                            th:value="${cat.menuCategoryIdx}" 
+                                            th:text="${cat.categoryName}"
+                                            th:selected="${storeMenu != null and cat.menuCategoryIdx == storeMenu.menuCategoryIdx}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+						    <label class="mo-form-label">메뉴 이미지</label>
+						    <input type="file" id="imageFile" name="menuFile" class="d-none" accept="image/*" onchange="previewImage(this)">
+						    
+						    <div id="imageContainer" class="image-upload-box position-relative d-flex align-items-center justify-content-center overflow-hidden rounded-4 bg-light" 
+						         style="height: 220px; cursor: pointer;"
+						         onclick="document.getElementById('imageFile').click()">
+						        
+						        <div id="guideMsg" th:classappend="${storeMenu.imageUrl != null and storeMenu.imageUrl != ''} ? 'd-none' : ''" class="text-center text-secondary">
+						            <div class="mb-2" style="font-size: 36px;">📷</div>
+						            <span class="fw-bold" style="color: var(--mo-text-soft);">클릭하여 사진 교체</span>
+						        </div>
+						        
+						        <img id="preview" th:src="${storeMenu.imageUrl}" 
+						             th:classappend="${storeMenu.imageUrl == null or storeMenu.imageUrl == ''} ? 'd-none' : ''"
+						             class="w-100 h-100 object-fit-cover" alt="미리보기">
+						        
+						        <div class="image-upload-badge position-absolute bottom-0 end-0 m-3 px-3 py-1 text-white fw-bold" style="font-size: 13px;">
+						            <i class="bi bi-pencil-fill me-1"></i> 변경
+						        </div>
+						    </div>
+						</div>
+
+                        <div class="mb-4">
+                            <label class="mo-form-label">메뉴 이름</label>
+                            <input type="text" name="menuName" th:value="${storeMenu?.menuName}" 
+                                   class="form-control mo-form-control fw-bold mo-valid-name" placeholder="메뉴 이름을 입력하세요" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="mo-form-label">가격</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="number" name="menuPrice" th:value="${storeMenu?.menuPrice}" 
+                                       class="form-control mo-form-control text-end flex-grow-1 fw-bold" placeholder="0" required>
+                                <span class="fw-bold" style="color: var(--mo-navy-strong); width: 24px;">원</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="mo-form-label">메뉴 설명</label>
+                            <textarea name="menuDescription" class="form-control mo-form-control pt-3 mo-valid-name" style="min-height: 120px; resize: none;" 
+                                      rows="3" th:text="${storeMenu?.menuDescription}" placeholder="메뉴 설명을 입력하세요"></textarea>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-5 pt-3 border-top">
+                            <button type="button" class="mo-btn mo-btn-outline flex-fill py-3 fs-6" onclick="history.back()">취소</button>
+                            <button type="button" id="submitBtn" class="mo-btn mo-btn-primary flex-fill py-3 fs-6" onclick="handleMenuUpdate()">수정 완료</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        async function handleMenuUpdate() {
+            const form = document.getElementById('menuEditForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (!form.menuName.value.trim()) { alert("메뉴 이름을 입력해 주세요."); return; }
+
+            if(!confirm("메뉴 정보를 수정하시겠습니까?")) return;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>수정 중...';
+
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+            
+            const formData = new FormData(form);
+
+            try {
+                // 컨트롤러 @PostMapping("/owners/menu/edit") 주소에 맞춤
+                const response = await fetch('/owners/menu/edit', {
+                    method: 'POST',
+                    headers: { ...(header && { [header]: token }) },
+                    body: formData
+                });
+
+                // 컨트롤러가 redirect를 반환하므로 response.ok 체크
+                if (response.ok) {
+                    alert("성공적으로 수정되었습니다.");
+                    location.href = '/owners/menu'; 
+                } else {
+                    alert("수정 실패");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "수정 완료";
+                }
+            } catch (error) {
+                alert("통신 에러가 발생했습니다.");
+                submitBtn.disabled = false;
+            }
+        }
+
+        function previewImage(input) {
+            const preview = document.getElementById('preview');
+            const guideMsg = document.getElementById('guideMsg');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                    if(guideMsg) guideMsg.classList.add('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        /*]]>*/
+    </script>
+</th:block>
+</body>
+</html>

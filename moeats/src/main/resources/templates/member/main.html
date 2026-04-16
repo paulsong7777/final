@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>가게 둘러보기</title>
+</head>
+<body>
+
+<section layout:fragment="pageContent">
+    <div class="container mo-main-page">
+
+        <section class="mo-main-search-section">
+            <div class="mo-main-searchbar" role="search">
+                <div class="mo-main-searchbar__brand" aria-hidden="true">M</div>
+
+                <label for="storeKeyword" class="visually-hidden">가게명 또는 메뉴명 검색</label>
+                <input type="text"
+                       id="storeKeyword"
+                       class="mo-main-searchbar__input"
+                       placeholder="함께 고르고, 쉽게 모이고, 한 번에 주문">
+
+                <button type="button"
+                        id="storeSearchBtn"
+                        class="mo-main-searchbar__submit"
+                        aria-label="검색">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"></circle>
+                        <path d="M16 16L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <section class="mo-section pt-0">
+            <div class="mo-section-head mb-3">
+                <div>
+                    <div class="mo-section-label">주문 가능한 가게</div>
+                    <h2 class="mo-section-title">지금 주문하기 좋은 가게</h2>
+                </div>
+                <div class="mo-list-toolbar">
+                    <span class="mo-list-toolbar__filter" id="activeCategoryLabel">전체</span>
+                    <span class="mo-list-toolbar__count">
+                        <strong id="visibleStoreCount">0</strong>개
+                    </span>
+                </div>
+            </div>
+
+            <div class="mo-store-category-bar">
+                <button type="button" class="mo-store-category-btn js-category-filter is-active" data-category="ALL">전체</button>
+                <button type="button" class="mo-store-category-btn js-category-filter" data-category="CHICKEN">치킨</button>
+                <button type="button" class="mo-store-category-btn js-category-filter" data-category="PIZZA">피자</button>
+                <button type="button" class="mo-store-category-btn js-category-filter" data-category="CHINESE">중식</button>
+                <button type="button" class="mo-store-category-btn js-category-filter" data-category="KOREAN">한식</button>
+                <button type="button" class="mo-store-category-btn js-category-filter" data-category="CAFE">카페</button>
+            </div>
+
+            <div class="row g-4" id="storeCardList"></div>
+
+            <div class="mo-empty-state d-none" id="storeEmptyState">
+                <h3 class="mo-empty-state__title">조건에 맞는 가게가 아직 없습니다</h3>
+                <p class="mo-empty-state__desc">검색어 또는 업종을 바꿔 다시 확인해 주세요.</p>
+                <button type="button" id="resetStoreFilterBtn" class="mo-btn mo-btn-primary">
+                    전체 다시 보기
+                </button>
+            </div>
+        </section>
+
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
+    <script th:src="@{/js/storelist-ajax.js}"></script>
+</th:block>
+
+</body>
+</html>

@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>같이 주문하기</title>
+
+    <th:block layout:fragment="pageStyles">
+        <style>
+            .rd-page-shell {
+                padding-bottom: 40px;
+                overflow-x: hidden;
+            }
+
+            .rd-page-stack,
+            .rd-main-grid,
+            .rd-left,
+            .rd-right,
+            .rd-panel,
+            .rd-card,
+            .rd-item-card,
+            .rd-summary-card {
+                min-width: 0;
+            }
+
+            .rd-page-stack {
+                display: grid;
+                gap: 24px;
+            }
+
+            .rd-top-card {
+                padding: 24px;
+                border-radius: 28px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                box-shadow: 0 16px 34px rgba(37, 45, 89, 0.05);
+            }
+
+            .rd-top-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+            }
+
+            .rd-top-title {
+                margin: 0;
+                color: var(--mo-navy-strong);
+                font-size: clamp(2rem, 2.3vw, 2.8rem);
+                line-height: 1.08;
+                letter-spacing: -0.05em;
+                font-weight: 800;
+            }
+
+            .rd-top-subtitle {
+                margin: 10px 0 0;
+                color: var(--mo-text-soft);
+                font-size: 14px;
+                line-height: 1.65;
+            }
+
+            .rd-chip-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: flex-end;
+            }
+
+            .rd-chip {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 34px;
+                padding: 0 14px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 800;
+                line-height: 1;
+                letter-spacing: -0.01em;
+                white-space: nowrap;
+            }
+
+            .rd-chip--primary {
+                background: rgba(255, 128, 0, 0.12);
+                color: var(--mo-primary);
+            }
+
+            .rd-chip--navy {
+                background: rgba(42, 54, 89, 0.08);
+                color: var(--mo-navy-strong);
+            }
+
+            .rd-chip--success {
+                background: rgba(25, 135, 84, 0.12);
+                color: #198754;
+            }
+
+            .rd-chip--danger {
+                background: rgba(248, 94, 40, 0.12);
+                color: var(--mo-accent);
+            }
+
+            .rd-code-section {
+                margin-top: 20px;
+                padding: 18px 20px;
+                border: 1px solid rgba(255, 128, 0, 0.18);
+                border-radius: 22px;
+                background: rgba(255, 128, 0, 0.04);
+            }
+
+            .rd-code-section__label {
+                color: #8A93A6;
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+            }
+
+            .rd-code-section__main {
+                margin-top: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .rd-code-section__value {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 56px;
+                padding: 0 18px;
+                border-radius: 18px;
+                background: #fff;
+                color: var(--mo-primary);
+                font-size: 1.32rem;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                box-shadow: 0 10px 24px rgba(255, 128, 0, 0.08);
+            }
+
+            .rd-code-section__desc {
+                margin: 10px 0 0;
+                color: var(--mo-text-soft);
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .rd-flow-wrap {
+                margin-top: 18px;
+            }
+
+            .rd-flow-label {
+                margin-bottom: 10px;
+                color: #8A93A6;
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+            }
+
+            .rd-flow-bar {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .rd-flow-step {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                min-height: 54px;
+                padding: 0 12px;
+                border-radius: 16px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                min-width: 0;
+                text-align: center;
+            }
+
+            .rd-flow-step--current {
+                border-color: rgba(255, 128, 0, 0.28);
+                background: rgba(255, 128, 0, 0.06);
+            }
+
+            .rd-flow-step--done {
+                border-color: rgba(25, 135, 84, 0.22);
+                background: rgba(25, 135, 84, 0.06);
+            }
+
+            .rd-flow-step__num {
+                width: 28px;
+                height: 28px;
+                border-radius: 999px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                background: rgba(42, 54, 89, 0.08);
+                color: var(--mo-navy-strong);
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .rd-flow-step--current .rd-flow-step__num {
+                background: var(--mo-primary);
+                color: #fff;
+            }
+
+            .rd-flow-step--done .rd-flow-step__num {
+                background: #198754;
+                color: #fff;
+            }
+
+            .rd-flow-step__title {
+                color: var(--mo-navy-strong);
+                font-size: 14px;
+                font-weight: 800;
+                line-height: 1.2;
+                white-space: normal;
+                word-break: keep-all;
+            }
+
+            .rd-summary-grid {
+                margin-top: 18px;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .rd-summary-card {
+                padding: 18px;
+                border-radius: 22px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                box-shadow: 0 10px 24px rgba(37, 45, 89, 0.04);
+            }
+
+            .rd-summary-card__label {
+                color: #8A93A6;
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+            }
+
+            .rd-summary-card__value {
+                margin-top: 8px;
+                color: var(--mo-navy-strong);
+                font-size: 1.45rem;
+                font-weight: 800;
+                line-height: 1.2;
+                letter-spacing: -0.03em;
+                word-break: keep-all;
+            }
+
+            .rd-summary-card__desc {
+                margin-top: 8px;
+                color: var(--mo-text-soft);
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .rd-main-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.92fr);
+                gap: 24px;
+                align-items: start;
+            }
+
+            .rd-left,
+            .rd-right {
+                display: grid;
+                gap: 24px;
+            }
+
+            .rd-panel {
+                padding: 24px;
+                border-radius: 26px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: #fff;
+                box-shadow: 0 16px 34px rgba(37, 45, 89, 0.05);
+            }
+
+            .rd-panel__head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 14px;
+            }
+
+            .rd-panel__title {
+                margin: 0;
+                color: var(--mo-navy-strong);
+                font-size: 1.9rem;
+                font-weight: 800;
+                letter-spacing: -0.04em;
+                line-height: 1.16;
+            }
+
+            .rd-panel__desc {
+                margin: 8px 0 0;
+                color: var(--mo-text-soft);
+                font-size: 14px;
+                line-height: 1.65;
+            }
+
+            .rd-list {
+                display: grid;
+                gap: 12px;
+                margin-top: 18px;
+            }
+
+            .rd-card {
+                padding: 18px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                border-radius: 22px;
+                background: #fff;
+            }
+
+            .rd-card--me {
+                border-color: rgba(255, 128, 0, 0.26);
+                background: linear-gradient(180deg, rgba(255, 128, 0, 0.05), #fff);
+            }
+
+            .rd-card-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .rd-name {
+                color: var(--mo-navy-strong);
+                font-size: 15px;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                word-break: keep-all;
+            }
+
+            .rd-badge-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            .rd-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 32px;
+                padding: 0 12px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 800;
+                line-height: 1;
+                white-space: nowrap;
+            }
+
+            .rd-badge--leader {
+                background: rgba(255, 128, 0, 0.12);
+                color: var(--mo-primary);
+            }
+
+            .rd-badge--participant {
+                background: rgba(42, 54, 89, 0.08);
+                color: var(--mo-navy-strong);
+            }
+
+            .rd-badge--selected {
+                background: rgba(25, 135, 84, 0.12);
+                color: #198754;
+            }
+
+            .rd-badge--not-selected {
+                background: rgba(248, 94, 40, 0.12);
+                color: var(--mo-accent);
+            }
+
+            .rd-amount {
+                color: var(--mo-navy-strong);
+                font-size: 1rem;
+                font-weight: 800;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            .rd-inline-form {
+                margin: 0;
+            }
+
+            .rd-inline-form .mo-btn {
+                min-height: 42px;
+            }
+
+            .rd-muted {
+                margin: 10px 0 0;
+                color: var(--mo-text-soft);
+                font-size: 13px;
+                line-height: 1.65;
+            }
+
+            .rd-empty {
+                padding: 18px 20px;
+                border: 1px dashed rgba(42, 54, 89, 0.16);
+                border-radius: 18px;
+                background: rgba(42, 54, 89, 0.03);
+                color: var(--mo-text-soft);
+                font-size: 14px;
+                line-height: 1.75;
+            }
+
+            .rd-item-list {
+                display: grid;
+                gap: 12px;
+                margin-top: 18px;
+            }
+
+            .rd-item-card {
+                padding: 18px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                border-radius: 22px;
+                background: #fff;
+            }
+
+            .rd-item-name {
+                color: var(--mo-navy-strong);
+                font-size: 15px;
+                font-weight: 800;
+                word-break: keep-all;
+            }
+
+            .rd-item-meta {
+                margin-top: 6px;
+                color: var(--mo-text-soft);
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .rd-divider {
+                height: 1px;
+                margin: 18px 0;
+                background: rgba(42, 54, 89, 0.08);
+            }
+
+            .rd-summary-box {
+                padding: 18px 20px;
+                border-radius: 22px;
+                background: var(--mo-navy-strong);
+                color: #fff;
+                box-shadow: 0 18px 32px rgba(37, 45, 89, 0.14);
+            }
+
+            .rd-summary-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .rd-summary-row + .rd-summary-row {
+                margin-top: 12px;
+            }
+
+            .rd-summary-label {
+                font-size: 13px;
+                opacity: .78;
+            }
+
+            .rd-summary-value {
+                font-size: 1rem;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                white-space: nowrap;
+            }
+
+            .rd-summary-value strong {
+                font-size: 1.3rem;
+            }
+
+            .rd-action-stack {
+                display: grid;
+                gap: 12px;
+                margin-top: 18px;
+            }
+
+            .rd-action-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .rd-note {
+                margin: 0;
+                color: var(--mo-text-soft);
+                font-size: 13px;
+                line-height: 1.7;
+            }
+
+            .rd-note--strong {
+                color: var(--mo-navy-strong);
+                font-weight: 700;
+            }
+
+            .rd-aside-box {
+                padding: 18px;
+                border-radius: 22px;
+                border: 1px solid rgba(42, 54, 89, 0.08);
+                background: linear-gradient(180deg, rgba(42, 54, 89, 0.04), #fff);
+            }
+
+            .rd-aside-box__title {
+                color: var(--mo-navy-strong);
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+            .rd-aside-box__desc {
+                margin-top: 8px;
+                color: var(--mo-text-soft);
+                font-size: 13px;
+                line-height: 1.7;
+            }
+	
+            .rd-mobile-sticky {
+                display: none;
+            }
+
+            @media (max-width: 991.98px) {
+                .rd-top-head {
+                    flex-direction: column;
+                }
+
+                .rd-chip-group {
+                    justify-content: flex-start;
+                }
+
+                .rd-summary-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .rd-main-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 767.98px) {
+                .rd-page-shell {
+                    padding-bottom: 104px;
+                }
+
+                .rd-top-card,
+                .rd-panel,
+                .rd-card,
+                .rd-item-card,
+                .rd-summary-card,
+                .rd-code-section,
+                .rd-aside-box {
+                    padding: 16px;
+                    border-radius: 20px;
+                }
+
+                .rd-top-title {
+                    font-size: 2rem;
+                }
+
+                .rd-top-subtitle,
+                .rd-panel__desc,
+                .rd-summary-card__desc,
+                .rd-muted,
+                .rd-note,
+                .rd-code-section__desc {
+                    font-size: 13px;
+                }
+
+                .rd-panel__title {
+                    font-size: 1.55rem;
+                }
+
+                .rd-code-section__main,
+                .rd-card-head {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .rd-code-section__value {
+                    width: 100%;
+                    justify-content: center;
+                    letter-spacing: 0.14em;
+                    font-size: 1.2rem;
+                }
+
+                .rd-code-section .mo-btn {
+                    width: 100%;
+                }
+
+                .rd-flow-bar {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 6px;
+                    overflow: visible;
+                    padding-bottom: 0;
+                }
+
+                .rd-flow-step {
+                    min-height: 58px;
+                    padding: 8px 4px;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+
+                .rd-flow-step__num {
+                    width: 24px;
+                    height: 24px;
+                    font-size: 11px;
+                }
+
+                .rd-flow-step__title {
+                    font-size: 11px;
+                    line-height: 1.15;
+                }
+
+                .rd-amount {
+                    text-align: right;
+                    white-space: normal;
+                }
+
+                .rd-action-row,
+                .rd-action-row form,
+                .rd-action-row .mo-btn {
+                    width: 100%;
+                }
+
+                .rd-action-row {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                }
+
+                .rd-mobile-sticky {
+                    position: fixed;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    z-index: 1040;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    padding: 14px 16px;
+                    background: rgba(37, 45, 89, 0.96);
+                    color: #fff;
+                    box-shadow: 0 -12px 30px rgba(22, 28, 46, 0.22);
+                    backdrop-filter: blur(10px);
+                }
+
+                .rd-mobile-sticky__meta {
+                    min-width: 0;
+                }
+
+                .rd-mobile-sticky__title {
+                    font-size: 12px;
+                    font-weight: 800;
+                    opacity: .74;
+                    letter-spacing: .06em;
+                    text-transform: uppercase;
+                }
+
+                .rd-mobile-sticky__desc {
+                    margin-top: 4px;
+                    font-size: 14px;
+                    font-weight: 800;
+                    line-height: 1.35;
+                    letter-spacing: -0.02em;
+                }
+
+                .rd-mobile-sticky__action,
+                .rd-mobile-sticky__action form,
+                .rd-mobile-sticky__action .mo-btn {
+                    width: 100%;
+                }
+
+                .rd-mobile-sticky__action {
+                    min-width: 112px;
+                    display: flex;
+                    justify-content: flex-end;
+                }
+            }
+            
+		    .rd-top-info-grid {
+		        margin-top: 20px;
+		        display: grid;
+		        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		        gap: 14px;
+		        align-items: stretch;
+		    }
+		
+		    .rd-info-card {
+		        min-width: 0;
+		        padding: 20px 22px;
+		        border-radius: 22px;
+		        border: 1px solid rgba(42, 54, 89, 0.08);
+		        background: #fff;
+		        box-shadow: 0 10px 24px rgba(37, 45, 89, 0.04);
+		    }
+		
+		    .rd-info-card--code {
+		        border-color: rgba(255, 128, 0, 0.18);
+		        background: rgba(255, 128, 0, 0.04);
+		    }
+		
+		    .rd-info-card--store {
+		        border-color: rgba(42, 54, 89, 0.10);
+		        background: linear-gradient(180deg, rgba(42, 54, 89, 0.03), #fff);
+		    }
+		
+		    .rd-info-card__label {
+		        color: #8A93A6;
+		        font-size: 12px;
+		        font-weight: 800;
+		        letter-spacing: 0.04em;
+		    }
+		
+		    .rd-info-card__main {
+		        margin-top: 10px;
+		        display: flex;
+		        align-items: center;
+		        justify-content: space-between;
+		        gap: 12px;
+		        flex-wrap: wrap;
+		    }
+		
+		    .rd-info-card__code {
+		        display: inline-flex;
+		        align-items: center;
+		        justify-content: center;
+		        min-height: 72px;
+		        padding: 0 22px;
+		        border-radius: 20px;
+		        background: #fff;
+		        color: var(--mo-primary);
+		        font-size: clamp(2rem, 2.8vw, 3rem);
+		        font-weight: 900;
+		        letter-spacing: 0.22em;
+		        line-height: 1;
+		        box-shadow: 0 12px 28px rgba(255, 128, 0, 0.10);
+		    }
+		
+		    .rd-info-card__desc {
+		        margin: 10px 0 0;
+		        color: var(--mo-text-soft);
+		        font-size: 13px;
+		        line-height: 1.6;
+		    }
+		
+		    .rd-store-name {
+		        margin-top: 10px;
+		        color: var(--mo-navy-strong);
+		        font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+		        font-weight: 800;
+		        line-height: 1.35;
+		        letter-spacing: -0.03em;
+		        word-break: keep-all;
+		    }
+		
+		    .rd-store-meta {
+		        margin-top: 12px;
+		        display: flex;
+		        flex-wrap: wrap;
+		        gap: 8px;
+		    }
+		
+		    .rd-store-meta__item {
+		        display: inline-flex;
+		        align-items: center;
+		        justify-content: center;
+		        min-height: 32px;
+		        padding: 0 12px;
+		        border-radius: 999px;
+		        background: rgba(42, 54, 89, 0.08);
+		        color: var(--mo-navy-strong);
+		        font-size: 12px;
+		        font-weight: 800;
+		        line-height: 1;
+		        white-space: nowrap;
+		    }
+		
+		    @media (max-width: 767.98px) {
+		        .rd-top-info-grid {
+		            grid-template-columns: 1fr;
+		            gap: 12px;
+		        }
+		
+		        .rd-info-card,
+		        .rd-info-card--code,
+		        .rd-info-card--store {
+		            padding: 16px;
+		            border-radius: 20px;
+		        }
+		
+		        .rd-info-card__main {
+		            flex-direction: column;
+		            align-items: stretch;
+		        }
+		
+		        .rd-info-card__code {
+		            width: 100%;
+		            min-height: 68px;
+		            font-size: 1.9rem;
+		            letter-spacing: 0.18em;
+		        }
+		
+		        .rd-info-card__main .mo-btn {
+		            width: 100%;
+		        }
+		    }
+		</style>
+            
+    </th:block>
+</head>
+<body>
+<section layout:fragment="pageContent"
+         id="roomDetailRoot"
+         class="rd-page-shell"
+         th:attr="data-room-code=${orderRoom.roomCode},
+         			data-store-idx=${orderRoom.storeIdx},
+                  data-room-status=${orderRoom.roomStatus},
+                  data-room-grand-total=${roomGrandTotal},
+                  data-minimum-order-amount=${store != null ? store.minimumOrderAmount : 0}">
+    <section class="mo-section rd-page-stack">
+        <div class="rd-top-card">
+            <div class="rd-top-head">
+                <div>
+                    <h1 class="rd-top-title">같이 주문하기</h1>
+                    <p class="rd-top-subtitle">
+                        지금 함께 주문 중인 방입니다.
+                    </p>
+                </div>
+
+                <div class="rd-chip-group">
+                    <span class="rd-chip"
+                          th:classappend="${isLeader} ? ' rd-chip--primary' : ' rd-chip--navy'"
+                          th:text="${isLeader} ? '방장' : '참여자'">방장</span>
+                    <span class="rd-chip"
+                          th:classappend="${myState.selectionStatus == 'SELECTED'} ? ' rd-chip--success' : ' rd-chip--danger'"
+                          th:text="${myState.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 전</span>
+                </div>
+            </div>
+
+            <div class="rd-top-info-grid">
+			    <div class="rd-info-card rd-info-card--code">
+			        <div class="rd-info-card__label">방 코드</div>
+			        <div class="rd-info-card__main">
+			            <span class="rd-info-card__code"
+			                  th:text="${orderRoom.roomCode}">215341</span>
+			            <button type="button"
+			                    class="mo-btn mo-btn-outline js-copy-room-code"
+			                    th:data-room-code="${orderRoom.roomCode}">코드 복사</button>
+			        </div>
+			        <p class="rd-info-card__desc">코드 공유로 주문에 초대해 보세요.</p>
+			    </div>
+			
+			    <div class="rd-info-card rd-info-card--store" th:if="${store != null}">
+			        <div class="rd-info-card__label">현재 주문 가게</div>
+			        <div class="rd-store-name" th:text="${store.storeName}">가게명</div>
+			
+			        <div class="rd-store-meta">
+			            <span class="rd-store-meta__item"
+			                  th:text="'최소주문 ' + ${#numbers.formatInteger(store.minimumOrderAmount, 0, 'COMMA')} + '원'">
+			                최소주문 15,000원
+			            </span>
+			
+
+			        </div>
+			
+			        <p class="rd-info-card__desc">
+			            현재 이 가게 기준으로 함께 주문을 진행 중입니다.
+			        </p>
+			    </div>
+			</div>
+
+            <div class="rd-flow-wrap">
+                <div class="rd-flow-label">현재 진행 단계</div>
+                <div class="rd-flow-bar">
+                    <div class="rd-flow-step"
+                         th:classappend="${orderRoom.roomStatus == 'OPEN'} ? ' rd-flow-step--current' : ''">
+                        <div class="rd-flow-step__num">1</div>
+                        <div class="rd-flow-step__title">방 생성</div>
+                    </div>
+
+                    <div class="rd-flow-step"
+                         th:classappend="${orderRoom.roomStatus == 'SELECTING'} ? ' rd-flow-step--current' : (${orderRoom.roomStatus == 'PAYMENT_PENDING' or orderRoom.roomStatus == 'ORDER_CONFIRMED'} ? ' rd-flow-step--done' : '')">
+                        <div class="rd-flow-step__num">2</div>
+                        <div class="rd-flow-step__title">메뉴 선택</div>
+                    </div>
+
+                    <div class="rd-flow-step"
+                         th:classappend="${orderRoom.roomStatus == 'PAYMENT_PENDING'} ? ' rd-flow-step--current' : (${orderRoom.roomStatus == 'ORDER_CONFIRMED'} ? ' rd-flow-step--done' : '')">
+                        <div class="rd-flow-step__num">3</div>
+                        <div class="rd-flow-step__title">결제 진행</div>
+                    </div>
+
+                    <div class="rd-flow-step"
+                         th:classappend="${orderRoom.roomStatus == 'ORDER_CONFIRMED'} ? ' rd-flow-step--current rd-flow-step--done' : ''">
+                        <div class="rd-flow-step__num">4</div>
+                        <div class="rd-flow-step__title">주문 확정</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rd-summary-grid">
+                <div class="rd-summary-card">
+                    <div class="rd-summary-card__label">결제 방식</div>
+                    <div class="rd-summary-card__value"
+                         th:text="${orderRoom.paymentMode == 'REPRESENTATIVE'} ? '대표결제' : '각자결제'">각자결제</div>
+                </div>
+
+                <div class="rd-summary-card">
+                    <div class="rd-summary-card__label">참여 진행</div>
+                    <div class="rd-summary-card__value">
+                        <span th:text="${completedCount}">0</span>
+                        /
+                        <span th:text="${participantCount}">2</span>
+                        명 선택 완료
+                    </div>
+                </div>
+
+                <div class="rd-summary-card">
+                    <div class="rd-summary-card__label">팀 총액</div>
+                    <div class="rd-summary-card__value"
+                         th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')} + '원'">128,000원</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rd-main-grid">
+            <div class="rd-left">
+                <div class="rd-panel">
+                    <div class="rd-panel__head">
+                        <div>
+                            <h2 class="rd-panel__title">참여자 상태</h2>
+                        </div>
+                    </div>
+
+                    <div class="rd-list">
+                        <div class="rd-card rd-card--me">
+                            <div class="rd-card-head">
+                                <div>
+                                    <div class="rd-name" th:text="${session.member.memberNickname} + ' (나)'">유저01 (나)</div>
+                                    <div class="rd-badge-row">
+                                        <span class="rd-badge"
+                                              th:classappend="${myState.participantRole == 'LEADER'} ? ' rd-badge--leader' : ' rd-badge--participant'"
+                                              th:text="${myState.participantRole == 'LEADER'} ? '방장' : '참여자'">방장</span>
+                                        <span class="rd-badge"
+                                              th:classappend="${myState.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
+                                              th:text="${myState.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 완료</span>
+                                    </div>
+                                </div>
+                                <div class="rd-amount"
+                                     th:text="${#numbers.formatInteger(myCartTotal, 0, 'COMMA')} + '원'">108,000원</div>
+                            </div>
+                            <p class="rd-muted">내 장바구니 기준 금액입니다. 메뉴를 수정하면 선택 완료 상태가 다시 해제됩니다.</p>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(roomParticipants)}" class="rd-empty">아직 다른 참여자가 없습니다.</div>
+
+                        <div th:each="participant : ${roomParticipants}" class="rd-card">
+                            <div class="rd-card-head">
+                                <div>
+                                    <div class="rd-name" th:text="${participant.member.memberNickname}">유저02</div>
+                                    <div class="rd-badge-row">
+                                        <span class="rd-badge"
+                                              th:classappend="${participant.roomParticipant.participantRole == 'LEADER'} ? ' rd-badge--leader' : ' rd-badge--participant'"
+                                              th:text="${participant.roomParticipant.participantRole == 'LEADER'} ? '방장' : '참여자'">참여자</span>
+                                        <span class="rd-badge"
+                                              th:classappend="${participant.roomParticipant.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
+                                              th:text="${participant.roomParticipant.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 완료</span>
+                                    </div>
+                                </div>
+
+                                <form th:if="${isLeader and participant.roomParticipant.participantRole != 'LEADER' and (orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING')}"
+                                      class="rd-inline-form js-confirm-kick"
+                                      th:action="@{/rooms/code/{code}/kick(code=${orderRoom.roomCode})}"
+                                      method="post"
+                                      th:data-target-name="${participant.member.memberNickname}">
+                                    <input type="hidden" name="kickMemberIdx" th:value="${participant.member.memberIdx}">
+                                    <button type="submit" class="mo-btn mo-btn-outline">내보내기</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rd-panel">
+                    <div class="rd-panel__head">
+                        <div>
+                            <h2 class="rd-panel__title">내 장바구니</h2>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(myCartItems)}" class="rd-empty" style="margin-top: 18px;">
+                        아직 담은 메뉴가 없습니다. 먼저 메뉴를 고른 뒤 주문 확인 단계로 넘어가면 됩니다.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(myCartItems)}" class="rd-item-list">
+                        <div th:each="item : ${myCartItems}" class="rd-item-card">
+                            <div class="rd-card-head">
+                                <div>
+                                    <div class="rd-item-name" th:text="${item.storeMenu.menuName}">탕수육</div>
+                                    <div class="rd-item-meta">
+                                        수량 <span th:text="${item.groupCartItem.itemQuantity}">6</span>개
+                                    </div>
+                                </div>
+                                <div class="rd-amount"
+                                     th:text="${#numbers.formatInteger(item.groupCartItem.itemTotalAmount, 0, 'COMMA')} + '원'">108,000원</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rd-divider"></div>
+
+                    <div class="rd-summary-box">
+                        <div class="rd-summary-row">
+                            <span class="rd-summary-label">내 주문 합계</span>
+                            <span class="rd-summary-value">
+                                <strong th:text="${#numbers.formatInteger(myCartTotal, 0, 'COMMA')}">108,000</strong>원
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="rd-action-stack" th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
+
+					    <div class="rd-action-row"
+					         th:if="${myState.selectionStatus != 'SELECTED' and #lists.isEmpty(myCartItems)}">
+					        <a class="mo-btn mo-btn-primary"
+					           th:href="@{/rooms/code/{code}/cart(code=${orderRoom.roomCode})}">
+					            메뉴 담으러 가기
+					        </a>
+					    </div>
+					
+					    <div class="rd-action-row"
+						     th:if="${myState.selectionStatus != 'SELECTED' and !#lists.isEmpty(myCartItems)}">
+						    <a class="mo-btn mo-btn-primary"
+						       th:href="@{|/rooms/code/${orderRoom.roomCode}/confirm|}">
+						        주문 확인하기
+						    </a>
+						</div>
+					
+					    <div class="rd-action-row" th:if="${myState.selectionStatus == 'SELECTED'}">
+					        <form class="rd-inline-form js-confirm-unselect"
+					              th:action="@{/rooms/code/{code}/unselect(code=${orderRoom.roomCode})}"
+					              method="post">
+					            <button type="submit" class="mo-btn mo-btn-primary">주문 다시 확인하기</button>
+					        </form>
+					    </div>
+					
+					    <p class="rd-note"
+					       th:if="${myState.selectionStatus != 'SELECTED' and #lists.isEmpty(myCartItems)}">
+					        아직 담은 메뉴가 없습니다. 먼저 메뉴를 담은 뒤 주문 확인 단계로 이동합니다.
+					    </p>
+					
+					    <p class="rd-note" th:if="${myState.selectionStatus == 'SELECTED'}">다시 확인하면 메뉴를 수정할 수 있습니다.</p>
+					</div>
+                </div>
+            </div>
+
+            <div class="rd-right">
+                <div class="rd-panel">
+                    <div class="rd-panel__head">
+                        <div>
+                            <h2 class="rd-panel__title">타인 장바구니 요약</h2>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(otherCartItems)}" class="rd-empty" style="margin-top: 18px;">
+                        다른 참여자의 메뉴가 아직 없습니다.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(otherCartItems)}" class="rd-list">
+                        <div th:each="participantCart : ${otherCartItems}" class="rd-card">
+                            <div class="rd-card-head">
+                                <div>
+                                    <div class="rd-name" th:text="${participantCart.member.memberNickname}">유저02</div>
+                                    <div class="rd-badge-row">
+                                        <span class="rd-badge"
+                                              th:classappend="${participantCart.roomParticipant.selectionStatus == 'SELECTED'} ? ' rd-badge--selected' : ' rd-badge--not-selected'"
+                                              th:text="${participantCart.roomParticipant.selectionStatus == 'SELECTED'} ? '선택 완료' : '선택 전'">선택 완료</span>
+                                    </div>
+                                </div>
+                                <div class="rd-amount"
+                                     th:text="${#numbers.formatInteger(participantCart.totalAmount, 0, 'COMMA')} + '원'">20,000원</div>
+                            </div>
+
+                            <div class="rd-muted" th:if="${#lists.isEmpty(participantCart.items)}">
+                                아직 담은 메뉴가 없습니다.
+                            </div>
+
+                            <div class="rd-badge-row" th:unless="${#lists.isEmpty(participantCart.items)}">
+                                <span th:each="item : ${participantCart.items}"
+                                      class="rd-badge rd-badge--participant"
+                                      th:text="${item.storeMenu.menuName} + ' × ' + ${item.groupCartItem.itemQuantity}">짬뽕 × 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rd-panel">
+                    <div class="rd-panel__head">
+                        <div>
+                            <h2 class="rd-panel__title">결제 진입</h2>
+                        </div>
+                    </div>
+
+
+                    <div class="rd-summary-box" style="margin-top: 18px;">
+                    <p class="rd-note" style="margin-top: 12px;" th:if="${store != null}">
+					    최소주문금액은
+					    <strong th:text="${#numbers.formatInteger(store.minimumOrderAmount, 0, 'COMMA')} + '원'">15,000원</strong>
+					    입니다.
+					</p>
+					<p class="rd-note"
+					   th:if="${store != null and roomGrandTotal < store.minimumOrderAmount}">
+					    현재 기준으로
+					    <strong th:text="${#numbers.formatInteger(store.minimumOrderAmount - roomGrandTotal, 0, 'COMMA')} + '원'">3,000원</strong>
+					    이 더 필요합니다.
+					</p>
+                        <div class="rd-summary-row">
+                            <span class="rd-summary-label">선택 완료 인원</span>
+                            <span class="rd-summary-value">
+                                <strong th:text="${completedCount}">2</strong>/<span th:text="${participantCount}">2</span>
+                            </span>
+                        </div>
+                        <div class="rd-summary-row">
+                            <span class="rd-summary-label">팀 총액</span>
+                            <span class="rd-summary-value">
+                                <strong th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')}">128,000</strong>원
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="rd-action-stack" th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
+                        <div th:if="${isLeader}">
+                            <div class="rd-action-row">
+							    <form id="checkoutForm"
+							          th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
+							          method="post"
+							          style="display: none;"></form>
+							
+							    <button type="button"
+							            id="dynamicCheckoutBtn"
+							            class="mo-btn"
+							            th:classappend="${allSelected} ? 'mo-btn-primary' : 'js-alert-unselected'"
+							            th:style="${allSelected} ? '' : 'background-color: #f1f3f5; color: #8A93A6; border: 1px solid #e9ecef; cursor: pointer;'"
+							            th:text="${allSelected} ? '결제 시작하기' : '결제 진행 대기'"
+							            th:data-all-selected="${allSelected}">
+							    </button>
+							
+							    <form class="rd-inline-form js-confirm-cancel"
+							          th:action="@{/rooms/code/{code}/close(code=${orderRoom.roomCode})}"
+							          method="post">
+							        <button type="submit" class="mo-btn mo-btn-outline">주문방 종료</button>
+							    </form>
+							</div>
+
+                        </div>
+
+                        <div th:unless="${isLeader}">
+                            <div class="rd-aside-box">
+                                <div class="rd-aside-box__title">방장 진행 대기</div>
+                                <div class="rd-aside-box__desc">방장이 결제를 시작하면 다음 단계로 함께 이동합니다. 지금은 선택 상태만 유지해 주세요.</div>
+                            </div>
+
+                            <div class="rd-action-row">
+                                <form class="rd-inline-form js-confirm-leave"
+                                      th:action="@{/rooms/code/{code}/leave(code=${orderRoom.roomCode})}"
+                                      method="post">
+                                    <button type="submit" class="mo-btn mo-btn-outline">방 나가기</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rd-action-stack" th:if="${orderRoom.roomStatus == 'PAYMENT_PENDING'}">
+                        <div class="rd-aside-box">
+                            <div class="rd-aside-box__title">결제 진행 중</div>
+                            <div class="rd-aside-box__desc">
+                                결제 단계가 시작되어 협업 수정은 잠긴 상태입니다. 이후 흐름은 결제 화면과 주문 상세 화면에서 이어집니다.
+                            </div>
+                        </div>
+                        <div class="rd-action-row mt-2" th:if="${orderIdx != null}">
+                            <a th:href="@{/orders/{id}/payment(id=${orderIdx})}" class="mo-btn mo-btn-primary w-100 text-center text-decoration-none">
+                                결제 화면으로 돌아가기
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="rd-action-stack" th:if="${orderRoom.roomStatus == 'ORDER_CONFIRMED'}">
+                        <div class="rd-aside-box">
+                            <div class="rd-aside-box__title">주문 확정 완료</div>
+                            <div class="rd-aside-box__desc">
+                                결제가 끝났습니다. 이제 주문 상세 화면에서 점주 처리 상태를 실시간으로 확인하면 됩니다.
+                            </div>
+                        </div>
+                        <div class="rd-action-row mt-2" th:if="${orderIdx != null}">
+                            <a th:href="@{/orders/{id}(id=${orderIdx})}" class="mo-btn mo-btn-primary w-100 text-center text-decoration-none">
+                                주문 상세 화면으로 이동
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rd-mobile-sticky"
+             th:if="${orderRoom.roomStatus == 'OPEN' or orderRoom.roomStatus == 'SELECTING'}">
+            <div class="rd-mobile-sticky__meta">
+                <div class="rd-mobile-sticky__title">주문 요약</div>
+                <div class="rd-mobile-sticky__desc">
+                    선택 완료 <span th:text="${completedCount}">2</span>/<span th:text="${participantCount}">2</span>
+                    · 팀 총액 <span th:text="${#numbers.formatInteger(roomGrandTotal, 0, 'COMMA')} + '원'">128,000원</span>
+                </div>
+            </div>
+
+            <div class="rd-mobile-sticky__action" th:if="${isLeader}">
+                <form class="rd-inline-form js-confirm-checkout"
+                      th:if="${allSelected}"
+                      th:action="@{/rooms/code/{code}/checkout(code=${orderRoom.roomCode})}"
+                      method="post">
+                    <button type="submit" class="mo-btn mo-btn-primary">결제 시작</button>
+                </form>
+			
+				<button type="button"
+			        class="mo-btn js-alert-unselected"
+			        style="background-color: #f1f3f5; color: #8A93A6; border: 1px solid #e9ecef; cursor: pointer; width: 100%;"
+			        th:unless="${allSelected}">결제 진행 대기</button>
+            </div>
+
+            <div class="rd-mobile-sticky__action" th:unless="${isLeader}">
+                <div class="small text-secondary text-end">
+                    방장이 결제를 시작하면 다음 단계로 이어집니다.
+                </div>
+            </div>
+        </div>
+        <div class="rd-mobile-sticky"
+             th:if="${orderRoom.roomStatus == 'PAYMENT_PENDING' and orderIdx != null}">
+            <div class="rd-mobile-sticky__meta">
+                <div class="rd-mobile-sticky__title" style="color: #fff;">결제 진행 중</div>
+                <div class="rd-mobile-sticky__desc" style="color: rgba(255,255,255,0.8);">결제 화면에서 완료해 주세요.</div>
+            </div>
+            <div class="rd-mobile-sticky__action">
+                <a th:href="@{/orders/{id}/payment(id=${orderIdx})}" class="mo-btn mo-btn-primary w-100 text-center text-decoration-none">
+                    결제 이동
+                </a>
+            </div>
+        </div>
+
+        <div class="rd-mobile-sticky"
+             th:if="${orderRoom.roomStatus == 'ORDER_CONFIRMED' and orderIdx != null}">
+            <div class="rd-mobile-sticky__meta">
+                <div class="rd-mobile-sticky__title" style="color: #fff;">주문 확정 완료</div>
+                <div class="rd-mobile-sticky__desc" style="color: rgba(255,255,255,0.8);">주문 상세 내역을 확인하세요.</div>
+            </div>
+            <div class="rd-mobile-sticky__action">
+                <a th:href="@{/orders/{id}(id=${orderIdx})}" class="mo-btn mo-btn-primary w-100 text-center text-decoration-none">
+                    상세 이동
+                </a>
+            </div>
+        </div>
+        </section>
+</section>
+
+<th:block layout:fragment="pageScripts">
+    <script th:src="@{/js/room/room-detail.js}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkoutBtn = document.getElementById('dynamicCheckoutBtn');
+        const checkoutForm = document.getElementById('checkoutForm');
+
+        // 1. 버튼 클릭 이벤트 처리
+        if(checkoutBtn) {
+            checkoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // data 속성으로 현재 모두 선택되었는지 확인
+                const isAllSelected = this.getAttribute('data-all-selected') === 'true';
+
+                if (isAllSelected) {
+                    // 모두 선택되었으면 결제 진행 폼 서브밋
+                    checkoutForm.submit();
+                } else {
+                    // 아직 미선택 인원이 있으면 알림창 띄우기
+                    if (typeof window.moOpenAlert === 'function') {
+                        window.moOpenAlert({
+                            title: '결제 진행 안내',
+                            message: '모든 참여자가 메뉴 선택을 완료해야 결제를 시작할 수 있습니다.',
+                            confirmText: '확인'
+                        });
+                    } else {
+                        alert('모든 참여자가 메뉴 선택을 완료해야 결제를 시작할 수 있습니다.');
+                    }
+                }
+            });
+        }
+    });
+
+    // 2. 실시간 상태 변경 함수 (웹소켓이나 Ajax 응답에서 호출하여 사용하세요)
+    window.updateCheckoutButtonState = function(isAllSelected) {
+        const btn = document.getElementById('dynamicCheckoutBtn');
+        if (!btn) return;
+
+        // data 속성 업데이트
+        btn.setAttribute('data-all-selected', isAllSelected);
+
+        if (isAllSelected) {
+            // 활성화 상태: 주황색 디자인 및 텍스트 변경
+            btn.textContent = '결제 시작하기';
+            btn.className = 'mo-btn mo-btn-primary';
+            btn.style.cssText = ''; // 회색 인라인 스타일 제거
+        } else {
+            // 비활성화 상태: 회색 디자인 및 텍스트 변경
+            btn.textContent = '결제 진행 대기';
+            btn.className = 'mo-btn js-alert-unselected';
+            btn.style.cssText = 'background-color: #f1f3f5; color: #8A93A6; border: 1px solid #e9ecef; cursor: pointer;';
+        }
+    };
+    
+ // --- 가게 영업 상태 실시간 감지 로직 ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const storeIdxStr = document.getElementById('storeIdx')?.value 
+                         || document.getElementById('roomDetailRoot')?.getAttribute('data-store-idx');
+        const currentStoreIdx = parseInt(storeIdxStr, 10);
+
+        if (currentStoreIdx > 0) {
+            const storeStatusTimer = setInterval(() => {
+                fetch(`/api/stores/${currentStoreIdx}/status`)
+                    .then(res => res.json())
+                    .then(async data => {
+                        const status = data.storeStatus;
+                        const openStatuses = ['ACTIVE']; 
+
+                        if (status && !openStatuses.includes(status)) {
+                            clearInterval(storeStatusTimer); // 반복 체크 즉시 중지
+                            
+                            // 1️⃣ 💡 [핵심 방어막] 서버에서 날아오는 웹소켓(SSE) 폭파 알림을 무시하도록 설정합니다.
+                            if (typeof isSafeExit !== 'undefined') {
+                                isSafeExit = true;
+                            }
+
+                            // 2️⃣ 서버에 방 폭파 요청을 던집니다. (화면 이동 전에 미리 백그라운드에서 실행되게 둠)
+                            fetch(`/api/rooms/explode-by-store?storeIdx=${currentStoreIdx}`)
+                                .catch(e => console.error("방 폭파 요청 무시됨:", e));
+
+                            // 3️⃣ 유저에게는 맞춤형 안내창을 여유롭게 띄워줍니다. (SSE 신호를 무시했으므로 0.1초만에 안 꺼짐!)
+                            const message = status === 'PAUSED' 
+                                ? '가게가 잠시 주문을 정지(브레이크 타임)하여 더 이상 주문할 수 없습니다.' 
+                                : '가게 영업이 종료되어 주문이 불가합니다.';
+
+                            if (typeof window.moOpenAlert === 'function') {
+                                await window.moOpenAlert({
+                                    eyebrow: '주문 불가 안내',
+                                    title: '가게 영업 상태 변경',
+                                    message: message,
+                                    confirmText: '홈으로 이동'
+                                });
+                                // 유저가 '확인'을 누르면 그제서야 메인으로 이동합니다.
+                                window.location.href = '/main';
+                            } else {
+                                alert(message);
+                                window.location.href = '/main';
+                            }
+                        }
+                    })
+                    .catch(e => console.error("가게 상태 체크 오류:", e));
+            }, 5000);
+        }
+    });
+	</script>
+</th:block>
+</body>
+</html>

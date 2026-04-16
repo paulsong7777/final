@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layout/default}">
+<head>
+    <meta charset="UTF-8">
+    <title>카테고리 수정 - Mo-Eats</title>
+</head>
+<body>
+
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container">
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                
+                <div class="mo-section text-center mb-5">
+                    <span class="mo-section-label">EDIT CATEGORY</span>
+                    <h2 class="mo-section-title">카테고리 명칭 수정</h2>
+                    <p class="mo-store-card__desc mt-2">등록된 카테고리의 명칭을 변경합니다.</p>
+                </div>
+
+                <div class="mo-surface-card p-4 p-md-5">
+                    
+                    <input type="hidden" id="categoryIdx" th:value="${category.menuCategoryIdx}">
+                    
+                    <div class="mb-5">
+                        <label for="categoryName" class="mo-form-label">
+                            카테고리 명칭 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               id="categoryName" 
+                               class="form-control mo-form-control fw-bold mo-valid-name" 
+                               th:value="${category.categoryName}" 
+                               placeholder="수정할 명칭을 입력하세요"
+                               maxlength="20"
+                               autocomplete="off">
+                        <p class="mo-helper-text mt-2"><i class="bi bi-info-circle me-1"></i>최대 20자까지 입력 가능합니다.</p>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4 pt-4 border-top">
+                        <button type="button" class="mo-btn mo-btn-outline w-100 fs-6 py-2" onclick="history.back()">
+                            취소
+                        </button>
+                        <button type="button" class="mo-btn mo-btn-primary w-100 fs-6 py-2" onclick="updateCategory()">
+                            <i class="bi bi-check-lg me-1"></i> 수정 완료
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
+<script th:inline="javascript">
+/*<![CDATA[*/
+    async function updateCategory() {
+        const idx = document.getElementById('categoryIdx').value;
+        const nameInput = document.getElementById('categoryName');
+        const name = nameInput.value.trim();
+        
+        if (!name) {
+            alert("수정할 카테고리 명칭을 입력해주세요.");
+            nameInput.focus();
+            return;
+        }
+
+        const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        const params = new URLSearchParams();
+        params.append('categoryName', name);
+
+        try {
+            const fetchHeaders = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            if (header && token) {
+                fetchHeaders[header] = token;
+            }
+
+            // 3. 컨트롤러의 @PostMapping("/{menuCategoryIdx}/edit") 에 맞게 주소 변경
+            const response = await fetch(`/owners/category/${idx}/edit`, {
+                method: 'POST',
+                headers: fetchHeaders,
+                body: params
+            });
+
+            if (response.ok) {
+                alert("성공적으로 수정되었습니다.");
+                // 4. 수정 완료 후 이동할 상세 페이지 주소를 컨트롤러 @GetMapping("/{menuCategoryIdx}") 에 맞게 변경
+                location.href = `/owners/category/${idx}`;
+            } else {
+                alert("수정 실패 (오류 코드: " + response.status + ")");
+            }
+        } catch (e) { 
+            console.error('수정 통신 오류:', e); 
+            alert("서버 연결에 실패했습니다.");
+        }
+    }
+/*]]>*/
+</script>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,574 @@
+﻿<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/default}">
+<head>
+<title>대표 결제</title>
+
+<th:block layout:fragment="pageStyles">
+	<style>
+.rep-page-shell {
+	padding-bottom: 108px;
+	overflow-x: hidden;
+}
+
+.rep-stack {
+	display: grid;
+	gap: 24px;
+	min-width: 0;
+}
+
+.rep-hero {
+	padding: 24px;
+	border-radius: 28px;
+	border: 1px solid rgba(42, 54, 89, 0.08);
+	background: #fff;
+	box-shadow: 0 16px 34px rgba(37, 45, 89, 0.05);
+}
+
+.rep-hero__head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.rep-title {
+	margin: 0;
+	color: var(--mo-navy-strong);
+	font-size: clamp(2rem, 2.3vw, 2.7rem);
+	line-height: 1.08;
+	letter-spacing: -0.05em;
+	font-weight: 800;
+}
+
+.rep-subtitle {
+	margin: 10px 0 0;
+	color: var(--mo-text-soft);
+	font-size: 14px;
+	line-height: 1.65;
+}
+
+.rep-chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 34px;
+	padding: 0 14px;
+	border-radius: 999px;
+	background: rgba(255, 128, 0, 0.12);
+	color: var(--mo-primary);
+	font-size: 12px;
+	font-weight: 800;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.rep-main-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+	gap: 24px;
+	align-items: start;
+}
+
+.rep-panel, .rep-highlight, .rep-note-box {
+	padding: 24px;
+	border-radius: 26px;
+	border: 1px solid rgba(42, 54, 89, 0.08);
+	background: #fff;
+	box-shadow: 0 16px 34px rgba(37, 45, 89, 0.05);
+	min-width: 0;
+}
+
+.rep-panel__title, .rep-highlight__title {
+	margin: 0;
+	color: var(--mo-navy-strong);
+	font-size: 1.8rem;
+	line-height: 1.15;
+	letter-spacing: -0.04em;
+	font-weight: 800;
+}
+
+.rep-panel__desc, .rep-note-box__desc {
+	margin: 8px 0 0;
+	color: var(--mo-text-soft);
+	font-size: 14px;
+	line-height: 1.7;
+}
+
+.rep-price-box {
+	margin-top: 18px;
+	padding: 20px;
+	border-radius: 24px;
+	background: var(--mo-navy-strong);
+	color: #fff;
+	box-shadow: 0 18px 32px rgba(37, 45, 89, 0.14);
+}
+
+.rep-price-box__label {
+	font-size: 12px;
+	font-weight: 800;
+	opacity: .74;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+}
+
+.rep-price-box__value {
+	margin-top: 10px;
+	font-size: 2rem;
+	font-weight: 800;
+	letter-spacing: -0.04em;
+	line-height: 1.1;
+}
+
+.rep-price-box__desc {
+	margin-top: 10px;
+	font-size: 13px;
+	line-height: 1.65;
+	opacity: .84;
+}
+
+.rep-note-box {
+	background: rgba(42, 54, 89, 0.03);
+}
+
+.rep-note-box__title {
+	color: var(--mo-navy-strong);
+	font-size: 15px;
+	font-weight: 800;
+}
+
+.rep-inline-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 42px;
+	padding: 0 16px;
+	border-radius: 12px;
+	border: 1px solid rgba(42, 54, 89, 0.16);
+	background: #fff;
+	color: var(--mo-navy);
+	font-weight: 700;
+	font-size: 14px;
+	text-decoration: none;
+}
+
+.rep-sticky {
+	position: fixed;
+	left: 20px;
+	right: 20px;
+	bottom: 18px;
+	z-index: 1040;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18px;
+	padding: 18px 20px;
+	border-radius: 24px;
+	background: rgba(37, 45, 89, 0.96);
+	color: #fff;
+	box-shadow: 0 22px 42px rgba(22, 28, 46, 0.22);
+	backdrop-filter: blur(10px);
+}
+
+.rep-sticky__meta {
+	min-width: 0;
+}
+
+.rep-sticky__label {
+	font-size: 12px;
+	font-weight: 800;
+	opacity: .72;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+}
+
+.rep-sticky__title {
+	margin-top: 6px;
+	font-size: 1.15rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+}
+
+.rep-sticky__desc {
+	margin-top: 6px;
+	font-size: 13px;
+	line-height: 1.55;
+	opacity: .82;
+}
+
+.rep-sticky__action, .rep-sticky__action form {
+	margin: 0;
+}
+
+@media ( max-width : 991.98px) {
+	.rep-hero__head, .rep-main-grid {
+		grid-template-columns: 1fr;
+		flex-direction: column;
+	}
+}
+
+@media ( max-width : 767.98px) {
+	.rep-page-shell {
+		padding-bottom: 108px;
+	}
+	.rep-hero, .rep-panel, .rep-highlight, .rep-note-box, .rep-price-box {
+		padding: 16px;
+		border-radius: 20px;
+	}
+	.rep-title {
+		font-size: 2rem;
+	}
+	.rep-panel__title, .rep-highlight__title {
+		font-size: 1.55rem;
+	}
+	.rep-price-box__value {
+		font-size: 1.7rem;
+	}
+	.rep-sticky {
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: 24px 24px 0 0;
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rep-sticky__action, .rep-sticky__action form, .rep-sticky__action .mo-btn
+		{
+		width: 100%;
+	}
+}
+
+.rep-lock-note {
+	margin-top: 14px;
+	padding: 12px 14px;
+	border-radius: 16px;
+	border: 1px solid rgba(255, 128, 0, 0.16);
+	background: rgba(255, 128, 0, 0.08);
+	color: var(--mo-navy-strong);
+	font-size: 13px;
+	line-height: 1.65;
+	font-weight: 600;
+}
+</style>
+</th:block>
+</head>
+<body>
+	<section layout:fragment="pageContent" class="rep-page-shell mo-page-shell--payment-flow">
+		<section class="mo-section rep-stack">
+			<div class="rep-hero">
+				<div class="rep-hero__head">
+					<div>
+						<h1 class="rep-title">대표 결제</h1>
+						<p class="rep-subtitle">방장이 전체 금액을 한 번에 결제하고 주문을 최종 확정하는
+							단계입니다.</p>
+					</div>
+
+					<span class="rep-chip">대표결제</span>
+				</div>
+			</div>
+
+			<div class="rep-main-grid">
+				<div class="rep-panel">
+					<h2 class="rep-panel__title">전체 결제 금액</h2>
+					<p class="rep-panel__desc">이 주문은 방장이 한 번에 결제합니다. 결제가 끝나면 주문 상세
+						허브로 이동합니다.</p>
+
+					<div class="rep-price-box">
+						<div class="rep-price-box__label">전체 결제 금액</div>
+						<div class="rep-price-box__value"
+							th:text="${#numbers.formatInteger(payment.paymentRequestAmount, 0, 'COMMA')} + '원'">0원</div>
+						<div class="rep-price-box__desc">대표결제 완료 후 전체 참여자는 다음 단계 상태를
+							같은 화면에서 보게 됩니다.</div>
+					</div>
+				</div>
+
+				<div class="rep-note-box">
+					<div class="rep-note-box__title">안내</div>
+					<div class="rep-note-box__desc">대표결제 화면에서는 금액 확인과 결제 실행만
+						남깁니다. 참여자별 결제 현황과 대기 정보는 이후 화면에서 확인하면 됩니다.</div>
+
+					<div class="rep-lock-note">결제 진행 중에는 뒤로가기와 화면 이동이 제한됩니다. 결제
+						완료 또는 결제 취소 후에 다른 작업을 진행해 주세요.</div>
+
+					<div class="rep-inline-link"
+						style="margin-top: 14px; pointer-events: none; opacity: .72;">
+						결제 완료 후 주문 상세로 자동 이동</div>
+				</div>
+			</div>
+
+			<div class="rep-sticky">
+				<div class="rep-sticky__meta">
+					<div class="rep-sticky__label">대표 결제</div>
+					<div class="rep-sticky__title"
+						th:text="${#numbers.formatInteger(payment.paymentRequestAmount, 0, 'COMMA')} + '원 전체 결제'">0원
+						전체 결제</div>
+					<div class="rep-sticky__desc">방장이 한 번 결제하면 주문이 다음 단계로 넘어갑니다.</div>
+				</div>
+
+				<div class="rep-sticky__action" style="display: flex; gap: 8px;">
+					<form th:action="@{/orders/{id}/payment/cancel(id=${orderIdx})}"
+						method="post" id="cancelPaymentForm">
+						<button type="submit" class="mo-btn mo-btn-outline"
+							style="background: #fff; color: var(--mo-navy-strong);">결제
+							취소</button>
+					</form>
+
+					<form th:action="@{/sandbox/toss/checkout/representative}"
+						method="post">
+						<input type="hidden" name="paymentIdx"
+							th:value="${payment.paymentIdx}">
+						<button type="submit" class="mo-btn mo-btn-primary">전체 금액
+							결제하기</button>
+					</form>
+				</div>
+			</div>
+
+			<input type="hidden" id="orderIdx" th:value="${orderIdx}">
+			<input type="hidden" id="orderSsePageType" value="payment-representative">
+			<input type="hidden" id="paymentExpiresAtMs" th:if="${payment.paymentExpiresAt != null}"
+				th:value="${payment.paymentExpiresAt.time}">
+			<input type="hidden" id="storeIdx" th:value="${groupOrder.storeIdx}">
+		</section>
+	</section>
+
+	<th:block layout:fragment="pageScripts">
+		<script th:src="@{/js/order/order-channel.js}"></script>
+
+		<script>
+    let isSafeExit = false;
+    let isExpired = false;
+    let lastGuardToastAt = 0;
+
+    window.moPrepareSafeExit = function () {
+        isSafeExit = true;
+    };
+    
+    const GUARD_TOAST_INTERVAL = 1200;
+
+    const showGuardToast = (message, variant = 'warning') => {
+        if (window.moShowToast) {
+            window.moShowToast(message, variant);
+        }
+    };
+
+    const showBlockedNavigationToast = () => {
+        const now = Date.now();
+        if (now - lastGuardToastAt < GUARD_TOAST_INTERVAL) return;
+        lastGuardToastAt = now;
+        showGuardToast('결제 진행 중입니다. 결제 완료 또는 결제 취소 후 이동할 수 있습니다.', 'warning');
+    };
+
+    const openGuardConfirm = async () => {
+        if (window.moOpenConfirm) {
+            return await window.moOpenConfirm({
+                eyebrow: '결제 취소',
+                title: '대표결제를 취소할까요?',
+                message: '결제를 취소하면 주문방이 즉시 종료되고 참여자 전체가 함께 나가게 됩니다.',
+                confirmText: '결제 취소하기',
+                cancelText: '계속 결제하기'
+            });
+        }
+        return true; 
+    };
+
+    window.returnToMainSafely = function() {
+        isSafeExit = true; 
+        window.location.href = '/main'; 
+    };
+
+    // 시간 만료 처리 함수 (Alert 팝업 적용) 결제시간 초과
+    window.handlePaymentExpired = async () => {
+        if (isExpired) return;
+        isExpired = true;
+        isSafeExit = true;
+
+        if (typeof window.moOpenAlert === 'function') {
+            await window.moOpenAlert({
+                eyebrow: '주문 취소 안내',
+                title: '결제 시간이 지났어요',
+                message: '안전한 이용을 위해 메인 화면으로 돌아갈게요.',
+                confirmText: '홈으로 이동'
+            });
+            window.location.href = '/main';
+        } else {
+            alert('결제 시간이 지났습니다.');
+            window.location.href = '/main';
+        }
+    };
+
+    // 💡 추가된 부분: SSE 통신에서 취소 신호가 왔을 때 실행될 함수 // 방장 결제 취소
+    window.handleRoomCancelled = async () => {
+        if (isSafeExit) return;
+        isSafeExit = true;
+
+        if (typeof window.moOpenAlert === 'function') {
+            await window.moOpenAlert({
+                eyebrow: '주문 취소 안내',
+                title: '주문방이 종료되었어요',
+                message: '방장이 결제를 취소하여 메인 화면으로 돌아갑니다.',
+                confirmText: '홈으로 이동'
+            });
+            window.location.href = '/main';
+        } else {
+            alert('주문방이 취소되었습니다.');
+            window.location.href = '/main';
+        }
+    };
+
+    history.pushState({ paymentGuard: true }, '', location.href);
+
+    window.addEventListener('popstate', function () {
+        if (isSafeExit) return;
+        history.pushState({ paymentGuard: true }, '', location.href);
+        showBlockedNavigationToast();
+    });
+
+    window.addEventListener('beforeunload', function (event) {
+        if (!isSafeExit && !isExpired) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    document.addEventListener('click', function (e) {
+        if (isSafeExit || isExpired) return;
+
+        const isCheckoutBtn = e.target.closest('form[action*="/checkout/"]');
+        const isCancelBtn = e.target.closest('#cancelPaymentForm');
+        const isModalClick = e.target.closest('.modal, #moConfirmModal, .mo-modal-overlay');
+
+        if (isCheckoutBtn || isCancelBtn || isModalClick) return;
+
+        const clickable = e.target.closest('a, button, input[type="button"], input[type="submit"], [data-bs-toggle], [data-mo-open-join]');
+        if (!clickable) return;
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        showBlockedNavigationToast();
+    }, true);
+
+ // 💡 수정된 부분: 결제 취소 시 모달 2개가 순서대로 뜨는 폼 제출 처리
+    document.addEventListener('submit', async function (e) {
+        if (isSafeExit || isExpired) return;
+
+        const form = e.target;
+
+        if (form.action && form.action.includes('/checkout/')) {
+            isSafeExit = true;
+            return;
+        }
+
+        if (form.id === 'cancelPaymentForm') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            // 1. Confirm 모달: 취소할 건지 진짜 묻기
+            const accepted = await openGuardConfirm();
+            if (!accepted) return;
+
+            // 💡 핵심 해결책: 첫 번째 모달의 닫힘 애니메이션이 끝날 때까지 0.4초(400ms) 대기합니다.
+            await new Promise(resolve => setTimeout(resolve, 400));
+
+            // 2. Alert 모달: 취소 완료 안내 (이제 안 사라지고 사용자가 누를 때까지 기다립니다!)
+            await window.moOpenAlert({
+                eyebrow: '취소 완료',
+                title: '결제가 취소되었어요',
+                message: '주문방이 종료되었습니다. 메인 화면으로 이동할게요.',
+                confirmText: '홈으로 이동'
+            });
+
+            // 3. '홈으로 이동' 버튼을 누르면 그제서야 폼 전송 및 서버 처리
+            isSafeExit = true;
+            form.submit();
+            return;
+        }
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        showBlockedNavigationToast();
+    }, true);
+
+    setInterval(() => {
+        if (isSafeExit || isExpired) return;
+
+        fetch(window.location.href, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+            if (res.redirected || res.url.includes('/main') || !res.ok) {
+                handlePaymentExpired();
+            }
+        })
+        .catch(() => {});
+    }, 3000);
+
+    const expiresAtEl = document.getElementById('paymentExpiresAtMs');
+    if (expiresAtEl && expiresAtEl.value) {
+        const expiresAt = parseInt(expiresAtEl.value, 10);
+        const checkTimer = setInterval(() => {
+            if (Date.now() >= expiresAt) {
+                clearInterval(checkTimer);
+                handlePaymentExpired();
+            }
+        }, 1000);
+    }
+    
+    // --- 가게 영업 상태 실시간 감지 로직 ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const storeIdxStr = document.getElementById('storeIdx')?.value 
+                         || document.getElementById('roomDetailRoot')?.getAttribute('data-store-idx');
+        const currentStoreIdx = parseInt(storeIdxStr, 10);
+
+        if (currentStoreIdx > 0) {
+            const storeStatusTimer = setInterval(() => {
+                fetch(`/api/stores/${currentStoreIdx}/status`)
+                    .then(res => res.json())
+                    .then(async data => { // 💡 async 키워드 추가
+                        const status = data.storeStatus;
+                        const openStatuses = ['ACTIVE']; 
+
+                        if (status && !openStatuses.includes(status)) {
+                            clearInterval(storeStatusTimer); // 반복 체크 중지
+                            
+                            if (typeof isSafeExit !== 'undefined') {
+                                isSafeExit = true;
+                            }
+
+                            // 1️⃣ 💡 [핵심] RoomController로 방 폭파 요청을 보내고, 끝날 때까지 기다립니다.
+                            try {
+                            	// 💡 method: 'POST' 옵션을 지워버리면 기본값인 GET으로 날아갑니다!
+                            	await fetch(`/api/rooms/explode-by-store?storeIdx=${currentStoreIdx}`);
+                            } catch (e) {
+                                console.error("방 폭파 요청 실패:", e);
+                            }
+
+                            // 2️⃣ 서버에서 방 폭파 처리가 완료된 후, 유저에게 알림을 띄우고 이동시킵니다.
+                            const message = status === 'PAUSED' 
+                                ? '가게가 잠시 주문을 정지(브레이크 타임)하여 더 이상 주문할 수 없습니다.' 
+                                : '가게 영업이 종료되어 주문이 불가합니다.';
+
+                            if (typeof window.moOpenAlert === 'function') {
+                                await window.moOpenAlert({
+                                    eyebrow: '주문 불가 안내',
+                                    title: '가게 영업 상태 변경',
+                                    message: message,
+                                    confirmText: '홈으로 이동'
+                                });
+                                window.location.href = '/main';
+                            } else {
+                                alert(message);
+                                window.location.href = '/main';
+                            }
+                        }
+                    })
+                    .catch(e => console.error("가게 상태 체크 오류:", e));
+            }, 5000);
+        }
+    });
+</script>
+	</th:block>
+</body>
+</html>

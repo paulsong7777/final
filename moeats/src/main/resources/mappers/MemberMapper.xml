@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--	
+	마이바티스 참고 사이트
+	  - http://blog.mybatis.org/
+	  - http://www.mybatis.org/mybatis-3/ko/index.html
+	  
+	@Mapper 애노테이션이 적용된 인터페이스와 맵퍼 XML파일은
+	namespace 속성으로 연결되기 때문에 맵퍼 XML의 namespace를
+	지정할 때 @Mapper 애노테이션이 적용된 맵퍼 인터페이스의
+	완전한 클래스 이름(패키지를 포함한 이름)을 지정하면 된다.   
+-->
+<mapper namespace="com.moeats.mapper.MemberMapper" >
+	
+	<!-- 기본 배송지 가져옴 -->
+	<select id="getDefaultAddressIdx" resultType="int">
+	    SELECT default_delivery_address_idx
+	    FROM member
+	    WHERE member_idx = #{memberIdx}
+	</select>
+	
+	<!-- 기본 배송지 설정 -->
+	<update id="updateDefaultAddressIdx">
+	    UPDATE member
+	    SET default_delivery_address_idx = #{deliveryAddressIdx}
+	    WHERE member_idx = #{memberIdx}
+	</update>
+	
+	<!-- 기본 배송지 해제 -->
+	<update id="clearDefaultAddressIdx">
+	    UPDATE member
+	    SET default_delivery_address_idx = NULL
+	    WHERE member_idx = #{memberIdx}
+	</update>
+	
+	
+	<!-- 회원 탈퇴 soft delete -->
+	<update id="deleteMember">
+		update member set member_status = 'INACTIVE'
+		where member_idx = #{memberIdx}
+	</update>
+	
+	<!-- 회원 수정 -->
+	<update id="updateMember" parameterType="Member">
+		update member set
+			member_password = #{memberPassword},
+		   	member_nickname = #{memberNickname},
+		   	member_phone = #{memberPhone}
+			where member_idx = #{memberIdx}
+	</update>	
+	
+	<!-- 비밀번호 조회 -->
+	<select id="isPassCheck" resultType="String">
+		select member_password from member
+			where member_idx = #{memberIdx}
+	</select>
+	
+	<!-- 회원 가입 -->
+	<insert id="insertMember" parameterType="Member"
+			useGeneratedKeys="true" keyProperty="memberIdx">
+		insert into member(member_email,
+						   member_password,
+						   member_nickname,
+						   member_phone,
+						   member_role_type,
+						   default_delivery_address_idx,
+						   member_status)
+			values(#{memberEmail},
+				   #{memberPassword},
+				   #{memberNickname},
+				   #{memberPhone},
+				   #{memberRoleType},
+				   #{defaultDeliveryAddressIdx},
+				   #{memberStatus})
+	</insert>
+	
+	<!-- 회원 이메일 조회 로그인처리 필요 -->
+	<select id="getMemberFromEmail" resultType="Member">
+		select * from member
+			where member_email = #{memberEmail}
+	</select>
+	
+	<!-- 회원 조회 -->
+	<select id="getMember" resultType="Member">
+		select * from member
+			where member_idx = #{memberIdx}
+	</select>
+	
+</mapper>
+
+
+

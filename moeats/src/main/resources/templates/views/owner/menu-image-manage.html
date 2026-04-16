@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko" 
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{layout/default}">
+<head>
+    <title>메뉴 사진 관리 - Mo-Eats</title>
+</head>
+<body>
+
+<section layout:fragment="pageContent">
+    <div class="mo-page-container container" style="max-width: 1200px;">
+        
+        <div class="mo-section mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 border-bottom pb-4">
+                <div>
+                    <span class="mo-section-label">MENU IMAGES</span>
+                    <h2 class="mo-section-title">메뉴 사진 관리</h2>
+                    <p class="mo-helper-text mt-2 mb-0">메뉴를 돋보이게 할 사진을 등록하고 대표 사진을 설정하세요.</p>
+                </div>
+                <a th:href="@{/owners/menus/{idx}/images/new(idx=${menuIdx})}" class="mo-btn mo-btn-primary rounded-pill px-4" style="min-height: 48px;">
+                    <i class="bi bi-cloud-upload me-2"></i> 사진 등록
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <th:block th:if="${imageList != null and not #lists.isEmpty(imageList)}">
+                <div th:each="img : ${imageList}" class="col-12 col-sm-6 col-md-4 col-xl-3" th:id="|img-card-${img.menuImageIdx}|">
+                    <article class="mo-surface-card d-flex flex-column p-0 overflow-hidden border-0 shadow-sm">
+                        
+                        <div class="position-relative" style="padding: 12px 12px 0;">
+                            <div class="rounded-3 overflow-hidden border" style="height: 200px; border-color: rgba(42, 54, 89, 0.08) !important;">
+                                <div class="w-100 h-100" 
+                                     th:style="'background: url(' + ${img.imageUrl ?: 'https://via.placeholder.com/300x200/FF8000/FFFFFF?text=No+Image'} + ') center/cover no-repeat;'">
+                                </div>
+                            </div>
+                            
+                            <span th:if="${img.isPrimary}" 
+                                  class="position-absolute top-0 start-0 m-4 px-3 py-1 text-white fw-bold shadow-sm rounded-pill" 
+                                  style="background: var(--mo-primary); font-size: 11px; z-index: 2;">
+                                <i class="bi bi-star-fill me-1"></i> 대표 사진
+                            </span>
+                        </div>
+                        
+                        <div class="p-3 mt-auto d-flex flex-column gap-2">
+                            
+                            <button type="button" class="mo-btn w-100 border-0 fw-bold fs-6" 
+                                    th:classappend="${img.isPrimary} ? 'mo-btn-primary shadow-none' : 'bg-light text-secondary'"
+                                    th:onclick="changePrimary([[${menuIdx}]], [[${img.menuImageIdx}]])"
+                                    style="min-height: 44px;">
+                                <i class="bi" th:classappend="${img.isPrimary} ? 'bi-check-lg me-1' : 'bi-star me-1'"></i> 
+                                <span th:text="${img.isPrimary} ? '대표 사진 설정 완료' : '대표 사진으로 설정'"></span>
+                            </button>
+                            
+                            <div class="d-flex gap-2">
+                                <a th:href="@{/owners/menus/{mIdx}/images/{iIdx}/edit(mIdx=${menuIdx}, iIdx=${img.menuImageIdx})}" 
+                                   class="mo-btn mo-btn-outline flex-fill border-secondary-subtle" style="min-height: 36px; font-size: 13px;">
+                                    수정
+                                </a>
+                                <button type="button" 
+                                        class="mo-btn mo-btn-plain flex-fill text-danger fw-bold" 
+                                        th:onclick="deleteImage([[${menuIdx}]], [[${img.menuImageIdx}]])" 
+                                        style="min-height: 36px; font-size: 13px;">
+                                    삭제
+                                </button>
+                            </div>
+                        </div>
+
+                    </article>
+                </div>
+            </th:block>
+            
+            <div th:if="${imageList == null or #lists.isEmpty(imageList)}" class="col-12 py-5 mt-4">
+                <div class="mo-empty-state mx-auto border-0 shadow-none bg-transparent" style="max-width: 560px;">
+                    <div class="mb-2" style="font-size: 64px;">🍽️</div>
+                    <h3 class="mo-empty-state__title mb-3">등록된 메뉴 사진이 없습니다</h3>
+                    <p class="mo-empty-state__desc mb-4 fw-bold">맛있는 메뉴 사진을 등록하여 고객들의 시선을 사로잡아 보세요!</p>
+                    <a th:href="@{/owners/menus/{idx}/images/new(idx=${menuIdx})}" class="mo-btn mo-btn-primary rounded-pill px-5" style="min-height: 52px; font-size: 16px;">
+                        <i class="bi bi-cloud-upload me-2"></i> 첫 사진 등록하기
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<th:block layout:fragment="pageScripts">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        
+        async function changePrimary(mIdx, iIdx) {
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+            
+            try {
+                const response = await fetch(`/owners/menus/${mIdx}/images/${iIdx}/primary`, {
+                    method: 'POST',
+                    headers: { ...(header && { [header]: token }) }
+                });
+                if(response.ok) {
+                    location.reload();
+                } else {
+                    alert("대표 사진 설정 중 오류가 발생했습니다.");
+                }
+            } catch(e) {
+                console.error(e);
+                alert("네트워크 오류가 발생했습니다.");
+            }
+        }
+
+        async function deleteImage(mIdx, iIdx) {
+            if(!confirm("이 메뉴 사진을 삭제할까요?")) return;
+            
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+            
+            try {
+                const response = await fetch(`/owners/menus/${mIdx}/images/${iIdx}/delete`, {
+                    method: 'POST',
+                    headers: { ...(header && { [header]: token }) }
+                });
+                
+                if(response.ok) {
+                    const card = document.getElementById(`img-card-${iIdx}`);
+                    if(card) {
+                        // Mo-Eats 삭제 애니메이션 효과
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(10px)';
+                        setTimeout(() => card.remove(), 300);
+                    }
+                } else {
+                    alert("삭제 중 오류가 발생했습니다.");
+                }
+            } catch(e) {
+                console.error(e);
+                alert("네트워크 오류가 발생했습니다.");
+            }
+        }
+        /*]]>*/
+    </script>
+</th:block>
+
+</body>
+</html>

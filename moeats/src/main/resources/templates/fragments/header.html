@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="siteHeader">
+
+    <header class="mo-header js-mo-header">
+        <div class="container">
+            <div class="mo-header__inner">
+
+				<a th:href="${session.member != null and session.member.memberRoleType == 'OWNER'} ? @{/owners/dashboard} : @{/}" 
+                   class="mo-brand" 
+                   th:aria-label="${session.member != null and session.member.memberRoleType == 'OWNER'} ? 'Mo-Eats 대시보드로 이동' : 'Mo-Eats 홈으로 이동'">
+                    <span class="mo-brand__symbol">M</span>
+                    <span class="mo-brand__text">Mo-Eats</span>
+                </a>
+
+                <!-- 비로그인 -->
+                <div class="mo-header__guest ms-auto" th:if="${session.member == null}">
+                    <button type="button" class="mo-btn mo-btn-plain" data-mo-open-login>
+                        로그인
+                    </button>
+                    <a th:href="@{/members/createType}" class="mo-btn mo-btn-primary">
+                        회원가입
+                    </a>
+                </div>
+
+                <!-- 로그인 USER -->
+                <div class="mo-header__user ms-auto"
+                     th:if="${session.member != null and session.member.memberRoleType == 'USER'}">
+
+                    <div class="mo-header__user-main mo-header__user-main--desktop">
+                        <button type="button"
+                                class="mo-header__address-trigger"
+                                data-mo-open-address
+                                th:if="${!headerHasActiveRoom}">
+                            <span class="mo-header__address-label"
+                                  th:text="${headerDeliveryLabel != null and !#strings.isEmpty(headerDeliveryLabel) ? headerDeliveryLabel : '배송지 선택'}">
+                                배송지 선택
+                            </span>
+                        </button>
+
+                        <button type="button"
+                                class="mo-btn mo-btn-primary mo-btn-room"
+                                data-mo-open-join
+                                th:attr="data-mo-active-room-code=${headerActiveRoomCode}">
+                            방 참여
+                        </button>
+
+                        <span class="mo-header__nickname">
+                            <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
+                        </span>
+
+                        <a th:href="@{/members/me}" class="mo-btn mo-btn-outline">마이페이지</a>
+
+                        <form th:action="@{/logout}" method="post" class="mo-header__logout-form">
+                            <button type="submit" class="mo-btn mo-btn-outline">로그아웃</button>
+                        </form>
+                    </div>
+
+                    <div class="mo-header__user-main mo-header__user-main--mobile">
+                        <button type="button"
+                                class="mo-btn mo-btn-primary mo-btn-room mo-btn-room--mobile"
+                                data-mo-open-join
+                                th:attr="data-mo-active-room-code=${headerActiveRoomCode}">
+                            방 참여
+                        </button>
+
+                        <button type="button"
+                                class="mo-header__menu-toggle"
+                                data-mo-open-mobile-menu
+                                aria-controls="moMobileMenu"
+                                aria-label="모바일 메뉴 열기">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 로그인 OWNER -->
+<div class="mo-header__owner ms-auto"
+                     th:if="${session.member != null and session.member.memberRoleType == 'OWNER'}">
+
+                    <div class="mo-header__owner-main mo-header__owner-main--desktop">
+                        <span class="mo-header__nickname">
+                            <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
+                        </span>
+                        
+                        <a th:href="@{/members/me}" class="mo-btn mo-btn-outline">마이페이지</a>
+
+                        <form th:action="@{/logout}" method="post" class="mo-header__logout-form">
+                            <button type="submit" class="mo-btn mo-btn-outline">로그아웃</button>
+                        </form>
+
+                        <button type="button"
+                                class="mo-header__menu-toggle ms-2"
+                                data-mo-open-mobile-menu
+                                aria-controls="moMobileMenu"
+                                aria-label="메뉴 열기">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                    </div>
+
+                    <div class="mo-header__owner-main mo-header__owner-main--mobile">
+                        <span class="mo-header__nickname mo-header__nickname--owner-mobile">
+                            <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
+                        </span>
+
+                        <button type="button"
+                                class="mo-header__menu-toggle"
+                                data-mo-open-mobile-menu
+                                aria-controls="moMobileMenu"
+                                aria-label="모바일 메뉴 열기">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =========================
+         MOBILE MENU
+    ========================= -->
+    <div class="offcanvas offcanvas-end mo-mobile-menu" tabindex="-1" id="moMobileMenu" aria-hidden="true">
+        <div class="mo-mobile-menu__header">
+            <span class="mo-mobile-menu__title">메뉴</span>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="닫기"></button>
+        </div>
+
+        <div class="mo-mobile-menu__body overflow-y-auto" style="max-height: calc(100vh - 60px); -webkit-overflow-scrolling: touch;">
+
+            <div class="mo-mobile-menu__section"
+                 th:if="${session.member != null and session.member.memberRoleType == 'USER'}">
+					<div class="mo-mobile-menu__nickname d-flex justify-content-between align-items-center">
+				        <div>
+				            <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
+				        </div>
+				        <a th:href="@{/members/me}" class="mo-btn mo-btn-outline" style="min-height: 28px; padding: 0 10px; font-size: 11px;">
+				            마이페이지
+				        </a>
+				    </div>
+	
+                <button type="button"
+                        class="mo-mobile-menu__link"
+                        data-mo-open-join
+                        th:attr="data-mo-active-room-code=${headerActiveRoomCode}">
+                    <span>방 참여</span>
+                    <span class="mo-mobile-menu__sub"
+					      th:text="${headerHasActiveRoom ? '참여 중인 주문방으로 바로 이동' : '6자리 코드로 바로 입장'}">
+					    6자리 코드로 바로 입장
+					</span>
+                </button>
+                
+	                <button type="button"
+                        class="mo-mobile-menu__link"
+                        data-mo-open-address
+                        th:if="${!headerHasActiveRoom}">
+                    <span>배송지 선택</span>
+                    <span class="mo-mobile-menu__sub"
+                          th:text="${headerDeliveryLabel != null and !#strings.isEmpty(headerDeliveryLabel) ? headerDeliveryLabel : '현재 배송지를 설정해 주세요'}">
+                        현재 배송지를 설정해 주세요
+                    </span>
+                </button>
+
+	
+	                <a th:href="@{/members/me/addresses}" class="mo-mobile-menu__link">
+	                    <span>배송지 관리</span>
+	                    <span class="mo-mobile-menu__sub">주소 추가 · 수정 · 기본 배송지 확인</span>
+	                </a>
+	                <a th:href="@{/members/me/orders}" class="mo-mobile-menu__link">
+	                    <span>주문 내역</span>
+	                    <span class="mo-mobile-menu__sub">최근 주문 내역 확인</span>
+	                </a>
+                 </div>
+
+            <div class="mo-mobile-menu__section"
+                 th:if="${session.member != null and session.member.memberRoleType == 'OWNER'}">
+                 
+				<div class="mo-mobile-menu__nickname d-flex justify-content-between align-items-center">
+			        <div>
+			            <span th:text="${session.member.memberNickname}">닉네임</span><span>&nbsp;님</span>
+			        </div>
+			        <a th:href="@{/members/me}" class="mo-btn mo-btn-outline" style="min-height: 28px; padding: 0 10px; font-size: 11px;">
+			            마이페이지
+			        </a>
+			    </div>
+
+				<div class="mo-mobile-menu__link mo-mobile-menu__link--static" style="border-bottom: 1px solid #eee; padding-bottom: 1.25rem; margin-bottom: 1rem;">
+				    <div style="font-size: 16px; font-weight: 800; color: var(--mo-navy-strong); margin-bottom: 6px;">
+				        <span th:text="${session.member.memberNickname}">닉네임</span>님의 
+				        <span th:if="${store != null}" th:text="${store.storeName}" style="color: var(--mo-primary);">가게명</span>
+				        <span th:unless="${store != null}" style="color: #999; font-weight: 500; font-size: 14px;">매장(미등록)</span>
+				    </div>
+				    
+				    <div class="mo-mobile-menu__sub" style="font-size: 12px; color: var(--mo-text-soft); line-height: 1.4;">
+				        <th:block th:if="${store != null}">
+				            <span th:if="${store.storeStatus == 'ACTIVE' or store.storeStatus == 'OPEN'}">
+				                🔥 오늘도 주문 대박 나시길 응원합니다!
+				            </span>
+				            <span th:if="${store.storeStatus == 'INACTIVE' or store.storeStatus == 'CLOSED'}">
+				                💤 현재 영업 준비 중입니다. 시작할 준비가 되셨나요?
+				            </span>
+				            <span th:if="${store.storeStatus == 'PAUSED' or store.storeStatus == 'BREAK'}">
+				                ☕ 잠시 쉬어가는 브레이크 타임입니다.
+				            </span>
+				        </th:block>
+				        
+				        <th:block th:unless="${store != null}">
+				            ✨ 사장님의 소중한 매장을 등록하고 모이츠와 함께하세요!
+				        </th:block>
+				    </div>
+				</div>
+
+                <div class="mo-mobile-menu__group mb-4">
+                    <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">DASHBOARD & ORDERS</div>
+                    
+                    <a th:href="@{/owners/dashboard}" class="mo-mobile-menu__link" th:classappend="${menu == 'dash'} ? 'is-active'">
+                        <span><i class="bi bi-speedometer2 me-2"></i>대시보드</span>
+                    </a>
+					<a th:href="@{/owners/order/list}" class="mo-mobile-menu__link" th:classappend="${menu == 'order-list'} ? 'is-active'">
+					    <span><i class="bi bi-search me-2"></i>주문 내역 조회</span>
+					</a>
+                </div>
+
+                <div class="mo-mobile-menu__group mb-4">
+                    <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">STORE MANAGEMENT</div>
+                    
+					<a th:if="${store == null}" th:href="@{/owners/store/new}" class="mo-mobile-menu__link" th:classappend="${menu == 'store-new'} ? 'is-active'">
+				        <span><i class="bi bi-shop me-2"></i>신규 매장 등록</span>
+				    </a>
+	                <a th:if="${store != null}" th:href="@{/owners/store}" class="mo-mobile-menu__link" th:classappend="${menu == 'store'} ? 'is-active'">
+	       				<span><i class="bi bi-shop-window me-2"></i>내 매장 관리</span> </a>
+	                </div>
+
+                <div class="mo-mobile-menu__group mb-4">
+                    <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">MENUS & REVIEWS</div>
+                    
+                    <a th:href="@{/owners/menu}" class="mo-mobile-menu__link" th:classappend="${menu == 'menu-edit'} ? 'is-active'">
+                        <span><i class="bi bi-pencil-fill me-2"></i>매장 메뉴 관리</span>
+                    </a>
+                    <a th:href="@{/owners/category}" class="mo-mobile-menu__link" th:classappend="${menu == 'category'} ? 'is-active'">
+                        <span><i class="bi bi-tags me-2"></i>카테고리 관리</span>
+                    </a>
+                    <a th:href="@{/owners/review/management}" class="mo-mobile-menu__link" th:classappend="${menu == 'review'} ? 'is-active'">
+                        <span><i class="bi bi-chat-right-text me-2"></i>리뷰 답변 관리</span>
+                    </a>
+					<!-- <a th:href="@{/owners/all-image}" class="mo-mobile-menu__link" th:classappend="${menu == 'all-img'} ? 'is-active'">
+                        <span><i class="bi bi-images me-2"></i>통합 이미지 보관함</span>
+                    </a>  -->
+                </div>
+
+                <div class="mo-mobile-menu__group mb-2">
+                    <div class="text-secondary fw-bold mb-2 px-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">REPORTS</div>
+                    <a th:href="@{/owner/sales/report}" class="mo-mobile-menu__link" th:classappend="${menu == 'report'} ? 'is-active'">
+                        <span><i class="bi bi-bar-chart-line me-2"></i>영업 리포트</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mo-mobile-menu__footer mt-auto" th:if="${session.member != null}">
+                <form th:action="@{/logout}" method="post" class="mo-header__logout-form">
+                    <button type="submit" class="mo-btn mo-btn-outline w-100">로그아웃</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         로그인 : 데스크톱 모달
+    ========================= -->
+    <div class="modal fade mo-auth-modal" id="moLoginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content mo-modal-card">
+                <div class="mo-modal-card__header">
+                    <div class="mo-modal-card__eyebrow">계정</div>
+                    <h2 class="mo-modal-card__title">로그인</h2>
+                    <p class="mo-modal-card__desc">로그인 후 바로 가게 탐색과 주문 참여를 이어갈 수 있습니다.</p>
+                </div>
+                <div class="mo-modal-form">
+                    <form th:action="@{/login}" method="post" class="d-flex flex-column gap-3">
+                    	<input type="hidden" name="returnUrl" class="js-login-return-url" th:value="${param.returnUrl}">
+                        <div>
+                            <label for="desktopLoginEmail" class="mo-form-label">이메일</label>
+                            <input type="email"
+                                   id="desktopLoginEmail"
+                                   name="memberEmail"
+                                   class="form-control mo-form-control"
+                                   placeholder="이메일을 입력하세요">
+                        </div>
+                        <div>
+                            <label for="desktopLoginPassword" class="mo-form-label">비밀번호</label>
+                            <input type="password"
+                                   id="desktopLoginPassword"
+                                   name="memberPassword"
+                                   class="form-control mo-form-control"
+                                   placeholder="비밀번호를 입력하세요">
+                        </div>
+                        <button type="submit" class="mo-btn mo-btn-primary w-100">로그인</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         로그인 : 모바일 바텀 시트
+    ========================= -->
+    <div class="offcanvas offcanvas-bottom mo-bottom-sheet" tabindex="-1" id="moMobileLoginSheet" aria-hidden="true">
+        <div class="mo-bottom-sheet__header">
+            <div class="mo-modal-card__eyebrow">계정</div>
+            <h2 class="mo-modal-card__title mb-0">로그인</h2>
+        </div>
+        <div class="mo-bottom-sheet__body">
+            <div class="mo-modal-form mo-modal-form--sheet">
+                <form th:action="@{/login}" method="post" class="d-flex flex-column gap-3">
+                <input type="hidden" name="returnUrl" class="js-login-return-url" th:value="${param.returnUrl}">
+                    <div>
+                        <label for="mobileLoginEmail" class="mo-form-label">이메일</label>
+                        <input type="email"
+                               id="mobileLoginEmail"
+                               name="memberEmail"
+                               class="form-control mo-form-control"
+                               placeholder="이메일을 입력하세요">
+                    </div>
+                    <div>
+                        <label for="mobileLoginPassword" class="mo-form-label">비밀번호</label>
+                        <input type="password"
+                               id="mobileLoginPassword"
+                               name="memberPassword"
+                               class="form-control mo-form-control"
+                               placeholder="비밀번호를 입력하세요">
+                    </div>
+                    <button type="submit" class="mo-btn mo-btn-primary w-100">로그인</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         주문방 참여 : 데스크톱 모달
+    ========================= -->
+    <div class="modal fade mo-auth-modal" id="moJoinModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content mo-modal-card">
+                <div class="mo-modal-card__header">
+                    <div class="mo-modal-card__eyebrow">주문방</div>
+                    <h2 class="mo-modal-card__title">방 참여</h2>
+                    <p class="mo-modal-card__desc">6자리 코드를 입력하면 주문방에 바로 참여할 수 있습니다.</p>
+                </div>
+                <div class="mo-modal-form">
+                    <form th:action="@{/rooms/join}" method="get" class="d-flex flex-column gap-3">
+                        <div>
+                            <label for="desktopRoomCode" class="mo-form-label">방 코드</label>
+                            <input type="text"
+                                   id="desktopRoomCode"
+                                   name="roomCode"
+                                   inputmode="numeric"
+                                   maxlength="6"
+                                   class="form-control mo-form-control mo-room-code-input"
+                                   placeholder="000000">
+                        </div>
+                        <button type="submit" class="mo-btn mo-btn-primary w-100">입장하기</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         주문방 참여 : 모바일 바텀 시트
+    ========================= -->
+    <div class="offcanvas offcanvas-bottom mo-bottom-sheet" tabindex="-1" id="moMobileJoinSheet" aria-hidden="true">
+        <div class="mo-bottom-sheet__header">
+            <div class="mo-modal-card__eyebrow">주문방</div>
+            <h2 class="mo-modal-card__title mb-0">방 참여</h2>
+        </div>
+        <div class="mo-bottom-sheet__body">
+            <div class="mo-modal-form mo-modal-form--sheet">
+                <form th:action="@{/rooms/join}" method="get" class="d-flex flex-column gap-3">
+                    <div>
+                        <label for="mobileRoomCode" class="mo-form-label">방 코드</label>
+                        <input type="text"
+                               id="mobileRoomCode"
+                               name="roomCode"
+                               inputmode="numeric"
+                               maxlength="6"
+                               class="form-control mo-form-control mo-room-code-input"
+                               placeholder="000000">
+                    </div>
+                    <button type="submit" class="mo-btn mo-btn-primary w-100">입장하기</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         배송지 : 데스크톱 모달
+    ========================= -->
+    <div class="modal fade mo-auth-modal" id="moAddressModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered mo-address-modal-dialog">
+            <div class="modal-content mo-modal-card">
+                <div class="mo-modal-card__header">
+                    <div class="mo-modal-card__eyebrow">배송지</div>
+                    <h2 class="mo-modal-card__title">배송지 선택</h2>
+                    <p class="mo-modal-card__desc">현재 가게 탐색과 주문방 생성에 사용할 배송지를 선택합니다.</p>
+                </div>
+
+                <div class="mo-modal-form mo-address-modal-form">
+                    <div class="mo-address-list"
+                         th:if="${headerDeliveryAddressList != null and !#lists.isEmpty(headerDeliveryAddressList)}">
+
+                        <form th:each="address : ${headerDeliveryAddressList}"
+      							th:action="@{/members/me/addresses/{deliveryAddressIdx}/select-from-header(deliveryAddressIdx=${address.deliveryAddressIdx})}"
+      							method="post"
+      							class="mo-address-item-form">
+
+                            <button type="submit"
+                                    class="mo-address-item"
+                                    th:classappend="${headerCurrentDeliveryAddressIdx == address.deliveryAddressIdx} ? ' is-active' : ''">
+
+                                <div class="mo-address-item__head">
+                                    <strong class="mo-address-item__label"
+                                            th:text="${address.deliveryLabel}">집</strong>
+
+                                    <span class="mo-address-item__badge"
+                                          th:if="${headerCurrentDeliveryAddressIdx == address.deliveryAddressIdx}">
+                                        현재 선택
+                                    </span>
+                                </div>
+
+                                <div class="mo-address-item__recipient">
+                                    <span th:text="${address.recipientName}">홍길동</span>
+                                    <span class="mo-address-item__dot">·</span>
+                                    <span th:text="${address.recipientPhone}">010-0000-0000</span>
+                                </div>
+
+                                <p class="mo-address-item__text mb-0">
+                                    <span th:text="${address.deliveryAddress1}">기본주소</span>
+                                    <span th:if="${address.deliveryAddress2 != null and !#strings.isEmpty(address.deliveryAddress2)}">
+                                        &nbsp;<span th:text="${address.deliveryAddress2}">상세주소</span>
+                                    </span>
+                                </p>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="mo-empty-state mo-empty-state--compact"
+					     th:if="${headerDeliveryAddressList == null or #lists.isEmpty(headerDeliveryAddressList)}">
+					    <h3 class="mo-empty-state__title mo-empty-state__title--sm">등록된 배송지가 없습니다</h3>
+					    <p class="mo-empty-state__desc">배송지를 추가한 뒤 다시 선택해 주세요.</p>
+					    <div class="mt-3">
+					        <a th:href="@{/members/me/addresses/new}" class="mo-btn mo-btn-primary w-100">
+					            배송지 추가하기
+					        </a>
+					    </div>
+					</div>
+                </div>
+
+                <div class="mo-modal-card__footer">
+                    <a th:href="@{/members/me/addresses}" class="mo-btn mo-btn-primary w-100">
+   						 배송지 관리
+					</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         배송지 : 모바일 바텀 시트
+    ========================= -->
+    <div class="offcanvas offcanvas-bottom mo-bottom-sheet" tabindex="-1" id="moMobileAddressSheet" aria-hidden="true">
+        <div class="mo-bottom-sheet__header">
+            <div class="mo-modal-card__eyebrow">배송지</div>
+            <h2 class="mo-modal-card__title mb-0">배송지 선택</h2>
+        </div>
+
+        <div class="mo-bottom-sheet__body mo-bottom-sheet__body--address">
+            <div class="mo-address-list"
+                 th:if="${headerDeliveryAddressList != null and !#lists.isEmpty(headerDeliveryAddressList)}">
+
+                <form th:each="address : ${headerDeliveryAddressList}"
+					      th:action="@{/members/me/addresses/{deliveryAddressIdx}/select-from-header(deliveryAddressIdx=${address.deliveryAddressIdx})}"
+					      method="post"
+					      class="mo-address-item-form">
+
+                    <button type="submit"
+                            class="mo-address-item"
+                            th:classappend="${headerCurrentDeliveryAddressIdx == address.deliveryAddressIdx} ? ' is-active' : ''">
+
+                        <div class="mo-address-item__head">
+                            <strong class="mo-address-item__label"
+                                    th:text="${address.deliveryLabel}">집</strong>
+
+                            <span class="mo-address-item__badge"
+                                  th:if="${headerCurrentDeliveryAddressIdx == address.deliveryAddressIdx}">
+                                현재 선택
+                            </span>
+                        </div>
+
+                        <div class="mo-address-item__recipient">
+                            <span th:text="${address.recipientName}">홍길동</span>
+                            <span class="mo-address-item__dot">·</span>
+                            <span th:text="${address.recipientPhone}">010-0000-0000</span>
+                        </div>
+
+                        <p class="mo-address-item__text mb-0">
+                            <span th:text="${address.deliveryAddress1}">기본주소</span>
+                            <span th:if="${address.deliveryAddress2 != null and !#strings.isEmpty(address.deliveryAddress2)}">
+                                &nbsp;<span th:text="${address.deliveryAddress2}">상세주소</span>
+                            </span>
+                        </p>
+                    </button>
+                </form>
+            </div>
+
+           <div class="mo-empty-state mo-empty-state--compact"
+			     th:if="${headerDeliveryAddressList == null or #lists.isEmpty(headerDeliveryAddressList)}">
+			    <h3 class="mo-empty-state__title mo-empty-state__title--sm">등록된 배송지가 없습니다</h3>
+			    <p class="mo-empty-state__desc">배송지를 추가한 뒤 다시 선택해 주세요.</p>
+			    <div class="mt-3">
+			        <a th:href="@{/members/me/addresses/new}" class="mo-btn mo-btn-primary w-100">
+			            배송지 추가하기
+			        </a>
+			    </div>
+			</div>
+
+            <div class="mo-bottom-sheet__action">
+                <a th:href="@{/members/me/addresses}" class="mo-btn mo-btn-primary w-100">
+				    배송지 관리
+				</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         주문방 생성 : 데스크톱 모달
+    ========================= -->
+    <div class="modal fade mo-auth-modal" id="moCreateRoomModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content mo-modal-card">
+                <div class="mo-modal-card__header">
+                    <div class="mo-modal-card__eyebrow">주문방</div>
+                    <h2 class="mo-modal-card__title">주문방 생성</h2>
+                </div>
+
+                <div class="mo-modal-form">
+                    <form th:action="@{/rooms}" method="post"
+                          class="d-flex flex-column gap-3"
+                          data-mo-create-room-form>
+
+                        <input type="hidden" name="storeIdx" value="">
+                        <input type="hidden" name="orderMode" value="DELIVERY">
+                        <input type="hidden" name="afterCreate" value="">
+                        <p class="mo-helper-text mb-0" data-mo-create-context>
+                            선택한 가게와 배송지, 결제 방식을 확인해 주세요.
+                        </p>
+
+                        <div class="p-3 rounded-4 border bg-light-subtle">
+						    <div class="small text-secondary mb-1">선택 가게</div>
+						    <div class="fw-bold text-dark" data-mo-store-name>가게를 선택해 주세요</div>
+						    <div class="small text-secondary mt-1" data-mo-store-minimum>최소주문금액 정보 없음</div>
+						</div>
+
+                        <div>
+                            <label class="mo-form-label">배송지 선택</label>
+
+                            <div class="d-flex flex-column gap-2"
+                                 th:if="${headerDeliveryAddressList != null and !#lists.isEmpty(headerDeliveryAddressList)}">
+                                <label class="mo-address-item"
+                                       th:each="address : ${headerDeliveryAddressList}">
+                                    <input class="form-check-input me-2"
+                                           type="radio"
+                                           name="selectedDeliveryAddressIdx"
+                                           th:value="${address.deliveryAddressIdx}"
+                                           th:checked="${headerCurrentDeliveryAddressIdx == address.deliveryAddressIdx}">
+                                    <strong th:text="${address.deliveryLabel}">집</strong>
+                                    <div class="small text-secondary mt-1">
+                                        <span th:text="${address.deliveryAddress1}">기본주소</span>
+                                        <span th:if="${address.deliveryAddress2 != null and !#strings.isEmpty(address.deliveryAddress2)}">
+                                            &nbsp;<span th:text="${address.deliveryAddress2}">상세주소</span>
+                                        </span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="mo-empty-state mo-empty-state--compact"
+							     th:if="${headerDeliveryAddressList == null or #lists.isEmpty(headerDeliveryAddressList)}">
+							    <h3 class="mo-empty-state__title mo-empty-state__title--sm">등록된 배송지가 없습니다</h3>
+							    <p class="mo-empty-state__desc">주문방 생성 전에 배송지를 먼저 등록해 주세요.</p>
+							    <div class="mt-3">
+							        <a th:href="@{/members/me/addresses/new}" class="mo-btn mo-btn-primary w-100">
+							            배송지 추가하기
+							        </a>
+							    </div>
+							</div>
+                        </div>
+
+                        <div>
+                            <label class="mo-form-label">결제 방식</label>
+                            <div class="d-flex flex-column gap-2">
+                                <label class="mo-address-item">
+                                    <input class="form-check-input me-2"
+                                           type="radio"
+                                           name="paymentMode"
+                                           value="REPRESENTATIVE"
+                                           checked>
+                                    <strong>대표결제</strong>
+                                    <div class="small text-secondary mt-1">리더가 전체 금액을 결제합니다.</div>
+                                </label>
+
+                                <label class="mo-address-item">
+                                    <input class="form-check-input me-2"
+                                           type="radio"
+                                           name="paymentMode"
+                                           value="INDIVIDUAL">
+                                    <strong>각자결제</strong>
+                                    <div class="small text-secondary mt-1">참여자 각자가 본인 금액을 결제합니다.</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <p class="small text-danger mb-0 d-none" data-mo-create-feedback role="alert"></p>
+
+                        <button type="submit"
+                                class="mo-btn mo-btn-primary w-100"
+                                data-mo-create-submit>
+                            주문방 생성하기
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         주문방 생성 : 모바일 바텀 시트
+    ========================= -->
+    <div class="offcanvas offcanvas-bottom mo-bottom-sheet" tabindex="-1" id="moMobileCreateRoomSheet" aria-hidden="true">
+        <div class="mo-bottom-sheet__header">
+            <div class="mo-modal-card__eyebrow">주문방</div>
+            <h2 class="mo-modal-card__title mb-0">주문방 생성</h2>
+        </div>
+
+        <div class="mo-bottom-sheet__body">
+            <div class="mo-modal-form mo-modal-form--sheet">
+                <form th:action="@{/rooms}" method="post"
+                      class="d-flex flex-column gap-3"
+                      data-mo-create-room-form>
+
+                    <input type="hidden" name="storeIdx" value="">
+                    <input type="hidden" name="orderMode" value="DELIVERY">
+                    <input type="hidden" name="afterCreate" value="">
+                    <p class="mo-helper-text mb-0" data-mo-create-context>
+                        선택한 가게와 배송지, 결제 방식을 확인해 주세요.
+                    </p>
+
+                    <div class="p-3 rounded-4 border bg-light-subtle">
+					    <div class="small text-secondary mb-1">선택 가게</div>
+					    <div class="fw-bold text-dark" data-mo-store-name>가게를 선택해 주세요</div>
+					    <div class="small text-secondary mt-1" data-mo-store-minimum>최소주문금액 정보 없음</div>
+					</div>
+
+                    <div>
+                        <label class="mo-form-label">배송지 선택</label>
+
+                        <div class="d-flex flex-column gap-2"
+                             th:if="${headerDeliveryAddressList != null and !#lists.isEmpty(headerDeliveryAddressList)}">
+                            <label class="mo-address-item"
+                                   th:each="address : ${headerDeliveryAddressList}">
+                                <input class="form-check-input me-2"
+                                       type="radio"
+                                       name="selectedDeliveryAddressIdx"
+                                       th:value="${address.deliveryAddressIdx}"
+                                       th:checked="${headerCurrentDeliveryAddressIdx == address.deliveryAddressIdx}">
+                                <strong th:text="${address.deliveryLabel}">집</strong>
+                                <div class="small text-secondary mt-1">
+                                    <span th:text="${address.deliveryAddress1}">기본주소</span>
+                                    <span th:if="${address.deliveryAddress2 != null and !#strings.isEmpty(address.deliveryAddress2)}">
+                                        &nbsp;<span th:text="${address.deliveryAddress2}">상세주소</span>
+                                    </span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="mo-empty-state mo-empty-state--compact"
+						     th:if="${headerDeliveryAddressList == null or #lists.isEmpty(headerDeliveryAddressList)}">
+						    <h3 class="mo-empty-state__title mo-empty-state__title--sm">등록된 배송지가 없습니다</h3>
+						    <p class="mo-empty-state__desc">주문방 생성 전에 배송지를 먼저 등록해 주세요.</p>
+						    <div class="mt-3">
+						        <a th:href="@{/members/me/addresses/new}" class="mo-btn mo-btn-primary w-100">
+						            배송지 추가하기
+						        </a>
+						    </div>
+						</div>
+                    </div>
+
+                    <div>
+                        <label class="mo-form-label">결제 방식</label>
+                        <div class="d-flex flex-column gap-2">
+                            <label class="mo-address-item">
+                                <input class="form-check-input me-2"
+                                       type="radio"
+                                       name="paymentMode"
+                                       value="REPRESENTATIVE"
+                                       checked>
+                                <strong>대표결제</strong>
+                                <div class="small text-secondary mt-1">리더가 전체 금액을 결제합니다.</div>
+                            </label>
+
+                            <label class="mo-address-item">
+                                <input class="form-check-input me-2"
+                                       type="radio"
+                                       name="paymentMode"
+                                       value="INDIVIDUAL">
+                                <strong>각자결제</strong>
+                                <div class="small text-secondary mt-1">참여자 각자가 본인 금액을 결제합니다.</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <p class="small text-danger mb-0 d-none" data-mo-create-feedback role="alert"></p>
+
+                    <button type="submit"
+                            class="mo-btn mo-btn-primary w-100"
+                            data-mo-create-submit>
+                        주문방 생성하기
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade mo-auth-modal" id="moConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content mo-modal-card">
+                <div class="mo-modal-card__header">
+                    <div class="mo-modal-card__eyebrow" data-mo-confirm-eyebrow>확인</div>
+                    <h2 class="mo-modal-card__title" data-mo-confirm-title>한 번 더 확인해 주세요</h2>
+                    <p class="mo-modal-card__desc" data-mo-confirm-message>이 작업을 계속 진행할까요?</p>
+                </div>
+                <div class="mo-modal-form">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="mo-btn mo-btn-outline flex-fill" data-bs-dismiss="modal" data-mo-confirm-cancel>취소</button>
+                        <button type="button" class="mo-btn mo-btn-primary flex-fill" data-mo-confirm-accept>확인</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1200;">
+        <div id="moGlobalToast"
+             class="toast align-items-center text-white border-0"
+             role="status"
+             aria-live="polite"
+             aria-atomic="true"
+             style="background: var(--mo-navy-strong); border-radius: 16px; min-width: min(360px, calc(100vw - 24px)); box-shadow: 0 18px 40px rgba(22, 34, 68, 0.22);">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold py-3 px-4" data-mo-toast-message>안내 메시지</div>
+                <button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" aria-label="닫기"></button>
+            </div>
+        </div>
+    </div>
+
+
+</th:block>
+</html>
