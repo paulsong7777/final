@@ -110,7 +110,7 @@
         <div class="row g-4" th:if="${addressList != null and !#lists.isEmpty(addressList)}">
             <div class="col-12 col-lg-6"
                  th:each="address : ${addressList}">
-                <article class="mo-surface-card h-100"
+                <article class="mo-surface-card h-100 d-flex flex-column"
       			   th:classappend="${defaultAddressIdx == address.deliveryAddressIdx} ? ' border border-warning-subtle' : ''">
                     <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
                         <div>
@@ -130,62 +130,62 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="fw-semibold text-dark mb-1">주소</div>
-                        <div class="text-secondary" style="line-height:1.7;">
-                            <span th:text="${address.deliveryAddress1}">기본주소</span>
-                            <span th:if="${address.deliveryAddress2 != null and !#strings.isEmpty(address.deliveryAddress2)}">
-                                <br>
-                                <span th:text="${address.deliveryAddress2}">상세주소</span>
-                            </span>
-                        </div>
-                    </div>
+					<div class="mb-3">
+					    <div class="fw-semibold text-dark mb-1">주소</div>
+					    <div class="text-secondary" style="line-height:1.7;">
+					        <span th:text="${address.deliveryAddress1}">기본주소</span>
+					        <br>
+					        <span th:text="${#strings.isEmpty(address.deliveryAddress2) ? '-' : address.deliveryAddress2}">상세주소</span>
+					    </div>
+					</div>
 
-                    <div class="mb-4" th:if="${address.deliveryRequest != null and !#strings.isEmpty(address.deliveryRequest)}">
-                        <div class="fw-semibold text-dark mb-1">배송 요청사항</div>
-                        <div class="text-secondary" th:text="${address.deliveryRequest}">
-                            문 앞에 놓아주세요.
-                        </div>
-                    </div>
+					<div class="mt-auto">
+    
+    <div class="mb-4">
+        <div class="fw-semibold text-dark mb-1">배송 요청사항</div>
+        <div class="text-secondary" th:text="${#strings.isEmpty(address.deliveryRequest) ? '-' : address.deliveryRequest}">
+        </div>
+    </div>
 
-                    <div class="d-grid gap-2 d-sm-flex">
-					    <button th:if="${defaultAddressIdx == address.deliveryAddressIdx}"
-						        type="button"
-						        class="mo-btn mo-btn-disabled flex-fill"
-						        disabled>
-						    기본 배송지 적용됨
-						</button>
-
-    <form th:if="${defaultAddressIdx != address.deliveryAddressIdx}"
-	      th:action="@{/members/me/addresses/{deliveryAddressIdx}/default(deliveryAddressIdx=${address.deliveryAddressIdx})}"
-	      method="post"
-	      class="flex-fill">
-        <button type="submit" class="mo-btn mo-btn-primary w-100">
-            기본 배송지로 설정
+    <div class="d-grid gap-2 d-sm-flex">
+        <button th:if="${defaultAddressIdx == address.deliveryAddressIdx}"
+                type="button"
+                class="mo-btn mo-btn-disabled flex-fill"
+                disabled>
+            기본 배송지 적용됨
         </button>
-    </form>
 
-    <a th:href="@{/members/me/addresses/{deliveryAddressIdx}/edit(deliveryAddressIdx=${address.deliveryAddressIdx})}"
-       class="mo-btn mo-btn-outline flex-fill">
-        수정
-    </a>
+        <form th:if="${defaultAddressIdx != address.deliveryAddressIdx}"
+              th:action="@{/members/me/addresses/{deliveryAddressIdx}/default(deliveryAddressIdx=${address.deliveryAddressIdx})}"
+              method="post"
+              class="flex-fill">
+            <button type="submit" class="mo-btn mo-btn-primary w-100">
+                기본 배송지로 설정
+            </button>
+        </form>
 
-<button th:if="${defaultAddressIdx == address.deliveryAddressIdx}"
-        type="button"
-        class="mo-btn mo-btn-disabled flex-fill"
-        disabled>
-    기본 배송지는 삭제 불가
-</button>
+        <a th:href="@{/members/me/addresses/{deliveryAddressIdx}/edit(deliveryAddressIdx=${address.deliveryAddressIdx})}"
+           class="mo-btn mo-btn-outline flex-fill">
+            수정
+        </a>
 
-	<form th:if="${defaultAddressIdx != address.deliveryAddressIdx}"
-	      th:action="@{/members/me/addresses/{deliveryAddressIdx}/delete(deliveryAddressIdx=${address.deliveryAddressIdx})}"
-	      method="post"
-	      class="flex-fill"
-	      onsubmit="handleDeleteSubmit(event, this);">
-	    <button type="submit" class="mo-btn mo-btn-danger w-100">
-	        삭제
-	    </button>
-	</form>
+        <button th:if="${defaultAddressIdx == address.deliveryAddressIdx}"
+                type="button"
+                class="mo-btn mo-btn-disabled flex-fill"
+                disabled>
+            기본 배송지는 삭제 불가
+        </button>
+
+        <form th:if="${defaultAddressIdx != address.deliveryAddressIdx}"
+              th:action="@{/members/me/addresses/{deliveryAddressIdx}/delete(deliveryAddressIdx=${address.deliveryAddressIdx})}"
+              method="post"
+              class="flex-fill"
+              onsubmit="handleDeleteSubmit(event, this);">
+            <button type="submit" class="mo-btn mo-btn-danger w-100">
+                삭제
+            </button>
+        </form>
+    </div>
 </div>
                 </article>
             </div>
