@@ -83,7 +83,7 @@
 									    <span th:case="'PAID'" class="fw-bold fs-6 text-danger">신규 주문</span>
 									    <span th:case="'ACCEPTED'" class="fw-bold fs-6" style="color: var(--mo-primary);">접수완료</span>
 									    <span th:case="'PREPARING'" class="fw-bold fs-6 text-success">조리 중</span>
-									    <span th:case="'READY'" class="fw-bold fs-6 text-info">준비완료</span>
+									    <span th:case="'READY'" class="fw-bold fs-6 text-info">조리완료(배달시작)</span>
 									    <span th:case="'DELIVERING'" class="fw-bold fs-6 text-primary">배달 중</span>
 									    <span th:case="'COMPLETED'" class="fw-bold fs-6 text-secondary">주문완료</span>
 									    <span th:case="'CANCELLED'" class="fw-bold fs-6 text-muted">주문취소</span>
@@ -117,13 +117,13 @@
 								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'PREPARING')|">조리 시작하기</button>
 								    
 								    <button th:case="'PREPARING'" type="button" class="btn btn-success w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" 
-								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'READY')|">조리 완료처리</button>
+								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'READY')|">조리 완료(배달 시작)</button>
 								
 								    <button th:case="'READY'" type="button" class="btn btn-info w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" 
-								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'DELIVERING')|">준비 완료 처리</button>
+								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'COMPLETED')|">배달 완료 처리</button>
 								            
-								    <button th:case="'DELIVERING'" type="button" class="btn w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px; background-color: var(--mo-navy-strong);" 
-								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'COMPLETED')|">주문 완료 처리</button>
+								   <!-- <button th:case="'DELIVERING'" type="button" class="btn w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px; background-color: var(--mo-navy-strong);" 
+								            th:onclick="|handleStatusUpdate(event, ${order.groupOrder.roomIdx}, 'COMPLETED')|">배달 완료 처리</button> -->
 								            
 								    <button th:case="'COMPLETED'" type="button" class="btn btn-secondary w-100 rounded-3 shadow-sm text-white fw-bold border-0" style="min-height: 42px;" disabled>처리가 완료된 주문입니다</button>
 								</th:block>
@@ -200,13 +200,13 @@
                 eyebrow: '준비 완료',
                 title: '조리가 모두 끝났나요?',
                 message: '배달/픽업을 위한 모든 준비가 완료 처리됩니다.',
-                confirmText: '준비 완료 처리'
+                confirmText: '조리완료(배달시작)'
             },
             COMPLETED: {
                 eyebrow: '주문 완료',
                 title: '주문을 최종 완료할까요?',
                 message: '고객에게 전달이 완료된 주문을 최종 마감합니다.',
-                confirmText: '최종 완료 처리'
+                confirmText: '배달 완료'
             }
         };
 
