@@ -187,8 +187,8 @@ public class RoomController {
 			@SessionAttribute("member") Member member) {
 		OrderRoom orderRoom = orderRoomService.findByCode(roomCode);
 		if (orderRoom == null) {
-			ra.addFlashAttribute("error", "해당하는 방을 찾을 수 없습니다");
-			return "redirect:/rooms/join";
+			ra.addFlashAttribute("error", "존재하지 않는 주문방입니다.");
+			return "redirect:/main";
 		}
 		String activeRedirect = redirectToDifferentActiveRoom(member, roomCode, ra);
 		if (activeRedirect != null) {
