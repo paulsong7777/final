@@ -155,10 +155,10 @@
                                                     (status == 'READY' ? 'bi-box-seam' : 'bi-flag-fill')))}"></i>
                             </div>
                             <div class="mo-step-text" 
-                                 th:text="${status == 'PAID' ? '신규주문' : 
+                                 th:utext="${status == 'PAID' ? '신규주문' : 
                                            (status == 'ACCEPTED' ? '주문접수' : 
                                            (status == 'PREPARING' ? '조리중' : 
-                                           (status == 'READY' ? '조리완료' : '배달완료')))}">상태</div>
+                                           (status == 'READY' ? '조리완료<br>(배달시작)' : '배달완료')))}">상태</div>
                         </div>
                     </div>
 
@@ -217,7 +217,7 @@
 
                             <div class="mo-timeline-item" th:classappend="${currentIdx >= 3 ? 'active' : ''}">
                                 <div class="mo-timeline-content">
-                                    <span class="mo-timeline-label">👨‍🍳 조리 완료 (배달 출발)</span>
+                                    <span class="mo-timeline-label">👨‍🍳 조리 완료 (배달 시작)</span>
                                     <span class="mo-timeline-time" th:text="${currentIdx >= 3 ? #temporals.format(safeOrder.updatedAt.toLocalDateTime().plusHours(9), 'HH:mm:ss') : '-'}">-</span>
                                 </div>
                             </div>
@@ -260,13 +260,13 @@
                                 th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'PREPARING')|">조리 시작하기</button>
                         
                         <button type="button" th:if="${safeOrder.orderStatus == 'PREPARING'}" class="btn btn-success w-100 py-3 fs-6 border-0 text-white" style="font-weight: bold;"
-                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'READY')|">준비 완료 처리</button>
+                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'READY')|">조리완료(배달시작)</button>
 
                         <button type="button" th:if="${safeOrder.orderStatus == 'READY'}" class="btn btn-info w-100 py-3 fs-6 border-0 text-white" style="font-weight: bold;"
-                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'DELIVERING')|">배달 시작하기</button>
+                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'COMPLETED')|">배달 완료</button>
                                 
-                        <button type="button" th:if="${safeOrder.orderStatus == 'DELIVERING'}" class="mo-btn w-100 py-3 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff;"
-                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'COMPLETED')|">주문 완료 처리</button>
+                        <!-- <button type="button" th:if="${safeOrder.orderStatus == 'DELIVERING'}" class="mo-btn w-100 py-3 fs-6 border-0" style="background: var(--mo-navy-strong); color: #fff;"
+                                th:onclick="|moveStatus(event, ${safeOrder.roomIdx}, 'COMPLETED')|">배달 완료 처리</button> -->
 
                         <div th:if="${safeOrder.orderStatus == 'COMPLETED'}" class="p-3 text-center rounded-3 fw-bold" style="background: rgba(42, 54, 89, 0.05); color: var(--mo-navy-strong);">
                             처리가 완료된 주문입니다.
@@ -327,7 +327,7 @@
                     eyebrow: '준비 완료',
                     title: '조리가 모두 끝났나요?',
                     message: '배달/픽업을 위한 모든 준비가 완료 처리됩니다.',
-                    confirmText: '준비 완료 처리'
+                    confirmText: '조리완료(배달시작)'
                 },
                 DELIVERING: {
                     eyebrow: '배달 시작',
@@ -339,7 +339,7 @@
                     eyebrow: '주문 완료',
                     title: '주문을 최종 완료할까요?',
                     message: '고객에게 전달이 완료된 주문을 최종 마감합니다.',
-                    confirmText: '최종 완료 처리'
+                    confirmText: '배달 완료'
                 }
             };
 

@@ -102,7 +102,26 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('[order-channel] connected', event.data);
     });
 
-    eventSource.addEventListener('paid', function (event) {
+	eventSource.addEventListener('paid', function (event) {
+	    console.log('[order-channel] paid', event.data);
+
+	    if (pageType === 'payment-wait'
+	        || pageType === 'payment-individual'
+	        || pageType === 'payment-representative') {
+
+	        if (typeof window.updatePaymentUI === 'function') {
+	            window.updatePaymentUI();
+	            return;
+	        }
+
+	        // 안전 폴백: wait 화면에 갱신 함수가 없을 때도 즉시 반영되도록 보정
+	        if (pageType === 'payment-wait') {
+	            window.location.reload();
+	        }
+	    }
+	});
+	
+/*    eventSource.addEventListener('paid', function (event) {
         console.log('[order-channel] paid', event.data);
 
         if (pageType === 'payment-wait'
@@ -114,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			        window.updatePaymentUI();
 			    }
         }
-    });
+    });*/
 
 	/*eventSource.addEventListener('paid', function (event) {
 	    console.log('[order-channel] paid', event.data);
