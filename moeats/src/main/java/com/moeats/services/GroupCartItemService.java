@@ -43,16 +43,6 @@ public class GroupCartItemService {
 	    }
 	}
 	
-//	private void beginSelectingIfNeeded(OrderRoom orderRoom) {
-//	    if (orderRoom == null) {
-//	        return;
-//	    }
-//	    if ("OPEN".equals(orderRoom.getRoomStatus())) {
-//	        orderRoomMapper.menuSelect(orderRoom);
-//	        orderRoom.setRoomStatus("SELECTING");
-//	    }
-//	}
-
 	private void markParticipantNotSelectedIfNeeded(int roomIdx, int memberIdx) {
 	    RoomParticipant roomParticipant = roomParticipantMapper.findJoinedRoomMember(roomIdx, memberIdx);
 	    if (roomParticipant == null) {

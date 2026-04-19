@@ -53,7 +53,6 @@ public class StoreController {
     private OrderMemberQueryService orderMemberQueryService;
     
     private final String COMPLETED = "COMPLETED";
- // tier1에서 delivery 구현이 안되는 상황이기 때문에 간소화. 영훈
     private final List<String> ORDER_STATUSES =
             List.of("PAID", "ACCEPTED", "PREPARING", "READY", "DELIVERING", "COMPLETED");
 //    private final List<String> ORDER_STATUSES = List.of("PAID","ACCEPTED","PREPARING","READY","DELIVERING","COMPLETED");
@@ -68,7 +67,7 @@ public class StoreController {
             }
         }
         // 💡 핵심 수정: null 대신 '빈 Store 객체'를 반환해야
-        // 스프링이 사용자가 폼에 입력한 데이터를 이 객체에 차곡차곡 담아줍니다!
+        // 스프링이 사용자가 폼에 입력한 데이터를 이 객체에 차곡차곡 담아줌
         return new Store();
     }
     
@@ -181,28 +180,6 @@ public class StoreController {
         model.addAttribute("orderRoom", orderRoomService.findByIdx(groupOrder.getRoomIdx()));
         return "views/owner/order-detail";
     }
-    // 3차 디버깅 결과 터질 위험요소 발견. ViewOwnerController 삭제로 보강 필요하다 판단.
-//    @PostMapping("/order/status_update")
-//    @ResponseBody
-//    public Map statusMove(
-//    		@RequestParam(name = "roomIdx",defaultValue = "0") int roomIdx,
-//			@SessionAttribute("member") Member member) {
-//    	Store store = storeService.myStore(member.getMemberIdx());
-//    	if ( store==null || roomIdx==0 ) {
-//    		return Map.of("result",false);
-//    	}
-//    	GroupOrder groupOrder = groupOrderService.findByRoom(roomIdx);
-//    	if( 	groupOrder==null
-//    			|| groupOrder.getStoreIdx() != store.getStoreIdx()
-//    			|| !ORDER_STATUSES.contains(groupOrder.getOrderStatus())
-//    			|| COMPLETED.equals(store.getStoreStatus())
-//    			|| groupOrderService.proceed(groupOrder) == 0 ) {
-//    		return Map.of("result",false);
-//    	}
-//    	sseService.statusChangeOrder(groupOrder.getOrderIdx(), ORDER_STATUSES.get(ORDER_STATUSES.indexOf(groupOrder.getOrderStatus())+1));
-//    	return Map.of("result",true);
-//    }
-
 	
 	@PostMapping({"/owners/order/status_update", "/owner/status_update"})
 	@ResponseBody
@@ -237,24 +214,6 @@ public class StoreController {
 	    );
 	}
 	
-	
-    // 가게 상태 수정
-//    @PostMapping("/owners/store/status")
-//    public String updateStatus(
-//    		RedirectAttributes ra,
-//    		@RequestParam("storeIdx") int storeIdx, 
-//    		@RequestParam("storeStatus") String storeStatus,
-//			@SessionAttribute("member") Member member) {
-//    	Store store = storeService.myStore(member.getMemberIdx());
-//    	if ( store==null ) {
-//    		ra.addFlashAttribute("error", "잘못된 접근입니다");
-//    		return "redirect:/home";
-//    	}
-//    	
-//        storeService.updateStatus(storeIdx, member.getMemberIdx(), storeStatus);
-//        return "redirect:"+ redirectUrl;
-//    }
-    // 재우야 ... 시계를 푸르며
     @PostMapping("/owners/store/status")
     public String updateStatus(
             RedirectAttributes ra,
@@ -444,8 +403,6 @@ public class StoreController {
         return Map.of("storeStatus", status);
     }
     
- // StoreController.java 내부 아무 곳에나 추가
-
     @PostMapping("/api/stores/{storeIdx}/explode-room")
     @ResponseBody
     public Map<String, Boolean> explodeRoomDueToStoreStatus(

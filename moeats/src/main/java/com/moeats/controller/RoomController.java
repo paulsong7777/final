@@ -74,28 +74,6 @@ public class RoomController {
 			Integer totalAmount) {
 	}
 	
-//	private void ensureUnselectedForEditing(OrderRoom orderRoom, Member member) {
-//	    if (orderRoom == null || orderRoom.isJoinLocked()) {
-//	        return;
-//	    }
-//	    if (!"OPEN".equals(orderRoom.getRoomStatus()) && !"SELECTING".equals(orderRoom.getRoomStatus())) {
-//	        return;
-//	    }
-//
-//	    RoomParticipant roomParticipant = orderRoomService.findJoinedRoomMember(
-//	            orderRoom.getRoomIdx(),
-//	            member.getMemberIdx()
-//	    );
-//
-//	    if (roomParticipant == null || !"SELECTED".equals(roomParticipant.getSelectionStatus())) {
-//	        return;
-//	    }
-//
-//	    if (orderRoomService.unselect(roomParticipant.getRoomParticipantIdx()) > 0) {
-//	        sseService.participantUpdate(orderRoom.getRoomIdx());
-//	    }
-//	}
-
 	private String redirectToActiveRoomIfExists(Member member, RedirectAttributes ra) {
 		OrderRoom activeRoom = orderRoomService.findActiveRoomByMember(member.getMemberIdx());
 		if (activeRoom == null) {

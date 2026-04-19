@@ -28,18 +28,6 @@ public class DeliveryAddressController {
 
 	
 	// 삭제
-	/*
-	 * @PostMapping("/members/me/addresses/{deliveryAddressIdx}/delete") public
-	 * String deleteAddress( @PathVariable("deliveryAddressIdx") int
-	 * deliveryAddressIdx,
-	 * 
-	 * @SessionAttribute("memberIdx") int memberIdx) {
-	 * 
-	 * deliveryAddressService.deleteAddress(memberIdx, deliveryAddressIdx);
-	 * 
-	 * return "redirect:/members/me/addresses"; }
-	 */
-	
 	@PostMapping("/members/me/addresses/{deliveryAddressIdx}/delete")
 	public String deleteAddress(@PathVariable("deliveryAddressIdx") int deliveryAddressIdx,
 	        @SessionAttribute("memberIdx") int memberIdx,
@@ -108,7 +96,7 @@ public class DeliveryAddressController {
 	        return "redirect:/members/me/addresses/new";
 	    }
 	    
-	    // ✨ returnUrl이 존재하면 원래 있던 가게 메뉴 페이지로 돌려보냄
+	    // returnUrl이 존재하면 원래 있던 가게 메뉴 페이지로 돌려보냄
 	    if (returnUrl != null && !returnUrl.isBlank()) {
 	        return "redirect:" + returnUrl;
 	    }
@@ -119,7 +107,7 @@ public class DeliveryAddressController {
 	// 주소 등록 폼 띄우기
 	@GetMapping("/members/me/addresses/new")
 	public String insertAddress(@RequestParam(value = "returnUrl", required = false) String returnUrl, Model model) {
-	    // ✨ 뷰로 returnUrl을 전달
+	    // 뷰로 returnUrl을 전달
 	    model.addAttribute("returnUrl", returnUrl);
 	    return "views/address-create";
 	}

@@ -21,7 +21,7 @@ public class TossPaymentExpireService {
     }
 
     // 60000 -> 5000 smoke test only
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 60000)
     @Transactional
     public void expireIndividualPayments() {
         List<Long> expiredPaymentIds = paymentTransactionMapper.selectExpiredIndividualPaymentIds();

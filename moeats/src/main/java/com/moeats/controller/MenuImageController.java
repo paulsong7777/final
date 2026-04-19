@@ -111,7 +111,6 @@ public class MenuImageController {
 
 	/**
 	 * 메뉴에 해당하는 이미지 전체 조회 (관리 갤러리 폼)
-	 * 배민 사장님 광장처럼 한 메뉴의 사진을 쫙 펼쳐보는 화면입니다.
 	 */
 	@GetMapping("/menus/{menuIdx}/images")
 	public String imageListByMenu(@PathVariable("menuIdx") int menuIdx, Model model) {

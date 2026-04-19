@@ -43,7 +43,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/owner/**",
                         "/owners/**"
                 )
-                .excludePathPatterns("/upload/**"); // 🚨 이미지 경로는 체크에서 제외!
+                .excludePathPatterns("/upload/**"); // 이미지 경로는 체크에서 제외!
         
         // 점주 전용 경로 - OWNER 권한 체크
         registry.addInterceptor(ownerCheckInterceptor)
@@ -51,7 +51,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 		"/owner/**",
                 		"/owners/**"
                 )
-                .excludePathPatterns("/upload/**"); // 🚨 이미지 경로는 체크에서 제외!
+                .excludePathPatterns("/upload/**"); // 이미지 경로는 체크에서 제외!
 
 		registry.addInterceptor(roomMemberInterceptor)
 				.addPathPatterns(
