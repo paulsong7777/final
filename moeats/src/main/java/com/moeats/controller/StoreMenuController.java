@@ -59,15 +59,6 @@ public class StoreMenuController {
 
         return "views/user/menu-list";
     }
-    
-	/*
-	 * @GetMapping("/stores/{storeIdx}/menu") public String
-	 * menuListForUser(@PathVariable("storeIdx") int storeIdx, Model model) {
-	 * * List<StoreMenu> menuList = storeMenuService.menuListForUser(storeIdx);
-	 * * model.addAttribute("menuList", menuList);
-	 * * return "views/user/menu-list"; }
-	 */
-
 
     // 메뉴 검색
     // store 모델에 추가. 영훈
@@ -87,19 +78,6 @@ public class StoreMenuController {
         return "views/user/menu-list";
     }
     
-	/*
-	 * @GetMapping("/stores/{storeIdx}/menu/search") public String
-	 * searchMenuForUser(
-	 * * @PathVariable("storeIdx") int storeIdx,
-	 * * @RequestParam String keyword, Model model) {
-	 * * List<StoreMenu> menuList = storeMenuService.searchMenuForUser(storeIdx,
-	 * keyword);
-	 * * model.addAttribute("menuList", menuList); model.addAttribute("keyword",
-	 * keyword);
-	 * * return "views/user/menu-list"; }
-	 */
-
-
     /**
      * =========================
      * 🧑‍🍳 점주용 (관리자)

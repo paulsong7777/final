@@ -305,12 +305,12 @@ public class OrderController {
             @RequestAttribute("paymentShare") PaymentShare paymentShare,
             @SessionAttribute("member") Member member) {
 
-        // 💡 [수정] 1. 전원 결제가 완료된 경우 방 검사를 무시하고 최우선으로 주문 상세로 보냅니다.
+        // 1. 전원 결제가 완료된 경우 방 검사를 무시하고 최우선으로 주문 상세로 보냅니다.
         if ("PAID".equals(payment.getPaymentStatus())) {
             return String.format("redirect:/orders/%d", orderIdx);
         }
 
-        // 💡 [수정] 2. 전원 결제가 완료되지 않았는데 방이 없다면 폭파된 것입니다.
+        // 2. 전원 결제가 완료되지 않았는데 방이 없다면 폭파된 것입니다.
         if (orderRoomService.findActiveRoomByMember(member.getMemberIdx()) == null) {
             ra.addFlashAttribute("error", "주문방이 폭파되었거나 결제 시간이 만료되었습니다.");
             return "redirect:/main";

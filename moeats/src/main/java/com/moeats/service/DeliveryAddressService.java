@@ -34,26 +34,6 @@ public class DeliveryAddressService {
 	    return deliveryAddressMapper.findDefaultAddress(memberIdx);
 	}
 	
-	
-	// 기본 주소 ↔ 선택 주소 변경
-	
-	// 기본 배송지 이슈로 갈아엎음 - 영ㅇ훈
-	/*
-	 * 
-	 * @Transactional public void changeDefaultAddress(int memberIdx, int
-	 * deliveryAddressIdx) {
-	 * 
-	 * // 1️. 주소 존재 여부 확인 DeliveryAddress addr =
-	 * deliveryAddressMapper.addressByIdx(memberIdx, deliveryAddressIdx);
-	 * 
-	 * if (addr == null) { throw new RuntimeException("주소가 존재하지 않거나 권한 없음"); }
-	 * 
-	 * // 2. 기존 기본 주소 해제 deliveryAddressMapper.resetDefaultAddress(memberIdx);
-	 * 
-	 * // 3. 선택 주소 설정 deliveryAddressMapper.setDefaultAddress(memberIdx,
-	 * deliveryAddressIdx); }
-	 */
-	
 	@Transactional
 	public void changeDefaultAddress(int memberIdx, int deliveryAddressIdx) {
 
@@ -67,51 +47,6 @@ public class DeliveryAddressService {
 	    deliveryAddressMapper.setDefaultAddress(memberIdx, deliveryAddressIdx);
 	    memberMapper.updateDefaultAddressIdx(memberIdx, deliveryAddressIdx);
 	}
-	
-	
-	// 삭제
-	
-	// 기.배.갈.엎 - 0훈
-	/*
-	 * @Transactional public void deleteAddress(int memberIdx, int
-	 * deliveryAddressIdx) {
-	 * 
-	 * DeliveryAddress addr = deliveryAddressMapper.addressByIdx(memberIdx,
-	 * deliveryAddressIdx);
-	 * 
-	 * if (addr == null) { throw new RuntimeException("주소 없음"); }
-	 * 
-	 * deliveryAddressMapper.deleteAddress(memberIdx, deliveryAddressIdx);
-	 * 
-	 * // 👉 삭제한 게 기본 주소였으면 if (addr.isActive()) { // 다른 주소 하나를 기본으로 설정
-	 * List<DeliveryAddress> list = deliveryAddressMapper.addressList(memberIdx);
-	 * 
-	 * if (!list.isEmpty()) { deliveryAddressMapper.setDefaultAddress(memberIdx,
-	 * list.get(0).getDeliveryAddressIdx()); } } }
-	 */
-	
-	
-	// 잘돌아가지만, 기본 배송지 삭제를 막기 위해 한번 더 갈아엎는다. ㅅㅂ..
-	/*
-	 * @Transactional public void deleteAddress(int memberIdx, int
-	 * deliveryAddressIdx) {
-	 * 
-	 * DeliveryAddress addr = deliveryAddressMapper.addressByIdx(memberIdx,
-	 * deliveryAddressIdx);
-	 * 
-	 * if (addr == null) { throw new RuntimeException("주소 없음"); }
-	 * 
-	 * deliveryAddressMapper.deleteAddress(memberIdx, deliveryAddressIdx);
-	 * 
-	 * if (addr.isActive()) { List<DeliveryAddress> list =
-	 * deliveryAddressMapper.addressList(memberIdx);
-	 * 
-	 * if (!list.isEmpty()) { int nextIdx = list.get(0).getDeliveryAddressIdx();
-	 * deliveryAddressMapper.resetDefaultAddress(memberIdx);
-	 * deliveryAddressMapper.setDefaultAddress(memberIdx, nextIdx);
-	 * memberMapper.updateDefaultAddressIdx(memberIdx, nextIdx); } else {
-	 * memberMapper.clearDefaultAddressIdx(memberIdx); } } }
-	 */
 	
 	
 	@Transactional
@@ -165,33 +100,6 @@ public class DeliveryAddressService {
     }
 	
 	// 등록
-    // 주소 좌표 변환 때문에 임시 메서드 가져오겠음. -영훈
-	/*
-	 * public void insertAddress(DeliveryAddress deliveryAddress) {
-	 * 
-	 * // 1. 주소 → 좌표 변환 GeoPoint point =
-	 * geoService.getLatLng(deliveryAddress.getDeliveryAddress1());
-	 * 
-	 * deliveryAddress.setLatitude(point.getLat());
-	 * deliveryAddress.setLongitude(point.getLng());
-	 * 
-	 * // 2. DB 저장 deliveryAddressMapper.insertAddress(deliveryAddress); }
-	 */
-	
-    
-    // 기본 배송지 이슈로 한번 더 갈아엎음. - 영훈
-	/*
-	 * public void insertAddress(DeliveryAddress deliveryAddress) {
-	 * 
-	 * GeoPoint point = geoService.getLatLng( deliveryAddress.getDeliveryAddress1(),
-	 * deliveryAddress.getJibunAddress() );
-	 * 
-	 * deliveryAddress.setLatitude(point.getLat());
-	 * deliveryAddress.setLongitude(point.getLng());
-	 * 
-	 * deliveryAddressMapper.insertAddress(deliveryAddress); }
-	 */
-    
     public void insertAddress(DeliveryAddress deliveryAddress) {
 
         List<DeliveryAddress> list = deliveryAddressMapper.addressList(deliveryAddress.getMemberIdx());

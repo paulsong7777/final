@@ -29,7 +29,7 @@ public class StoreService {
     @Autowired
     private StoreThumbnailService storeThumbnailService;
     
-    // 주문방 생성시 가게 정보를 불러오겠음.
+    // 주문방 생성시 가게 정보를 불러옴
     public Store getStoreByIdx(int storeIdx) {
         Store store = storeMapper.findByStoreIdx(storeIdx);
 
@@ -45,7 +45,7 @@ public class StoreService {
     
     
     
-    // 고객 가게 리스트 조회 - 전체 or 카테고리 클릭 or 키워드 검색 -
+    // 고객 가게 리스트 조회 - 전체 or 카테고리 클릭 or 키워드 검색
     public List<Store> getStoreList(StoreSearchCond cond, int memberIdx) {
 
         // 1. 기본 배송지 ID 가져오기
