@@ -188,8 +188,7 @@
 					</div>
 				</div>
 				
-				<div th:each="record : ${orderList}" class="mo-history-item shadow-sm" th:with="safeOrder=${record.groupOrder}" th:data-idx="${safeOrder.orderIdx}">
-                    </div>
+				
                			 <div th:if="${#lists.isEmpty(orderList)}" class="text-center py-5 my-4 bg-white shadow-sm" style="border-radius: 16px; border: 1px solid rgba(42, 54, 89, 0.08);">
                		    <div class="mb-3" style="font-size: 48px;">🧾</div>
                 	    <h3 class="fs-5 fw-bold" style="color: var(--mo-navy-strong);">최근 주문 내역이 없습니다.</h3>
